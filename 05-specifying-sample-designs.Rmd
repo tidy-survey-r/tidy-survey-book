@@ -1,1 +1,45 @@
 # Specifying sample designs in srvyr {#c05}
+
+The primary reason for using packages like `survey` and `srvyr` are to incorporate the sampling design into your estimates. By incorporating the sampling design, precision estimates (e.g. standard errors and confidence intervals) are appropriately calculated. In this chapter, we will introduce common sampling designs, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design. While we will show the math behind the estimates, the functions in these packages will do the calculation for you.
+
+## Simple random sample without replacement
+
+The simple random sample (SRS) without replacement is a sampling design where a fixed sample size ($n$) is selected from a sampling frame of size ($N$), and every possible subsample has equal probability of selection. A sampling frame is a list of the units from which you want to select a sample. This is like sampling items out of a hat without replacing them back in the hat. While SRS is one of the simplest designs, it is not often implemented in large studies. To select a SRS, you must have a list of all the units in the population which is not feasible sometimes. Additionally, the sample  is drawn randomly without regard for the structure of the population which may not be practical for data collection so other designs are implemented as will be discussed later though SRS may still be a component of a stage of these designs.
+
+When analyzing survey data, some of the most common estimates desired are means, proportions, and their standard errors so we will introduce the formula for each of these under each design. Note that the package will implement these, but it is useful to understand.
+
+The estimate for the population mean of variable $y$ is:
+
+$$\bar{y}=\frac{1}{n}\sum_{i=1}^n y_i$$
+
+and the estimate of the standard deviation of mean is:
+
+$$\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}$$ and
+
+$$s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.$$
+
+This standard deviation estimate might look very similar to equations you've seen except for the bit on the right side of the equation $1-\frac{n}{N}$ - this is call the finite population correction factor (FPC). If the size of the frame, $N$, is very large, the FPC is negligible so it is often ignored. 
+
+If you had a sample that was drawn through SRS and had no nonresponse or other weighting adjustments, in R, you sould specify this design as:
+
+```{r, eval=FALSE}
+des_srs1 <- dat %>%
+  as_survey_design(fpc=fpcvar)
+```
+
+where `dat` is a tibble or data.frame with your survey data and `fpcvar` is a variable on the tibble which indicates the size of the sampling frame. If the frame was very large, sometimes the frame size is not provided. In that case, you can specify the design as:
+
+```{r, eval=FALSE}
+des_srs2 <- dat %>%
+  as_survey_design()
+```
+
+If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:
+
+
+```{r, eval=FALSE}
+des_srs3 <- dat %>%
+  as_survey_design(weights=wtvar, fpc=fpcvar)
+```
+
+where `wtvar` is the variable for the weight on the data. Again, you can omit the fpc if it is not necessary.
