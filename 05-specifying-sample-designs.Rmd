@@ -14,17 +14,24 @@ $$\bar{y}=\frac{1}{n}\sum_{i=1}^n y_i$$
 
 and the estimate of the standard deviation of mean is:
 
-$$\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}$$ and
+$$se(\bar{y})=\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}$$ and
 
 $$s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.$$
 
 This standard deviation estimate might look very similar to equations you've seen except for the bit on the right side of the equation $1-\frac{n}{N}$ - this is call the finite population correction factor (FPC). If the size of the frame, $N$, is very large, the FPC is negligible so it is often ignored. 
 
-If you had a sample that was drawn through SRS and had no nonresponse or other weighting adjustments, in R, you sould specify this design as:
+To estimate proportions, we define $x_i$ as the indicator that the outcome is observed. That is, $x_i=1$ if the outcome is observed and $x_i=0$ if the outcome is not observed. Then the estimated proportion from a SRS design is:
+
+$$\hat{p}=\frac{1}{n}\sum_{i=1}^n x_i $$
+and the estimated standard deviation of the proportion is:
+
+$$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} $$
+
+If you had a sample that was drawn through SRS and had no nonresponse or other weighting adjustments, in R, you should specify this design as:
 
 ```{r, eval=FALSE}
 des_srs1 <- dat %>%
-  as_survey_design(fpc=fpcvar)
+  as_survey_design(fpc = fpcvar)
 ```
 
 where `dat` is a tibble or data.frame with your survey data and `fpcvar` is a variable on the tibble which indicates the size of the sampling frame. If the frame was very large, sometimes the frame size is not provided. In that case, you can specify the design as:
@@ -36,10 +43,89 @@ des_srs2 <- dat %>%
 
 If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:
 
-
 ```{r, eval=FALSE}
 des_srs3 <- dat %>%
-  as_survey_design(weights=wtvar, fpc=fpcvar)
+  as_survey_design(weights = wtvar, fpc = fpcvar)
 ```
 
-where `wtvar` is the variable for the weight on the data. Again, you can omit the fpc if it is not necessary.
+where `wtvar` is the variable for the weight on the data. Again, you can omit the fpc if it is not necessary because the frame is large.
+
+## Simple random sample with replacement
+
+The simple random sample (SRSWR) with replacement is a sampling design where a fixed sample size ($n$) is selected from a sampling frame of size ($N$) and units can be selected more than once. This is like sampling items out of a hat and replacing them back in the hat before selecting another item. Similar to a SRS design, you must have a full list of the population. As a reminder, units can be selected more than once so would appear in your data frame more than once and thus appear in the sums more than once.
+
+The estimate for the population mean of variable $y$ is:
+
+$$\bar{y}=\frac{1}{n}\sum_{i=1}^n y_i$$
+
+and the estimate of the standard deviation of mean is:
+
+$$\sqrt{\frac{s^2}{n}}$$ and
+
+$$s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.$$
+Again, we define $x_i$ as the indicator that the outcome is observed. Then the estimated proportion from a SRSWR design is:
+
+$$\hat{p}=\frac{1}{n}\sum_{i=1}^n x_i $$
+and the estimated standard deviation of the proportion is:
+
+$$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} $$
+
+If you had a sample that was drawn through SRSWR and had no nonresponse or other weighting adjustments, in R, you should specify this design as:
+
+```{r, eval=FALSE}
+des_srswr1 <- dat %>%
+  as_survey_design()
+```
+
+where `dat` is a tibble or data.frame with your survey data.
+
+If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:
+
+```{r, eval=FALSE}
+des_srswr2 <- dat %>%
+  as_survey_design(weights = wtvar)
+```
+
+where `wtvar` is the variable for the weight on the data.
+
+## Stratified sampling
+
+In stratified sampling, the population is divided into mutually exclusive subpopulations called strata and then samples are selected within each of the strata. Stratification is done for two primary reasons:
+
+1. Ensuring sample representation from all the subpopulations. A SRS cannot guarantee that your sample will include all subpopulations that you may desire in your sample so this type of design ensures representation of all planned subpopulations. For example, if we are doing a survey of professors at a university, we might want to stratify by college to ensure we get professors in the sample from all colleges.
+
+2. Stratification can be used for statistical efficiency. If the outcome is correlated with the subpopulations then the variance of the estimate will be lower when implementing stratification. 
+
+Within each strata, sampling can be done in any manner but we will consider the case of SRS selection within each strata. Commonly, strata are numbered as $1, \ldots, H$.
+
+Let $\bar{y}_h$ be the sample mean for stratum $h$, $N_h$ be the population size of stratum $h$, and $n_h$ be the sample size of stratum $h$. Then the estimate for the population mean under stratified SRS sampling is:
+
+$$\bar{y}=\frac{1}{N}\sum_{h=1}^H N_h\bar{y}_h$$
+and the estimate of the standard error of $\bar{y}$ is:
+
+$$\sqrt{\frac{1}{N^2} \sum_{h=1}^H N_h^2 s_h^2\left(1-\frac{n_h}{N_h}\right)} $$ 
+
+where 
+$$s_h^2=\frac{1}{n_h-1}\sum_{i=1}^{n_h}\left(y_{i,h}-\bar{y}_h\right)^2.$$
+
+For estimates of proportions, let $\hat{p}_h$ be the estimated proportion in stratum $h$. Then the population proportion estimate is:
+
+$$\hat{p}= \frac{1}{N}\sum_{h=1}^H N_h \hat{p}_h$$
+
+and the standard error of the proportion is:
+
+$$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_h)}{n_h-1} \left(1-\frac{n_h}{N_h}\right)}$$
+
+To specify a stratified SRS design in `srvyr` where the population sizes of the strata are not too large and are known, that is you are using the fpc, specify the design as:
+
+```{r, eval=FALSE}
+des_stsrs1 <- dat %>%
+  as_survey_design(fpc = fpcvar, strata = stratvar)
+```
+
+where `fpcvar` is a variable on your data which indicates $N_h$ for each row and `stratavar` is a variable indicating the stratum for each row. You can omit the fpc if it is not applicable. Additionally, you can indicate the weight variable if it is present where `wtvar` is a variable on your data with a numeric weight.
+
+```{r, eval=FALSE}
+des_stsrs2 <- dat %>%
+  as_survey_design(weights = wtvar, strata = stratvar)
+```
