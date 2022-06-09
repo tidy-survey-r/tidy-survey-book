@@ -1,11 +1,16 @@
-# A bookdown example for Chapman & Hall books
+# Tidy Survey Analysis in R
 
-This is a minimal example for those who plan to write books for Chapman & Hall. Basically you download this repository from Github, fill out the content in R Markdown files, and add more Rmd files as necessary.
+Surveys are a powerful tool for gathering information, drawing insights, and driving decisions. However, they require specific analysis methods to ensure the correct interpretation of results. This book will provide an in-depth introduction to conducting survey analysis with the {srvyr} package and {tidyverse} family of functions. Readers will understand how and why to use survey analysis techniques as well as how to interpret and communicate results.
 
-Since this example is minimal, it does not cover all technical details (e.g. the Markdown syntax), and you need to read the [**bookdown** book](https://bookdown.org/yihui/bookdown) before you write anything that is slightly complicated.
+## Chapters
 
-For a full example, you may take a look at [the source](https://github.com/rstudio/bookdown/tree/master/inst/examples) of the **bookdown** book, or any books on https://bookdown.org that have public source repositories.
-
-![front page](https://user-images.githubusercontent.com/163582/43735138-808971fe-997f-11e8-987a-180b5baacefd.png)
-
-![contents page](https://user-images.githubusercontent.com/163582/43735153-8e6c9f94-997f-11e8-92e3-9fcb8db321c6.png)
+1. Introduction
+2. Introducing survey data
+3. Understanding survey data files
+4. Introducing the {srvyr} package
+5. Specifying sample designs in {srvyr}
+6. Descriptive analyses in {srvyr}
+7. Statistical testing
+8. Modeling
+9. Presenting results
+10. Walkthroughs
