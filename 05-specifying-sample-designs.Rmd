@@ -1,12 +1,14 @@
 # Specifying sample designs in srvyr {#c05}
 
-The primary reason for using packages like `survey` and `srvyr` are to incorporate the sampling design into your estimates. By incorporating the sampling design, precision estimates (e.g. standard errors and confidence intervals) are appropriately calculated. In this chapter, we will introduce common sampling designs, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design. While we will show the math behind the estimates, the functions in these packages will do the calculation for you.
+The primary reason for using packages like {survey} and {srvyr} are to incorporate the sampling design into estimates. By incorporating the sampling design, precision estimates (e.g. standard errors and confidence intervals) are appropriately calculated. In this chapter, we will introduce common sampling designs, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design. While we will show the math behind the estimates, the functions in these packages will do the calculation.
 
 ## Simple random sample without replacement
 
-The simple random sample (SRS) without replacement is a sampling design where a fixed sample size ($n$) is selected from a sampling frame of size ($N$), and every possible subsample has equal probability of selection. A sampling frame is a list of the units from which you want to select a sample. This is like sampling items out of a hat without replacing them back in the hat. While SRS is one of the simplest designs, it is not often implemented in large studies. To select a SRS, you must have a list of all the units in the population which is not feasible sometimes. Additionally, the sample  is drawn randomly without regard for the structure of the population which may not be practical for data collection so other designs are implemented as will be discussed later though SRS may still be a component of a stage of these designs.
+The simple random sample (SRS) without replacement is a sampling design where a fixed sample size $(n)$ is selected from a sampling frame of size $(N)$, and every possible subsample has equal probability of selection. A sampling frame is a list of the units from which a sample is selected. This is like sampling items out of a hat without replacing them back in the hat. While SRS is one of the simplest designs, it is not often implemented in large studies. To select a SRS, a list of all the units in the population must be available which is not always feasible. Additionally, the sample is drawn randomly without regard for the structure of the population which may not be practical for data collection so other designs are implemented as will be discussed later though SRS may still be a component of a stage of these designs.
 
 When analyzing survey data, some of the most common estimates desired are means, proportions, and their standard errors so we will introduce the formula for each of these under each design. Note that the package will implement these, but it is useful to understand.
+
+### The math 
 
 The estimate for the population mean of variable $y$ is:
 
@@ -18,7 +20,7 @@ $$se(\bar{y})=\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}$$ and
 
 $$s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.$$
 
-This standard deviation estimate might look very similar to equations you've seen except for the bit on the right side of the equation $1-\frac{n}{N}$ - this is call the finite population correction factor (FPC). If the size of the frame, $N$, is very large, the FPC is negligible so it is often ignored. 
+This standard error estimate might look very similar to equations in other applications seen except for the bit on the right side of the equation $1-\frac{n}{N}$ - this is call the finite population correction factor (FPC). If the size of the frame, $N$, is very large, the FPC is negligible so it is often ignored. 
 
 To estimate proportions, we define $x_i$ as the indicator that the outcome is observed. That is, $x_i=1$ if the outcome is observed and $x_i=0$ if the outcome is not observed. Then the estimated proportion from a SRS design is:
 
@@ -26,15 +28,16 @@ $$\hat{p}=\frac{1}{n}\sum_{i=1}^n x_i $$
 and the estimated standard deviation of the proportion is:
 
 $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} $$
+### The syntax
 
-If you had a sample that was drawn through SRS and had no nonresponse or other weighting adjustments, in R, you should specify this design as:
+If a sample that was drawn through SRS and had no nonresponse or other weighting adjustments, in R specify this design as:
 
 ```{r, eval=FALSE}
 des_srs1 <- dat %>%
   as_survey_design(fpc = fpcvar)
 ```
 
-where `dat` is a tibble or data.frame with your survey data and `fpcvar` is a variable on the tibble which indicates the size of the sampling frame. If the frame was very large, sometimes the frame size is not provided. In that case, you can specify the design as:
+where `dat` is a tibble or data.frame with the survey data and `fpcvar` is a variable on the tibble which indicates the size of the sampling frame. If the frame was very large, sometimes the frame size is not provided. In that case, specify the design as:
 
 ```{r, eval=FALSE}
 des_srs2 <- dat %>%
@@ -48,12 +51,46 @@ des_srs3 <- dat %>%
   as_survey_design(weights = wtvar, fpc = fpcvar)
 ```
 
-where `wtvar` is the variable for the weight on the data. Again, you can omit the fpc if it is not necessary because the frame is large.
+where `wtvar` is the variable for the weight on the data. Again, the fpc can be omitted if it is not necessary because the frame is large.
+
+### An example
+
+The {survey} package in R provides some example datasets to use and those will be used throughout this chapter. The Academic Performance Index (API) was a program administered by the California Department of Education. These datasets are derived from that data and include a population file (frame) of all schools with at least 100 students and several samples from that data. A SRS of 200 schools was sampled and included in `apisrs`. The SRS sample data is illustrated below:
+
+```{r apisrs_display}
+options(tidyverse.quiet = TRUE)
+library(tidyverse)
+library(survey)
+library(srvyr)
+
+data(api)
+
+apisrs_slim <- 
+  apisrs %>%
+  as_tibble() %>%
+  arrange(dnum, snum) %>%
+  select(cds, dnum, snum, dname, sname, fpc, pw)
+
+```
+
+School districts have identifiers `dnum` and schools have identifiers of `snum` along with their names. Additionally, the `fpc` is included as `fpc` and the weight as `pw`. This design should be specified as:
+
+```{r apisrs_des}
+des_apisrs <- apisrs_slim %>%
+  as_survey_design(weights = pw, fpc = fpc)
+
+des_apisrs
+summary(des_apisrs)
+```
+
+Printing the design object above, the design is described as an "Independent Sampling design" which is another terminology for SRS. The ids are specified as `1` which means there is no clustering (a topic described later in this chapter), the fpc variable is indicated, and the weights are indicated. When looking at the summary of the design object, the population size is given a summary of the probabilities (inverse of the weights).
 
 ## Simple random sample with replacement
 
-The simple random sample (SRSWR) with replacement is a sampling design where a fixed sample size ($n$) is selected from a sampling frame of size ($N$) and units can be selected more than once. This is like sampling items out of a hat and replacing them back in the hat before selecting another item. Similar to a SRS design, you must have a full list of the population. As a reminder, units can be selected more than once so would appear in your data frame more than once and thus appear in the sums more than once.
+The simple random sample (SRSWR) with replacement is a sampling design where a fixed sample size $(n)$ is selected from a sampling frame of size $(N)$ and units can be selected more than once. This is like sampling items out of a hat and replacing them back in the hat before selecting another item. Similar to a SRS design, a full list of the population must be available. As a reminder, units can be selected more than once so would appear in the data frame more than once and thus appear in the sums more than once.
 
+
+### The math 
 The estimate for the population mean of variable $y$ is:
 
 $$\bar{y}=\frac{1}{n}\sum_{i=1}^n y_i$$
@@ -69,6 +106,7 @@ $$\hat{p}=\frac{1}{n}\sum_{i=1}^n x_i $$
 and the estimated standard deviation of the proportion is:
 
 $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} $$
+### The syntax
 
 If you had a sample that was drawn through SRSWR and had no nonresponse or other weighting adjustments, in R, you should specify this design as:
 
@@ -88,6 +126,37 @@ des_srswr2 <- dat %>%
 
 where `wtvar` is the variable for the weight on the data.
 
+The {survey} package does not include an example of SRSWR so we create an example below. Note that this is sampled with replacements so there are duplicates. These duplicates are listed more than once and for proper estimation are deduplicated.
+
+```{r apisrs_wr_display}
+
+set.seed(409963)
+
+apisrswr <- apipop %>%
+  as_tibble() %>%
+  slice_sample(n = 200, replace = TRUE) %>%
+  select(cds, dnum, snum, dname, sname) %>%
+  mutate(
+    weight = nrow(apipop)/200
+  )
+
+head(apisrswr)
+
+apisrswr %>%
+  filter(duplicated(cds) | duplicated(cds, fromLast=TRUE))
+```
+
+A weight variable was added which is the inverse of the probability of selection. To specify the sampling design for `apisrswr`, the following syntax should be used:
+
+```{r apisrswr_des}
+des_apisrswr <- apisrswr %>%
+  as_survey_design(weights = weight)
+
+des_apisrswr
+summary(des_apisrswr)
+```
+When printing the design object or showing its summary, it is noted that the sampling is done "with replacement" because no fpc was specified unlike the SRS without replacement example.
+
 ## Stratified sampling
 
 In stratified sampling, the population is divided into mutually exclusive subpopulations called strata and then samples are selected within each of the strata. Stratification is done for two primary reasons:
@@ -97,6 +166,8 @@ In stratified sampling, the population is divided into mutually exclusive subpop
 2. Stratification can be used for statistical efficiency. If the outcome is correlated with the subpopulations then the variance of the estimate will be lower when implementing stratification. 
 
 Within each strata, sampling can be done in any manner but we will consider the case of SRS selection within each strata. Commonly, strata are numbered as $1, \ldots, H$.
+
+### The math
 
 Let $\bar{y}_h$ be the sample mean for stratum $h$, $N_h$ be the population size of stratum $h$, and $n_h$ be the sample size of stratum $h$. Then the estimate for the population mean under stratified SRS sampling is:
 
@@ -115,8 +186,8 @@ $$\hat{p}= \frac{1}{N}\sum_{h=1}^H N_h \hat{p}_h$$
 and the standard error of the proportion is:
 
 $$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_h)}{n_h-1} \left(1-\frac{n_h}{N_h}\right)}$$
-
-To specify a stratified SRS design in `srvyr` where the population sizes of the strata are not too large and are known, that is you are using the fpc, specify the design as:
+### The syntax 
+To specify a stratified SRS design in {srvyr} where the population sizes of the strata are not too large and are known, that is you are using the fpc, specify the design as:
 
 ```{r, eval=FALSE}
 des_stsrs1 <- dat %>%
@@ -129,3 +200,124 @@ where `fpcvar` is a variable on your data which indicates $N_h$ for each row and
 des_stsrs2 <- dat %>%
   as_survey_design(weights = wtvar, strata = stratvar)
 ```
+
+### An example 
+In the example API data, `apistrat` is a stratified random sample, stratified by school type (`stype`). The data is illustrated below:
+
+```{r apistrat_dis}
+apistrat_slim <- 
+  apistrat %>%
+  as_tibble() %>%
+  arrange(dnum, snum) %>%
+  select(cds, dnum, snum, dname, sname, stype, fpc, pw)
+
+apistrat_slim %>% 
+  count(stype, fpc)
+```
+
+The fpc is the same within each stratum and 100 elementary schools were sampled while 50 schools were sampled from both the middle and high school levels. This design should be specified as:
+
+```{r apistrat_des}
+des_apistrat <- apistrat_slim %>%
+  as_survey_design(strata = stype, weights = pw, fpc = fpc)
+
+des_apistrat
+summary(des_apistrat)
+```
+
+When printing the object, it is specified as a "Stratified Independent Sampling design" also known as a stratified SRS and the strata variable is included. In the summary, a numeric summary of the probabilities of selection are displayed as well as the sample and population stratum sizes.
+
+## Clustered sampling
+
+There are several forms of cluster sampling. In clustered sampling, a population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs). These PSUs are randomly sampled and then sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available or data collection involves interviewers needing direct contact with respondents. 
+
+For example, consider a study needing a sample of 6th grade students in the United States, no list likely exists of all these students. Obtaining a list of schools that have 6th graders is more likely to be possible so a study design could select a random sample of schools that have 6th graders. The selected schools can then provide a list of students to do a second stage of sampling where 6th grade students are randomly sampled within each of the sampled schools. This is a one-stage sample design and will be the type of design we will discuss in formulas below.
+
+A more complicated but realistic example is necessary when sending out interviewers to households for a survey. Counties could be selected as the PSU, then Census block groups within counties selected as the secondary sampling unit (SSU), and then households within the block groups. This type of design reduces the travel necessary for interviewers.
+
+Clustered designs are used as a practical solution but are not statistically efficient and should be avoided if they are not necessary. In the household survey example, this process would not be necessary if surveys were mailed to homes but interviewers were never sent out in person.
+
+### The math
+
+Consider a population where the are $N$ clusters and $n$ clusters are sampled via SRSWOR. Units within the sampled cluster are sampled via SRSWOR as well. Let $M_i$ be the number of units in cluster $i$ and $\bar{y}_i$ be the sample mean of cluster $i$. Then, a ratio estimator of the population mean is:
+
+$$\bar{y}=\frac{\sum_{i=1}^n M_i \bar{y}_i}{ \sum_{i=1}^n M_i}$$
+Note this is a consistent but biased estimator. Often the population size is not known so this is a method to estimate a mean without knowing the population size. The estimated standard error of the mean is:
+
+$$se(\bar{y})=\frac{1}{\hat{N}_{pop} } \sqrt{\frac{N^2 (1-\frac{n}{N})}{n}\frac{1}{n-1} \sum_{i=1}^n (M_i\bar{y}_i -\hat{t}/N)^2  + \frac{N}{n}  \sum_{i=1}^n \frac{M_i^2}{m_i}\left(1-\frac{m_i}{M_i}\right)s^2_i }$$
+where $\hat{N}_{pop}$ is the estimated population size, $\hat{t}$ is the estimated total, and $s_i^2$ is the sample variance of cluster $i$.
+
+For estimates of proportions, the estimated proportion is:
+
+$$\hat{p}=\frac{\sum_{i=1}^n M_i \hat{p}_i}{ \sum_{i=1}^n M_i}$$
+
+and the associated standard error estimate is:
+
+$$se(\hat{p})=\frac{1}{\hat{N}_{pop} } \sqrt{\frac{N^2 (1-\frac{n}{N})}{n}\frac{1}{n-1} \sum_{i=1}^n (M_i\hat{p}_i -\hat{t}/N)^2  + \frac{N}{n}  \sum_{i=1}^n \frac{M_i^2}{m_i}\left(1-\frac{m_i}{M_i}\right)s^2_i }$$
+
+where $s^2_i$ is defined as:
+
+$$s^2_i = \frac{m_hp_h(1-p_h)}{m_h-1}$$.
+
+### The syntax
+
+To specify a two-stage clustered design without replacement,  use the following syntax:
+
+
+```{r, eval=FALSE}
+des_clus2 <- dat %>%
+  as_survey_design(weights = wtvar, ids = c(PSU, SSU), fpc = c(N, M))
+```
+
+where `SSU` and `PSU` are the variables indicating the PSU and SSU identifiers and `N` and `M` are the variables indicating the population sizes - the number of clusters and then the number of units within each cluster. Note that `N` will be the same for all records (within a strata) and `M` will be the same for all records within the same cluster.
+
+If clusters were sampled with replacement or from a very large population, a fpc is not necessary. Additionally, only the first stage of selection is necessary. The syntax below will yield the same estimates in the end:
+
+```{r, eval=FALSE}
+des_clus2wra <- dat %>%
+  as_survey_design(weights = wtvar, ids = c(PSU, SSU))
+
+des_clus2wrb <- dat %>%
+  as_survey_design(weights = wtvar, ids = PSU)
+
+```
+
+### An example
+
+The `survey` package includes a two-stage cluster sample data, `apiclus2`, in which school districts were sampled and then a random sample of 5 schools was selected within each district. For districts with fewer than 5 schools, all schools were sampled. School districts have identifiers `dnum` and schools have identifiers of `snum`. The variable `fpc1` indicates how many districts there were in California and `fpc2` indicates how many schools were in a given district with at least 100 students.  The data has a row for each school. In the data printed below, there are 757 school districts as indicated by `fpc1` and there are 9 schools in district 731, one school in district 742, 2 schools in district 768, 6 schools in district 781, and 1 school in district 795 as indicated by `fpc2`.
+
+```{r api2clus_dis}
+apiclus2_slim <- 
+  apiclus2 %>%
+  as_tibble() %>%
+  arrange(desc(dnum), snum) %>%
+  select(cds, dnum, snum, fpc1, fpc2, pw)
+
+apiclus2_slim
+```
+
+To specify this design in R, the following syntax should be used:
+
+```{r api2clus_des}
+des_apiclus2 <- apiclus2_slim %>%
+  as_survey_design(ids = c(dnum, snum), fpc = c(fpc1, fpc2), weights=pw)
+
+des_apiclus2
+summary(des_apiclus2)
+```
+
+The design objects are described as "2 - level Cluster Sampling design" and includes the ids (cluster), fpc, and weight variables. In the summary, it is noted that the sample includes 40 first-level clusters (PSUs) which are school districts and 126 second-level clusters (SSUs) which are schools. Additionally, the summary includes a numeric summary of the probabilities and the population size (number of PSUs) as 757.
+
+## Understanding survey design documentation
+
+SRS, stratified, and clustered designs are the backbone of sampling designs and the features are often combined in one design. Additionally, rather than using SRS for selection, other mechanisms are commonly used such as probability proportional to size (PPS), systematic sampling, or selection with unequal probabilities.
+
+A common method of sampling is to stratify PSUs, select PSUs within stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step of survey analysis to understand the design and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User's Guides, methodology, analysis guides, or technical documentation.
+
+For example, the 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation -  https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] had a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units which were stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected PPS. At the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. At the third stage, housing units were selected within the sampled neighborhoods. At the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on person's age and sex. The public use file does not include all these levels of selection and instead includes pseudo-strata and pseudo-clusters^[2017-2019 National Survey of Family Growth (NSFG): Sample Error Estimation Design - https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Error-Estimation-Design-508.pdf] which are the variables used in R to specify the design. As specified on page 4, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. Thus, to specify this design in R, one would use the following syntax:
+
+```{r, eval=FALSE}
+des_nsfg <- nsfgdata %>%
+  as_survey_design(ids = SECU, strata = SEST, weights = WGT2017_2019)
+```
+
