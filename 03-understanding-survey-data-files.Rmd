@@ -1,34 +1,54 @@
 # Understanding survey data files {#c03}
 
-* [Loading survey file formats](#loading-survey-file-formats)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+* [Reading survey documentation](#reading-survey-documentation)
+* [Best practices for loading data into R](#best-practices-for-loading-data-into-r)
+* [Loading survey files into R](#loading-survey-files-into-r)
 * [Working with labeled data](#working-with-labeled-data)
 
-## Loading survey files into R
+## Reading survey documentation
 
-Survey files come in different file types depending on the program used to output them. R gives us the flexibility to load datasets regardless of their file extension. We will show how to load common survey file formats:
+The first step in survey analysis is reading the documentation. Survey documentation can vary in its organization, thoroughness, and ease of use. We recommend focusing on key sections when beginning an analysis.
 
-* Delimiter-separated text files
-* Excel files
-* `.dta` files from Stata
-* `.sas` files from SAS
+* **Introduction:** The introduction orients us to the survey. Generally, this section provides the background of the project, purpose of the study, and main research questions.
+* **Study design:** The study design section describes how the survey was prepared and administered.
+* **Sample:** The sample section describes the sampling of the survey: how cases were selected, any sampling error that occurred, and limitations of the sample. This section can contain recommendations on how to use sampling weights. This documentation is critical in successfully running our analysis. We go into more detail in [Chapter 05:Specifying sample designs in srvyr](#c05).
 
-For less-common file formats, we recommend searching StackOverflow or similar community sites to learn how to import them into R.
 
-### Best practices for loading data into R
 
-We recommend a project-based workflow for analysis projects as described in Hadley Wickham and Garrett Grolemund's book, R for Data Science. Projects help us practice file system discipline, since we put all the files related to a single project in a designated folder. Since all associated files are in a single location, they are easy to find and organize.
+
+### Searching for public-use data
+
+
+## Best practices for loading data into R
+
+We recommend a project-based workflow for analysis projects as described in Hadley Wickham and Garrett Grolemund's book, R for Data Science. [define project-based workflow here] Projects help us practice file system discipline, since we put all the files related to a single project in a designated folder. Since all associated files are in a single location, they are easy to find and organize.
 
 The RStudio IDE supports project-based workflows. When we create a project in RStudio, it creates a `.Rproj` file that store settings specific to that project.
 
-The {here} package enables easy file referencing. In a project-based workflow, all paths are relative and, by default, relative to the project’s folder.
+The {here} package enables easy file referencing. In a project-based workflow, all paths are relative and, by default, relative to the project’s folder. Use the `here()` function from the here package to build the path when you load or save data.
 
-Use the `here()` function from the here package to build the path when you load or save data.
+## Loading survey files into R
+
+Survey files come in different file types depending on the program used to output them. R gives us the flexibility to load datasets regardless of their file extension. We will show how to load common public-use survey file formats:
+
+* Delimiter-separated text files
+* Excel files
+* `.rda` files
+* `.dta` files from Stata
+* `.sas` files from SAS
+* `.sav` files from SPSS
+
+For uncommon file formats, we recommend searching StackOverflow or similar community sites to learn how to load them into R.
 
 ### Loading delimiter-separated files into R
 
-Delimiter-separated files use specific characters to separate values. For example, comma-separated values (CSV) files are separated by commas. These file types are widely used and we can use many applications to read and write them.
+Delimiter-separated files use specific characters to separate values. For example, CSV files are separated by commas. These file types are widely used and we can use many applications to read and write them.
 
-We can read delimiter-separated files using the tidyverse package {readr}. The {readr} package supports the following files with these `read_*()` functions:
+We can read delimiter-separated files using the tidyverse package {readr}. The {readr} package supports the following files with these `readr::read_*()` functions:
 
 * `read_csv()`: Comma-separated values (CSV) files
 * `read_tsv()`: Tab-separated values (TSV) files
@@ -37,7 +57,7 @@ We can read delimiter-separated files using the tidyverse package {readr}. The {
 * `read_table()`: Whitespace-separated files
 * `read_log()`: Web log files
 
-```{r, eval=FALSE}
+```{r}
 
 ```
 
@@ -51,8 +71,25 @@ Stata is a popular statistical software program for data manipulation, visualiza
 
 The {haven} package from the tidyverse imports a variety of proprietary data formats, including Stata's `.dta` files, SAS's `.sas` files, and SPSS's `.sav` files. Once imported, we can analyze the resulting tibbles in R.
 
+We can explore `haven::read_dat()` options by searching for the help page, `??haven::read_dta`.
+
+```r
+read_dta(
+  file,
+  encoding = NULL,
+  col_select = NULL,
+  skip = 0,
+  n_max = Inf,
+  .name_repair = "unique"
+)
+```
+
+We load our file into R by running `read_dat()`:
+
 ```{r}
-haven::read_dta("https://www.stata-press.com/data/r17/smho.dta")
+#| eval = FALSE
+library(haven)
+read_dta("https://www.stata-press.com/data/r17/smho.dta")
 ```
 
 ###  Loading SAS `.sas` files into R
@@ -61,14 +98,11 @@ SAS `.sas` files are similar to Stata `.dta` files. They are both proprietary fi
 
 ## Working with labeled data
 
-We can use the `haven::labelled()` function to import labelled vectors into R. The goal is to create an intermediate object and then convert it into a regular R data frame to use in our analysis.
+We can use the `haven::labelled()` function to import labeled vectors into R. The goal is to create an intermediate object and then convert it into a regular R data frame to use in our analysis.
+
+
 
 ## Missing data
 
 For Stata and SAS files, {haven} provides `tagged` missing values. A `tagged` missing value adds a single character label to R's regular `NA`.
 
-
-
-
-Sources
-- https://www.stata-press.com/data/r17/svy.html
