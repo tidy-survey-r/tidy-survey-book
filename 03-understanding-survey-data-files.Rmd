@@ -1,6 +1,6 @@
 # Understanding survey data files {#c03}
 
-```{r setup, include=FALSE}
+```{r, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
 ```
 
@@ -8,6 +8,7 @@ knitr::opts_chunk$set(eval = FALSE)
 * [Best practices for loading data into R](#best-practices-for-loading-data-into-r)
 * [Loading survey files into R](#loading-survey-files-into-r)
 * [Working with labeled data](#working-with-labeled-data)
+* [Missing data]
 
 ## Reading survey documentation
 
@@ -17,10 +18,8 @@ The first step in survey analysis is reading the documentation. Survey documenta
 * **Study design:** The study design section describes how the survey was prepared and administered.
 * **Sample:** The sample section describes the sampling of the survey: how cases were selected, any sampling error that occurred, and limitations of the sample. This section can contain recommendations on how to use sampling weights. This documentation is critical in successfully running our analysis. We go into more detail in [Chapter 05:Specifying sample designs in srvyr](#c05).
 
-
-
-
 ### Searching for public-use data
+
 
 
 ## Best practices for loading data into R
@@ -33,7 +32,7 @@ The {here} package enables easy file referencing. In a project-based workflow, a
 
 ## Loading survey files into R
 
-Survey files come in different file types depending on the program used to output them. R gives us the flexibility to load datasets regardless of their file extension. We will show how to load common public-use survey file formats:
+Survey files come in different file types depending on the program used to output them. R gives us the flexibility to load datasets regardless of their file extension. Here are examples of common public-use survey file formats:
 
 * Delimiter-separated text files
 * Excel files
@@ -63,13 +62,18 @@ We can read delimiter-separated files using the tidyverse package {readr}. The {
 
 ### Loading Excel `.xlsx` files into R
 
+Excel, the spreadsheet software program from Microsoft, is a common file format. 
+We can load Excel spreadsheets into R using the {readxl} package. The {readxl} package supports both the legacy `.xls` format and the modern `.xlsx` format. 
 
+```{r}
 
-### Loading Stata `.dta` files into R
+```
+
+### Loading Stata `.dta`, SAS `.sas`, and SPSS `.sav` files into R
 
 Stata is a popular statistical software program for data manipulation, visualization, statistics, and automated reporting. Stata stores data in the proprietary `.dta` format. This file type can contain labels for variables and values.
 
-The {haven} package from the tidyverse imports a variety of proprietary data formats, including Stata's `.dta` files, SAS's `.sas` files, and SPSS's `.sav` files. Once imported, we can analyze the resulting tibbles in R.
+The {haven} package from the tidyverse imports a variety of proprietary data formats, including Stata `.dta` files, SAS `.sas` files, and SPSS `.sav` files. Once imported, we can analyze the resulting tibbles in R.
 
 We can explore `haven::read_dat()` options by searching for the help page, `??haven::read_dta`.
 
@@ -84,25 +88,24 @@ read_dta(
 )
 ```
 
-We load our file into R by running `read_dat()`:
+We load our file into R by running `read_dat()` and specifying the arguments as necessary:
 
 ```{r}
 #| eval = FALSE
 library(haven)
-read_dta("https://www.stata-press.com/data/r17/smho.dta")
+read_dta(file = "https://www.stata-press.com/data/r17/smho.dta")
 ```
 
-###  Loading SAS `.sas` files into R
-
-SAS `.sas` files are similar to Stata `.dta` files. They are both proprietary file formats, contain labelled data, and can be imported using {haven}.
+SAS `.sas` and SPSS `.sav` files are similar to Stata `.dta` files. They are both proprietary file formats, contain labeled data, and can be imported using {haven}.
 
 ## Working with labeled data
 
-We can use the `haven::labelled()` function to import labeled vectors into R. The goal is to create an intermediate object and then convert it into a regular R data frame to use in our analysis.
-
-
+SPSS and SAS files often contain labeled values. We can use the `haven::labeled()` function to import labeled numeric or character vectors into R. The goal is to create an intermediate object that we convert into a regular R data frame. We do this by converting the vector into a factor or stripping the labels.
 
 ## Missing data
 
-For Stata and SAS files, {haven} provides `tagged` missing values. A `tagged` missing value adds a single character label to R's regular `NA`.
+Stata, SPSS, and SAS files each handle missing values in different ways. For SAS and Stata, {haven} provides `tagged` missing values which extend R’s regular `NA` to add a single character label. A `tagged` missing value adds a single character label to R's regular `NA`. These values behave identical to `NA` in regular R operations while preserving the value of the tag.
 
+SPSS’s user-defined values work differently to SAS and Stata. Each column can have either up to three distinct values that are considered as missing, or a range. Haven provides `labeled_spss()` as a subclass of `labeled()` to model these additional user-defined missings.
+
+## Working with missing data
