@@ -7,8 +7,8 @@ knitr::opts_chunk$set(eval = FALSE)
 * [Reading survey documentation](#reading-survey-documentation)
 * [Best practices for loading data into R](#best-practices-for-loading-data-into-r)
 * [Loading survey files into R](#loading-survey-files-into-r)
-* [Working with labeled data](#working-with-labeled-data)
 * [Missing data]
+* [Accounting for skip patterns]
 
 ## Reading survey documentation
 
@@ -57,25 +57,45 @@ We can read delimiter-separated files using the tidyverse package {readr}. The {
 * `read_log()`: Web log files
 
 ```{r}
-
+library(readr)
+read_csv("anes_timeseries_2020_csv_20220210.csv")
 ```
 
-### Loading Excel `.xlsx` files into R
+### Loading Excel files into R
 
-Excel, the spreadsheet software program from Microsoft, is a common file format. 
-We can load Excel spreadsheets into R using the {readxl} package. The {readxl} package supports both the legacy `.xls` format and the modern `.xlsx` format. 
+Excel, the spreadsheet software program from Microsoft, is a common file format. We can load Excel spreadsheets into R using the {readxl} package. The {readxl} package supports both the legacy `.xls` format and the modern `.xlsx` format. 
+
+Let's review the options by running `??readxl::read_excel`:
+
+```
+read_excel(
+  path,
+  sheet = NULL,
+  range = NULL,
+  col_names = TRUE,
+  col_types = NULL,
+  na = "",
+  trim_ws = TRUE,
+  skip = 0,
+  n_max = Inf,
+  guess_max = min(1000, n_max),
+  progress = readxl_progress(),
+  .name_repair = "unique"
+)
+```
+
+We load our file into R by running `read_excel()` and specifying the arguments as necessary:
 
 ```{r}
-
+library(readxl)
+read_excel(path = "anes_timeseries_2020_csv_20220210.xlsx")
 ```
 
-### Loading Stata `.dta`, SAS `.sas`, and SPSS `.sav` files into R
+### Loading Stata, SAS, and SPSS files into R
 
-Stata is a popular statistical software program for data manipulation, visualization, statistics, and automated reporting. Stata stores data in the proprietary `.dta` format. This file type can contain labels for variables and values.
+The {haven} package from the tidyverse imports a variety of proprietary data formats: Stata `.dta` files, SAS `sas7bdat` and `.sas7bcat` files, and SPSS `.sav` files. These file types can contain labels for variables and values. Using {haven} allows us to retain important information when analyzing tibbles in R.
 
-The {haven} package from the tidyverse imports a variety of proprietary data formats, including Stata `.dta` files, SAS `.sas` files, and SPSS `.sav` files. Once imported, we can analyze the resulting tibbles in R.
-
-We can explore `haven::read_dat()` options by searching for the help page, `??haven::read_dta`.
+Let's look at Stata first. We can import `.dat` file formats using `haven::read_dat()`. Explore the `haven::read_dat()` options by searching for the help page, `??haven::read_dta`.
 
 ```r
 read_dta(
@@ -91,21 +111,66 @@ read_dta(
 We load our file into R by running `read_dat()` and specifying the arguments as necessary:
 
 ```{r}
-#| eval = FALSE
 library(haven)
-read_dta(file = "https://www.stata-press.com/data/r17/smho.dta")
+
+(anes_dta <-
+  read_dta(file = "anes_timeseries_2020_stata_20220210.dta"))
+```
+The {haven} package has equivalent functions for SAS and SPSS: `read_sas()` and `read_sav()` respectively. Let's load the ANES 2020 SPSS file:
+
+```{r}
+library(haven)
+
+(anes_sav <-
+  read_sav(file = "anes_timeseries_2020_spss_20220210.sav"))
 ```
 
-SAS `.sas` and SPSS `.sav` files are similar to Stata `.dta` files. They are both proprietary file formats, contain labeled data, and can be imported using {haven}.
+### Output objects
 
-## Working with labeled data
+The output objects are tibbles, a specific type of data frames that make it easier to work in the tidyverse. More information can be found in the [Tibbles chapter of R for Data Science](https://r4ds.had.co.nz/tibbles.html).
 
-SPSS and SAS files often contain labeled values. We can use the `haven::labeled()` function to import labeled numeric or character vectors into R. The goal is to create an intermediate object that we convert into a regular R data frame. We do this by converting the vector into a factor or stripping the labels.
+### Working with labeled data
+
+Stata, SPSS, and SAS files often contain labeled values. We can use the `haven::labeled()` function to import labeled numeric or character vectors and create an *intermediate* object that we convert into a regular R data frame. That is, we should not intend to keep the labeled vectors indefinitely. 
+
+There are two ways of creating this intermediate object:
+
+1. Convert the vector into a factor 
+
+Factors in R are vectors of integer values that display corresponding character values. The possible character values are called levels, which are sorted in alphabetical order by default. Factors are often used for categorical data, where there is a finite number of distinct values.
+
+```{r}
+#| eval = TRUE
+response <- c("strongly agree", "strongly agree", "agree", "disagree")
+response_levels <- c("strongly agree", "agree", "disagree", "strongly disagree")
+factors <- factor(response, levels = response_levels)
+factors
+```
+
+Recall that factors are integer vectors. We can confirm by looking at their structure:
+
+```{r}
+#| eval = TRUE
+str(factors)
+```
+
+Though factors differ from labeled vectors from Stata, SPSS, or SAS, we can leverage them to assign a dataset's labels with numeric or character vectors with `as_factor()`.
+
+```{r}
+as_factor(dta$V201039z)
+```
+
+2. Stripping the labels
+
+```{r}
+zap_labels(dta)
+```
+
 
 ## Missing data
 
 Stata, SPSS, and SAS files each handle missing values in different ways. For SAS and Stata, {haven} provides `tagged` missing values which extend R’s regular `NA` to add a single character label. A `tagged` missing value adds a single character label to R's regular `NA`. These values behave identical to `NA` in regular R operations while preserving the value of the tag.
 
-SPSS’s user-defined values work differently to SAS and Stata. Each column can have either up to three distinct values that are considered as missing, or a range. Haven provides `labeled_spss()` as a subclass of `labeled()` to model these additional user-defined missings.
+SPSS’s user-defined values work differently to SAS and Stata. Each column can have either up to three distinct values that are considered as missing, or a range. Haven provides `labeled_spss()` as a subclass of `labeled()` to model additional user-defined missing values.
 
 ## Working with missing data
