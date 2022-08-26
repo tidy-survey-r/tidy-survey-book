@@ -1,1 +1,630 @@
-# Specifying sample designs in srvyr {#c05}
+# Specifying sample designs and replicate weights in srvyr {#c05}
+
+The primary reason for using packages like {survey} and {srvyr} are to incorporate the sampling design or replicate weights into estimates. By incorporating the sampling design or replicate weights, precision estimates (e.g., standard errors and confidence intervals) are appropriately calculated. In this chapter, we will introduce common sampling designs and common types of replicate weights, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design or replicate weights. While we will show the math behind the estimates, the functions in these packages will do the calculation.
+
+The general process for estimation in the `srvyr` package is to:
+
+1. Create a `tbl_svy` object (a survey object) using: `as_survey_design` or `as_survey_rep`
+
+2. Subset data (if needed) using `filter` (subpopulations)
+
+3. Specify domains of analysis using `group_by` 
+
+4. Within `summarize`, specify variables to calculate including means, totals, proportions, quantiles and more
+
+This chapter includes details on the first step - creating the survey object.
+
+## Common sampling designs
+
+A sampling design is the method used to draw a sample. Both logistical and statistical considerations are considered when developing a sampling design. When specifying a sampling design in R, the levels of sampling are specified along with the weights. Each record of a weight is constructed so that the particular record represents that many units in the population. For example, in a survey of 6th grade students in the United States, the weight associated with each responding student reflects how many students that record represents. Generally, the sum of the weights sum to the population total though some studies have the sum of the weights sum to the number of respondent records.
+
+Some common terminology across the designs are:
+
+- sample size, generally denoted as $n$, is the number of units selected
+- population size, generally denoted as $N$, is the number of units in the population
+- sampling frame is the list of units from which the sample is drawn
+
+### Simple random sample without replacement
+
+- Description: The simple random sample (SRS) without replacement is a sampling design where a fixed sample size is selected from a sampling frame, and every possible subsample has equal probability of selection.
+- Requirements: Must have a sampling frame for entire population
+- Advantages: Simple, requires no information about the units apart from contact information
+- Disadvantages: Sampling frame may not be available for entire population. Not feasible for in-person data collection
+- Examples: Selecting lottery numbers - numbered balls are randomly sampled from a large pool and not replaced after selection
+
+#### The math {-}
+
+The estimate for the population mean of variable $y$ is:
+
+$$\bar{y}=\frac{1}{n}\sum_{i=1}^n y_i$$
+
+and the estimate of the standard error of mean is:
+
+$$se(\bar{y})=\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}$$ and
+
+$$s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.$$
+
+This standard error estimate might look very similar to equations in other applications seen except for the bit on the right side of the equation $1-\frac{n}{N}$ - this is call the finite population correction factor (FPC). If the size of the frame, $N$, is very large, the FPC is negligible so it is often ignored. 
+
+To estimate proportions, we define $x_i$ as the indicator that the outcome is observed. That is, $x_i=1$ if the outcome is observed and $x_i=0$ if the outcome is not observed. Then the estimated proportion from a SRS design is:
+
+$$\hat{p}=\frac{1}{n}\sum_{i=1}^n x_i $$
+and the estimated standard error of the proportion is:
+
+$$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} $$
+
+#### The syntax {-} 
+
+If a sample that was drawn through SRS and had no nonresponse or other weighting adjustments, in R specify this design as:
+
+```{r, eval=FALSE}
+des_srs1 <- dat %>%
+  as_survey_design(fpc = fpcvar)
+```
+
+where `dat` is a tibble or data.frame with the survey data and `fpcvar` is a variable on the tibble which indicates the size of the sampling frame. If the frame was very large, sometimes the frame size is not provided. In that case, specify the design as:
+
+```{r, eval=FALSE}
+des_srs2 <- dat %>%
+  as_survey_design()
+```
+
+If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:
+
+```{r, eval=FALSE}
+des_srs3 <- dat %>%
+  as_survey_design(weights = wtvar, fpc = fpcvar)
+```
+
+where `wtvar` is the variable for the weight on the data. Again, the fpc can be omitted if it is not necessary because the frame is large.
+
+#### Example {-} 
+
+The {survey} package in R provides some example datasets to use and those will be used throughout this chapter. The Academic Performance Index (API) was a program administered by the California Department of Education. These datasets are derived from that data and include a population file (frame) of all schools with at least 100 students and several samples from that data. A SRS of 200 schools was sampled and included in `apisrs`. The SRS sample data is illustrated below:
+
+```{r apisrs_display}
+options(tidyverse.quiet = TRUE)
+library(tidyverse)
+library(survey)
+library(srvyr)
+
+data(api)
+
+apisrs_slim <- 
+  apisrs %>%
+  as_tibble() %>%
+  arrange(dnum, snum) %>%
+  select(cds, dnum, snum, dname, sname, fpc, pw)
+
+```
+
+School districts have identifiers `dnum` within counties and schools have identifiers of `snum` within districts along with their names, `dname` and `sname`. The unique identifier for a school is `cds` which is unique within the state. Additionally, the `fpc` is included as `fpc` and the weight as `pw`. This design should be specified as:
+
+```{r apisrs_des}
+des_apisrs <- apisrs_slim %>%
+  as_survey_design(weights = pw, fpc = fpc)
+
+des_apisrs
+summary(des_apisrs)
+```
+
+Printing the design object above, the design is described as an "Independent Sampling design" which is another terminology for SRS. The ids are specified as `1` which means there is no clustering (a topic described later in this chapter), the fpc variable is indicated, and the weights are indicated. When looking at the summary of the design object, the population size is given a summary of the probabilities (inverse of the weights).
+
+### Simple random sample with replacement
+
+- Description: The simple random sample with replacement (SRSWR) is a sampling design where a sample is selected from a sampling frame with the units being replaced before drawing again so units can be selected more than once.
+- Requirements: Must have a sampling frame for entire population
+- Advantages: Simple, requires no information about the units apart from contact information
+- Disadvantages: Sampling frame may not be available for entire population. Not feasible for in-person data collection. Units can be selected more than once resulting in a smaller realized sample size. For small populations, SRSWR has larger standard errors than SRS designs.
+- Examples: Selecting items out of a hat but replacing them between each draw.
+
+
+#### The math {-}
+
+The estimate for the population mean of variable $y$ is:
+
+$$\bar{y}=\frac{1}{n}\sum_{i=1}^n y_i$$
+
+and the estimate of the standard error of mean is:
+
+$$\sqrt{\frac{s^2}{n}}$$ and
+
+$$s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.$$
+Again, we define $x_i$ as the indicator that the outcome is observed. Then the estimated proportion from a SRSWR design is:
+
+$$\hat{p}=\frac{1}{n}\sum_{i=1}^n x_i $$
+and the estimated standard error of the proportion is:
+
+$$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} $$
+
+#### The syntax {-} 
+
+If you had a sample that was drawn through SRSWR and had no nonresponse or other weighting adjustments, in R, you should specify this design as:
+
+```{r, eval=FALSE}
+des_srswr1 <- dat %>%
+  as_survey_design()
+```
+
+where `dat` is a tibble or data.frame with your survey data.
+
+If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:
+
+```{r, eval=FALSE}
+des_srswr2 <- dat %>%
+  as_survey_design(weights = wtvar)
+```
+
+where `wtvar` is the variable for the weight on the data.
+
+#### Example {-} 
+
+The {survey} package does not include an example of SRSWR so we create an example below. Note that this is sampled with replacements so there are duplicates. These duplicates are listed more than once and for proper estimation are deduplicated.
+
+```{r apisrs_wr_display}
+
+set.seed(409963)
+
+apisrswr <- apipop %>%
+  as_tibble() %>%
+  slice_sample(n = 200, replace = TRUE) %>%
+  select(cds, dnum, snum, dname, sname) %>%
+  mutate(
+    weight = nrow(apipop)/200
+  )
+
+head(apisrswr)
+
+apisrswr %>%
+  filter(duplicated(cds) | duplicated(cds, fromLast=TRUE))
+```
+
+A weight variable was added which is the inverse of the probability of selection. To specify the sampling design for `apisrswr`, the following syntax should be used:
+
+```{r apisrswr_des}
+des_apisrswr <- apisrswr %>%
+  as_survey_design(weights = weight)
+
+des_apisrswr
+summary(des_apisrswr)
+```
+
+In the chunk above, the design object is printed and the object summary is shown. Both of these note that the sampling is done "with replacement" because no fpc was specified. In the summary, the probabilities, which are derived from the weights, are summarized.
+
+### Stratified sampling
+
+- Description: A population is divided into mutually exclusive subpopulations (strata) and then samples are selected independently within each stratum.
+- Requirements: Must be able to divide sampling frame into groups which requires auxiliary data.
+- Advantages: Ensures sample representation in all subpopulations. Often, for the same sample size as a SRS sample, the standard errors are smaller. This is true if the strata are correlated with outcomes.
+- Disadvantages: Auxiliary data may not exist to divide sampling frame into groups or the data may be outdated.
+- Examples: 
+  - Example 1: A population of North Carolina residents could be separated into urban and rural areas and then a SRS of residents from both rural and urban areas is selected independently. This ensures there are rural residents in the sample.
+  - Example 2: There are 3 primary general purpose law enforcement agencies in the US - local police, sheriff's departments, and state police. In a survey of law enforcement agencies, the agency type could be used to form strata.
+
+#### The math {-} 
+
+Let $\bar{y}_h$ be the sample mean for stratum $h$, $N_h$ be the population size of stratum $h$, and $n_h$ be the sample size of stratum $h$. Then the estimate for the population mean under stratified SRS sampling is:
+
+$$\bar{y}=\frac{1}{N}\sum_{h=1}^H N_h\bar{y}_h$$
+and the estimate of the standard error of $\bar{y}$ is:
+
+$$\sqrt{\frac{1}{N^2} \sum_{h=1}^H N_h^2 s_h^2\left(1-\frac{n_h}{N_h}\right)} $$ 
+
+where 
+$$s_h^2=\frac{1}{n_h-1}\sum_{i=1}^{n_h}\left(y_{i,h}-\bar{y}_h\right)^2.$$
+
+For estimates of proportions, let $\hat{p}_h$ be the estimated proportion in stratum $h$. Then the population proportion estimate is:
+
+$$\hat{p}= \frac{1}{N}\sum_{h=1}^H N_h \hat{p}_h$$
+
+and the standard error of the proportion is:
+
+$$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_h)}{n_h-1} \left(1-\frac{n_h}{N_h}\right)}$$
+
+#### The syntax {-} 
+
+To specify a stratified SRS design in {srvyr} where the population sizes of the strata are not too large and are known, that is you are using the fpc, specify the design as:
+
+```{r, eval=FALSE}
+des_stsrs1 <- dat %>%
+  as_survey_design(fpc = fpcvar, strata = stratvar)
+```
+
+where `fpcvar` is a variable on your data which indicates $N_h$ for each row and `stratavar` is a variable indicating the stratum for each row. You can omit the fpc if it is not applicable. Additionally, you can indicate the weight variable if it is present where `wtvar` is a variable on your data with a numeric weight.
+
+```{r, eval=FALSE}
+des_stsrs2 <- dat %>%
+  as_survey_design(weights = wtvar, strata = stratvar)
+```
+
+#### Example {-} 
+
+In the example API data, `apistrat` is a stratified random sample, stratified by school type (`stype`). The data is illustrated below:
+
+```{r apistrat_dis}
+apistrat_slim <- 
+  apistrat %>%
+  as_tibble() %>%
+  arrange(dnum, snum) %>%
+  select(cds, dnum, snum, dname, sname, stype, fpc, pw)
+
+apistrat_slim %>% 
+  count(stype, fpc)
+```
+
+The fpc is the same within each stratum and 100 elementary schools were sampled while 50 schools were sampled from both the middle and high school levels. This design should be specified as:
+
+```{r apistrat_des}
+des_apistrat <- apistrat_slim %>%
+  as_survey_design(strata = stype, weights = pw, fpc = fpc)
+
+des_apistrat
+summary(des_apistrat)
+```
+
+When printing the object, it is specified as a "Stratified Independent Sampling design" also known as a stratified SRS and the strata variable is included. In the summary, a numeric summary of the probabilities of selection are displayed as well as the sample and population stratum sizes.
+
+### Clustered sampling
+
+- Description: In clustered sampling, a population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs). These PSUs are randomly sampled and then sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available or data collection involves interviewers needing direct contact with respondents.
+- Requirements: Must have a way to divide the population into clusters. These are commonly structural such as institutions (e.g., schools, prisons) or geographic (e.g. states, counties). 
+- Advantages: Clustered sampling is advantageous when data collection is done in person so interviewers are sent to specific sampled areas rather than completely at random in a country. With cluster sampling, a list of the entire population is not necessary. For example, if sampling students, you do not need a list of all students but only a list of all schools. Once the schools are sampled, lists of students can be obtained within the sampled schools.
+- Disadvantages: Compared to a simple random sample, for the same sample size, clustered samples generally have larger variance estimates.
+- Examples: 
+  - Example 1: Consider a study needing a sample of 6th grade students in the United States, no list likely exists of all these students. Obtaining a list of schools that have 6th graders is more likely to be possible so a study design could select a random sample of schools that have 6th graders. The selected schools can then provide a list of students to do a second stage of sampling where 6th grade students are randomly sampled within each of the sampled schools. This is a one-stage sample design and will be the type of design we will discuss in formulas below.
+  - Example 2: A more complicated but realistic example is necessary when sending out interviewers to households for a survey. Counties could be selected as the PSU, then Census block groups within counties selected as the secondary sampling unit (SSU), and then households within the block groups. This type of design reduces the travel necessary for interviewers.
+
+#### The math {-} 
+
+Consider a population where the are $N$ clusters and $n$ clusters are sampled via SRSWOR. Units within the sampled cluster are sampled via SRSWOR as well. Let $M_i$ be the number of units in cluster $i$ and $\bar{y}_i$ be the sample mean of cluster $i$. Then, a ratio estimator of the population mean is:
+
+$$\bar{y}=\frac{\sum_{i=1}^n M_i \bar{y}_i}{ \sum_{i=1}^n M_i}$$
+Note this is a consistent but biased estimator. Often the population size is not known so this is a method to estimate a mean without knowing the population size. The estimated standard error of the mean is:
+
+$$se(\bar{y})=\frac{1}{\hat{N}_{pop} } \sqrt{\frac{N^2 (1-\frac{n}{N})}{n}\frac{1}{n-1} \sum_{i=1}^n (M_i\bar{y}_i -\hat{t}/N)^2  + \frac{N}{n}  \sum_{i=1}^n \frac{M_i^2}{m_i}\left(1-\frac{m_i}{M_i}\right)s^2_i }$$
+where $\hat{N}_{pop}$ is the estimated population size, $\hat{t}$ is the estimated total, and $s_i^2$ is the sample variance of cluster $i$.
+
+For estimates of proportions, the estimated proportion is:
+
+$$\hat{p}=\frac{\sum_{i=1}^n M_i \hat{p}_i}{ \sum_{i=1}^n M_i}$$
+
+and the associated standard error estimate is:
+
+$$se(\hat{p})=\frac{1}{\hat{N}_{pop} } \sqrt{\frac{N^2 (1-\frac{n}{N})}{n}\frac{1}{n-1} \sum_{i=1}^n (M_i\hat{p}_i -\hat{t}/N)^2  + \frac{N}{n}  \sum_{i=1}^n \frac{M_i^2}{m_i}\left(1-\frac{m_i}{M_i}\right)s^2_i }$$
+
+where $s^2_i$ is defined as:
+
+$$s^2_i = \frac{m_hp_h(1-p_h)}{m_h-1}$$.
+
+#### The syntax {-} 
+
+To specify a two-stage clustered design without replacement,  use the following syntax:
+
+
+```{r, eval=FALSE}
+des_clus2 <- dat %>%
+  as_survey_design(weights = wtvar, ids = c(PSU, SSU), fpc = c(N, M))
+```
+
+where `SSU` and `PSU` are the variables indicating the PSU and SSU identifiers and `N` and `M` are the variables indicating the population sizes - the number of clusters and then the number of units within each cluster. Note that `N` will be the same for all records (within a strata) and `M` will be the same for all records within the same cluster.
+
+If clusters were sampled with replacement or from a very large population, a fpc is not necessary. Additionally, only the first stage of selection is necessary. The syntax below will yield the same estimates in the end:
+
+```{r, eval=FALSE}
+des_clus2wra <- dat %>%
+  as_survey_design(weights = wtvar, ids = c(PSU, SSU))
+
+des_clus2wrb <- dat %>%
+  as_survey_design(weights = wtvar, ids = PSU)
+
+```
+
+#### Example {-} 
+
+The `survey` package includes a two-stage cluster sample data, `apiclus2`, in which school districts were sampled and then a random sample of 5 schools was selected within each district. For districts with fewer than 5 schools, all schools were sampled. School districts have identifiers `dnum` and schools have identifiers of `snum`. The variable `fpc1` indicates how many districts there were in California and `fpc2` indicates how many schools were in a given district with at least 100 students.  The data has a row for each school. In the data printed below, there are 757 school districts as indicated by `fpc1` and there are 9 schools in district 731, one school in district 742, 2 schools in district 768, 6 schools in district 781, and 1 school in district 795 as indicated by `fpc2`.
+
+```{r api2clus_dis}
+apiclus2_slim <- 
+  apiclus2 %>%
+  as_tibble() %>%
+  arrange(desc(dnum), snum) %>%
+  select(cds, dnum, snum, fpc1, fpc2, pw)
+
+apiclus2_slim
+```
+
+To specify this design in R, the following syntax should be used:
+
+```{r api2clus_des}
+des_apiclus2 <- apiclus2_slim %>%
+  as_survey_design(ids = c(dnum, snum), fpc = c(fpc1, fpc2), weights=pw)
+
+des_apiclus2
+summary(des_apiclus2)
+```
+
+The design objects are described as "2 - level Cluster Sampling design" and includes the ids (cluster), fpc, and weight variables. In the summary, it is noted that the sample includes 40 first-level clusters (PSUs) which are school districts and 126 second-level clusters (SSUs) which are schools. Additionally, the summary includes a numeric summary of the probabilities and the population size (number of PSUs) as 757.
+
+
+## Replicate weights
+
+Replicate weights are often included on analysis files instead of, or in addition to, the design variables (strata and PSUs). Replicate weights are used as another method to estimate variability and often used specifically so that design variables are not published as a measure to limit disclosure risk. There are several types of replicate weights including balanced repeated replication (BRR), Fay's BRR, jackknife, and bootstrap methods. An overview of the process for using replicate weights is:
+
+1. Divide the sample into subsample **replicates** that mirror the design of the sample
+2. Calculate weights for each **replicate** using the same procedures for full-sample weight (i.e. nonresponse and post-stratification)
+3. Calculate estimates for each **replicate** using the same method as the full-sample estimate
+4. Calculate the estimated variance which will be proportional the the variance of the replicate estimates
+
+The different types of replicate weights largely differ in step 1 - how the sample is divided into subsamples and step 4 - different multiplication factors (scales) are used to multiply the variance.
+
+### BRR method
+The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by 2 but may have other adjustments such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have 1 row, 2 rows, or a multiple of 4 rows. An example of a $4\times4$ Hadamard matrix is below:
+
+$$ \begin{array}{rrrr} +1 &+1 &+1 &+1\\ +1&-1&+1&-1\\ +1&+1&-1&-1\\ +1 &-1&-1&+1  \end{array} $$
+The columns specify the strata and the rows the replicate. In the first replicate, all the values are +1 so in each of the stratum, the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in stratum 1 and 3 while the second PSU would be used in stratum 2 and 4. In the third replicate the first PSU would be used in stratum 1 and 2 while the second PSU would be used in stratum 3 and 4. Finally, in the third replicate, the first PSU would be used in stratum 1 and 4 while the second PSU would be used in stratum 2 and 3.
+
+#### The math {-}
+
+A weighted estimate for the full sample is calculated as $\hat{\theta}$ and then a weighted estimate for each replicate is calculated as $\hat{\theta}_r$ for $R$ replicates. Then the standard error of the estimate is calculated as:
+
+$$se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$
+Specifying replicate weights in R requires specifying the type of replicate weights, the main weight, the replicate weights, and some other options. One of the key options is for `mse`. If `mse=TRUE`, variances are computed around the point estimate whereas if `mse=FALSE`, variances are computed around the mean of the replicates which looks like this:
+
+$$se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\bar{\theta}\right)^2}$$ where $$\bar{\theta}=\frac{1}{R}\sum_{r=1}^R \hat{\theta}_r$$
+
+The default option for `mse` is to use the global option of "survey.replicates.mse" which is set to `FALSE` initially unless a user changes it. Unless documentation states otherwise, for BRR, set `mse` to `TRUE`.
+
+#### The syntax {-} 
+
+Replicate weights generally come in groups and are sequentially numbered such as PWGTP1, PWGTP2, ..., PWGTP80 in the American Community Survey (ACS) or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS). The {srvyr} package relies on tidy selection^[dplyr documentation on tidy-select: https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] to choose variables. If replicate weight variables need to be specified with a character vector, use the `all_of` function to select variables from a character vector. Some other methods are also illustrated below in the examples but these apply to any type of replicate weights and not just BRR.
+
+If a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, use the following syntax:
+
+```{r, eval=FALSE}
+des_brr <- dat %>%
+  as_survey_rep(weights = WT0, repweights= all_of(str_c("WT", 1:20)),
+                type="BRR", mse=TRUE)
+
+des_brr <- dat %>%
+  as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
+                type="BRR", mse=TRUE)
+
+```
+
+If a dataset had WT for the main weight and had 20 BRR weights indicated REPWT1, WT2, ..., REPWT20, the following syntax could be used (both are valid):
+
+```{r, eval=FALSE}
+des_brr <- dat %>%
+  as_survey_rep(weights = WT, repweights= all_of(str_c("REPWT", 1:20)),
+                type="BRR", mse=TRUE)
+
+des_brr <- dat %>%
+  as_survey_rep(weights = WT, repweights= starts_with("REPWT"),
+                type="BRR", mse=TRUE)
+```
+
+If the replicate weight variables are on the file consecutively, the following syntax can also be used:
+
+```{r, eval=FALSE}
+des_brr <- dat %>%
+  as_survey_rep(weights = WT, repweights= REPWT1:REPWT20, type="BRR",
+                mse=TRUE)
+```
+
+Typically, the replicate weights sum to a value similar to the main weight as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. In this case, the replicate weights are not combined and the option `combined_weights = FALSE` should be indicated with the default value being TRUE. This specific syntax is shown below:
+
+```{r, eval=FALSE}
+des_brr <- dat %>%
+  as_survey_rep(weights = WT, repweights= starts_with("REPWT"), 
+                type="BRR", combined_weights = FALSE, mse=TRUE)
+```
+
+#### Example {-} 
+
+The {survey} package includes a data example from Section 12.2 of Levy and Lemeshow. In this fictional data, two out of five ambulance stations were sampled from each of three emergency service areas (ESAs) thus BRR weights are appropriate with 2 PSUs (stations) sampled in each stratum (ESA). 
+
+```{r brr_display}
+data(scd)
+scdbrr <- scd %>%
+  as_tibble() %>%
+  mutate(
+    wt=5/2,
+    rep1 = 2 * c(1, 0, 1, 0, 1, 0),
+    rep2 = 2 * c(1, 0, 0, 1, 0, 1),
+    rep3 = 2 * c(0, 1, 1, 0, 0, 1),
+    rep4 = 2 * c(0, 1, 0, 1, 1, 0))
+
+scdbrr
+```
+
+In the code above, BRR weights are created as was done in Levy and Lemeshow. To specify the BRR weights, the following syntax is used:
+
+```{r brr_des}
+des_brr_scd <- scdbrr %>%
+  as_survey_rep(type = "BRR", repweights = starts_with("rep"),
+                combined_weights = FALSE, weight=wt)
+
+des_brr_scd
+
+summary(des_brr_scd)
+```
+
+Note that `combined_weights` was specified as `TRUE` because these weights are simply specified as 0 and 2 and do not incorporate the overall weight. When printing the object, the type of replication is noted as Balanced Repeated Replicates, the replicate weights are specified, and the weight variable. When looking at the summary, the only additional information provided are the variables included.
+
+### Fay's BRR Method
+
+Fay's BRR method for replicate weights still uses a Hadamard matrix to construct replicate weights but rather than deleting PSUs for each replicate, half of the PSUs have a replicate weight which is the main weight multiplied by $\rho$ and the other half have the main weight multiplied by $(2-\rho)$ where $0 \le \rho < 1$. Note that when $\rho=0$, this is equivalent to the standard BRR weights. 
+
+#### The math {-}
+
+The standard error estimate for $\hat{\theta}$ is slightly different and calculated as:
+
+$$se(\hat{\theta})=\sqrt{\frac{1}{R (1-\rho)^2} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$
+
+#### The syntax {-} 
+
+The syntax is very similar for BRR and Fay's BRR. If a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, and Fay's multiplier is 0.5, use the following syntax:
+
+```{r, eval=FALSE}
+des_fay <- dat %>%
+  as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
+                type="Fay", mse=TRUE, rho=0.5)
+```
+
+#### Example {-} 
+
+The 2015 RECS uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with $\rho=0.5$^[Using the 2015 microdata file to compute estimates and standard errors (RSEs):  https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf]. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region.
+
+To specify this design, use the following syntax:
+
+```{r, eval=FALSE}
+recs_in <- read_csv(here::here("RawData", "RECS_2015", "recs2015_public_v4.csv"))
+
+des_recs <- recs_in %>%
+  as_survey_rep(weights=NWEIGHT, repweights=BRRWT1:BRRWT96, type="Fay",
+                rho=0.5, mse=TRUE, variables=c(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC))
+
+des_recs
+
+summary(des_recs)
+```
+
+In specifying the design, the `variables` option was also used to include which variables might be used in analyses. This is optional but can make your object smaller. When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Fay's variance method (rho= 0.5 ) with 96 replicates and MSE variances.` and the variables are included. No weight or probability summary is included as was done in some other design objects.
+
+### Jackknife method
+
+There are two jackknife estimators implemented in {srvyr} - Jackknife 1 (JK1), Jackknife n (JKn), and Jackknife 2 (JK2). The JK1 method can be used for unstratified designs and replicates are created by removing one PSU at a time so the number of replicates is the same as the number of PSUs If there is no clustering, then the PSU is the ultimate sampling unit (e.g., unit). 
+
+The JKn method is used for stratified designs and requires 2 or more PSUs per stratum. In this case, each replicate is created by deleting one PSU from each stratum so the number of replicates is the number of total PSUs across all strata. The JK2 method is a special case of JKn when there are exactly 2 PSUs sampled per stratum. For variance estimation, scaling constants must also be specified.
+
+#### The math {-}
+
+For the JK1 method, the standard error estimate for $\hat{\theta}$ is calculated as:
+
+$$se(\hat{\theta})=\sqrt{\frac{R-1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$
+The JKn method is a bit more complex but the coefficients are generally provided. Within the stratum that had a PSU removed, the weights are adjusted by $n_h/(n_h-1)$ where $n_h$ is the number of PSUs in the stratum. The coefficients in other strata are 1. Let the coefficient that results for replicate $r$ be $\alpha_r$ then the standard error estimate for $\hat{\theta}$ is calculated as:
+
+$$se(\hat{\theta})=\sqrt{\sum_{r=1}^R \left(\alpha_r \hat{\theta}_r-\hat{\theta}\right)^2}$$
+
+#### The syntax {-}
+
+To specify the Jackknife method, the type would be `JK1`, `JKn`, or `JK2`. Additionally, the overall multiplier for JK1 is specified with the scale argument whereas the replicate specific multiplier ($\alpha_r) is specified with the rscales argument.
+
+Consider a case for the JK1 method where the multiplier, $(R-1)/R=19/20=0.95$ and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, ..., WT20, then the syntax would be
+
+```{r, eval=FALSE}
+des_jk1 <- dat %>%
+  as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
+                type="JK1", mse=TRUE, scale=0.95)
+```
+
+Consider a case for the JKn method where $\alpha_r=0.1$ for all replicates and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, ..., WT20, then the syntax would be:
+
+```{r, eval=FALSE}
+des_jkn <- dat %>%
+  as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
+                type="JKN", mse=TRUE, rscales=rep(0.1, 20))
+```
+
+#### Example {-}
+
+The American Community Survey releases public use microdata with JK1 weights at the person and household level. This example includes data at the household level where the replicate weights are specified as WGTP1, ..., WGTP80 and the main weight is WGTP. Using the {tidycensus} package^[tidycensus package: https://walker-data.com/tidycensus/], data is downloaded from the Census API. This request gets data for each person in each household in two Public Use Microdata Areas (PUMAs) in Durham County, NC^[Public Use Microdata Areas in North Carolina: https://www.census.gov/geographies/reference-maps/2010/geo/2010-pumas/north-carolina.html]. The variables requested are NP (number of persons in household), BDSP (number of bedrooms),  HINCP (household income), and TYPEHUGQ (type of household). By default, several other variables will come along including SERIALNO (a unique identifier for each household), SPORDER (a unique identifier for each person within each household), PUMA, ST (state), person weight (PWGTP), and the household weights (WGTP, WGTP1, ..., WGTP80). Filtering to records where SPORDER=1 yields only one record per household and TYPEHUGQ=1 filters to only households and not group quarters.
+
+```{r acsexamp, cache=TRUE, results='hide'}
+library(tidycensus)
+
+pums_in <- get_pums(variables=c("NP", "BDSP", "HINCP"), state="37", 
+                    puma=c("01301", "01302"), rep_weights = "housing", 
+                    year=2020, survey="acs5",
+                    variables_filter=list(SPORDER=1, TYPEHUGQ=1))
+
+
+```
+
+```{r acsexampcont, cache=TRUE, dependson="acsexamp"}
+pums_in
+
+des_acs <- pums_in %>%
+    as_survey_rep(weights = WGTP, repweights= num_range("WGTP", 1:80),
+                type="JK1", mse=TRUE, scale=4/80)
+
+des_acs
+
+summary(des_acs)
+```
+
+
+### Bootstrap method
+
+In bootstrap resampling, replicates are created by selecting random samples of the PSUs with replacement. If there are $M$ PSUs in the sample, then each replicate will be created by selecting a random sample of $M$ PSUs with replacement. Each replicate is created independently and the weights for each replicate are adjusted to to reflect the population generally using the same method as the analysis weight was adjusted. 
+
+#### The math {-}
+
+A weighted estimate for the full sample is calculated as $\hat{\theta}$ and then a weighted estimate for each replicate is calculated as $\hat{\theta}_r$ for $R$ replicates. Then the standard error of the estimate is calculated as:
+
+$$se(\hat{\theta})=\sqrt{\alpha \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$
+
+#### The syntax {-}
+
+If a dataset had WT0 for the main weight, had 20 bootstrap weights indicated WT1, WT2, ..., WT20, and $\alpha=.02$, use the following syntax:
+
+```{r, eval=FALSE}
+des_bs <- dat %>%
+  as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
+                type="bootstrap", mse=TRUE, scale=.02)
+
+```
+
+Note that the scale is usually provided in documentation and is a constant so is not provided as a variable in the tibble.
+
+#### Example {-}
+
+Returning to the api example, bootstrap weights were constructed for a one cluster design. 50 replicate weights were created on a dataset `apiclus1_slim` which has some familiar variables including cds, dnum, fpc, and pw but now additionally includes bootstrap weights pw1, ..., pw50. The scale $(\alpha)$ is $15/(14*49)=0.02186589$
+
+```{r genbs, include=FALSE}
+apiclus1_slim <- 
+  apiclus1 %>%
+  as_tibble() %>%
+  arrange(dnum) %>%
+  select(cds, dnum, fpc, pw)
+
+set.seed(662152)
+apibw <- bootweights(psu=apiclus1_slim$dnum, strata=rep(1, nrow(apiclus1_slim)), fpc=apiclus1_slim$fpc, replicates=50)
+
+bwmata <- apibw$repweights$weights[apibw$repweights$index, ]*apiclus1_slim$pw
+
+apiclus1_slim <- bwmata %>%
+  as.data.frame() %>%
+  set_names(str_c("pw", 1:50)) %>%
+  cbind(apiclus1_slim) %>%
+  as_tibble() %>%
+  select(cds, dnum, fpc, pw, everything())
+```
+
+```{r}
+apiclus1_slim
+
+des_api1_bs <- apiclus1_slim %>% 
+  as_survey_rep(weights=pw, repweights=pw1:pw50, type="bootstrap", 
+                scale=0.02186589, mse=TRUE)
+
+des_api1_bs
+
+summary(des_api1_bs)
+```
+
+As with other replicate design objects, when printing the object or looking at the summary, the replicate weights are provided along with the data variables.
+
+## Understanding survey design documentation
+
+SRS, stratified, and clustered designs are the backbone of sampling designs and the features are often combined in one design. Additionally, rather than using SRS for selection, other mechanisms are commonly used such as probability proportional to size (PPS), systematic sampling, or selection with unequal probabilities.
+
+A common method of sampling is to stratify PSUs, select PSUs within stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step of survey analysis to understand the design and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User's Guides, methodology, analysis guides, or technical documentation.
+
+For example, the 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation -  https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] had a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units which were stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected PPS. At the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. At the third stage, housing units were selected within the sampled neighborhoods. At the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on person's age and sex. The public use file does not include all these levels of selection and instead includes pseudo-strata and pseudo-clusters^[2017-2019 National Survey of Family Growth (NSFG): Sample Error Estimation Design - https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Error-Estimation-Design-508.pdf] which are the variables used in R to specify the design. As specified on page 4, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. Thus, to specify this design in R, one would use the following syntax:
+
+```{r, eval=FALSE}
+des_nsfg <- nsfgdata %>%
+  as_survey_design(ids = SECU, strata = SEST, weights = WGT2017_2019)
+```
+
