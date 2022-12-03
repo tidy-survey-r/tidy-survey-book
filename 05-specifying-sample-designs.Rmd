@@ -10,7 +10,7 @@ The general process for estimation in the `srvyr` package is to:
 
 3. Specify domains of analysis using `group_by` 
 
-4. Within `summarize`, specify variables to calculate including means, totals, proportions, quantiles and more
+4. Within `summarize`, specify variables to calculate including means, totals, proportions, quantiles, and more
 
 This chapter includes details on the first step - creating the survey object.
 
@@ -57,21 +57,27 @@ $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} $$
 
 If a sample that was drawn through SRS and had no nonresponse or other weighting adjustments, in R specify this design as:
 
-```{r, eval=FALSE}
+```{r}
+#| label: srs1
+#| eval: FALSE
 des_srs1 <- dat %>%
   as_survey_design(fpc = fpcvar)
 ```
 
 where `dat` is a tibble or data.frame with the survey data and `fpcvar` is a variable on the tibble which indicates the size of the sampling frame. If the frame was very large, sometimes the frame size is not provided. In that case, specify the design as:
 
-```{r, eval=FALSE}
+```{r}
+#| label: srs2
+#| eval: FALSE
 des_srs2 <- dat %>%
   as_survey_design()
 ```
 
 If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:
 
-```{r, eval=FALSE}
+```{r}
+#| label: srs3
+#| eval: FALSE
 des_srs3 <- dat %>%
   as_survey_design(weights = wtvar, fpc = fpcvar)
 ```
@@ -82,7 +88,8 @@ where `wtvar` is the variable for the weight on the data. Again, the fpc can be 
 
 The {survey} package in R provides some example datasets to use and those will be used throughout this chapter. The Academic Performance Index (API) was a program administered by the California Department of Education. These datasets are derived from that data and include a population file (frame) of all schools with at least 100 students and several samples from that data. A SRS of 200 schools was sampled and included in `apisrs`. The SRS sample data is illustrated below:
 
-```{r apisrs_display}
+```{r}
+#| label: apisrs_display
 options(tidyverse.quiet = TRUE)
 library(tidyverse)
 library(survey)
@@ -100,7 +107,8 @@ apisrs_slim <-
 
 School districts have identifiers `dnum` within counties and schools have identifiers of `snum` within districts along with their names, `dname` and `sname`. The unique identifier for a school is `cds` which is unique within the state. Additionally, the `fpc` is included as `fpc` and the weight as `pw`. This design should be specified as:
 
-```{r apisrs_des}
+```{r}
+#| label: apisrs_des
 des_apisrs <- apisrs_slim %>%
   as_survey_design(weights = pw, fpc = fpc)
 
@@ -141,7 +149,9 @@ $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} $$
 
 If you had a sample that was drawn through SRSWR and had no nonresponse or other weighting adjustments, in R, you should specify this design as:
 
-```{r, eval=FALSE}
+```{r}
+#| label: srswr1
+#| eval: FALSE
 des_srswr1 <- dat %>%
   as_survey_design()
 ```
@@ -150,7 +160,9 @@ where `dat` is a tibble or data.frame with your survey data.
 
 If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:
 
-```{r, eval=FALSE}
+```{r}
+#| label: srswr2
+#| eval: FALSE
 des_srswr2 <- dat %>%
   as_survey_design(weights = wtvar)
 ```
@@ -161,8 +173,8 @@ where `wtvar` is the variable for the weight on the data.
 
 The {survey} package does not include an example of SRSWR so we create an example below. Note that this is sampled with replacements so there are duplicates. These duplicates are listed more than once and for proper estimation are deduplicated.
 
-```{r apisrs_wr_display}
-
+```{r}
+#| label: apisrs_wr_display
 set.seed(409963)
 
 apisrswr <- apipop %>%
@@ -181,7 +193,8 @@ apisrswr %>%
 
 A weight variable was added which is the inverse of the probability of selection. To specify the sampling design for `apisrswr`, the following syntax should be used:
 
-```{r apisrswr_des}
+```{r}
+#| label: apisrswr_des
 des_apisrswr <- apisrswr %>%
   as_survey_design(weights = weight)
 
@@ -225,14 +238,16 @@ $$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_
 
 To specify a stratified SRS design in {srvyr} where the population sizes of the strata are not too large and are known, that is you are using the fpc, specify the design as:
 
-```{r, eval=FALSE}
+```{r}
+#| eval: FALSE
 des_stsrs1 <- dat %>%
   as_survey_design(fpc = fpcvar, strata = stratvar)
 ```
 
 where `fpcvar` is a variable on your data which indicates $N_h$ for each row and `stratavar` is a variable indicating the stratum for each row. You can omit the fpc if it is not applicable. Additionally, you can indicate the weight variable if it is present where `wtvar` is a variable on your data with a numeric weight.
 
-```{r, eval=FALSE}
+```{r}
+#| eval: FALSE
 des_stsrs2 <- dat %>%
   as_survey_design(weights = wtvar, strata = stratvar)
 ```
@@ -241,7 +256,8 @@ des_stsrs2 <- dat %>%
 
 In the example API data, `apistrat` is a stratified random sample, stratified by school type (`stype`). The data is illustrated below:
 
-```{r apistrat_dis}
+```{r}
+#| label: apistrat_dis
 apistrat_slim <- 
   apistrat %>%
   as_tibble() %>%
@@ -254,7 +270,8 @@ apistrat_slim %>%
 
 The fpc is the same within each stratum and 100 elementary schools were sampled while 50 schools were sampled from both the middle and high school levels. This design should be specified as:
 
-```{r apistrat_des}
+```{r}
+#| label: apistrat_des
 des_apistrat <- apistrat_slim %>%
   as_survey_design(strata = stype, weights = pw, fpc = fpc)
 
@@ -310,7 +327,9 @@ where `SSU` and `PSU` are the variables indicating the PSU and SSU identifiers a
 
 If clusters were sampled with replacement or from a very large population, a fpc is not necessary. Additionally, only the first stage of selection is necessary. The syntax below will yield the same estimates in the end:
 
-```{r, eval=FALSE}
+```{r}
+#| label: clus2wr
+#| eval: FALSE
 des_clus2wra <- dat %>%
   as_survey_design(weights = wtvar, ids = c(PSU, SSU))
 
@@ -323,7 +342,8 @@ des_clus2wrb <- dat %>%
 
 The `survey` package includes a two-stage cluster sample data, `apiclus2`, in which school districts were sampled and then a random sample of 5 schools was selected within each district. For districts with fewer than 5 schools, all schools were sampled. School districts have identifiers `dnum` and schools have identifiers of `snum`. The variable `fpc1` indicates how many districts there were in California and `fpc2` indicates how many schools were in a given district with at least 100 students.  The data has a row for each school. In the data printed below, there are 757 school districts as indicated by `fpc1` and there are 9 schools in district 731, one school in district 742, 2 schools in district 768, 6 schools in district 781, and 1 school in district 795 as indicated by `fpc2`.
 
-```{r api2clus_dis}
+```{r}
+#| label: api2clus_dis
 apiclus2_slim <- 
   apiclus2 %>%
   as_tibble() %>%
@@ -335,7 +355,8 @@ apiclus2_slim
 
 To specify this design in R, the following syntax should be used:
 
-```{r api2clus_des}
+```{r}
+#| label: api2clus_des
 des_apiclus2 <- apiclus2_slim %>%
   as_survey_design(ids = c(dnum, snum), fpc = c(fpc1, fpc2), weights=pw)
 
@@ -380,7 +401,9 @@ Replicate weights generally come in groups and are sequentially numbered such as
 
 If a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, use the following syntax:
 
-```{r, eval=FALSE}
+```{r}
+#| label: repgen
+#| eval: FALSE
 des_brr <- dat %>%
   as_survey_rep(weights = WT0, repweights= all_of(str_c("WT", 1:20)),
                 type="BRR", mse=TRUE)
@@ -393,7 +416,9 @@ des_brr <- dat %>%
 
 If a dataset had WT for the main weight and had 20 BRR weights indicated REPWT1, WT2, ..., REPWT20, the following syntax could be used (both are valid):
 
-```{r, eval=FALSE}
+```{r}
+#| label: brr
+#| eval: FALSE
 des_brr <- dat %>%
   as_survey_rep(weights = WT, repweights= all_of(str_c("REPWT", 1:20)),
                 type="BRR", mse=TRUE)
@@ -405,7 +430,9 @@ des_brr <- dat %>%
 
 If the replicate weight variables are on the file consecutively, the following syntax can also be used:
 
-```{r, eval=FALSE}
+```{r}
+#| label: brr2
+#| eval: FALSE
 des_brr <- dat %>%
   as_survey_rep(weights = WT, repweights= REPWT1:REPWT20, type="BRR",
                 mse=TRUE)
@@ -413,7 +440,9 @@ des_brr <- dat %>%
 
 Typically, the replicate weights sum to a value similar to the main weight as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. In this case, the replicate weights are not combined and the option `combined_weights = FALSE` should be indicated with the default value being TRUE. This specific syntax is shown below:
 
-```{r, eval=FALSE}
+```{r}
+#| label: brr3
+#| eval: FALSE
 des_brr <- dat %>%
   as_survey_rep(weights = WT, repweights= starts_with("REPWT"), 
                 type="BRR", combined_weights = FALSE, mse=TRUE)
@@ -423,7 +452,8 @@ des_brr <- dat %>%
 
 The {survey} package includes a data example from Section 12.2 of Levy and Lemeshow. In this fictional data, two out of five ambulance stations were sampled from each of three emergency service areas (ESAs) thus BRR weights are appropriate with 2 PSUs (stations) sampled in each stratum (ESA). 
 
-```{r brr_display}
+```{r}
+#| label: brr_display
 data(scd)
 scdbrr <- scd %>%
   as_tibble() %>%
@@ -439,7 +469,8 @@ scdbrr
 
 In the code above, BRR weights are created as was done in Levy and Lemeshow. To specify the BRR weights, the following syntax is used:
 
-```{r brr_des}
+```{r}
+#| label: brr_des
 des_brr_scd <- scdbrr %>%
   as_survey_rep(type = "BRR", repweights = starts_with("rep"),
                 combined_weights = FALSE, weight=wt)
@@ -465,7 +496,9 @@ $$se(\hat{\theta})=\sqrt{\frac{1}{R (1-\rho)^2} \sum_{r=1}^R \left( \hat{\theta}
 
 The syntax is very similar for BRR and Fay's BRR. If a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, and Fay's multiplier is 0.5, use the following syntax:
 
-```{r, eval=FALSE}
+```{r}
+#| label: fay
+#| eval: FALSE
 des_fay <- dat %>%
   as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
                 type="Fay", mse=TRUE, rho=0.5)
@@ -477,7 +510,10 @@ The 2015 RECS uses Fay's BRR weights with the final weight as NWEIGHT and replic
 
 To specify this design, use the following syntax:
 
-```{r, eval=FALSE}
+```{r}
+#| label: recs
+#| eval: TRUE
+#| cache: TRUE
 recs_in <- read_csv(here::here("RawData", "RECS_2015", "recs2015_public_v4.csv"))
 
 des_recs <- recs_in %>%
@@ -513,6 +549,8 @@ To specify the Jackknife method, the type would be `JK1`, `JKn`, or `JK2`. Addit
 Consider a case for the JK1 method where the multiplier, $(R-1)/R=19/20=0.95$ and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, ..., WT20, then the syntax would be
 
 ```{r, eval=FALSE}
+#| label: jk1
+#| eval: FALSE
 des_jk1 <- dat %>%
   as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
                 type="JK1", mse=TRUE, scale=0.95)
@@ -520,7 +558,9 @@ des_jk1 <- dat %>%
 
 Consider a case for the JKn method where $\alpha_r=0.1$ for all replicates and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, ..., WT20, then the syntax would be:
 
-```{r, eval=FALSE}
+```{r}
+#| label: jkn
+#| eval: FALSE
 des_jkn <- dat %>%
   as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
                 type="JKN", mse=TRUE, rscales=rep(0.1, 20))
@@ -528,9 +568,12 @@ des_jkn <- dat %>%
 
 #### Example {-}
 
-The American Community Survey releases public use microdata with JK1 weights at the person and household level. This example includes data at the household level where the replicate weights are specified as WGTP1, ..., WGTP80 and the main weight is WGTP. Using the {tidycensus} package^[tidycensus package: https://walker-data.com/tidycensus/], data is downloaded from the Census API. This request gets data for each person in each household in two Public Use Microdata Areas (PUMAs) in Durham County, NC^[Public Use Microdata Areas in North Carolina: https://www.census.gov/geographies/reference-maps/2010/geo/2010-pumas/north-carolina.html]. The variables requested are NP (number of persons in household), BDSP (number of bedrooms),  HINCP (household income), and TYPEHUGQ (type of household). By default, several other variables will come along including SERIALNO (a unique identifier for each household), SPORDER (a unique identifier for each person within each household), PUMA, ST (state), person weight (PWGTP), and the household weights (WGTP, WGTP1, ..., WGTP80). Filtering to records where SPORDER=1 yields only one record per household and TYPEHUGQ=1 filters to only households and not group quarters.
+The American Community Survey releases public use microdata with JK1 weights at the person and household level. This example includes data at the household level where the replicate weights are specified as WGTP1, ..., WGTP80 and the main weight is WGTP^[American Community Survey 2016-2020 5-Year PUMS File: https://www2.census.gov/programs-surveys/acs/tech_docs/pums/ACS2016_2020_PUMS_README.pdf]. Using the {tidycensus} package^[tidycensus package: https://walker-data.com/tidycensus/], data is downloaded from the Census API. This request gets data for each person in each household in two Public Use Microdata Areas (PUMAs) in Durham County, NC^[Public Use Microdata Areas in North Carolina: https://www.census.gov/geographies/reference-maps/2010/geo/2010-pumas/north-carolina.html]. The variables requested are NP (number of persons in household), BDSP (number of bedrooms),  HINCP (household income), and TYPEHUGQ (type of household). By default, several other variables will come along including SERIALNO (a unique identifier for each household), SPORDER (a unique identifier for each person within each household), PUMA, ST (state), person weight (PWGTP), and the household weights (WGTP, WGTP1, ..., WGTP80). Filtering to records where SPORDER=1 yields only one record per household and TYPEHUGQ=1 filters to only households and not group quarters.
 
-```{r acsexamp, cache=TRUE, results='hide'}
+```{r}
+#| label: acsexamp
+#| cache: TRUE
+#| results: 'hide'
 library(tidycensus)
 
 pums_in <- get_pums(variables=c("NP", "BDSP", "HINCP"), state="37", 
@@ -541,7 +584,10 @@ pums_in <- get_pums(variables=c("NP", "BDSP", "HINCP"), state="37",
 
 ```
 
-```{r acsexampcont, cache=TRUE, dependson="acsexamp"}
+```{r}
+#| label: acsexampcont
+#| cache: TRUE
+#| dependson: 'acsexamp'
 pums_in
 
 des_acs <- pums_in %>%
@@ -568,7 +614,9 @@ $$se(\hat{\theta})=\sqrt{\alpha \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\
 
 If a dataset had WT0 for the main weight, had 20 bootstrap weights indicated WT1, WT2, ..., WT20, and $\alpha=.02$, use the following syntax:
 
-```{r, eval=FALSE}
+```{r}
+#| label: bs
+#| eval: FALSE
 des_bs <- dat %>%
   as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
                 type="bootstrap", mse=TRUE, scale=.02)
@@ -581,7 +629,9 @@ Note that the scale is usually provided in documentation and is a constant so is
 
 Returning to the api example, bootstrap weights were constructed for a one cluster design. 50 replicate weights were created on a dataset `apiclus1_slim` which has some familiar variables including cds, dnum, fpc, and pw but now additionally includes bootstrap weights pw1, ..., pw50. The scale $(\alpha)$ is $15/(14*49)=0.02186589$
 
-```{r genbs, include=FALSE}
+```{r}
+#| label: genbs
+#| include: FALSE
 apiclus1_slim <- 
   apiclus1 %>%
   as_tibble() %>%
@@ -602,6 +652,7 @@ apiclus1_slim <- bwmata %>%
 ```
 
 ```{r}
+#| label: bsexamp
 apiclus1_slim
 
 des_api1_bs <- apiclus1_slim %>% 
@@ -621,10 +672,34 @@ SRS, stratified, and clustered designs are the backbone of sampling designs and 
 
 A common method of sampling is to stratify PSUs, select PSUs within stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step of survey analysis to understand the design and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User's Guides, methodology, analysis guides, or technical documentation.
 
-For example, the 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation -  https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] had a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units which were stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected PPS. At the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. At the third stage, housing units were selected within the sampled neighborhoods. At the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on person's age and sex. The public use file does not include all these levels of selection and instead includes pseudo-strata and pseudo-clusters^[2017-2019 National Survey of Family Growth (NSFG): Sample Error Estimation Design - https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Error-Estimation-Design-508.pdf] which are the variables used in R to specify the design. As specified on page 4, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. Thus, to specify this design in R, one would use the following syntax:
+For example, the 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation -  https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] had a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units which were stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected PPS. At the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. At the third stage, housing units were selected within the sampled neighborhoods. At the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on person's age and sex. The public use file does not include all these levels of selection and instead includes pseudo-strata and pseudo-clusters which are the variables used in R to specify the design. As specified on page 4, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. Thus, to specify this design in R, one would use the following syntax:
 
-```{r, eval=FALSE}
+```{r}
+#| label: nsfg
+#| eval: FALSE
 des_nsfg <- nsfgdata %>%
   as_survey_design(ids = SECU, strata = SEST, weights = WGT2017_2019)
+```
+
+## Exercises
+
+<!-- For this chapter, the exercises entail reading public documentation to determine how to specify the survey design. While reading the documentation, be on the lookout for description of the weights and the survey design variables or replicate weights. -->
+
+1. The American National Election Studies (ANES) collect data before and after elections approximately every 4 years around the presidential election cycle. Each year with the data release, a user's guide is also released^[ANES 2020 User's Guide: https://electionstudies.org/wp-content/uploads/2022/02/anes_timeseries_2020_userguidecodebook_20220210.pdf]. What is the syntax for specifying the analysis of the full sample post-election data?
+
+```{r}
+#| label: anes-ex
+#| eval: FALSE
+svy_anes <- anes_data %>%
+  as_survey_design(weight)
+```
+
+2. The General Social Survey is a survey administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook^[https://gss.norc.org/Documents/codebook/2016-2020%20GSS%20Panel%20Codebook%20-%20R1a.pdf] provides examples of setting up syntax in SAS and Stata but not R. How would you specify the design in R?
+
+```{r}
+#| label: gss-ex
+#| eval: FALSE
+svy_gss <- gss_data %>%
+  as_survey_design(ids = VPSU_2, strata = VSTRAT_2, weights = WTSSNR_2)
 ```
 
