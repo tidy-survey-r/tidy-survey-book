@@ -2,18 +2,18 @@
 
 ## Goals
 
-
-
 ## Introduction
 
-Descriptive analysis allows you to investigate your dataset and gain insight into the information it contains. Common descriptive analyses include calculating mean, median of numeric data or proportions in categorical data. <!--TODO: Add more, particularly on how it's on the analyst to pick the right way of doing descriptive analysis based on the data-->
+Descriptive analysis allows you to investigate your dataset and gain insight into the information it contains. Common descriptive analyses include calculating mean, median of numeric data or proportions in categorical data. 
+
+<!--TODO: Add more, particularly on how it's on the analyst to pick the right way of doing descriptive analysis based on the data-->
       
 ## Overview of descriptive analysis using `srvyr` package
 
 1. Create a `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()`
 2. Subset the data for subpopulations using `dplyr::filter()`, if needed
-3. Specify domains of analysis using `dplyr::group_by()` 
-4. Within `srvyr::summarize()`, specify variables to calculate means, totals, proportions, quantiles, and more
+3. Specify domains of analysis using `dplyr::group_by()`, if needed
+4. Within `srvyr::summarize()`, specify variables to calculate ,means, totals, proportions, quantiles, and more
 
 ### A brief refresher on the `dplyr::summarize()` function
 
@@ -33,7 +33,7 @@ Like with `dplyr::summarize()`, we can use multiple functions within `srvyr::sum
 
 ## Setup
 
-With the ACES data, we create a `tbl_svy` object using `srvyr::as_survey_design` (as described in Chapter 05):
+With the ANES data, we create a `tbl_svy` object using `srvyr::as_survey_design()` (as described in Chapter 05):
 
 ```{r anes_des, error=FALSE, warning=FALSE}
 library(survey) # for survey analysis
@@ -70,7 +70,7 @@ Common analysis for categorical data include:
 * Unweighted proportions
 * Unweighted counts
 
-### Count weighted observations by group with `survey_count()`
+### Count observations using survey methods with `survey_count()`
 
 With `srvyr::survey_count()`, you can produce weighted counts and variance of your choice. The syntax is very similar to the `dplyr::count()` syntax; however, it can only be called on `tbl_srvy()` objects. Let's explore the syntax:
 
@@ -99,7 +99,7 @@ The arguments are:
 The steps to use `survey_count()` are:
 
 * Specify the sample design,
-* then run `survey_count()`, specifying the required arguments within the function
+* Run `survey_count()`, specifying the required arguments within the function
 
 Let's see the weighted count of responses in ANES:
 
@@ -116,9 +116,57 @@ anes_des %>%
   survey_count(AgeGroup, Gender, name = "N") 
 ```
 
+## Calculate totals using survey methods using `survey_total()`
+
+With `srvyr::survey_total()`, you can calculate totals from complex survey data. Let's explore the syntax:
+
+```r
+survey_total(
+  x,
+  na.rm = FALSE,
+  vartype = c("se", "ci", "var", "cv"),
+  level = 0.95,
+  deff = FALSE,
+  df = NULL,
+  ...
+)
+```
+
+* `x`: a variable, expression, or empty
+* `na.rm`: an indicator of whether missing values should be dropped, defaults to `FALSE`
+* `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error)
+* `level`: a number or a vector indicating the confidence level, defaults to 0.95
+* `deff`: a logical value stating whether the design effect should be returned, defaults to FALSE
+* `df`: for `vartype = 'ci'), a numeric value indicating degrees of freedome for the t-distribution
+  * For the {srvyr} package, this defaults to `NULL` whereas the {survey} package defaults to `Inf`
+
+The steps to use `survey_total()` are:
+
+* Specify the sample design,
+* Specify the cross tab in `group_by()`,
+* Within `summarize`, run `survey_total()`, specifying the required arguments within the function
+
+To calculate a population count estimate with `survey_total()`, we can run the below:
+
+```{r}
+anes_des %>%
+  summarize(survey_total(), .groups = "drop")
+```
+
+The `.groups =` argument controls the grouping structure of the output. When the output no longer have grouping variables because they are dropped, it becomes ungrouped. <!-- TODO: Check this after dplyr 1.1.0 is released -->
+
+Notice that `anes_des %>% summarize(survey_total(), .groups = "drop")` is equivalent to the `survey_count()` call:
+
+```{r}
+anes_des %>%
+  survey_count() 
+```
+
+The `survey_total()` function is called within `summarize`, where as `survey_count()`, like `dplyr::count()`, is not.
+
 ## Calculate mean/proportion using survey methods with `survey_mean()` and `survey_prop()`
 
-The `srvyr::survey_mean()` and `survey_prop()` functions calculate the means and proportions from complex survey data. Let's explore the syntax:
+The `srvyr::survey_mean()` and `survey_prop()` functions calculate the means and proportions from complex survey data. Like `survey_total()`, they are called within `summarize()`. Let's explore the syntax:
 
 ```r
 survey_mean(
@@ -146,35 +194,47 @@ survey_prop(
 
 The steps involved are:
 
-- Specify the sample design,
-- then specify the cross tab in `group_by()`,
-- then run `survey_mean()` or `survey_prop()` within `summarize()`
+* Specify the sample design,
+* Specify the cross tab in `group_by()`,
+* Run `survey_mean()` or `survey_prop()` within `summarize()`
 
-```{r}
+Looking at population by age group, we can calculate the weighted proportion for each group in the data:
 
+```{r survey_p_ex1}
+anes_des %>%
+  group_by(AgeGroup) %>%
+  summarize(p1 = survey_mean(),
+            .groups = "drop")
 ```
 
-
-The `survey_prop` function is equivalent to leaving out the x argument in `survey_mean`.
-
-```{r}
-
-```
-
-
-`survey_count()`, like `dplyr::count()`, is not called within `summarize`. An equivalent method of calculating weighted counts is:
+The `survey_prop()` function is equivalent to leaving out the `x` argument in `survey_mean()`.
 
 ```{r}
 anes_des %>%
-  group_by(AgeGroup, Gender) %>%
-  srvyr::summarize(N = survey_total(), .groups = "drop")
+  group_by(AgeGroup) %>%
+  summarize(p1 = survey_prop(),
+            .groups = "drop")
 ```
 
-Note that the `.groups =` argument controls the grouping structure of the output. When the output no longer have grouping variables because they are dropped, it becomes ungrouped. <!-- TODO: Check this after dplyr 1.1.0 is released -->
+## Conditional proportions with more than one group
 
-### Weighted proportions
+Specifying more than one group calculates conditional proportions. Say we wanted to know the proportion of people who voted in 2016 and 2020. After the `tbl_svy` object, we specify the two variables we want to calculate proportions for:
 
+```{r survey_p_cond, tidy=FALSE}
+anes_des %>%
+  filter(!is.na(VotedPres2016),!is.na(VotedPres2020)) %>%
+  group_by(VotedPres2016, VotedPres2020) %>%
+  summarize(
+    p = survey_mean(),
+    N = survey_total(),
+    n = unweighted(n()),
+    .groups = "drop"
+  )
+```
 
+Note that this is the proportion of **people voting in 2020 by whether people voted in 2016**. That is, it is the weighted number of people who voted in both 2016 and 2020, divided by the weighted number of people who voted in 2016.
+
+$$144578247/(144578247+11917394)$$
 
 
 
