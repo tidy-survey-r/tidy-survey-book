@@ -1,1 +1,106 @@
 # Descriptive analyses in srvyr {#c06}
+
+## Goals
+
+
+
+## Introduction
+
+Descriptive analysis allows you to investigate your data and gain insight into the data. Common descriptive analyses include calculating mean, median of numeric data or proportions in categorical data.
+
+
+
+      
+## Overview of descriptive analysis using `srvyr` package
+
+1. Create a `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()`
+2. Subset the data for subpopulations, if needed, using `dplyr::filter()`
+3. Specify domains of analysis using `dplyr::group_by()` 
+4. Within `srvyr::summarize()`, specify variables to calculate means, totals, proportions, quantiles, and more
+
+### A brief refresher on the `dplyr::summarize()` function
+
+The `dplyr::summarize()` function collapses many values down to a single summary:
+
+<!-- TODO: Add example -->
+
+These verbs can be used in conjunction with `group_by()`, applying the functions on a group-by-group basis to create grouped summaries.
+  
+## Categorical data
+
+_Categorical data_, or the [definition], 
+
+Analyzing categorical data lets us...
+
+Common analysis for categorical data include:
+
+* Weighted proportions
+* Weighted counts
+* Unweighted proportions
+* Unweighted counts
+
+With the ACES data, we create a survey object (as specified in Chapter 05):
+
+Create a `tbl_svy` object using: `as_survey_design` or `as_survey_rep`
+
+```{r anes_des, error=FALSE, warning=FALSE}
+library(survey) # for survey analysis
+library(srvyr) # for tidy survey analysis
+
+anes <- read_rds(here("Data", "anes_2020.rds")) %>%
+  mutate(Weight = Weight / sum(Weight) * 231592693) 
+# adjust weight to sum to citizen pop, 18+ in Nov 2020 per ANES methodology documentation
+
+anes_des <- anes %>%
+  as_survey_design(
+    weights = Weight,
+    strata = Stratum,
+    ids = VarUnit,
+    nest = TRUE
+  )
+```
+
+### `survey_count()` Syntax
+
+The `srvyr::survey_count()` syntax is very similar to the `dplyr::count()` syntax. It can only be called on `tbl_srvy()` objects.
+
+Similarly, `srvyr::count()` can take one or many variables.
+
+```{r}
+
+```
+
+
+We don’t need a `wt` argument because we defined the weights when we set up the `tbl_srvy()` object.
+
+
+- `wt` adds additional weights in addition to the survey weights, by default is `NULL`
+- you can sort the variables, by default is `FALSE`
+- you can edit the name of the variable created to make it something other than n
+- you can change the variance type with `vartype`, defaults to standard error
+
+- `survey_count` functions similarly to `count` in that it is <b>NOT</b> called within `summarize`
+- Produces weighted counts and variance of your choice of those counts
+```{r survey_count_syn, eval=FALSE, tidy=FALSE}
+survey_count(
+   x,
+   ...,
+   wt = NULL,
+   sort = FALSE,
+   name = "n",
+   .drop = dplyr::group_by_drop_default(x),
+   vartype = c("se", "ci", "var", "cv")
+)
+```
+
+
+### Weighted proportions
+
+- Functions to use within `summarize` after `group_by`
+  - survey_mean/survey_prop
+  - survey_total
+
+The `srvyr::survey_mean()` calculates the means and portions from complex survey data. The function wraps around `survey::svymean()` (if `proportion - FALSE`) and `survey::svyciprop()` (if `proportion = TRUE`).
+
+
+
