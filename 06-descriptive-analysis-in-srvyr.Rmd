@@ -23,14 +23,6 @@ The `dplyr::summarize()` function collapses many values down to a single summary
 
 These verbs can be used in conjunction with `group_by()`, applying the functions on a group-by-group basis to create grouped summaries.
 
-Like with `dplyr::summarize()`, we can use multiple functions within `srvyr::summarize()`. We will explore some of these in this chapter.
-
-* Center: `survey_mean()`, `survey_prop()`, `survey_median()`
-* Count: `survey_count()`, `survey_total()`
-* Range: `survey_quantile()`
-* Ratio: `survey_ratio()`
-* Variance: `survey_var()`, `survey_sd()`
-
 ## Setup
 
 With the ANES data, we create a `tbl_svy` object using `srvyr::as_survey_design()` (as described in Chapter 05):
@@ -216,6 +208,16 @@ anes_des %>%
             .groups = "drop")
 ```
 
+## Other functions that use survey methods
+
+The {srvyr} package includes other functions for summarizing datasets:
+
+* Center: `survey_mean()`, `survey_prop()`, `survey_median()`
+* Count: `survey_count()`, `survey_total()`
+* Range: `survey_quantile()`
+* Ratio: `survey_ratio()`
+* Variance: `survey_var()`, `survey_sd()`
+
 ## Conditional proportions with more than one group
 
 Specifying more than one group calculates conditional proportions. Say we wanted to know the proportion of people who voted in 2016 and 2020. After the `tbl_svy` object, we specify the two variables we want to calculate proportions for:
@@ -232,9 +234,44 @@ anes_des %>%
   )
 ```
 
-Note that this is the proportion of **people voting in 2020 by whether people voted in 2016**. That is, it is the weighted number of people who voted in both 2016 and 2020, divided by the weighted number of people who voted in 2016.
+Note that this is the proportion of **people voting in 2020 by whether people voted in 2016**. That is, it is the weighted number of people who voted in both 2016 and 2020 (144578247), divided by the weighted number of people who voted in 2016 (144578247 + 11917394). Running the above, we see that 92.4% of people who voted in 2016 voted in 2020.
 
-$$144578247/(144578247+11917394)$$
+## Joint proportions with more than one group
 
+There are times when we are not interested in conditional proportions. Instead, we want to calculate multiple variables as if they were a single variable. The {srvyr} package includes `interact`, which we can use within `group_by()` to calculate the  joint proportions of two or more variables.
 
+```{r survey_p_joint}
+anes_des %>%
+  filter(!is.na(VotedPres2020),!is.na(VotedPres2016)) %>%
+  group_by(interact(VotedPres2016, VotedPres2020)) %>% #<<
+  summarize(p = survey_mean(),
+            N = survey_total(),
+            .groups = "drop")
+```
+
+Since `interact` groups by multiple variables as if they were a single variable, the proportions sum to 100% across more than a single grouping variable.
+
+```{r}
+anes_des %>%
+  filter(!is.na(VotedPres2020),!is.na(VotedPres2016)) %>%
+  group_by(interact(VotedPres2016, VotedPres2020)) %>% #<<
+  summarize(p = survey_mean(),
+            N = survey_total(),
+            .groups = "drop") %>% 
+  summarize(p_sum = sum(p))
+```
+
+## Proportions with design effects
+
+Note above that functions `survey_total()`, `survey_mean()`, and `survey_prop()` have the argument `deff`. `deff` stands for Design Effect, the ratio of two variances. Use `deff = TRUE` argument to specify whether the design effect should be returned.
+
+```{r survey_p_deff}
+anes_des %>%
+   filter(!is.na(VotedPres2016), !is.na(VotedPres2020)) %>%
+   group_by(interact(VotedPres2016, VotedPres2020)) %>% 
+   summarize(
+      p=survey_mean(deff=TRUE), #<<
+      N=survey_total()
+   )
+```
 
