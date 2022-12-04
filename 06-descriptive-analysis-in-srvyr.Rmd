@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Descriptive analysis allows you to investigate your dataset and gain insight into the information it contains. Common descriptive analyses include calculating mean, median of numeric data or proportions in categorical data. 
+Descriptive analysis allows you to investigate your dataset and gain insight into the information it contains. Common descriptive analyses include calculating mean, median of numeric data or proportions in categorical data.
 
 <!--TODO: Add more, particularly on how it's on the analyst to pick the right way of doing descriptive analysis based on the data-->
       
@@ -111,7 +111,7 @@ anes_des %>%
   survey_count(AgeGroup, Gender, name = "N") 
 ```
 
-## Calculate totals using survey methods using `survey_total()`
+### Calculate totals using survey methods using `survey_total()`
 
 With `srvyr::survey_total()`, we can calculate totals from complex survey data. Let's explore the syntax:
 
@@ -132,7 +132,7 @@ survey_total(
 * `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error)
 * `level`: a number or a vector indicating the confidence level, defaults to 0.95
 * `deff`: a logical value stating whether the design effect should be returned, defaults to FALSE
-* `df`: for `vartype = 'ci'), a numeric value indicating degrees of freedome for the t-distribution
+* `df`: for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution
   * For the {srvyr} package, this defaults to `NULL` whereas the {survey} package defaults to `Inf`
 
 The steps to use `survey_total()` are:
@@ -159,7 +159,7 @@ anes_des %>%
 
 The `survey_total()` function is called within `summarize`, where as `survey_count()`, like `dplyr::count()`, is not.
 
-## Calculate mean/proportion using survey methods with `survey_mean()` and `survey_prop()`
+### Calculate mean/proportion using survey methods with `survey_mean()` and `survey_prop()`
 
 The `srvyr::survey_mean()` and `survey_prop()` functions calculate the means and proportions from complex survey data. Like `survey_total()`, they are called within `summarize()`. Let's explore the syntax:
 
@@ -211,7 +211,33 @@ anes_des %>%
             .groups = "drop")
 ```
 
-## Other functions that use survey methods
+### Calculate proportions with confidence intervals
+
+We can also calculate confidence intervals within `summarize` using `survey_mean()` or `survey_mean()` by setting the `vartype` to `ci`. The confidence intervals provide us with an upper and lower column for each method.
+
+```{r survey_p_ci}
+anes_des %>%
+  group_by(Income7, VotedPres2016, VotedPres2020) %>%
+  summarize(pd = survey_prop(vartype = "ci") %>% round(4)) %>%
+  select(Income7, VotedPres2016, VotedPres2020, contains("_"))
+```
+
+We can change the proportion method by adding `prop_method`. The available options are: `"logit"`, `"likelihood"`, `"asin"`, `"beta"`, and `"mean"`.
+
+Using `proportion = TRUE` make confidence intervals more accurate near 0 and 1.
+
+```{r}
+anes_des %>%
+  group_by(Income7, VotedPres2016, VotedPres2020) %>%
+  summarize(pl = survey_prop(
+    proportion = TRUE,
+    prop_method = "logit",
+    vartype = "ci"
+  ) %>% round(4)) %>% 
+  select(Income7, VotedPres2016, VotedPres2020, contains("_"))
+```
+
+### Other functions that use survey methods
 
 The {srvyr} package includes other functions for summarizing datasets:
 
@@ -221,7 +247,7 @@ The {srvyr} package includes other functions for summarizing datasets:
 * Ratio: `survey_ratio()`
 * Variance: `survey_var()`, `survey_sd()`
 
-## Calculate conditional proportions with more than one group
+### Calculate conditional proportions with more than one group
 
 Specifying more than one group calculates conditional proportions. Say we wanted to know the proportion of people who voted in 2016 and 2020. After the `tbl_svy` object, we specify the two variables we want to calculate proportions for:
 
@@ -239,7 +265,7 @@ anes_des %>%
 
 Note that this is the proportion of **people voting in 2020 by whether people voted in 2016**. That is, it is the weighted number of people who voted in both 2016 and 2020 (144578247), divided by the weighted number of people who voted in 2016 (144578247 + 11917394). Running the above, we see that 92.4% of people who voted in 2016 voted in 2020.
 
-## Calculate joint proportions with more than one group
+### Calculate joint proportions with more than one group
 
 When we want to calculate multiple variables as if they were a single variable, we use {srvyr}'s `interact`. We use `interact` within `group_by()` to calculate the  joint proportions of two or more variables.
 
@@ -264,7 +290,7 @@ anes_des %>%
   summarize(p_sum = sum(p))
 ```
 
-## Calculate proportions with design effects
+### Calculate proportions with design effects
 
 Note above that functions `survey_total()`, `survey_mean()`, and `survey_prop()` have the argument `deff`. `deff` stands for Design Effect, the ratio of two variances. Use `deff = TRUE` argument to specify whether the design effect should be returned.
 
@@ -275,32 +301,4 @@ anes_des %>%
   summarize(p = survey_mean(deff = TRUE), #<<
             N = survey_total())
 ```
-
-## Calculate proportions with confidence intervals
-
-We can also calculate confidence intervals within `summarize` using `survey_mean()` or `survey_mean()` by setting the `vartype` to `ci`. The confidence intervals provide us with an upper and lower column for each method.
-
-```{r survey_p_ci}
-anes_des %>%
-  group_by(interact(Income7, VotedPres2016, VotedPres2020)) %>%
-  summarize(pd = survey_prop(vartype = "ci") %>% round(4)) %>%
-  select(Income7, VotedPres2016, VotedPres2020, contains("_"))
-```
-
-We can change the proportion method by adding `prop_method`. The available options are: `"logit"`, `"likelihood"`, `"asin"`, `"beta"`, `"mean"`, and `"xlogit"` (run `?survey::svyciprop()` for more information).
-
-```{r}
-anes_des %>%
-  group_by(interact(Income7, VotedPres2016, VotedPres2020)) %>%
-  summarize(pl = survey_prop(
-    proportion = TRUE,
-    prop_method = "logit",
-    vartype = "ci"
-  ) %>% round(4)) %>% 
-  select(Income7, VotedPres2016, VotedPres2020, contains("_"))
-```
-
-
-
-
 

@@ -467,7 +467,7 @@ Let's see the weighted count of responses in ANES:
 \end{verbatim}
 
 \hypertarget{calculate-totals-using-survey-methods-using-survey_total}{%
-\section{\texorpdfstring{Calculate totals using survey methods using \texttt{survey\_total()}}{Calculate totals using survey methods using survey\_total()}}\label{calculate-totals-using-survey-methods-using-survey_total}}
+\subsection{\texorpdfstring{Calculate totals using survey methods using \texttt{survey\_total()}}{Calculate totals using survey methods using survey\_total()}}\label{calculate-totals-using-survey-methods-using-survey_total}}
 
 With \texttt{srvyr::survey\_total()}, we can calculate totals from complex survey data. Let's explore the syntax:
 
@@ -556,7 +556,7 @@ Notice that \texttt{anes\_des\ \%\textgreater{}\%\ summarize(survey\_total(),\ .
 The \texttt{survey\_total()} function is called within \texttt{summarize}, where as \texttt{survey\_count()}, like \texttt{dplyr::count()}, is not.
 
 \hypertarget{calculate-meanproportion-using-survey-methods-with-survey_mean-and-survey_prop}{%
-\section{\texorpdfstring{Calculate mean/proportion using survey methods with \texttt{survey\_mean()} and \texttt{survey\_prop()}}{Calculate mean/proportion using survey methods with survey\_mean() and survey\_prop()}}\label{calculate-meanproportion-using-survey-methods-with-survey_mean-and-survey_prop}}
+\subsection{\texorpdfstring{Calculate mean/proportion using survey methods with \texttt{survey\_mean()} and \texttt{survey\_prop()}}{Calculate mean/proportion using survey methods with survey\_mean() and survey\_prop()}}\label{calculate-meanproportion-using-survey-methods-with-survey_mean-and-survey_prop}}
 
 The \texttt{srvyr::survey\_mean()} and \texttt{survey\_prop()} functions calculate the means and proportions from complex survey data. Like \texttt{survey\_total()}, they are called within \texttt{summarize()}. Let's explore the syntax:
 
@@ -646,8 +646,76 @@ The \texttt{survey\_prop()} function is equivalent to leaving out the \texttt{x}
 ## 7 <NA>        0.0369 0.00305
 \end{verbatim}
 
+\hypertarget{calculate-proportions-with-confidence-intervals}{%
+\subsection{Calculate proportions with confidence intervals}\label{calculate-proportions-with-confidence-intervals}}
+
+We can also calculate confidence intervals within \texttt{summarize} using \texttt{survey\_mean()} or \texttt{survey\_mean()} by setting the \texttt{vartype} to \texttt{ci}. The confidence intervals provide us with an upper and lower column for each method.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{anes\_des }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(Income7, VotedPres2016, VotedPres2020) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{pd =} \FunctionTok{survey\_prop}\NormalTok{(}\AttributeTok{vartype =} \StringTok{"ci"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{round}\NormalTok{(}\DecValTok{4}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(Income7, VotedPres2016, VotedPres2020, }\FunctionTok{contains}\NormalTok{(}\StringTok{"\_"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 45 x 5
+## # Groups:   Income7, VotedPres2016 [22]
+##    Income7    VotedPres2016 VotedPres2~1  pd_low pd_upp
+##    <fct>      <fct>         <fct>          <dbl>  <dbl>
+##  1 Under $20k Yes           Yes           0.784  0.892 
+##  2 Under $20k Yes           No            0.108  0.216 
+##  3 Under $20k No            Yes           0.234  0.370 
+##  4 Under $20k No            No            0.630  0.766 
+##  5 Under $20k <NA>          Yes          -0.0705 1.03  
+##  6 Under $20k <NA>          No           -0.202  0.746 
+##  7 Under $20k <NA>          <NA>         -0.198  0.697 
+##  8 $20-40k    Yes           Yes           0.818  0.914 
+##  9 $20-40k    Yes           No            0.0845 0.178 
+## 10 $20-40k    Yes           <NA>         -0.0025 0.0073
+## # ... with 35 more rows, and abbreviated variable name
+## #   1: VotedPres2020
+\end{verbatim}
+
+We can change the proportion method by adding \texttt{prop\_method}. The available options are: \texttt{"logit"}, \texttt{"likelihood"}, \texttt{"asin"}, \texttt{"beta"}, and \texttt{"mean"}.
+
+Using \texttt{proportion\ =\ TRUE} make confidence intervals more accurate near 0 and 1.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{anes\_des }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(Income7, VotedPres2016, VotedPres2020) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{pl =} \FunctionTok{survey\_prop}\NormalTok{(}
+    \AttributeTok{proportion =} \ConstantTok{TRUE}\NormalTok{,}
+    \AttributeTok{prop\_method =} \StringTok{"logit"}\NormalTok{,}
+    \AttributeTok{vartype =} \StringTok{"ci"}
+\NormalTok{  ) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{round}\NormalTok{(}\DecValTok{4}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{select}\NormalTok{(Income7, VotedPres2016, VotedPres2020, }\FunctionTok{contains}\NormalTok{(}\StringTok{"\_"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 45 x 5
+## # Groups:   Income7, VotedPres2016 [22]
+##    Income7    VotedPres2016 VotedPres2020 pl_low pl_upp
+##    <fct>      <fct>         <fct>          <dbl>  <dbl>
+##  1 Under $20k Yes           Yes           0.777   0.885
+##  2 Under $20k Yes           No            0.115   0.223
+##  3 Under $20k No            Yes           0.239   0.374
+##  4 Under $20k No            No            0.626   0.761
+##  5 Under $20k <NA>          Yes           0.0923  0.892
+##  6 Under $20k <NA>          No            0.0332  0.804
+##  7 Under $20k <NA>          <NA>          0.0297  0.784
+##  8 $20-40k    Yes           Yes           0.811   0.907
+##  9 $20-40k    Yes           No            0.0911  0.186
+## 10 $20-40k    Yes           <NA>          0.0003  0.018
+## # ... with 35 more rows
+\end{verbatim}
+
 \hypertarget{other-functions-that-use-survey-methods}{%
-\section{Other functions that use survey methods}\label{other-functions-that-use-survey-methods}}
+\subsection{Other functions that use survey methods}\label{other-functions-that-use-survey-methods}}
 
 The \{srvyr\} package includes other functions for summarizing datasets:
 
@@ -666,7 +734,7 @@ The \{srvyr\} package includes other functions for summarizing datasets:
 \end{itemize}
 
 \hypertarget{calculate-conditional-proportions-with-more-than-one-group}{%
-\section{Calculate conditional proportions with more than one group}\label{calculate-conditional-proportions-with-more-than-one-group}}
+\subsection{Calculate conditional proportions with more than one group}\label{calculate-conditional-proportions-with-more-than-one-group}}
 
 Specifying more than one group calculates conditional proportions. Say we wanted to know the proportion of people who voted in 2016 and 2020. After the \texttt{tbl\_svy} object, we specify the two variables we want to calculate proportions for:
 
@@ -699,7 +767,7 @@ Specifying more than one group calculates conditional proportions. Say we wanted
 Note that this is the proportion of \textbf{people voting in 2020 by whether people voted in 2016}. That is, it is the weighted number of people who voted in both 2016 and 2020 (144578247), divided by the weighted number of people who voted in 2016 (144578247 + 11917394). Running the above, we see that 92.4\% of people who voted in 2016 voted in 2020.
 
 \hypertarget{calculate-joint-proportions-with-more-than-one-group}{%
-\section{Calculate joint proportions with more than one group}\label{calculate-joint-proportions-with-more-than-one-group}}
+\subsection{Calculate joint proportions with more than one group}\label{calculate-joint-proportions-with-more-than-one-group}}
 
 When we want to calculate multiple variables as if they were a single variable, we use \{srvyr\}'s \texttt{interact}. We use \texttt{interact} within \texttt{group\_by()} to calculate the joint proportions of two or more variables.
 
@@ -747,7 +815,7 @@ Since \texttt{interact} groups by multiple variables as if they were a single va
 \end{verbatim}
 
 \hypertarget{calculate-proportions-with-design-effects}{%
-\section{Calculate proportions with design effects}\label{calculate-proportions-with-design-effects}}
+\subsection{Calculate proportions with design effects}\label{calculate-proportions-with-design-effects}}
 
 Note above that functions \texttt{survey\_total()}, \texttt{survey\_mean()}, and \texttt{survey\_prop()} have the argument \texttt{deff}. \texttt{deff} stands for Design Effect, the ratio of two variances. Use \texttt{deff\ =\ TRUE} argument to specify whether the design effect should be returned.
 
@@ -772,44 +840,6 @@ Note above that functions \texttt{survey\_total()}, \texttt{survey\_mean()}, and
 ## # ... with abbreviated variable names
 ## #   1: VotedPres2016, 2: VotedPres2020
 \end{verbatim}
-
-\hypertarget{calculate-proportions-with-confidence-intervals}{%
-\section{Calculate proportions with confidence intervals}\label{calculate-proportions-with-confidence-intervals}}
-
-We can also calculate confidence intervals within \texttt{summarize} using \texttt{survey\_prop()} or \texttt{survey\_mean()}.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{anes\_des }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{group\_by}\NormalTok{(}\FunctionTok{interact}\NormalTok{(Income7, VotedPres2016, VotedPres2020)) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{pd =} \FunctionTok{survey\_prop}\NormalTok{(}\AttributeTok{vartype =} \StringTok{"ci"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{round}\NormalTok{(}\DecValTok{4}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{select}\NormalTok{(Income7, VotedPres2016, VotedPres2020, }\FunctionTok{contains}\NormalTok{(}\StringTok{"\_"}\NormalTok{))}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## # A tibble: 45 x 5
-##    Income7    VotedPres2016 VotedPres2~1  pd_low pd_upp
-##    <fct>      <fct>         <fct>          <dbl>  <dbl>
-##  1 Under $20k Yes           Yes           0.0286 0.0377
-##  2 Under $20k Yes           No            0.0042 0.0086
-##  3 Under $20k No            Yes           0.0109 0.0173
-##  4 Under $20k No            No            0.0263 0.039 
-##  5 Under $20k <NA>          Yes           0      0.0001
-##  6 Under $20k <NA>          No            0      0.0001
-##  7 Under $20k <NA>          <NA>          0      0.0001
-##  8 $20-40k    Yes           Yes           0.0518 0.0656
-##  9 $20-40k    Yes           No            0.0057 0.0122
-## 10 $20-40k    Yes           <NA>         -0.0002 0.0005
-## # ... with 35 more rows, and abbreviated variable name
-## #   1: VotedPres2020
-\end{verbatim}
-
-\begin{itemize}
-\tightlist
-\item
-  Provides us with an upper and lower column for each method
-\end{itemize}
 
 \hypertarget{c07}{%
 \chapter{Statistical testing}\label{c07}}
