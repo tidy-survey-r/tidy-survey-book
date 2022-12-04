@@ -25,7 +25,7 @@ These verbs can be used in conjunction with `group_by()`, applying the functions
 
 ## Setup
 
-With the ANES data, we create a `tbl_svy` object using `srvyr::as_survey_design()` (as described in Chapter 05):
+With the ANES data, we create a `tbl_svy` object using `srvyr::as_survey_design()`,  adjusting the weight to add up to the citizen population (as described in Chapter 05):
 
 ```{r anes_des}
 #| error: FALSE
@@ -40,8 +40,7 @@ anes <-
   read_rds(here::here(
     "/Users/ivelasq/R/tidy-survey-short-course/Data/anes_2020.rds"
   )) %>%
-  mutate(Weight = Weight / sum(Weight) * 231592693) 
-# adjust weight to sum to citizen pop, 18+ in Nov 2020 per ANES methodology documentation
+  mutate(Weight = Weight / sum(Weight) * 231592693)
 
 anes_des <- anes %>%
   as_survey_design(
@@ -94,6 +93,7 @@ The arguments are:
 The steps to use `survey_count()` are:
 
 * Specify the sample design,
+* Filter subsets using `dplyr::filter()`, if needed
 * Run `survey_count()`, specifying the required arguments within the function
 
 Let's see the weighted count of responses in ANES:
@@ -113,7 +113,7 @@ anes_des %>%
 
 ## Calculate totals using survey methods using `survey_total()`
 
-With `srvyr::survey_total()`, you can calculate totals from complex survey data. Let's explore the syntax:
+With `srvyr::survey_total()`, we can calculate totals from complex survey data. Let's explore the syntax:
 
 ```r
 survey_total(
@@ -221,13 +221,13 @@ The {srvyr} package includes other functions for summarizing datasets:
 * Ratio: `survey_ratio()`
 * Variance: `survey_var()`, `survey_sd()`
 
-## Conditional proportions with more than one group
+## Calculate conditional proportions with more than one group
 
 Specifying more than one group calculates conditional proportions. Say we wanted to know the proportion of people who voted in 2016 and 2020. After the `tbl_svy` object, we specify the two variables we want to calculate proportions for:
 
 ```{r survey_p_cond, tidy=FALSE}
 anes_des %>%
-  filter(!is.na(VotedPres2016),!is.na(VotedPres2020)) %>%
+  filter(!is.na(VotedPres2016), !is.na(VotedPres2020)) %>%
   group_by(VotedPres2016, VotedPres2020) %>%
   summarize(
     p = survey_mean(),
@@ -239,13 +239,13 @@ anes_des %>%
 
 Note that this is the proportion of **people voting in 2020 by whether people voted in 2016**. That is, it is the weighted number of people who voted in both 2016 and 2020 (144578247), divided by the weighted number of people who voted in 2016 (144578247 + 11917394). Running the above, we see that 92.4% of people who voted in 2016 voted in 2020.
 
-## Joint proportions with more than one group
+## Calculate joint proportions with more than one group
 
-There are times when we are not interested in conditional proportions. Instead, we want to calculate multiple variables as if they were a single variable. The {srvyr} package includes `interact`, which we can use within `group_by()` to calculate the  joint proportions of two or more variables.
+When we want to calculate multiple variables as if they were a single variable, we use {srvyr}'s `interact`. We use `interact` within `group_by()` to calculate the  joint proportions of two or more variables.
 
 ```{r survey_p_joint}
 anes_des %>%
-  filter(!is.na(VotedPres2020),!is.na(VotedPres2016)) %>%
+  filter(!is.na(VotedPres2020), !is.na(VotedPres2016)) %>%
   group_by(interact(VotedPres2016, VotedPres2020)) %>% #<<
   summarize(p = survey_mean(),
             N = survey_total(),
@@ -264,17 +264,43 @@ anes_des %>%
   summarize(p_sum = sum(p))
 ```
 
-## Proportions with design effects
+## Calculate proportions with design effects
 
 Note above that functions `survey_total()`, `survey_mean()`, and `survey_prop()` have the argument `deff`. `deff` stands for Design Effect, the ratio of two variances. Use `deff = TRUE` argument to specify whether the design effect should be returned.
 
 ```{r survey_p_deff}
 anes_des %>%
-   filter(!is.na(VotedPres2016), !is.na(VotedPres2020)) %>%
-   group_by(interact(VotedPres2016, VotedPres2020)) %>% 
-   summarize(
-      p=survey_mean(deff=TRUE), #<<
-      N=survey_total()
-   )
+  filter(!is.na(VotedPres2016),!is.na(VotedPres2020)) %>%
+  group_by(interact(VotedPres2016, VotedPres2020)) %>%
+  summarize(p = survey_mean(deff = TRUE), #<<
+            N = survey_total())
 ```
+
+## Calculate proportions with confidence intervals
+
+We can also calculate confidence intervals within `summarize` using `survey_mean()` or `survey_mean()` by setting the `vartype` to `ci`. The confidence intervals provide us with an upper and lower column for each method.
+
+```{r survey_p_ci}
+anes_des %>%
+  group_by(interact(Income7, VotedPres2016, VotedPres2020)) %>%
+  summarize(pd = survey_prop(vartype = "ci") %>% round(4)) %>%
+  select(Income7, VotedPres2016, VotedPres2020, contains("_"))
+```
+
+We can change the proportion method by adding `prop_method`. The available options are: `"logit"`, `"likelihood"`, `"asin"`, `"beta"`, `"mean"`, and `"xlogit"` (run `?survey::svyciprop()` for more information).
+
+```{r}
+anes_des %>%
+  group_by(interact(Income7, VotedPres2016, VotedPres2020)) %>%
+  summarize(pl = survey_prop(
+    proportion = TRUE,
+    prop_method = "logit",
+    vartype = "ci"
+  ) %>% round(4)) %>% 
+  select(Income7, VotedPres2016, VotedPres2020, contains("_"))
+```
+
+
+
+
 

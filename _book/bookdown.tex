@@ -253,10 +253,10 @@ I used the \textbf{knitr}\index{knitr} package \citep{xie2015} and the \textbf{b
 ##   lifecycle_1.0.3 magrittr_2.0.3  memoise_2.0.1  
 ##   methods_4.2.2   R6_2.5.1        rappdirs_0.3.3 
 ##   renv_0.16.0     rlang_1.0.6     rmarkdown_2.18 
-##   sass_0.4.4      stats_4.2.2     stringi_1.7.8  
-##   stringr_1.5.0   tinytex_0.42    tools_4.2.2    
-##   utils_4.2.2     vctrs_0.5.1     xfun_0.35      
-##   yaml_2.3.6
+##   rstudioapi_0.14 sass_0.4.4      stats_4.2.2    
+##   stringi_1.7.8   stringr_1.5.0   tinytex_0.42   
+##   tools_4.2.2     utils_4.2.2     vctrs_0.5.1    
+##   xfun_0.35       yaml_2.3.6
 \end{verbatim}
 
 Package names are in bold text (e.g., \textbf{rmarkdown}), and inline code and filenames are formatted in a typewriter font (e.g., \texttt{knitr::knit(\textquotesingle{}foo.Rmd\textquotesingle{})}). Function names are followed by parentheses (e.g., \texttt{bookdown::render\_book()}).
@@ -326,73 +326,20 @@ These verbs can be used in conjunction with \texttt{group\_by()}, applying the f
 \hypertarget{setup}{%
 \section{Setup}\label{setup}}
 
-With the ANES data, we create a \texttt{tbl\_svy} object using \texttt{srvyr::as\_survey\_design()} (as described in Chapter 05):
+With the ANES data, we create a \texttt{tbl\_svy} object using \texttt{srvyr::as\_survey\_design()}, adjusting the weight to add up to the citizen population (as described in Chapter 05):
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(survey) }\CommentTok{\# for survey analysis}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Loading required package: grid
-\end{verbatim}
-
-\begin{verbatim}
-## Loading required package: Matrix
-\end{verbatim}
-
-\begin{verbatim}
-## Loading required package: survival
-\end{verbatim}
-
-\begin{verbatim}
-## 
-## Attaching package: 'survey'
-\end{verbatim}
-
-\begin{verbatim}
-## The following object is masked from 'package:graphics':
-## 
-##     dotchart
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(srvyr) }\CommentTok{\# for tidy survey analysis}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## 
-## Attaching package: 'srvyr'
-\end{verbatim}
-
-\begin{verbatim}
-## The following object is masked from 'package:stats':
-## 
-##     filter
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(readr)}
 \FunctionTok{library}\NormalTok{(here)}
-\end{Highlighting}
-\end{Shaded}
 
-\begin{verbatim}
-## here() starts at /Users/ivelasq/R/tidy-survey-book
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{anes }\OtherTok{\textless{}{-}}
   \FunctionTok{read\_rds}\NormalTok{(here}\SpecialCharTok{::}\FunctionTok{here}\NormalTok{(}
     \StringTok{"/Users/ivelasq/R/tidy{-}survey{-}short{-}course/Data/anes\_2020.rds"}
 \NormalTok{  )) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Weight =}\NormalTok{ Weight }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(Weight) }\SpecialCharTok{*} \DecValTok{231592693}\NormalTok{) }
-\CommentTok{\# adjust weight to sum to citizen pop, 18+ in Nov 2020 per ANES methodology documentation}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Weight =}\NormalTok{ Weight }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(Weight) }\SpecialCharTok{*} \DecValTok{231592693}\NormalTok{)}
 
 \NormalTok{anes\_des }\OtherTok{\textless{}{-}}\NormalTok{ anes }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{as\_survey\_design}\NormalTok{(}
@@ -471,6 +418,8 @@ The steps to use \texttt{survey\_count()} are:
 \item
   Specify the sample design,
 \item
+  Filter subsets using \texttt{dplyr::filter()}, if needed
+\item
   Run \texttt{survey\_count()}, specifying the required arguments within the function
 \end{itemize}
 
@@ -520,7 +469,7 @@ Let's see the weighted count of responses in ANES:
 \hypertarget{calculate-totals-using-survey-methods-using-survey_total}{%
 \section{\texorpdfstring{Calculate totals using survey methods using \texttt{survey\_total()}}{Calculate totals using survey methods using survey\_total()}}\label{calculate-totals-using-survey-methods-using-survey_total}}
 
-With \texttt{srvyr::survey\_total()}, you can calculate totals from complex survey data. Let's explore the syntax:
+With \texttt{srvyr::survey\_total()}, we can calculate totals from complex survey data. Let's explore the syntax:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -716,15 +665,15 @@ The \{srvyr\} package includes other functions for summarizing datasets:
   Variance: \texttt{survey\_var()}, \texttt{survey\_sd()}
 \end{itemize}
 
-\hypertarget{conditional-proportions-with-more-than-one-group}{%
-\section{Conditional proportions with more than one group}\label{conditional-proportions-with-more-than-one-group}}
+\hypertarget{calculate-conditional-proportions-with-more-than-one-group}{%
+\section{Calculate conditional proportions with more than one group}\label{calculate-conditional-proportions-with-more-than-one-group}}
 
 Specifying more than one group calculates conditional proportions. Say we wanted to know the proportion of people who voted in 2016 and 2020. After the \texttt{tbl\_svy} object, we specify the two variables we want to calculate proportions for:
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{anes\_des }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2016),}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2020)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2016), }\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2020)) }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{group\_by}\NormalTok{(VotedPres2016, VotedPres2020) }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{summarize}\NormalTok{(}
     \AttributeTok{p =} \FunctionTok{survey\_mean}\NormalTok{(),}
@@ -749,15 +698,15 @@ Specifying more than one group calculates conditional proportions. Say we wanted
 
 Note that this is the proportion of \textbf{people voting in 2020 by whether people voted in 2016}. That is, it is the weighted number of people who voted in both 2016 and 2020 (144578247), divided by the weighted number of people who voted in 2016 (144578247 + 11917394). Running the above, we see that 92.4\% of people who voted in 2016 voted in 2020.
 
-\hypertarget{joint-proportions-with-more-than-one-group}{%
-\section{Joint proportions with more than one group}\label{joint-proportions-with-more-than-one-group}}
+\hypertarget{calculate-joint-proportions-with-more-than-one-group}{%
+\section{Calculate joint proportions with more than one group}\label{calculate-joint-proportions-with-more-than-one-group}}
 
-There are times when we are not interested in conditional proportions. Instead, we want to calculate multiple variables as if they were a single variable. The \{srvyr\} package includes \texttt{interact}, which we can use within \texttt{group\_by()} to calculate the joint proportions of two or more variables.
+When we want to calculate multiple variables as if they were a single variable, we use \{srvyr\}'s \texttt{interact}. We use \texttt{interact} within \texttt{group\_by()} to calculate the joint proportions of two or more variables.
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{anes\_des }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2020),}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2016)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2020), }\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2016)) }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{group\_by}\NormalTok{(}\FunctionTok{interact}\NormalTok{(VotedPres2016, VotedPres2020)) }\SpecialCharTok{\%\textgreater{}\%} \CommentTok{\#\textless{}\textless{}}
   \FunctionTok{summarize}\NormalTok{(}\AttributeTok{p =} \FunctionTok{survey\_mean}\NormalTok{(),}
             \AttributeTok{N =} \FunctionTok{survey\_total}\NormalTok{(),}
@@ -797,20 +746,18 @@ Since \texttt{interact} groups by multiple variables as if they were a single va
 ## 1     1
 \end{verbatim}
 
-\hypertarget{proportions-with-design-effects}{%
-\section{Proportions with design effects}\label{proportions-with-design-effects}}
+\hypertarget{calculate-proportions-with-design-effects}{%
+\section{Calculate proportions with design effects}\label{calculate-proportions-with-design-effects}}
 
 Note above that functions \texttt{survey\_total()}, \texttt{survey\_mean()}, and \texttt{survey\_prop()} have the argument \texttt{deff}. \texttt{deff} stands for Design Effect, the ratio of two variances. Use \texttt{deff\ =\ TRUE} argument to specify whether the design effect should be returned.
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{anes\_des }\SpecialCharTok{\%\textgreater{}\%}
-   \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2016), }\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2020)) }\SpecialCharTok{\%\textgreater{}\%}
-   \FunctionTok{group\_by}\NormalTok{(}\FunctionTok{interact}\NormalTok{(VotedPres2016, VotedPres2020)) }\SpecialCharTok{\%\textgreater{}\%} 
-   \FunctionTok{summarize}\NormalTok{(}
-      \AttributeTok{p=}\FunctionTok{survey\_mean}\NormalTok{(}\AttributeTok{deff=}\ConstantTok{TRUE}\NormalTok{), }\CommentTok{\#\textless{}\textless{}}
-      \AttributeTok{N=}\FunctionTok{survey\_total}\NormalTok{()}
-\NormalTok{   )}
+  \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2016),}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(VotedPres2020)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(}\FunctionTok{interact}\NormalTok{(VotedPres2016, VotedPres2020)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{p =} \FunctionTok{survey\_mean}\NormalTok{(}\AttributeTok{deff =} \ConstantTok{TRUE}\NormalTok{), }\CommentTok{\#\textless{}\textless{}}
+            \AttributeTok{N =} \FunctionTok{survey\_total}\NormalTok{())}
 \end{Highlighting}
 \end{Shaded}
 
@@ -825,6 +772,44 @@ Note above that functions \texttt{survey\_total()}, \texttt{survey\_mean()}, and
 ## # ... with abbreviated variable names
 ## #   1: VotedPres2016, 2: VotedPres2020
 \end{verbatim}
+
+\hypertarget{calculate-proportions-with-confidence-intervals}{%
+\section{Calculate proportions with confidence intervals}\label{calculate-proportions-with-confidence-intervals}}
+
+We can also calculate confidence intervals within \texttt{summarize} using \texttt{survey\_prop()} or \texttt{survey\_mean()}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{anes\_des }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(}\FunctionTok{interact}\NormalTok{(Income7, VotedPres2016, VotedPres2020)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{pd =} \FunctionTok{survey\_prop}\NormalTok{(}\AttributeTok{vartype =} \StringTok{"ci"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{round}\NormalTok{(}\DecValTok{4}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(Income7, VotedPres2016, VotedPres2020, }\FunctionTok{contains}\NormalTok{(}\StringTok{"\_"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 45 x 5
+##    Income7    VotedPres2016 VotedPres2~1  pd_low pd_upp
+##    <fct>      <fct>         <fct>          <dbl>  <dbl>
+##  1 Under $20k Yes           Yes           0.0286 0.0377
+##  2 Under $20k Yes           No            0.0042 0.0086
+##  3 Under $20k No            Yes           0.0109 0.0173
+##  4 Under $20k No            No            0.0263 0.039 
+##  5 Under $20k <NA>          Yes           0      0.0001
+##  6 Under $20k <NA>          No            0      0.0001
+##  7 Under $20k <NA>          <NA>          0      0.0001
+##  8 $20-40k    Yes           Yes           0.0518 0.0656
+##  9 $20-40k    Yes           No            0.0057 0.0122
+## 10 $20-40k    Yes           <NA>         -0.0002 0.0005
+## # ... with 35 more rows, and abbreviated variable name
+## #   1: VotedPres2020
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  Provides us with an upper and lower column for each method
+\end{itemize}
 
 \hypertarget{c07}{%
 \chapter{Statistical testing}\label{c07}}
