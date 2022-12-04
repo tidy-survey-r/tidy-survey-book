@@ -57,27 +57,21 @@ $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} $$
 
 If a sample that was drawn through SRS and had no nonresponse or other weighting adjustments, in R specify this design as:
 
-```{r}
-#| label: srs1
-#| eval: FALSE
+```r
 des_srs1 <- dat %>%
   as_survey_design(fpc = fpcvar)
 ```
 
 where `dat` is a tibble or data.frame with the survey data and `fpcvar` is a variable on the tibble which indicates the size of the sampling frame. If the frame was very large, sometimes the frame size is not provided. In that case, specify the design as:
 
-```{r}
-#| label: srs2
-#| eval: FALSE
+```r
 des_srs2 <- dat %>%
   as_survey_design()
 ```
 
 If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:
 
-```{r}
-#| label: srs3
-#| eval: FALSE
+```r
 des_srs3 <- dat %>%
   as_survey_design(weights = wtvar, fpc = fpcvar)
 ```
@@ -149,9 +143,7 @@ $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} $$
 
 If you had a sample that was drawn through SRSWR and had no nonresponse or other weighting adjustments, in R, you should specify this design as:
 
-```{r}
-#| label: srswr1
-#| eval: FALSE
+```r
 des_srswr1 <- dat %>%
   as_survey_design()
 ```
@@ -160,9 +152,7 @@ where `dat` is a tibble or data.frame with your survey data.
 
 If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:
 
-```{r}
-#| label: srswr2
-#| eval: FALSE
+```r
 des_srswr2 <- dat %>%
   as_survey_design(weights = wtvar)
 ```
@@ -238,16 +228,14 @@ $$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_
 
 To specify a stratified SRS design in {srvyr} where the population sizes of the strata are not too large and are known, that is you are using the fpc, specify the design as:
 
-```{r}
-#| eval: FALSE
+```r
 des_stsrs1 <- dat %>%
   as_survey_design(fpc = fpcvar, strata = stratvar)
 ```
 
 where `fpcvar` is a variable on your data which indicates $N_h$ for each row and `stratavar` is a variable indicating the stratum for each row. You can omit the fpc if it is not applicable. Additionally, you can indicate the weight variable if it is present where `wtvar` is a variable on your data with a numeric weight.
 
-```{r}
-#| eval: FALSE
+```r
 des_stsrs2 <- dat %>%
   as_survey_design(weights = wtvar, strata = stratvar)
 ```
@@ -327,9 +315,7 @@ where `SSU` and `PSU` are the variables indicating the PSU and SSU identifiers a
 
 If clusters were sampled with replacement or from a very large population, a fpc is not necessary. Additionally, only the first stage of selection is necessary. The syntax below will yield the same estimates in the end:
 
-```{r}
-#| label: clus2wr
-#| eval: FALSE
+```r
 des_clus2wra <- dat %>%
   as_survey_design(weights = wtvar, ids = c(PSU, SSU))
 
@@ -401,9 +387,7 @@ Replicate weights generally come in groups and are sequentially numbered such as
 
 If a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, use the following syntax:
 
-```{r}
-#| label: repgen
-#| eval: FALSE
+```r
 des_brr <- dat %>%
   as_survey_rep(weights = WT0, repweights= all_of(str_c("WT", 1:20)),
                 type="BRR", mse=TRUE)
@@ -416,9 +400,7 @@ des_brr <- dat %>%
 
 If a dataset had WT for the main weight and had 20 BRR weights indicated REPWT1, WT2, ..., REPWT20, the following syntax could be used (both are valid):
 
-```{r}
-#| label: brr
-#| eval: FALSE
+```r
 des_brr <- dat %>%
   as_survey_rep(weights = WT, repweights= all_of(str_c("REPWT", 1:20)),
                 type="BRR", mse=TRUE)
@@ -430,9 +412,7 @@ des_brr <- dat %>%
 
 If the replicate weight variables are on the file consecutively, the following syntax can also be used:
 
-```{r}
-#| label: brr2
-#| eval: FALSE
+```r
 des_brr <- dat %>%
   as_survey_rep(weights = WT, repweights= REPWT1:REPWT20, type="BRR",
                 mse=TRUE)
@@ -440,9 +420,7 @@ des_brr <- dat %>%
 
 Typically, the replicate weights sum to a value similar to the main weight as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. In this case, the replicate weights are not combined and the option `combined_weights = FALSE` should be indicated with the default value being TRUE. This specific syntax is shown below:
 
-```{r}
-#| label: brr3
-#| eval: FALSE
+```r
 des_brr <- dat %>%
   as_survey_rep(weights = WT, repweights= starts_with("REPWT"), 
                 type="BRR", combined_weights = FALSE, mse=TRUE)
@@ -496,9 +474,7 @@ $$se(\hat{\theta})=\sqrt{\frac{1}{R (1-\rho)^2} \sum_{r=1}^R \left( \hat{\theta}
 
 The syntax is very similar for BRR and Fay's BRR. If a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, and Fay's multiplier is 0.5, use the following syntax:
 
-```{r}
-#| label: fay
-#| eval: FALSE
+```r
 des_fay <- dat %>%
   as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
                 type="Fay", mse=TRUE, rho=0.5)
@@ -548,9 +524,7 @@ To specify the Jackknife method, the type would be `JK1`, `JKn`, or `JK2`. Addit
 
 Consider a case for the JK1 method where the multiplier, $(R-1)/R=19/20=0.95$ and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, ..., WT20, then the syntax would be
 
-```{r, eval=FALSE}
-#| label: jk1
-#| eval: FALSE
+```r
 des_jk1 <- dat %>%
   as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
                 type="JK1", mse=TRUE, scale=0.95)
@@ -558,9 +532,7 @@ des_jk1 <- dat %>%
 
 Consider a case for the JKn method where $\alpha_r=0.1$ for all replicates and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, ..., WT20, then the syntax would be:
 
-```{r}
-#| label: jkn
-#| eval: FALSE
+```r
 des_jkn <- dat %>%
   as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
                 type="JKN", mse=TRUE, rscales=rep(0.1, 20))
@@ -614,9 +586,7 @@ $$se(\hat{\theta})=\sqrt{\alpha \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\
 
 If a dataset had WT0 for the main weight, had 20 bootstrap weights indicated WT1, WT2, ..., WT20, and $\alpha=.02$, use the following syntax:
 
-```{r}
-#| label: bs
-#| eval: FALSE
+```r
 des_bs <- dat %>%
   as_survey_rep(weights = WT0, repweights= num_range("WT", 1:20),
                 type="bootstrap", mse=TRUE, scale=.02)
@@ -674,9 +644,7 @@ A common method of sampling is to stratify PSUs, select PSUs within stratum usin
 
 For example, the 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation -  https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] had a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units which were stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected PPS. At the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. At the third stage, housing units were selected within the sampled neighborhoods. At the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on person's age and sex. The public use file does not include all these levels of selection and instead includes pseudo-strata and pseudo-clusters which are the variables used in R to specify the design. As specified on page 4, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. Thus, to specify this design in R, one would use the following syntax:
 
-```{r}
-#| label: nsfg
-#| eval: FALSE
+```r
 des_nsfg <- nsfgdata %>%
   as_survey_design(ids = SECU, strata = SEST, weights = WGT2017_2019)
 ```
