@@ -44,9 +44,9 @@ $$se(\bar{y})=\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}$$ and
 
 $$s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.$$
 
-This standard error estimate might look very similar to equations in other applications seen except for the bit on the right side of the equation $1-\frac{n}{N}$ - this is call the finite population correction factor (FPC). If the size of the frame, $N$, is very large, the FPC is negligible so it is often ignored. 
+This standard error estimate might look very similar to equations in other applications except for the part on the right side of the equation: $1-\frac{n}{N}$. This is call the finite population correction factor (FPC), and if the size of the frame, $N$, is very large, the FPC is negligible so it is often ignored. 
 
-To estimate proportions, we define $x_i$ as the indicator that the outcome is observed. That is, $x_i=1$ if the outcome is observed and $x_i=0$ if the outcome is not observed. Then the estimated proportion from a SRS design is:
+To estimate proportions, we define $x_i$ as the indicator if the outcome is observed. That is, $x_i=1$ if the outcome is observed and $x_i=0$ if the outcome is not observed. Then the estimated proportion from a SRS design is:
 
 $$\hat{p}=\frac{1}{n}\sum_{i=1}^n x_i $$
 and the estimated standard error of the proportion is:
@@ -55,14 +55,14 @@ $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} $$
 
 #### The syntax {-} 
 
-If a sample that was drawn through SRS and had no nonresponse or other weighting adjustments, in R specify this design as:
+If a sample was drawn through SRS and had no nonresponse or other weighting adjustments, in R specify this design as:
 
 ```r
 des_srs1 <- dat %>%
   as_survey_design(fpc = fpcvar)
 ```
 
-where `dat` is a tibble or data.frame with the survey data and `fpcvar` is a variable on the tibble which indicates the size of the sampling frame. If the frame was very large, sometimes the frame size is not provided. In that case, specify the design as:
+where `dat` is a tibble or data.frame with the survey data and `fpcvar` is a variable on the tibble which indicates the size of the sampling frame. If the frame was very large, sometimes the frame size is not provided. In that case, the fpc is not needed and specify the design as:
 
 ```r
 des_srs2 <- dat %>%
@@ -110,11 +110,11 @@ des_apisrs
 summary(des_apisrs)
 ```
 
-Printing the design object above, the design is described as an "Independent Sampling design" which is another terminology for SRS. The ids are specified as `1` which means there is no clustering (a topic described later in this chapter), the fpc variable is indicated, and the weights are indicated. When looking at the summary of the design object, the population size is given a summary of the probabilities (inverse of the weights).
+In the printed design object above, the design is described as an "Independent Sampling design" which is another terminology for SRS. The ids are specified as `1` which means there is no clustering (a topic described later in this chapter), the fpc variable is indicated, and the weights are indicated. When looking at the summary of the design object, the population size is given as a summary of the probabilities (inverse of the weights).
 
 ### Simple random sample with replacement
 
-- Description: The simple random sample with replacement (SRSWR) is a sampling design where a sample is selected from a sampling frame with the units being replaced before drawing again so units can be selected more than once.
+- Description: The simple random sample with replacement (SRSWR) is a sampling design where a sample is selected from a sampling frame with the units being replaced before drawing again, so units can be selected more than once.
 - Requirements: Must have a sampling frame for entire population
 - Advantages: Simple, requires no information about the units apart from contact information
 - Disadvantages: Sampling frame may not be available for entire population. Not feasible for in-person data collection. Units can be selected more than once resulting in a smaller realized sample size. For small populations, SRSWR has larger standard errors than SRS designs.
@@ -277,7 +277,7 @@ When printing the object, it is specified as a "Stratified Independent Sampling 
 - Disadvantages: Compared to a simple random sample, for the same sample size, clustered samples generally have larger variance estimates.
 - Examples: 
   - Example 1: Consider a study needing a sample of 6th grade students in the United States, no list likely exists of all these students. Obtaining a list of schools that have 6th graders is more likely to be possible so a study design could select a random sample of schools that have 6th graders. The selected schools can then provide a list of students to do a second stage of sampling where 6th grade students are randomly sampled within each of the sampled schools. This is a one-stage sample design and will be the type of design we will discuss in formulas below.
-  - Example 2: A more complicated but realistic example is necessary when sending out interviewers to households for a survey. Counties could be selected as the PSU, then Census block groups within counties selected as the secondary sampling unit (SSU), and then households within the block groups. This type of design reduces the travel necessary for interviewers.
+  - Example 2: Consider a study sending out interviewers to households for a survey. This is a more complicated example that requires two levels of selection.  First, counties could be selected as the PSU, then Census block groups within counties selected as the secondary sampling unit (SSU).  Households are then randomly sampled within the block groups.  This type of design is popular for in-person survey as it reduces the travel necessary for interviewers.
 
 #### The math {-} 
 
@@ -358,17 +358,17 @@ The design objects are described as "2 - level Cluster Sampling design" and incl
 Replicate weights are often included on analysis files instead of, or in addition to, the design variables (strata and PSUs). Replicate weights are used as another method to estimate variability and often used specifically so that design variables are not published as a measure to limit disclosure risk. There are several types of replicate weights including balanced repeated replication (BRR), Fay's BRR, jackknife, and bootstrap methods. An overview of the process for using replicate weights is:
 
 1. Divide the sample into subsample **replicates** that mirror the design of the sample
-2. Calculate weights for each **replicate** using the same procedures for full-sample weight (i.e. nonresponse and post-stratification)
+2. Calculate weights for each **replicate** using the same procedures for full-sample weight (i.e., nonresponse and post-stratification)
 3. Calculate estimates for each **replicate** using the same method as the full-sample estimate
 4. Calculate the estimated variance which will be proportional the the variance of the replicate estimates
 
 The different types of replicate weights largely differ in step 1 - how the sample is divided into subsamples and step 4 - different multiplication factors (scales) are used to multiply the variance.
 
 ### BRR method
-The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by 2 but may have other adjustments such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have 1 row, 2 rows, or a multiple of 4 rows. An example of a $4\times4$ Hadamard matrix is below:
+The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by 2 but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have 1 row, 2 rows, or a multiple of 4 rows. An example of a $4\times4$ Hadamard matrix is below:
 
 $$ \begin{array}{rrrr} +1 &+1 &+1 &+1\\ +1&-1&+1&-1\\ +1&+1&-1&-1\\ +1 &-1&-1&+1  \end{array} $$
-The columns specify the strata and the rows the replicate. In the first replicate, all the values are +1 so in each of the stratum, the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in stratum 1 and 3 while the second PSU would be used in stratum 2 and 4. In the third replicate the first PSU would be used in stratum 1 and 2 while the second PSU would be used in stratum 3 and 4. Finally, in the third replicate, the first PSU would be used in stratum 1 and 4 while the second PSU would be used in stratum 2 and 3.
+The columns specify the strata and the rows the replicate. In the first replicate, all the values are +1 so in each of the stratum, the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in stratum 1 and 3 while the second PSU would be used in stratum 2 and 4. In the third replicate the first PSU would be used in stratum 1 and 2 while the second PSU would be used in stratum 3 and 4. Finally, in the fourth replicate, the first PSU would be used in stratum 1 and 4 while the second PSU would be used in stratum 2 and 3.
 
 #### The math {-}
 
@@ -398,7 +398,7 @@ des_brr <- dat %>%
 
 ```
 
-If a dataset had WT for the main weight and had 20 BRR weights indicated REPWT1, WT2, ..., REPWT20, the following syntax could be used (both are valid):
+If a dataset had WT for the main weight and had 20 BRR weights indicated REPWT1, REPWT2, ..., REPWT20, the following syntax could be used (both are valid):
 
 ```r
 des_brr <- dat %>%
@@ -418,7 +418,7 @@ des_brr <- dat %>%
                 mse=TRUE)
 ```
 
-Typically, the replicate weights sum to a value similar to the main weight as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. In this case, the replicate weights are not combined and the option `combined_weights = FALSE` should be indicated with the default value being TRUE. This specific syntax is shown below:
+Typically, the replicate weights sum to a value similar to the main weight as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. In this case, the replicate weights are not combined and the option `combined_weights = FALSE` should be indicated, as the default value for this argument is TRUE. This specific syntax is shown below:
 
 ```r
 des_brr <- dat %>%
@@ -501,11 +501,11 @@ des_recs
 summary(des_recs)
 ```
 
-In specifying the design, the `variables` option was also used to include which variables might be used in analyses. This is optional but can make your object smaller. When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Fay's variance method (rho= 0.5 ) with 96 replicates and MSE variances.` and the variables are included. No weight or probability summary is included as was done in some other design objects.
+In specifying the design, the `variables` option was also used to include which variables might be used in analyses. This is optional but can make your object smaller. When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Fay's variance method (rho= 0.5) with 96 replicates and MSE variances.` and the variables are included. No weight or probability summary is included as was done in some other design objects.
 
 ### Jackknife method
 
-There are two jackknife estimators implemented in {srvyr} - Jackknife 1 (JK1), Jackknife n (JKn), and Jackknife 2 (JK2). The JK1 method can be used for unstratified designs and replicates are created by removing one PSU at a time so the number of replicates is the same as the number of PSUs If there is no clustering, then the PSU is the ultimate sampling unit (e.g., unit). 
+There are three jackknife estimators implemented in {srvyr} - Jackknife 1 (JK1), Jackknife n (JKn), and Jackknife 2 (JK2). The JK1 method can be used for unstratified designs and replicates are created by removing one PSU at a time so the number of replicates is the same as the number of PSUs. If there is no clustering, then the PSU is the ultimate sampling unit (e.g., unit). 
 
 The JKn method is used for stratified designs and requires 2 or more PSUs per stratum. In this case, each replicate is created by deleting one PSU from each stratum so the number of replicates is the number of total PSUs across all strata. The JK2 method is a special case of JKn when there are exactly 2 PSUs sampled per stratum. For variance estimation, scaling constants must also be specified.
 
@@ -520,7 +520,7 @@ $$se(\hat{\theta})=\sqrt{\sum_{r=1}^R \left(\alpha_r \hat{\theta}_r-\hat{\theta}
 
 #### The syntax {-}
 
-To specify the Jackknife method, the type would be `JK1`, `JKn`, or `JK2`. Additionally, the overall multiplier for JK1 is specified with the scale argument whereas the replicate specific multiplier ($\alpha_r) is specified with the rscales argument.
+To specify the Jackknife method, the type would be `JK1`, `JKn`, or `JK2`. Additionally, the overall multiplier for JK1 is specified with the scale argument, whereas the replicate specific multiplier ($\alpha_r) is specified with the rscales argument.
 
 Consider a case for the JK1 method where the multiplier, $(R-1)/R=19/20=0.95$ and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, ..., WT20, then the syntax would be
 
@@ -584,7 +584,7 @@ $$se(\hat{\theta})=\sqrt{\alpha \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\
 
 #### The syntax {-}
 
-If a dataset had WT0 for the main weight, had 20 bootstrap weights indicated WT1, WT2, ..., WT20, and $\alpha=.02$, use the following syntax:
+If a dataset had WT0 for the main weight, 20 bootstrap weights indicated WT1, WT2, ..., WT20, and $\alpha=.02$, use the following syntax:
 
 ```r
 des_bs <- dat %>%
@@ -593,7 +593,7 @@ des_bs <- dat %>%
 
 ```
 
-Note that the scale is usually provided in documentation and is a constant so is not provided as a variable in the tibble.
+Note that the scale is usually provided in documentation and is a constant, so is not provided as a variable in the tibble.
 
 #### Example {-}
 
@@ -642,7 +642,7 @@ SRS, stratified, and clustered designs are the backbone of sampling designs and 
 
 A common method of sampling is to stratify PSUs, select PSUs within stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step of survey analysis to understand the design and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User's Guides, methodology, analysis guides, or technical documentation.
 
-For example, the 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation -  https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] had a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units which were stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected PPS. At the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. At the third stage, housing units were selected within the sampled neighborhoods. At the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on person's age and sex. The public use file does not include all these levels of selection and instead includes pseudo-strata and pseudo-clusters which are the variables used in R to specify the design. As specified on page 4, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. Thus, to specify this design in R, one would use the following syntax:
+For example, the 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation -  https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] had a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units which were stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected via PPS. At the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. At the third stage, housing units were selected within the sampled neighborhoods. At the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on person's age and sex. The public use file does not include all these levels of selection and instead includes pseudo-strata and pseudo-clusters which are the variables used in R to specify the design. As specified on page 4 of the documentation, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. Thus, to specify this design in R, one would use the following syntax:
 
 ```r
 des_nsfg <- nsfgdata %>%
