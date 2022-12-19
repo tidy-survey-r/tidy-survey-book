@@ -2,38 +2,137 @@
 
 ## Introduction
 <!-- Definition of descriptive analytics in the context of complex survey analysis -->
-Descriptive analysis describes and aggregates the basic quantitative information of survey data. Common descriptive analyses include the frequency of observations, distributions of responses, or the mean of a numeric variable. Running descriptive analysis allows us to investigate our data and gain insight into the information it contains, and it is crucial in forming the basis of our survey analysis.
+Descriptive analysis describes and summarizes the basic quantitative information of survey data. Common descriptive analyses include the frequency of observations, distributions of responses, or the mean of a numeric variable. In addition to getting a sense of our data, descriptive analysis helps us identify potential errors and assess outliers.  Running descriptive analysis allows us to investigate our data and gain insight into the information it contains, and it is crucial for conducting further survey analysis.
 <!-- Importance of considering the design and sampling of the survey when analyzing data-->
-In complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. We must read survey documentation (as described in Chapter 03) and apply the appropriate sampling weights, PSUs, strata, and replicate weights. Neglecting to incorporate these elements can lead to inaccurate descriptive analyses.
+
+In complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. This requires reading the survey documentation (as described in Chapter 03) to apply the appropriate sampling weights, PSUs, strata, and replicate weights. Neglecting to incorporate these elements can lead to inaccurate descriptive analyses.
 
 The functions in the {srvyr} package allows us to run descriptive analyses while applying design and sampling elements. We can run multiple calculations at the same time thanks to the 'pipe-able' functions. The package also provides consistent return types, so we can use the results with other packages like {ggplot2}.
 <!-- Overview of the topics covered in the chapter -->
 In this chapter, we describe the types of descriptive analytics and the steps involved in running descriptive analysis with {srvyr}.
+<!-- ## Techniques for descriptive analyses -->
+
+```{r}
+#| include: false
+library(srvyr)
+library(survey)
+data(api)
+
+dstrata <- apistrat %>%
+  as_survey_design(strata = stype, weights = pw)
+```
 
 ## Types of descriptive analyses
 
-There are various types of descriptive analysis:
+Descriptive analysis can be categorized into univariate analysis and multivariate analysis, depending on the number of variables we are describing. Below, we describe the descriptive analysis for single or multiple variables, as well as a minimal example of the {srvyr} functions associated with the measures.
 
-* 
+### Univariate analysis
 
-### A brief refresher on the `dplyr::summarize()` function
+Univariate analysis examines a single variable at a time. A single variable has three categories of characteristics: distribution, central tendency, and dispersion. Each characteristic simplifies our dataset. Therefore, it is important to look at multiple characteristics rather than rely on a single one to describe the data.
 
+#### Measures of distribution
+
+Measures of distribution describe how often an event or response is likely to occur. These measures include proportions and quantiles.
+
+* Examples: the proportion of a students in California who did or did not receive an award based on their Academic Performance score; the proportion of U.S. citizens who voted in the last election; the distribution of household income in India divided into quantiles
+
+The {srvyr} package includes several functions for determining measures of distribution. 
+
+* The `survey_total()` function calculates totals
+* The `survey_count()` and `survey_tally()` functions calculate weighted observations by group
+* The `survey_prop()` function calculates proportions
+* The `survey_quantile()` function calculates quantiles
+* The `survey_ratio()` function calculates ratios
+
+For instance, if we want to calculate the proportion of students who received awards for their Academic Performance scores, we run the below:
+
+```{r}
+# Calculate the survey proportion of API Awards (Yes/No)
+
+dstrata %>%
+  group_by(awards) %>%
+  summarise(pct = survey_prop())
+```
+
+#### Measures of central tendency
+
+Measures of central tendency find the central (or average) responses. These include the mean, median, and mode.
+
+* Examples: Average 2000 Academic Performance Index in California, the median house price in Canada
+
+The `survey_mean()` and `survey_median()` functions from {srvyr} calculate mean and median using survey data, respectively.
+
+```{r}
+# Calculate survey mean of variable api00
+
+dstrata %>%
+  group_by(awards) %>%
+  summarise(api00_mean = survey_mean(api00),
+            api00_median = survey_median(api00))
+```
+
+#### Measures of dispersion
+
+Measures of dispersion describe how data is spread around the central tendency. For these measures, we can calculate the range and standard deviation.
+
+* Examples: The standard deviation of the 2000 Academic Performance Index in California, the range between the minimum and maximum electricity expenditure in Ohio
+
+The `survey_var()` and `survey_sd()` functions from the {srvyr} package calculate population variance and standard deviation using survey methods, respectively.
+
+```{r}
+# Calculate the variance and standard deviation 
+dstrata %>%
+  summarise(api99_var = survey_var(api00),
+            api99_sd = survey_sd(api00))
+```
+
+#### A brief refresher on the `dplyr::summarize()` function
+<!-- TODO: Put this in a callout box -->
 The `dplyr::summarize()` function collapses many values down to a single summary:
 
-<!-- TODO: Add example -->
+```{r}
+mtcars %>% 
+  summarize(mean_hp = mean(hp))
+```
 
 These verbs can be used in conjunction with `group_by()`, applying the functions on a group-by-group basis to create grouped summaries.
 
+```{r}
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarize(mean_hp = mean(hp))
+```
+<!--TODO: end callout note-->
+
+### Multivariate analysis
+
+Multivariate analysis studies the relationship between multiple variables.
+
+* Examples:
+
+## Deciding on descriptive analyses
+
+Choosing which measures are appropriate depend on the type of variable being examined. Variables are classified as categorical/nominal, ordinal, and interval/ratio.
+
+* Categorical/nominal data: variables with levels or descriptions that cannot be ordered, such as region of the country (North, South, East, and West)
+* Ordinal data: variables that can be ordered, such as those from a Likert scale (strongly disagree, disagree, agree, and strongly agree)
+* Interval/ratio: variables that are counted or measured, such as age or income
+  * Within interval/ratio data are *discrete* variables, whose values are whole numbers, such as number of children, and *continuous* variables, whose values can lie anywhere on an interval, such as weight.
+  
+Determining the appropriate descriptive analysis depends on the type of variable being examined. We should use different measures depending on whether our variables are interval/ratio, ordinal, or nominal.
+
 ## Descriptive analysis using the {srvyr} package
 
-1. Create a `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()`
-2. Subset the data for subpopulations using `dplyr::filter()`, if needed
-3. Specify domains of analysis using `dplyr::group_by()`, if needed
-4. Within `srvyr::summarize()`, specify variables to calculate ,means, totals, proportions, quantiles, and more
+### Setup
 
-## Setup
+Recall from [Chapter 05](#c05) the general process for estimation with the {srvyr} package:
 
-With the ANES data, we create a `tbl_svy` object using `srvyr::as_survey_design()`,  adjusting the weight to add up to the citizen population (as described in Chapter 05):
+1. Create a `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()`.
+2. Subset the data for subpopulations using `dplyr::filter()`, if needed.
+3. Specify domains of analysis using `dplyr::group_by()`, if needed.
+4. Within `srvyr::summarize()`, specify variables to calculate ,means, totals, proportions, quantiles, and more.
+
+With the ANES data, we create a `tbl_svy` object using `srvyr::as_survey_design()`,  adjusting the weight to add up to the citizen population:
 
 ```{r anes_des}
 #| error: FALSE
@@ -61,7 +160,7 @@ anes_des <- anes %>%
 
 ### Count observations using survey methods with `survey_count()`
 
-With `srvyr::survey_count()`, you can produce weighted counts and variance of your choice. The syntax is very similar to the `dplyr::count()` syntax; however, it can only be called on `tbl_srvy()` objects. Let's explore the syntax:
+With `srvyr::survey_count()`, you can produce weighted counts and variance of your choice. The syntax is very similar to the `dplyr::count()` syntax. However, it can only be called on `tbl_srvy()` objects. Let's explore the syntax:
 
 ```r
 survey_count(
@@ -234,13 +333,15 @@ anes_des %>%
 
 ### Other functions that use survey methods
 
-The {srvyr} package includes other functions for summarizing datasets:
+The {srvyr} package includes other functions for summarizing datasets, as mentioned in the section on types of descriptive analysis. Here is the full list:
 
-* Center: `survey_mean()`, `survey_prop()`, `survey_median()`
+* Center: `survey_mean()`, `survey_median()`
 * Count: `survey_count()`, `survey_total()`
+* Distribution: `survey_ratio()`, `survey_prop()`
 * Range: `survey_quantile()`
-* Ratio: `survey_ratio()`
 * Variance: `survey_var()`, `survey_sd()`
+
+While we will not cover each one in depth; however, the same principles that we have seen apply.
 
 ### Calculate conditional proportions with more than one group
 
@@ -296,4 +397,3 @@ anes_des %>%
   summarize(p = survey_mean(deff = TRUE), #<<
             N = survey_total())
 ```
-
