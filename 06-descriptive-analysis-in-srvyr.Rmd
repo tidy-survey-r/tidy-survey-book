@@ -108,6 +108,23 @@ Multivariate analysis studies the relationship between multiple variables (bivar
 
 * Examples:
 
+```{r}
+var <- survey::svyvar(~api00 + api99, design = dstrata)
+vmat <- as.matrix(var)
+attr(vmat, "var") <- NULL # Remove extra info
+attr(vmat, "statistic") <- NULL # Remove extra info
+stats::cov2cor(vmat)
+
+# Another option, using the native R pipe and labelled::remove_attributes()
+
+dstrata |>
+ survey::svyvar(~api00 + api99, design = _) |>
+ as.matrix(x = _) |>
+ labelled::remove_attributes(x = _, "var") |>
+ labelled::remove_attributes(x = _, "statistic") |>
+ stats::cov2cor(V = _)
+```
+
 ## Deciding on descriptive analyses
 
 Choosing which measures are appropriate depend on the type of variable being examined. Variables are classified as categorical/nominal, ordinal, and interval/ratio.
