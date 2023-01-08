@@ -2,14 +2,14 @@
 
 ## Introduction
 <!-- Definition of descriptive analytics in the context of complex survey analysis -->
-Descriptive analysis describes and summarizes the basic quantitative information of survey data. Common descriptive analyses include the frequency of observations, distributions of responses, or the mean of a numeric variable. In addition to getting a sense of our data, descriptive analysis helps us identify potential errors and assess outliers.  Running descriptive analysis allows us to investigate our data and gain insight into the information it contains, and it is crucial for conducting further survey analysis.
+Descriptive analysis describes and summarizes the basic quantitative information of survey data. Common descriptive analyses include the frequency of observations, distributions of responses, or the mean of a numeric variable. In addition to getting a sense of our data, descriptive analysis helps us identify potential errors and assess outliers. Running descriptive analysis allows us to investigate our data and gain insight into the information it contains, and it is crucial for conducting further survey analysis.
 <!-- Importance of considering the design and sampling of the survey when analyzing data-->
 
 In complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. This requires reading the survey documentation (as described in Chapter 03) to apply the appropriate sampling weights, PSUs, strata, and replicate weights. Neglecting to incorporate these elements can lead to inaccurate descriptive analyses.
 
-The functions in the {srvyr} package allows us to run descriptive analyses while applying design and sampling elements. We can run multiple calculations at the same time thanks to the 'pipe-able' functions. The package also provides consistent return types, so we can use the results with other packages like {ggplot2}.
+The functions in the {srvyr} package allow us to run descriptive analyses while applying design and sampling elements. We can run multiple calculations in the same command thanks to the 'pipe-able' functions. The package also provides consistent return types so we can use the results with other packages like {ggplot2}.
 <!-- Overview of the topics covered in the chapter -->
-In this chapter, we describe the types of descriptive analytics and the steps involved in running descriptive analysis with {srvyr}.
+This chapter describes the types of descriptive analytics and the steps involved in running descriptive analysis with {srvyr}.
 <!-- ## Techniques for descriptive analyses -->
 
 ```{r}
@@ -24,7 +24,7 @@ dstrata <- apistrat %>%
 
 ## Types of descriptive analyses
 
-Descriptive analysis can be categorized into univariate analysis and multivariate analysis, depending on the number of variables we are describing. Below, we describe the descriptive analysis for single or multiple variables, as well as a minimal example of the {srvyr} functions associated with the measures. In the next section, we will provide in-depth explanations of each of the functions.
+Descriptive analysis can be categorized into univariate and multivariate analysis, depending on the number of variables we describe. Below, we describe the descriptive analysis for single or multiple variables and a minimal example of the {srvyr} functions associated with the measures. In the next section, we will explain each of the functions in-depth.
 
 ### Univariate analysis
 
@@ -34,7 +34,7 @@ Univariate analysis examines a single variable at a time. A single variable has 
 
 Measures of distribution describe how often an event or response occurs. These measures include proportions and quantiles.
 
-* Examples: the proportion of a students in California who did or did not receive an award based on their Academic Performance score; the proportion of U.S. citizens who voted in the last election; the distribution of household income in India divided into quantiles
+* Examples: the proportion of students in California who did or did not receive an award based on their Academic Performance score; the proportion of U.S. citizens who voted in the last election; the distribution of household income in India divided into quantiles
 
 The {srvyr} package includes several functions for determining measures of distribution. 
 
@@ -71,7 +71,7 @@ dstrata %>%
 
 #### Measures of dispersion
 
-Measures of dispersion describe how data is spread around the central tendency. These measures include the range and standard deviation.
+Measures of dispersion describe how data spreads around the central tendency. These measures include the range and standard deviation.
 
 * Examples: The standard deviation of the 2000 Academic Performance Index in California, the range between the minimum and maximum electricity expenditure in Ohio
 
@@ -86,7 +86,7 @@ dstrata %>%
 
 #### A brief refresher on the `dplyr::summarize()` function
 <!-- TODO: Put this in a callout box -->
-The `dplyr::summarize()` function collapses many values down to a single summary:
+Several functions in {srvyr} must be called within the `dplyr::summarize()` function. Recall that `summarize()` collapses many values down to a single summary:
 
 ```{r}
 mtcars %>% 
@@ -102,11 +102,30 @@ mtcars %>%
 ```
 <!--TODO: end callout note-->
 
-### Multivariate analysis
+### Bivariate/multivariate analysis
 
-Multivariate analysis studies the relationship between multiple variables (bivariate analysis concerns the relationship between two variables). The correlation is a number between -1 and +1 that denotes the strength of the linear relationship between two variables.
+Bivariate analysis concerns the relationship between two variables, while Multivariate analysis studies the relationship between multiple variables. The correlation is a number between -1 and +1 that denotes the strength of the linear relationship between two variables.
 
-* Examples:
+* Examples: Relationship between academic performance scores in 1999 and 2000; relationship between age and income 
+
+The {srvyr} package does not include a function for calculating correlations for survey variables. We can use the {survey} package's `svyvar()` estimates the variance between the variables and then `cov2cor()` to get the correlation. Another option is to use the `svycor()` function from the {jtools} package.
+
+```{r}
+# Calculate correlation between API 2000 and API 1999.
+
+var <- survey::svyvar(~api00 + api99, design = dstrata)
+vmat <- as.matrix(var)
+attr(vmat, "var") <- NULL # Remove extra info
+attr(vmat, "statistic") <- NULL # Remove extra info
+cov2cor(vmat)
+
+# Alternatively
+dstrata |>
+  survey::svyvar(~api00 + api99, design = _) |>
+  (\(x) as.matrix(x))() |>
+  mutate(across(everything(), var, NULL)) |>
+  (\(x) cov2cor(x))()
+```
 
 ```{r}
 var <- survey::svyvar(~api00 + api99, design = dstrata)
@@ -127,14 +146,14 @@ dstrata |>
 
 ## Deciding on descriptive analyses
 
-Choosing which measures are appropriate depend on the type of variable being examined. Variables are classified as categorical/nominal, ordinal, and interval/ratio.
+We choose which measures to look at depending on which are appropriate for the type of variable we are examining. Variables are classified as categorical/nominal, ordinal, and interval/ratio.
 
 * Categorical/nominal data: variables with levels or descriptions that cannot be ordered, such as region of the country (North, South, East, and West)
 * Ordinal data: variables that can be ordered, such as those from a Likert scale (strongly disagree, disagree, agree, and strongly agree)
 * Interval/ratio: variables that are counted or measured, such as age or income
   * Within interval/ratio data are *discrete* variables, whose values are whole numbers, such as number of children, and *continuous* variables, whose values can lie anywhere on an interval, such as weight.
   
-Determining the appropriate descriptive analysis depends on the type of variable being examined. We should use different measures depending on whether our variables are interval/ratio, ordinal, or nominal.
+We should use different measures depending on whether our variables are interval/ratio, ordinal, or nominal.
 
 ## Descriptive analysis using the {srvyr} package
 
@@ -412,3 +431,7 @@ anes_des %>%
   summarize(p = survey_mean(deff = TRUE), #<<
             N = survey_total())
 ```
+
+## Summary
+
+
