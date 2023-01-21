@@ -2,12 +2,12 @@
 
 ## Introduction
 <!-- Definition of descriptive analytics in the context of complex survey analysis -->
-Descriptive analysis describes and summarizes the basic quantitative information of survey data. Common descriptive analyses include the frequency of observations, distributions of responses, or the mean of a numeric variable. In addition to getting a sense of our data, descriptive analysis helps us identify potential errors and assess outliers. Running descriptive analysis allows us to investigate our data and gain insight into the information it contains, and it is crucial for conducting further survey analysis.
+Descriptive analysis describes and summarizes the basic quantitative information of survey data. Common descriptive analyses include the frequency of observations, distributions of responses, or the mean of a numeric variable. In addition to getting a sense of what our data includes, descriptive analysis helps us identify potential errors and assess outliers. Running descriptive analysis allows us to investigate our data and gain insight into the information it contains, and it is crucial for conducting further survey analysis.
 <!-- Importance of considering the design and sampling of the survey when analyzing data-->
 
-In complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. This requires reading the survey documentation (as described in Chapter 03) to apply the appropriate sampling weights, PSUs, strata, and replicate weights. Neglecting to incorporate these elements can lead to inaccurate descriptive analyses.
+For complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. This requires reading the survey documentation (as described in [Chapter 03](#c03)) to apply the appropriate sampling weights, PSUs, strata, and replicate weights. Neglecting to incorporate these elements can lead to inaccurate descriptive analyses.
 
-The functions in the {srvyr} package allow us to run descriptive analyses while applying design and sampling elements. We can run multiple calculations in the same command thanks to the 'pipe-able' functions. The package also provides consistent return types so we can use the results with other packages like {ggplot2}.
+The functions in the {srvyr} package allow us to run descriptive analyses while applying design and sampling elements. We can run multiple calculations in the same command thanks to the 'pipe-able' functions. The package also provides consistent return types so we can use outputs with other packages like {ggplot2}.
 <!-- Overview of the topics covered in the chapter -->
 This chapter describes the types of descriptive analytics and the steps involved in running descriptive analysis with {srvyr}.
 <!-- ## Techniques for descriptive analyses -->
@@ -25,6 +25,24 @@ dstrata <- apistrat %>%
 ## Types of descriptive analyses
 
 Descriptive analysis can be categorized into univariate and multivariate analysis, depending on the number of variables we describe. Below, we describe the descriptive analysis for single or multiple variables and a minimal example of the {srvyr} functions associated with the measures. In the next section, we will explain each of the functions in-depth.
+
+#### A brief refresher on the `dplyr::summarize()` function
+<!-- TODO: Put this in a callout box -->
+Several functions in {srvyr} must be called within the `dplyr::summarize()` function. Recall that `summarize()` collapses many values down to a single summary:
+
+```{r}
+mtcars %>% 
+  summarize(mean_hp = mean(hp))
+```
+
+These verbs can be used in conjunction with `group_by()`, applying the functions on a group-by-group basis to create grouped summaries.
+
+```{r}
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarize(mean_hp = mean(hp))
+```
+<!--TODO: end callout note-->
 
 ### Univariate analysis
 
@@ -51,6 +69,7 @@ dstrata %>%
   group_by(awards) %>%
   summarise(pct = survey_prop())
 ```
+Running the above, we see the weighted percentage of students who received awards is 63.9%.
 
 #### Measures of central tendency
 
@@ -58,16 +77,17 @@ Measures of central tendency find the central (or average) responses. These incl
 
 * Examples: Average 2000 Academic Performance Index in California, the median house price in Canada
 
-The `survey_mean()` and `survey_median()` functions from {srvyr} calculate mean and median using survey data, respectively.
+The `survey_mean()` and `survey_median()` functions from {srvyr} calculate mean and median using survey data, respectively. These functions must be called from within `summarize()`.
 
 ```{r}
 # Calculate survey mean of variable api00
 
 dstrata %>%
-  group_by(awards) %>%
   summarise(api00_mean = survey_mean(api00),
             api00_median = survey_median(api00))
 ```
+
+The weighted average score in 2000 was 662.3, and the median score was 668.
 
 #### Measures of dispersion
 
@@ -84,48 +104,16 @@ dstrata %>%
             api99_sd = survey_sd(api00))
 ```
 
-#### A brief refresher on the `dplyr::summarize()` function
-<!-- TODO: Put this in a callout box -->
-Several functions in {srvyr} must be called within the `dplyr::summarize()` function. Recall that `summarize()` collapses many values down to a single summary:
-
-```{r}
-mtcars %>% 
-  summarize(mean_hp = mean(hp))
-```
-
-These verbs can be used in conjunction with `group_by()`, applying the functions on a group-by-group basis to create grouped summaries.
-
-```{r}
-mtcars %>% 
-  group_by(cyl) %>% 
-  summarize(mean_hp = mean(hp))
-```
-<!--TODO: end callout note-->
+In this case, the variance for the 1999 scores was 15190.59	with a standard error of 1273.3 and a standard deviation was 123.3.
 
 ### Bivariate/multivariate analysis
 
-Bivariate analysis concerns the relationship between two variables, while Multivariate analysis studies the relationship between multiple variables. The correlation is a number between -1 and +1 that denotes the strength of the linear relationship between two variables.
+Bivariate analysis concerns the relationship between two variables. Multivariate analysis studies the relationship between multiple variables. A common analysis includes correlation, which is a number between -1 and +1 that denotes the strength of the linear relationship between two variables.
 
-* Examples: Relationship between academic performance scores in 1999 and 2000; relationship between age and income 
+* Examples: Relationship between academic performance scores in 1999 and 2000; relationship between age and income
 
-The {srvyr} package does not include a function for calculating correlations for survey variables. We can use the {survey} package's `svyvar()` estimates the variance between the variables and then `cov2cor()` to get the correlation. Another option is to use the `svycor()` function from the {jtools} package.
-
-```{r}
-# Calculate correlation between API 2000 and API 1999.
-
-var <- survey::svyvar(~api00 + api99, design = dstrata)
-vmat <- as.matrix(var)
-attr(vmat, "var") <- NULL # Remove extra info
-attr(vmat, "statistic") <- NULL # Remove extra info
-cov2cor(vmat)
-
-# Alternatively
-dstrata |>
-  survey::svyvar(~api00 + api99, design = _) |>
-  (\(x) as.matrix(x))() |>
-  mutate(across(everything(), var, NULL)) |>
-  (\(x) cov2cor(x))()
-```
+<!--- TODO: check if this is still true in December 2023 --->
+The {srvyr} package does not include a function for calculating correlations for survey variables. We can use the {survey} package's `svyvar()` to estimate the variance between the variables and then run `cov2cor()` to get the correlation.
 
 ```{r}
 var <- survey::svyvar(~api00 + api99, design = dstrata)
@@ -144,8 +132,10 @@ dstrata |>
  stats::cov2cor(V = _)
 ```
 
-## Deciding on descriptive analyses
+These is a strong correlation (0.97) between a district's score in 1999 and 2000.
 
+## Deciding on descriptive analyses
+<!-- TODO: simplify this sentence -->
 We choose which measures to look at depending on which are appropriate for the type of variable we are examining. Variables are classified as categorical/nominal, ordinal, and interval/ratio.
 
 * Categorical/nominal data: variables with levels or descriptions that cannot be ordered, such as region of the country (North, South, East, and West)
@@ -153,7 +143,7 @@ We choose which measures to look at depending on which are appropriate for the t
 * Interval/ratio: variables that are counted or measured, such as age or income
   * Within interval/ratio data are *discrete* variables, whose values are whole numbers, such as number of children, and *continuous* variables, whose values can lie anywhere on an interval, such as weight.
   
-We should use different measures depending on whether our variables are interval/ratio, ordinal, or nominal.
+We use different measures based on whether our variables are interval/ratio, ordinal, or nominal.
 
 ## Descriptive analysis using the {srvyr} package
 
@@ -166,9 +156,13 @@ Recall from [Chapter 05](#c05) the general process for estimation with the {srvy
 3. Specify domains of analysis using `dplyr::group_by()`, if needed.
 4. Within `srvyr::summarize()`, specify variables to calculate ,means, totals, proportions, quantiles, and more.
 
-With the ANES data, we create a `tbl_svy` object using `srvyr::as_survey_design()`,  adjusting the weight to add up to the citizen population:
+The Residential Energy Consumption Survey (RECS) provides data on energy consumption and expenditures. It is funded by Energy Information Administration and collects information through energy suppliers through in-person, phone, and web interviews. It has been fielded 14 times between 1950 and 2020. Topics include appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.
 
-```{r anes_des}
+The survey targets primary occupied housing units in the US. RECS uses Balanced Repeated Replication (BRR) to estimate the variances. The full sample information is available on the [EIA website](https://www.eia.gov/consumption/residential/index.php). 
+
+To begin analyzing RECS, we create a `tbl_svy` object using `srvyr::as_survey_design()`:
+
+```{r recs_des}
 #| error: FALSE
 #| warning: FALSE
 #| message: FALSE
@@ -177,18 +171,18 @@ library(srvyr) # for tidy survey analysis
 library(readr)
 library(here)
 
-anes <-
+recs <-
   read_rds(here::here(
-    "data", "anes_2020.rds"
-  )) %>%
-  mutate(Weight = Weight / sum(Weight) * 231592693)
+    "data", "recs.rds"
+  ))
 
-anes_des <- anes %>%
-  as_survey_design(
-    weights = Weight,
-    strata = Stratum,
-    ids = VarUnit,
-    nest = TRUE
+recs_des <- recs %>%
+  as_survey_rep(
+    weights = NWEIGHT,
+    repweights = starts_with("BRRWT"),
+    type = "Fay",
+    rho = 0.5,
+    mse = TRUE
   )
 ```
 
@@ -224,19 +218,21 @@ The steps to use `survey_count()` are:
 * Filter subsets using `dplyr::filter()`, if needed
 * Run `survey_count()`, specifying the required arguments within the function
 
-Let's see the weighted count of responses in ANES:
+Let's see the weighted count of responses in RECS:
 
 ```{r}
-anes_des %>% #  Specify the sample design
+recs_des %>% #  Specify the sample design
   survey_count() # Run `survey_count()`
 ```
+
+There are 118,208,250 weighted total responses in the survey.
 
 `srvyr::count()` can take one or many variables. To calculate a cross-tab of population in each age group and gender, we run the below:
 
 ```{r}
-anes_des %>%
+recs_des %>%
   # Specify the required arguments within the function
-  survey_count(AgeGroup, Gender, name = "N") 
+  survey_count(Region, Division, name = "N") 
 ```
 
 ### Calculate totals using survey methods using `survey_total()`
@@ -272,16 +268,16 @@ The steps to use `survey_total()` are:
 To calculate a population count estimate with `survey_total()`, we can run the below:
 
 ```{r}
-anes_des %>%
+recs_des %>%
   summarize(survey_total(), .groups = "drop")
 ```
 
 The `.groups =` argument controls the grouping structure of the output. When the output no longer have grouping variables because they are dropped, it becomes ungrouped. <!-- TODO: Check this after dplyr 1.1.0 is released -->
 
-Notice that `anes_des %>% summarize(survey_total(), .groups = "drop")` is equivalent to the `survey_count()` call:
+Notice that `recs_des %>% summarize(survey_total(), .groups = "drop")` is equivalent to the `survey_count()` call:
 
 ```{r}
-anes_des %>%
+recs_des %>%
   survey_count() 
 ```
 
@@ -321,53 +317,55 @@ The steps involved are:
 * Specify the cross tab in `group_by()`,
 * Run `survey_mean()` or `survey_prop()` within `summarize()`
 
-Looking at population by age group, we can calculate the weighted proportion for each group in the data:
+Looking at responses by urbanicity, we can calculate the weighted proportion for each group in the data:
 
 ```{r survey_p_ex1}
-anes_des %>%
-  group_by(AgeGroup) %>%
-  summarize(p1 = survey_mean(),
+recs_des %>%
+  group_by(Urbanicity) %>%
+  summarize(p1 = survey_prop(),
             .groups = "drop")
 ```
+
+69.6% of the responses are from people in urban areas, 10.5% from urban clusters, and 19.8% from rural areas.
 
 The `survey_prop()` function is equivalent to leaving out the `x` argument in `survey_mean()`.
 
 ```{r}
-anes_des %>%
-  group_by(AgeGroup) %>%
+recs_des %>%
+  group_by(Urbanicity) %>%
   summarize(p1 = survey_prop(),
             .groups = "drop")
 ```
 
 ### Calculate proportions with confidence intervals
 
-We can also calculate confidence intervals within `summarize` using `survey_mean()` or `survey_mean()` by setting the `vartype` to `ci`. The confidence intervals provide us with an upper and lower column for each method.
+We calculate confidence intervals by setting the `vartype` to `ci` within `summarize` when using `survey_mean()` or `survey_mean()`. The confidence intervals provide us with an upper and lower column for each method.
 
 ```{r survey_p_ci}
-anes_des %>%
-  group_by(Income7, VotedPres2016, VotedPres2020) %>%
-  summarize(pd = survey_prop(vartype = "ci") %>% round(4)) %>%
-  select(Income7, VotedPres2016, VotedPres2020, contains("_"))
+recs_des %>%
+  group_by(Urbanicity) %>%
+  summarize(pd = survey_prop(
+    vartype = "ci"
+    ) %>% round(4))
 ```
 
-We can change the proportion method by adding `prop_method`. The available options are: `"logit"`, `"likelihood"`, `"asin"`, `"beta"`, and `"mean"`.
+We can change the proportion method by adding `prop_method`. The available options are `"logit"`, `"likelihood"`, `"asin"`, `"beta"`, and `"mean"`.
 
-Using `proportion = TRUE` make confidence intervals more accurate near 0 and 1.
+Using `proportion = TRUE` makes confidence intervals more accurate near 0 and 1.
 
 ```{r}
-anes_des %>%
-  group_by(Income7, VotedPres2016, VotedPres2020) %>%
+recs_des %>%
+  group_by(Urbanicity) %>%
   summarize(pl = survey_prop(
     proportion = TRUE,
     prop_method = "logit",
     vartype = "ci"
-  ) %>% round(4)) %>% 
-  select(Income7, VotedPres2016, VotedPres2020, contains("_"))
+  ) %>% round(4))
 ```
 
 ### Other functions that use survey methods
 
-The {srvyr} package includes other functions for summarizing datasets, as mentioned in the section on types of descriptive analysis. Here is the full list:
+The {srvyr} package includes other functions for summarizing datasets, as mentioned in the section on types of descriptive analysis.
 
 * Center: `survey_mean()`, `survey_median()`
 * Count: `survey_count()`, `survey_total()`
@@ -375,16 +373,15 @@ The {srvyr} package includes other functions for summarizing datasets, as mentio
 * Range: `survey_quantile()`
 * Variance: `survey_var()`, `survey_sd()`
 
-While we will not cover each one in depth; however, the same principles that we have seen apply.
+While we will not cover each one in depth; however, the same principles above apply.
 
 ### Calculate conditional proportions with more than one group
 
-Specifying more than one group calculates conditional proportions. Say we wanted to know the proportion of people who voted in 2016 and 2020. After the `tbl_svy` object, we specify the two variables we want to calculate proportions for:
+Specifying more than one group calculates conditional proportions. Say we wanted to know the proportion of respondents who live in rural regions in the Northeast. After the `tbl_svy` object, we specify the two variables we want to calculate proportions for:
 
 ```{r survey_p_cond, tidy=FALSE}
-anes_des %>%
-  filter(!is.na(VotedPres2016), !is.na(VotedPres2020)) %>%
-  group_by(VotedPres2016, VotedPres2020) %>%
+recs_des %>%
+  group_by(Region, Urbanicity) %>%
   summarize(
     p = survey_mean(),
     N = survey_total(),
@@ -393,25 +390,24 @@ anes_des %>%
   )
 ```
 
-Note that this is the proportion of **people voting in 2020 by whether people voted in 2016**. That is, it is the weighted number of people who voted in both 2016 and 2020 (144578247), divided by the weighted number of people who voted in 2016 (144578247 + 11917394). Running the above, we see that 92.4% of people who voted in 2016 voted in 2020.
+From the table, we see that the weighted proportion is 15.5%. Note that column `p` is the proportion of **respondents in rural areas by region**. That is, it is the weighted number of people in rural areas in the Northeast (3,257,375), divided by the weighted number of respondents in the Northeast (15,595,476 + 2,153,686 + 3,257,375).
 
 ### Calculate joint proportions with more than one group
 
 When we want to calculate multiple variables as if they were a single variable, we use {srvyr}'s `interact`. We use `interact` within `group_by()` to calculate the  joint proportions of two or more variables.
 
 ```{r survey_p_joint}
-anes_des %>%
-  filter(!is.na(VotedPres2020), !is.na(VotedPres2016)) %>%
-  group_by(interact(VotedPres2016, VotedPres2020)) %>% #<<
+recs_des %>%
+  group_by(interact(Region, Urbanicity)) %>%
   summarize(p = survey_mean(),
             N = survey_total(),
             .groups = "drop")
 ```
 
-Since `interact` groups by multiple variables as if they were a single variable, the proportions sum to 100% across more than a single grouping variable.
+Since `interact` groups by multiple variables as if they were a single variable, the proportions in column `p` sum to 100% across more than a single grouping variable.
 
 ```{r}
-anes_des %>%
+recs_des %>%
   filter(!is.na(VotedPres2020),!is.na(VotedPres2016)) %>%
   group_by(interact(VotedPres2016, VotedPres2020)) %>% #<<
   summarize(p = survey_mean(),
@@ -425,7 +421,7 @@ anes_des %>%
 Note above that functions `survey_total()`, `survey_mean()`, and `survey_prop()` have the argument `deff`. `deff` stands for Design Effect, the ratio of two variances. Use `deff = TRUE` argument to specify whether the design effect should be returned.
 
 ```{r survey_p_deff}
-anes_des %>%
+recs_des %>%
   filter(!is.na(VotedPres2016),!is.na(VotedPres2020)) %>%
   group_by(interact(VotedPres2016, VotedPres2020)) %>%
   summarize(p = survey_mean(deff = TRUE), #<<
