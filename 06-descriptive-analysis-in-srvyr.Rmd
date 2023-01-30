@@ -1,11 +1,10 @@
 # Descriptive analyses in srvyr {#c06}
 
-## Introduction
 <!-- Definition of descriptive analytics in the context of complex survey analysis -->
 Descriptive analysis describes and summarizes the basic quantitative information of survey data. Common descriptive analyses include the frequency of observations, distributions of responses, or the mean of a numeric variable. In addition to getting a sense of what our data includes, descriptive analysis helps us identify potential errors and assess outliers. Running descriptive analysis allows us to investigate our data and gain insight into the information it contains, and it is crucial for conducting further survey analysis.
 <!-- Importance of considering the design and sampling of the survey when analyzing data-->
 
-For complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. This requires reading the survey documentation (as described in [Chapter 03](#c03)) to apply the appropriate sampling weights, PSUs, strata, and replicate weights. Neglecting to incorporate these elements can lead to inaccurate descriptive analyses.
+In complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. This requires reading the survey documentation (as described in Chapter \@ref(c05)) to apply the appropriate sampling weights, PSUs, strata, and replicate weights. Neglecting to incorporate these elements can lead to inaccurate descriptive analyses.
 
 The functions in the {srvyr} package allow us to run descriptive analyses while applying design and sampling elements. We can run multiple calculations in the same command thanks to the 'pipe-able' functions. The package also provides consistent return types so we can use outputs with other packages like {ggplot2}.
 <!-- Overview of the topics covered in the chapter -->
@@ -22,33 +21,92 @@ dstrata <- apistrat %>%
   as_survey_design(strata = stype, weights = pw)
 ```
 
-## Types of descriptive analyses
-
-Descriptive analysis can be categorized into univariate and multivariate analysis, depending on the number of variables we describe. Below, we describe the descriptive analysis for single or multiple variables and a minimal example of the {srvyr} functions associated with the measures. In the next section, we will explain each of the functions in-depth.
-
-#### A brief refresher on the `dplyr::summarize()` function
+#### Similarities between {dplyr} and {srvyr} functions {-}
 <!-- TODO: Put this in a callout box -->
-Several functions in {srvyr} must be called within the `dplyr::summarize()` function. Recall that `summarize()` collapses many values down to a single summary:
+One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package. We can use pipes to specify a `tbl_svy` object, apply a function, and then take that output and feed it into the first argument of the next function. Functions follow the 'tidy' convention of snake_case functions names.
+
+```{r}
+#| eval: false
+# Example data manipulation using {srvyr} and pipes
+dstrata %>% # A `tbl_svy` object
+  summarize(api99_var = survey_var(api00),
+            api99_sd = survey_sd(api00))
+```
+<!-- I wonder if this should be in the survey design object chapter? -->
+The functions in {srvyr} also play nicely with other tidyverse functions. If we wanted to create our survey object by selecting specific columns, we could use `dplyr::select()`'s special selection functions (such as `starts_with()`, `one_of()`, etc.).
+
+```{r}
+dstrata <- dstrata %>%
+  as_survey_design(
+    1,
+    strata = stype,
+    fpc = fpc,
+    weight = pw,
+    variables = c(stype, starts_with("api"))
+  )
+```
+
+We can use {dplyr} verbs such as `mutate()`, `filter()`, etc. on our survey object.
+
+```{r}
+dstrata <- dstrata %>%
+  mutate(api_diff = api00 - api99) %>%
+  rename(api_students = api.stu)
+```
+
+
+Instead of data frames or tibbles, {srvyr} functions are meant for `tbl_svy` objects. Attempting to run data manipulation on non-`tbl_svy` objects will result in an error:
+
+```{r}
+#| error: true
+mtcars %>% # An object of the type 'list'
+  summarize(survey_total())
+```
+
+A few functions in {srvyr} parallel functions available in {dplyr}, such as `srvyr::summarize()` and `srvyr::group_by()`. Unlike {srvyr}-specific verbs, the package recognizes if you attempt to run these parallel functions on a non-survey object. It will not error and instead give you the equivalent output from {dplyr}:
 
 ```{r}
 mtcars %>% 
-  summarize(mean_hp = mean(hp))
+  srvyr::summarize(mean_hp = mean(hp))
+```
+
+Because this book focuses on survey analysis, most of our pipes will stem from a survey object. We will not be including the namespace for each function (e.g., `srvyr::summarize()`).
+
+Several functions in {srvyr} must be called within {srvyr}'s `summarize()` function. Recall that `dplyr::summarize()` collapses many values down to a single summary:
+
+```{r}
+mtcars %>% 
+  dplyr::summarize(mean_hp = mean(hp))
 ```
 
 These verbs can be used in conjunction with `group_by()`, applying the functions on a group-by-group basis to create grouped summaries.
 
 ```{r}
 mtcars %>% 
-  group_by(cyl) %>% 
-  summarize(mean_hp = mean(hp))
+  dplyr::group_by(cyl) %>% 
+  dplyr::summarize(mean_hp = mean(hp))
 ```
+
+We use a similar setup to summarize data in {srvyr}.
+
+```{r}
+dstrata %>%
+  summarize(api00_mean = survey_mean(api00),
+            api00_median = survey_median(api00))
+```
+
+
 <!--TODO: end callout note-->
+
+## Types of descriptive analyses
+
+Descriptive analysis can be categorized into univariate and multivariate analysis, depending on the number of variables we include. Below, we describe the descriptive analysis for single or multiple variables and a minimal example of the {srvyr} functions associated with the measures. In the next section, we will explain each of the functions in-depth.
 
 ### Univariate analysis
 
 Univariate analysis examines a single variable at a time. A single variable has three categories of characteristics: distribution, central tendency, and dispersion. Each characteristic simplifies our dataset. Therefore, it is important to look at multiple characteristics rather than rely on a single one to describe the data.
 
-#### Measures of distribution
+#### Measures of distribution {-}
 
 Measures of distribution describe how often an event or response occurs. These measures include proportions and quantiles.
 
@@ -67,11 +125,11 @@ The {srvyr} package includes several functions for determining measures of distr
 
 dstrata %>%
   group_by(awards) %>%
-  summarise(pct = survey_prop())
+  summarize(pct = survey_prop())
 ```
 Running the above, we see the weighted percentage of students who received awards is 63.9%.
 
-#### Measures of central tendency
+#### Measures of central tendency {-}
 
 Measures of central tendency find the central (or average) responses. These include the mean, median, and mode.
 
@@ -83,13 +141,13 @@ The `survey_mean()` and `survey_median()` functions from {srvyr} calculate mean 
 # Calculate survey mean of variable api00
 
 dstrata %>%
-  summarise(api00_mean = survey_mean(api00),
+  summarize(api00_mean = survey_mean(api00),
             api00_median = survey_median(api00))
 ```
 
 The weighted average score in 2000 was 662.3, and the median score was 668.
 
-#### Measures of dispersion
+#### Measures of dispersion {-}
 
 Measures of dispersion describe how data spreads around the central tendency. These measures include the range and standard deviation.
 
@@ -100,7 +158,7 @@ The `survey_var()` and `survey_sd()` functions from the {srvyr} package calculat
 ```{r}
 # Calculate the variance and standard deviation 
 dstrata %>%
-  summarise(api99_var = survey_var(api00),
+  summarize(api99_var = survey_var(api00),
             api99_sd = survey_sd(api00))
 ```
 
