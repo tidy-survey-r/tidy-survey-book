@@ -26,11 +26,11 @@ Some common terminology across the designs are:
 
 ### Simple random sample without replacement
 
-- Description: The simple random sample (SRS) without replacement is a sampling design where a fixed sample size is selected from a sampling frame, and every possible subsample has equal probability of selection.
-- Requirements: The sampling frame must include the entire population.
-- Advantages: SRS requires no information about the units apart from contact information.
-- Disadvantages: The sampling frame may not be available for entire population. This design is not generally feasible for in-person data collection.
-- Example: Randomly students in a university from a roster provided by the registrar's office.
+- **Description**: The simple random sample (SRS) without replacement is a sampling design where a fixed sample size is selected from a sampling frame, and every possible subsample has equal probability of selection.
+- **Requirements**: The sampling frame must include the entire population.
+- **Advantages**: SRS requires no information about the units apart from contact information.
+- **Disadvantages**: The sampling frame may not be available for entire population. This design is not generally feasible for in-person data collection.
+- **Example**: Randomly students in a university from a roster provided by the registrar's office.
 
 #### The math {-}
 
@@ -115,11 +115,11 @@ In the printed design object above, the design is described as an "Independent S
 
 ### Simple random sample with replacement
 
-- Description: The simple random sample with replacement (SRSWR) is a sampling design where a sample is selected from a sampling frame with the units being replaced before drawing again, so units can be selected more than once.
-- Requirements: The sampling frame must include the entire population.
-- Advantages: SRSWR requires no information about the units apart from contact information.
-- Disadvantages: The sampling frame may not be available for entire population. This design is not generally feasible for in-person data collection. Units can be selected more than once resulting in a smaller realized sample size. For small populations, SRSWR has larger standard errors than SRS designs.
-- Example: A professor puts all students names on paper slips and selects them randomly to ask students questions but the professor replaces the paper after calling on the student so they can be selected again at any time.
+- **Description**: The simple random sample with replacement (SRSWR) is a sampling design where a sample is selected from a sampling frame with the units being replaced before drawing again, so units can be selected more than once.
+- **Requirements**: The sampling frame must include the entire population.
+- **Advantages**: SRSWR requires no information about the units apart from contact information.
+- **Disadvantages**: The sampling frame may not be available for entire population. This design is not generally feasible for in-person data collection. Units can be selected more than once resulting in a smaller realized sample size. For small populations, SRSWR has larger standard errors than SRS designs.
+- **Example**: A professor puts all students names on paper slips and selects them randomly to ask students questions but the professor replaces the paper after calling on the student so they can be selected again at any time.
 
 
 #### The math {-}
@@ -178,9 +178,19 @@ apisrswr <- apipop %>%
 
 head(apisrswr)
 
-apisrswr %>%
-  filter(duplicated(cds) | duplicated(cds, fromLast=TRUE))
 ```
+
+Because this is a SRS design *with replacement* there will be duplicates in the data.  It is important to keep the duplicates in the data for proper estimation, but for reference here are the duplicates in the example we just created.
+
+```{r}
+#| label: apisrs_wr_duplicates
+
+apisrswr %>%
+  group_by(cds) %>%
+  filter(n()>1) %>%
+  arrange(cds)
+```
+
 
 A weight variable was added which is the inverse of the probability of selection. To specify the sampling design for `apisrswr`, the following syntax should be used:
 
@@ -197,13 +207,13 @@ In the chunk above, the design object is printed and the object summary is shown
 
 ### Stratified sampling
 
-- Description: A population is divided into mutually exclusive subpopulations (strata) and then samples are selected independently within each stratum.
-- Requirements: The sampling frame must include the information to divide the population into groups for every unit.
-- Advantages: This design ensures sample representation in all subpopulations. Often, for the same sample size as a SRS sample, the standard errors are smaller so it is a more efficient design. This is true if the strata are correlated with outcomes.
-- Disadvantages: Auxiliary data may not exist to divide sampling frame into groups or the data may be outdated.
+- **Description**: A population is divided into mutually exclusive subpopulations (strata) and then samples are selected independently within each stratum.
+- **Requirements**: The sampling frame must include the information to divide the population into groups for every unit.
+- **Advantages**: This design ensures sample representation in all subpopulations. Often, for the same sample size as a SRS sample, the standard errors are smaller so it is a more efficient design. This is true if the strata are correlated with outcomes.
+- **Disadvantages**: Auxiliary data may not exist to divide sampling frame into groups or the data may be outdated.
 - Examples: 
-  - Example 1: A population of North Carolina residents could be separated into urban and rural areas and then a SRS of residents from both rural and urban areas is selected independently. This ensures there are rural residents in the sample.
-  - Example 2: There are 3 primary general purpose law enforcement agencies in the US - local police, sheriff's departments, and state police. In a survey of law enforcement agencies, the agency type could be used to form strata.
+  - **Example 1**: A population of North Carolina residents could be separated into urban and rural areas and then a SRS of residents from both rural and urban areas is selected independently. This ensures there are rural residents in the sample.
+  - **Example 2**: There are 3 primary general purpose law enforcement agencies in the US - local police, sheriff's departments, and state police. In a survey of law enforcement agencies, the agency type could be used to form strata.
 
 #### The math {-} 
 
@@ -272,13 +282,13 @@ When printing the object, it is specified as a "Stratified Independent Sampling 
 
 ### Clustered sampling
 
-- Description: A population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs). A random selection of PSUs are sampled and then another level of sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available or data collection involves interviewers needing direct contact with respondents.
-- Requirements: There must have be a way to divide the population into clusters. Clusters are commonly structural such as institutions (e.g., schools, prisons) or geographic (e.g., states, counties). 
-- Advantages: Clustered sampling is advantageous when data collection is done in person so interviewers are sent to specific sampled areas rather than completely at random across a country. With cluster sampling, a list of the entire population is not necessary. For example, if sampling students, you do not need a list of all students but only a list of all schools. Once the schools are sampled, lists of students can be obtained within the sampled schools.
-- Disadvantages: Compared to a simple random sample, for the same sample size, clustered samples generally have larger standard errors of estimates.
+- **Description**: A population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs). A random selection of PSUs are sampled and then another level of sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available or data collection involves interviewers needing direct contact with respondents.
+- **Requirements**: There must have be a way to divide the population into clusters. Clusters are commonly structural such as institutions (e.g., schools, prisons) or geographic (e.g., states, counties). 
+- **Advantages**: Clustered sampling is advantageous when data collection is done in person so interviewers are sent to specific sampled areas rather than completely at random across a country. With cluster sampling, a list of the entire population is not necessary. For example, if sampling students, you do not need a list of all students but only a list of all schools. Once the schools are sampled, lists of students can be obtained within the sampled schools.
+- **Disadvantages**: Compared to a simple random sample, for the same sample size, clustered samples generally have larger standard errors of estimates.
 - Examples: 
-  - Example 1: Consider a study needing a sample of 6th grade students in the United States, no list likely exists of all these students. However, it is more likely to be possible to obtain a list of schools that have 6th graders, so a study design could select a random sample of schools that have 6th graders. The selected schools can then provide a list of students to do a second stage of sampling where 6th grade students are randomly sampled within each of the sampled schools. This is a one-stage sample design and will be the type of design we will discuss in formulas below.
-  - Example 2: Consider a study sending interviewers to households for a survey. This is a more complicated example that requires two levels of selection, to efficiently use interviewers in geographic clusters.  First, in the U.S. counties could be selected as the PSU, then Census block groups within counties could be selected as the secondary sampling unit (SSU).  Households could then randomly sampled within the block groups.  This type of design is popular for in-person survey as it reduces the travel necessary for interviewers.
+  - **Example 1**: Consider a study needing a sample of 6th grade students in the United States, no list likely exists of all these students. However, it is more likely to be possible to obtain a list of schools that have 6th graders, so a study design could select a random sample of schools that have 6th graders. The selected schools can then provide a list of students to do a second stage of sampling where 6th grade students are randomly sampled within each of the sampled schools. This is a one-stage sample design and will be the type of design we will discuss in formulas below.
+  - **Example 2**: Consider a study sending interviewers to households for a survey. This is a more complicated example that requires two levels of selection, to efficiently use interviewers in geographic clusters.  First, in the U.S. counties could be selected as the PSU, then Census block groups within counties could be selected as the secondary sampling unit (SSU).  Households could then randomly sampled within the block groups.  This type of design is popular for in-person survey as it reduces the travel necessary for interviewers.
 
 #### The math {-} 
 
@@ -314,7 +324,7 @@ des_clus2 <- dat %>%
 
 where `PSU` and `SSU` are the variables indicating the PSU and SSU identifiers and `N` and `M` are the variables indicating the population sizes for each level (i.e., `N` is the number of clusters and `M` is the number of units within each cluster). Note that `N` will be the same for all records (within a strata) and `M` will be the same for all records within the same cluster.
 
-If clusters were sampled with replacement or from a very large population, a fpc is not necessary. Additionally, only the first stage of selection is necessary regardless of whether the units were selected with replacement at any stage. The syntax below will yield the same estimates in the end:
+If clusters were sampled with replacement or from a very large population, a fpc is not necessary. Additionally, only the first stage of selection is necessary regardless of whether the units were selected with replacement at any stage. The subsequent stages of selection are ignored in computation as their contribution to the variance is overpowered by the first stage, see @sarndal2003model or @wolter2007introduction for a more in-depth discussion. The syntax below will yield the same estimates in the end:
 
 ```r
 des_clus2wra <- dat %>%
@@ -419,7 +429,7 @@ des_brr <- dat %>%
                 mse=TRUE)
 ```
 
-Typically, the replicate weights sum to a value similar to the main weight as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. In this case, the replicate weights are not combined and the option `combined_weights = FALSE` should be indicated, as the default value for this argument is TRUE. This specific syntax is shown below:
+Typically, the replicate weights sum to a value similar to the main weight as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. This would be indicated in the documentation and in Section \@ref(und-surv-doc), we discuss how to understand documentation. In this case, the replicate weights are not combined and the option `combined_weights = FALSE` should be indicated, as the default value for this argument is TRUE. This specific syntax is shown below:
 
 ```r
 des_brr <- dat %>%
@@ -463,7 +473,7 @@ Note that `combined_weights` was specified as `FALSE` because these weights are 
 
 ### Fay's BRR Method
 
-Fay's BRR method for replicate weights still uses a Hadamard matrix to construct replicate weights but rather than deleting PSUs for each replicate, half of the PSUs have a replicate weight which is the main weight multiplied by $\rho$ and the other half have the main weight multiplied by $(2-\rho)$ where $0 \le \rho < 1$. Note that when $\rho=0$, this is equivalent to the standard BRR weights. 
+Fay's BRR method for replicate weights still uses a Hadamard matrix to construct replicate weights but rather than deleting PSUs for each replicate, half of the PSUs have a replicate weight which is the main weight multiplied by $\rho$ and the other half have the main weight multiplied by $(2-\rho)$ where $0 \le \rho < 1$. Note that when $\rho=0$, this is equivalent to the standard BRR weights and as $\rho$ becomes closer to 1, this method is more similar to jackknife discussed in the next section. To obtain the value of $\rho$, it is necessary to read the documentation as discussed in Section \@ref(und-surv-doc).
 
 #### The math {-}
 
@@ -491,11 +501,17 @@ To specify this design, use the following syntax:
 #| label: recs
 #| eval: TRUE
 #| cache: TRUE
-recs_in <- read_csv(here::here("RawData", "RECS_2015", "recs2015_public_v4.csv"))
+recs_in <- read_csv(
+  here::here("RawData", "RECS_2015", "recs2015_public_v4.csv"))
 
 des_recs <- recs_in %>%
-  as_survey_rep(weights=NWEIGHT, repweights=BRRWT1:BRRWT96, type="Fay",
-                rho=0.5, mse=TRUE, variables=c(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC))
+  as_survey_rep(
+    weights=NWEIGHT, 
+    repweights=BRRWT1:BRRWT96, 
+    type="Fay",
+    rho=0.5, 
+    mse=TRUE, 
+    variables=c(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC))
 
 des_recs
 
@@ -636,7 +652,7 @@ summary(des_api1_bs)
 
 As with other replicate design objects, when printing the object or looking at the summary, the replicate weights are provided along with the data variables.
 
-## Understanding survey design documentation
+## Understanding survey design documentation {#und-surv-doc}
 
 SRS, stratified, and clustered designs are the backbone of sampling designs and the features are often combined in one design. Additionally, rather than using SRS for selection, other sampling mechanisms are commonly used such as probability proportional to size (PPS), systematic sampling, or selection with unequal probabilities which are briefly described here. In PPS sampling, a size measure is constructed for each unit - perhaps the population of the PSU or the number of occupied housing units, and then units with larger size measures are more likely to be sampled. Systematic sampling is commonly used to ensure representation across a population. Units are sorted by a feature and then every $k$ units are selected from a random start point so the sample is spread across the population. In addition to PPS, other unequal probabilities of selection may be used. As an example, in a study of establishments that conducts a survey every year, an establishment that recently participated (e.g., participated last year) has a reduced chance of selection in a subsequent round to reduce the burden on the establishment. To learn more about sampling designs, refer to @valliant2013practical, @cox2011business, @cochran1977sampling, and @deming1991sample.
 
