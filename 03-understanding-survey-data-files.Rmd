@@ -12,24 +12,83 @@ knitr::opts_chunk$set(eval = TRUE)
 * [Accounting for skip patterns](#skip-patterns)
 
 ## Reading survey documentation
-<!-- consider adding paragraph from chapter 05-->
-The first step in survey analysis is reading the documentation. Survey documentation can vary in its organization, thoroughness, and ease of use. We recommend focusing on key sections when beginning an analysis:
+<!-- this is adapted from chapter 05 ending -->
+Reading survey documentation is an important first step of survey analysis. The survey documentation will highlight the variables necessary to specify the design. Crucial information can be found in User's Guides, methodology/analysis guides, or technical documentation.
+
+Survey documentation can vary in its organization, thoroughness, and ease of use. We recommend focusing on key sections when beginning an analysis:
 
 * **Introduction:** The introduction orients us to the survey. Generally, this section provides the background of the project, purpose of the study, and main research questions.
 * **Study design:** The study design section describes how the survey was prepared and administered.
-* **Sample:** The sample section describes the sampling of the survey: how cases were selected, any sampling error that occurred, and limitations of the sample. This section can contain recommendations on how to use sampling weights. This documentation is critical in successfully running our analysis. We go into more detail on sample designs in [Chapter 05:Specifying sample designs in srvyr](#c05).
+* **Sample:** The sample section describes the sampling of the survey: how cases were selected, any sampling error that occurred, and limitations of the sample. This section can contain recommendations on how to use sampling weights. This documentation is critical in successfully running our analysis. More detail on sample designs is available in [Chapter 05:Specifying sample designs in srvyr](#c05).
+
+Look for weight information, whether the survey design is strata and/or clusters/PSUs or replicate weights, and any population sizes or finite population correction. Some keywords to look out for are methodology, design, analysis guide, or technical documentation. The documentation may include syntax for SAS, SUDAAN, Stata, and/or R. It can also clarify how missing values are stored in the files. This information provides us with the proper starting point for our survey analysis.
+
+There are other files to review beyond the technical documentation. The questionnaire provides details about each of the questions asked in the survey, such as: question name, question wording, response options, question logic, randomizations, display specification, mode differences, and universe (if only a subset of respondents received the question).
+
+While a questionnaire provides information about the questions asked to respondents, the codebook contains information about variables that appear in the dataset. It is important to review both in parallel as a single question may have multiple associated variables, or multiple questions may be summarized in a single variable. The codebook identifies variable names, variable descriptions, possible values, and value type (whether it is numeric, character, etc.).
+
+We should review the various survey documentation files to accurately and effectively conduct our survey analysis.
+
+### Example: Reading ANES 2020 survey documentation
+
+Let's take a look at the survey documentation for the American National Election Studies (ANES) 2020. The survey website is located at [https://electionstudies.org/data-center/2020-time-series-study/](https://electionstudies.org/data-center/2020-time-series-study/). Navigating to "User Guide and Codebook", we can download the PDF that contains the survey documentation, titled "ANES 2020 Time Series Study Full Release: User Guide and Codebook". The PDF is 796 pages long, which can be daunting except we know what to concentrate on first.
+
+#### Introduction {-}
+
+The first section in the User Guide explains that the ANES 2020 Times Series Study is a continuation of a series of election surveys conducted since 1948. These surveys contain data on public opinion and voting behavior in U.S. presidential elections. It states that interviews were done by one of three modes (web, video, or telephone) and summarizes the number of pre-election interviews (8,280) and post-election re-interviews (7,449).
+
+#### Sample Design and Respondent Recruitment {-}
+
+The section "Sample Design and Respondent Recruitment" describes how the survey was conducted: "a contactless, mixed-mode design.... a sequential mixed-mode design was implemented that included self-administered online surveys, live video interviews conducted online, and telephone interviews." In addition to respondents who participated in 2016 ANES, the 2020 survey included a freshly drawn cross section of U.S. citizens ages 18 and older in the 50 U.S. states or the District of Colombia. Addresses were randomly assigned to one of three sample groups. The document adds more specifics for each of the sample groups.
+
+The section "Data Analysis, Weights, and Variance Estimation" on pages 8-12 includes information on weights and strata/cluster variables. Reading through, we can find the full sample weight variables:
+
+> For analysis of the complete set of cases using pre-election data only, including all cases and representative of the 2020 electorate, use the full sample pre-election weight, **V200010a**. For analysis including post-election data for the complete set of participants (i.e., analysis of post-election data only or a combination of pre- and post-election data), use the full sample post-election weight, **V200010b**. Additional weights are provided for analysis of subsets of the data...
+
+The table below this paragraph provides the following information:
+
+For weight | Use variance unit/PSU/cluster | and use variance stratum
+-----------|-------------------------------|-------------------------
+V200010a| V200010c| V200010d
+V200010b| V200010c| V200010d
+
+The information in this section gives us what we need to create the survey object with {srvyr}. Specifying the appropriate (pseudo-)strata and (pseudo-)cluster variables performs the calculation of sampling errors that we need:
+
+```{r anesdatin}
+#| eval: FALSE
+library(tidyverse)
+library(here)
+library(srvyr)
+
+anes <- read_rds(here("Data", "anes_2020.rds")) %>%
+  mutate(Weight = V200010b / sum(V200010b) * 231592693)
+
+anes_des <- anes %>%
+  as_survey_design(
+    weights = Weight,
+    strata = V200010d,
+    ids = V200010c,
+    nest = TRUE
+  )
+
+summary(anes_des)
+```
+
+
 
 ### Searching for public-use survey data
 
-A common question that comes up for aspiring survey analysts is, "What are some examples of public-use survey data?". When writing this book, we asked ourselves this question to provide relevant and interesting examples for the reader.
-
+A common question that comes up for aspiring survey analysts is, "What are some examples of public-use survey data?". When writing this book, we asked ourselves this question to provide relevant, interesting, and high-quality examples for our readers.
+<!-- consider making this section a call out-->
 ## Best practices for loading data into R
 
 We recommend a project-based workflow for analysis projects as described in Hadley Wickham and Garrett Grolemund's book, R for Data Science. [define project-based workflow here] Projects help us practice file system discipline, since we put all the files related to a single project in a designated folder. Since all associated files are in a single location, they are easy to find and organize.
 
 The RStudio IDE supports project-based workflows. When we create a project in RStudio, it creates a `.Rproj` file that store settings specific to that project.
 
-The {here} package enables easy file referencing. In a project-based workflow, all paths are relative and, by default, relative to the project’s folder. Use the `here()` function from the here package to build the path when you load or save data.
+The {here} package enables easy file referencing. In a project-based workflow, all paths are relative and, by default, relative to the project’s folder. Use the `here()` function from the here package to build the path when we load or save data.
+
+More information on project-based workflows can be found in Jenny Bryan's What They Forgot to Teach You About R, [wtf.]. <!-- TODO: add link -->
 
 ## Loading survey files into R
 
@@ -176,9 +235,14 @@ Factors in R are vectors of integer values that display corresponding character 
 Here is a dummy example of factors:
 
 ```{r}
-response <- c("strongly agree", "agree", "agree", "disagree")
-response_levels <- c("strongly agree", "agree", "disagree", "strongly disagree")
+response <- 
+  c("strongly agree", "agree", "agree", "disagree")
+
+response_levels <-
+  c("strongly agree", "agree", "disagree", "strongly disagree")
+
 factors <- factor(response, levels = response_levels)
+
 factors
 ```
 
