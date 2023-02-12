@@ -4,6 +4,7 @@
 
 ## Reading survey documentation
 <!-- this is adapted from chapter 05 ending -->
+### Technical documentation
 Reading survey documentation is an important first step of survey analysis. The survey documentation will highlight the variables necessary to specify the design. Crucial information can be found in User's Guides, methodology/analysis guides, or technical documentation.
 
 Survey documentation can vary in its organization, thoroughness, and ease of use. We recommend focusing on key sections when beginning an analysis:
@@ -14,15 +15,35 @@ Survey documentation can vary in its organization, thoroughness, and ease of use
 
 Look for weight information, whether the survey design is strata and/or clusters/PSUs or replicate weights, and any population sizes or finite population correction. Some keywords to look out for are methodology, design, analysis guide, or technical documentation. The documentation may include syntax for SAS, SUDAAN, Stata, and/or R. It can also clarify how missing values are stored in the files. This information provides us with the proper starting point for our survey analysis.
 
-There are other files to review beyond the technical documentation. A questionnaire provides details about each of the questions asked in the survey, such as: question name, question wording, response options, question logic, randomizations, display specification, mode differences, and universe (if only a subset of respondents were asked the question).
+### Other documentation
 
-<!--TODO: add image of question-->
+There are other files to review beyond user guides. Thanks to the Internet, often they are grouped together and accessible on a survey website. Below are brief overviews of important documentation to review. We should do a comprehensive review of all survey documentation files to accurately and effectively conduct our survey analysis.
 
-While a questionnaire provides information about the questions asked to respondents, the codebook contains information about variables that appear in the dataset. It is important to review both in parallel as questions and variables are not one-to-one. A single question may have multiple associated variables, or multiple questions may be summarized in a single variable. The codebook identifies details on the variables, such as: variable names, variable descriptions, codes for missing data, possible values, and value type (whether it is numeric, character, etc.).
+#### Errata {-}
+<!-- can you use errata as singular?-->
+An errata documents any known errors in the survey. Be sure to review these lists before conducting any analysis. There may be explicit instructions to help avoid issues, such as letting us know to drop a case from a data file.
 
-We should review the various survey documentation files, including any technical documentation, questionnaires, and codebooks, to accurately and effectively conduct our survey analysis.
+#### Questionnaires {-}
 
-### Example: Reading American National Election Studies (ANES) 2020 survey documentation
+A questionnaire provides details about each of the questions asked in the survey, such as: question name, question wording, response options, question logic, randomizations, display specification, mode differences, and universe (if only a subset of respondents were asked the question).
+
+<!--TODO: add image of questionnaire-->
+
+A survey may have one questionnaire or multiple, depending on its scale and scope.
+
+#### Codebooks {-}
+
+While a questionnaire provides information about the questions asked to respondents, the codebook contains information about variables that appear in the dataset. The codebook identifies details on the variables, such as: variable names, variable descriptions, codes for missing data, possible values, and value type (whether it is numeric, character, etc.).
+
+<!--TODO: add image of codebook-->
+
+It is important to review both in parallel as questions and variables are not one-to-one. A single question may have multiple associated variables, or multiple questions may be summarized in a single variable. Reviewing the codebook will clarify how to analyze the variables.
+
+#### Additional resources {-}
+
+Surveys may have additional resources, such as interviewer instructions and "show cards" held up to respondents. Review the survey website to find documentation on these materials.
+
+### Example: American National Election Studies (ANES) 2020 survey documentation
 
 Let's take a look at the survey documentation for the American National Election Studies (ANES) 2020. The survey website is located at [https://electionstudies.org/data-center/2020-time-series-study/](https://electionstudies.org/data-center/2020-time-series-study/). Navigating to "User Guide and Codebook", we can download the PDF that contains the survey documentation, titled "ANES 2020 Time Series Study Full Release: User Guide and Codebook". The PDF is 796 pages long, which can be daunting, except we know to focus our attention on the most critical sections.
 
@@ -89,7 +110,9 @@ The section below the
 
 ### Example: 2017-2019 National Survey of Family Growth (NSFG)
 
-The 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation -  https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] has a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units which were stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected via PPS. At the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. At the third stage, housing units were selected within the sampled neighborhoods. At the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on person's age and sex. The public use file does not include all these levels of selection and instead includes pseudo-strata and pseudo-clusters which are the variables used in R to specify the design. As specified on page 4 of the documentation, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. Thus, to specify this design in R, one would use the following syntax:
+The 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation -  https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] has a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units which were stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected via PPS. At the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. At the third stage, housing units were selected within the sampled neighborhoods. At the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on person's age and sex. 
+
+The public use file does not include all these levels of selection and instead includes pseudo-strata and pseudo-clusters which are the variables used in R to specify the design. As specified on page 4 of the documentation, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. To specify this design in R, we would use the following syntax:
 
 ```r
 des_nsfg <- nsfgdata %>%
@@ -97,6 +120,24 @@ des_nsfg <- nsfgdata %>%
 ```
 
 ## Working with missing data
+
+If a respondent does not reply to a survey question, we indicate the missing data with a code in the data file. For example, a "Yes" response can be coded to 1, a "No" response to 2, and a missing response to 9. When we are running analysis in R, we want to ensure that we are treating missing responses as missing data and not numeric data.
+
+As survey analysts, we have to consider the implications of missing data in our analyses. For instance, we can perform listwise deletion, a method that drops all rows from a data frame that have a missing value in any column, using `drop_na()` from {tidyr}. In the example tibble below, only the first row will remain:
+
+```{r}
+dat <- tibble::tribble(
+  ~col1, ~col2, ~col3,
+    "a",    "d",   "e",
+    "b",    NA,    NA,
+    "c",    NA,    "f"
+  )
+
+dat %>% 
+  tidyr::drop_na()
+```
+
+However, if our data is not missing completely at random, listwise deletion may produce biased estimates (there may be a pattern of respondents who do not respond to certain questions).
 
 ## Accounting for skip patterns
 
