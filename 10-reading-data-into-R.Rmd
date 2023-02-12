@@ -1,0 +1,269 @@
+# Loading survey data into R
+
+<!--TODO: add intro-->
+
+<!-- consider making this section a call out-->
+## Project-based workflows
+
+We recommend a project-based workflow for analysis projects as described in Hadley Wickham and Garrett Grolemund's book, R for Data Science, found at [r4ds.had.co.nz](https://r4ds.had.co.nz). A project-based workflow helps us practice file system discipline, since we put everything related to a project in a designated folder. Since all associated files are in a single location, they are easy to find and organize.
+
+The RStudio IDE has built-in support for projects. When we create a project in RStudio, it creates a `.Rproj` file that store settings specific to that project. Once we have created a project, we can create folders that help us organize our workflow. For example, a project directory could look like this:
+
+```
+| anes_analysis/
+  | anes_analysis.Rproj
+  | README.md
+  | codebooks
+    | codebook2020.pdf
+    | codebook2016.pdf
+  | rawdata
+    | anes2020_raw.csv
+    | anes2016_raw.csv
+  | scripts
+    | data-prep.R
+  | data
+    | anes2020_clean.csv
+    | anes2016_clean.csv
+  | report
+    | anes_report.Rmd
+    | anes_report.html
+    | anes_report.pdf
+```
+
+The {here} package enables easy file referencing. In a project-based workflow, all paths are relative and, by default, relative to the project’s folder. Use the `here::here()` function to build the path when we load or save data. Below, we ask R to read the CSV file `anes_2020.csv` in the project directory's `Data` folder: 
+
+```{r}
+#| eval: false
+anes <- 
+  read_csv(here::here("data", "anes2020_clean.csv"))
+```
+
+More details on project-based workflows can be found in Jenny Bryan's What They Forgot to Teach You About R, [rstats.wtf](https://rstats.wtf).
+<!-- end callnote -->
+## Loading survey files into R
+
+Survey files come in different file types depending on the program used to output them. R gives us the flexibility to load datasets regardless of their file extension. Here are examples of common public-use survey file formats:
+
+* Delimiter-separated text files
+* Excel files
+* `.rda` files
+* `.dta` files from Stata
+* `.sas` files from SAS
+* `.sav` files from SPSS
+
+Reading these files using the packages listed below result in a tibble, a specific type of data frame that make it easier to work in the tidyverse. More information can be found in the Tibbles chapter of R for Data Science, [https://r4ds.had.co.nz/tibbles.html](https://r4ds.had.co.nz/tibbles.html).
+
+There are R packages for other file formats, such as {googlesheets4} for Google Sheets or {qualtRics} for Qualtrics. We recommend searching StackOverflow or similar community sites to learn how to load these files into R.
+
+### Loading delimiter-separated files into R
+
+Delimiter-separated files use specific characters to separate values. For example, CSV files are separated by commas. These file types are widely used and we can use many applications to read and write them.
+
+We can read delimiter-separated files using the tidyverse package {readr}. The {readr} package supports the following files with these `readr::read_*()` functions:
+
+* `read_csv()`: Comma-separated values (CSV) files
+* `read_tsv()`: Tab-separated values (TSV) files
+* `read_delim()`: Delimiter-separated files (CSV and TSV are important special cases)
+* `read_fwf()`: Fixed-width files
+* `read_table()`: Whitespace-separated files
+* `read_log()`: Web log files
+
+Here is an example of loading a CSV file into R:
+
+```{r}
+library(readr)
+
+anes_csv <-
+  read_csv("anes_timeseries_2020_csv_20220210.csv")
+```
+
+This saves the CSV into the `anes_csv` object.
+
+### Loading Excel files into R
+
+Excel, the spreadsheet software program from Microsoft, is a common file format. We can load Excel spreadsheets into R using the {readxl} package. The {readxl} package supports both the legacy `.xls` format and the modern `.xlsx` format. 
+
+Let's review the options by running `??readxl::read_excel`:
+
+```
+read_excel(
+  path,
+  sheet = NULL,
+  range = NULL,
+  col_names = TRUE,
+  col_types = NULL,
+  na = "",
+  trim_ws = TRUE,
+  skip = 0,
+  n_max = Inf,
+  guess_max = min(1000, n_max),
+  progress = readxl_progress(),
+  .name_repair = "unique"
+)
+```
+
+We load our file into R by running `read_excel()` and specifying the arguments as necessary:
+
+```{r}
+library(readxl)
+
+anes_excel <-
+  read_excel(path = "anes_timeseries_2020_csv_20220210.xlsx")
+```
+
+The file is saved as a tibble in `anes_excel`.
+
+### Loading Stata, SAS, and SPSS files into R
+
+The {haven} package from the tidyverse imports a variety of proprietary data formats: Stata `.dta` files, SAS `.sas7bdat` and `.sas7bcat` files, and SPSS `.sav` files.
+
+Let's se how to load Stata files first. We can import `.dat` file formats using `haven::read_dat()`. Explore the `haven::read_dat()` options by searching for the help page, `??haven::read_dta`.
+
+```r
+read_dta(
+  file,
+  encoding = NULL,
+  col_select = NULL,
+  skip = 0,
+  n_max = Inf,
+  .name_repair = "unique"
+)
+```
+
+We load our file into R by running `read_dat()` and specifying the arguments as necessary:
+
+```{r}
+library(haven)
+
+anes_dta <-
+  read_dta(file = "anes_timeseries_2020_stata_20220210.dta")
+```
+
+The {haven} package has equivalent functions for SAS and SPSS: `read_sas()` and `read_sav()` respectively. This is how we load the ANES 2020 SAS file:
+
+```{r}
+#| eval = TRUE
+library(haven)
+
+anes_sas <-
+  read_sas(file = "anes_timeseries_2020_sas_20220210.sas7bdat")
+```
+
+And the ANES 2020 SPSS file:
+
+```{r}
+#| eval = TRUE
+library(haven)
+
+anes_sav <-
+  read_sav(file = "anes_timeseries_2020_spss_20220210.sav")
+```
+
+Generally, Stata, SPSS, and SAS files contain labels for variables and values. Using {haven} allows us to retain important information when analyzing tibbles in R.
+
+### Importing labeled data
+
+Stata, SPSS, and SAS files often contain labeled variables and values. Labels provide descriptive information about categorical data. With the {haven} package, we can import labels from Stata, SPSS, and SAS into R without loss of fidelity using a special class of data called `haven_labelled`.
+
+Taking a look at the ANES SPSS file:
+
+```{r, R.options=list(max.print = 6)}
+#| message: FALSE,
+#| eval: TRUE
+library(dplyr)
+
+anes_sav %>% 
+  select(1:6) %>% 
+  glimpse()
+```
+
+Note that the categorical variables have a type of `<dbl+lbl>`, meaning that they are labeled. We can confirm with `is.labelled()`:
+
+```{r}
+haven::is.labelled(anes_sav$V200002)
+```
+
+To see everything that a column contains, we can use `attributes()`. 
+Note that the variable labels are stored in `$label` while the value labels are stored in `$labels`.
+
+```{r}
+attributes(anes_sav$V200002) 
+```
+
+#### Working with labeled data in R
+
+Once we import labeled numeric or character vectors into R, we want to create an *intermediate* object that we convert into a regular R data frame. That is, we should not intend to keep the labeled vectors indefinitely.
+
+There are two ways of creating this intermediate object:
+
+1. Convert the vector into a factor 
+
+Factors in R are vectors of integer values that display corresponding character values. The possible character values are called levels, which are sorted in alphabetical order by default. Factors are often used for categorical data, where there is a finite number of distinct values.
+
+Here is a dummy example of factors:
+
+```{r}
+response <- 
+  c("strongly agree", "agree", "agree", "disagree")
+
+response_levels <-
+  c("strongly agree", "agree", "disagree", "strongly disagree")
+
+factors <- factor(response, levels = response_levels)
+
+factors
+```
+
+Recall that factors are integer vectors, though they may look like character strings. We can confirm by looking at the vector's structure:
+
+```{r}
+#| eval = TRUE
+glimpse(factors)
+```
+
+R's factors differ from Stata, SPSS, or SAS' labeled vectors. However, we can leverage them to assign a dataset's value labels with `as_factor()`.
+
+```{r}
+anes_sav %>% 
+  transmute(V200002 = as_factor(V200002))
+```
+
+The `as_factor()` function can be applied to all columns in a data frame or individual ones.
+
+```{r}
+anes_sav_factor <-
+  anes_sav %>% 
+  as_factor()
+
+anes_sav_factor %>% 
+  select(1:6) %>% 
+  glimpse()
+```
+
+2. Stripping the labels
+
+The second option is to 'zap', or strip, the labels from the dataset. Similar to `as_factor()`, we can use `zap_*` to a specific column or an entire data frame.
+
+We can remove the variable label using `zap_label()`:
+
+```{r}
+zap_label(anes_sav) %>% 
+  select(1:6) %>% 
+  glimpse()
+```
+
+To remove the value labels, we can use `zap_labels()`:
+
+```{r}
+#| eval = FALSE
+zap_labels(anes_sav) %>% 
+  select(1:6) %>% 
+  glimpse()
+```
+
+## Missing data
+
+Stata, SPSS, and SAS files each handle missing values in different ways. For SAS and Stata, {haven} provides `tagged` missing values which extend R's regular `NA` by adding a single character label. A `tagged` missing value adds a single character label to R's regular `NA`. These values behave identical to `NA` in regular R operations while preserving the value of the tag.
+
+SPSS’s user-defined values work differently from SAS and Stata. Each column can have either up to three distinct values that are considered as missing, or a range. Haven provides `labeled_spss()` as a subclass of `labeled()` to model additional user-defined missing values.
+
