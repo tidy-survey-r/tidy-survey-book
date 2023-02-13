@@ -1,4 +1,4 @@
-# Understanding survey data files {#c03}
+# Understanding survey data files {#understanding-survey-data-files}
 
 <!--TODO: Add intro-->
 
@@ -19,10 +19,6 @@ Look for weight information, whether the survey design is strata and/or clusters
 
 There are other files to review beyond user guides. Thanks to the Internet, often they are grouped together and accessible on a survey website. Below are brief overviews of important documentation to review. We should do a comprehensive review of all survey documentation files to accurately and effectively conduct our survey analysis.
 
-#### Errata {-}
-<!-- can you use errata as singular?-->
-An errata documents any known errors in the survey. Be sure to review these lists before conducting any analysis. There may be explicit instructions to help avoid issues, such as letting us know to drop a case from a data file.
-
 #### Questionnaires {-}
 
 A questionnaire provides details about each of the questions asked in the survey, such as: question name, question wording, response options, question logic, randomizations, display specification, mode differences, and universe (if only a subset of respondents were asked the question).
@@ -39,13 +35,19 @@ While a questionnaire provides information about the questions asked to responde
 
 It is important to review both in parallel as questions and variables are not one-to-one. A single question may have multiple associated variables, or multiple questions may be summarized in a single variable. Reviewing the codebook will clarify how to analyze the variables.
 
+#### Errata {-}
+<!-- can you use errata as singular?-->
+An errata documents any known errors in the survey. Be sure to review these lists before conducting any analysis. There may be explicit instructions to help avoid issues, such as letting us know to drop a case from a data file.
+
 #### Additional resources {-}
 
 Surveys may have additional resources, such as interviewer instructions and "show cards" held up to respondents. Review the survey website to find documentation on these materials.
 
 ### Example: American National Election Studies (ANES) 2020 survey documentation
 
-Let's take a look at the survey documentation for the American National Election Studies (ANES) 2020. The survey website is located at [https://electionstudies.org/data-center/2020-time-series-study/](https://electionstudies.org/data-center/2020-time-series-study/). Navigating to "User Guide and Codebook", we can download the PDF that contains the survey documentation, titled "ANES 2020 Time Series Study Full Release: User Guide and Codebook". The PDF is 796 pages long, which can be daunting, except we know to focus our attention on the most critical sections.
+Let's take a look at the survey documentation for the American National Election Studies (ANES) 2020. The survey website is located at [https://electionstudies.org/data-center/2020-time-series-study/](https://electionstudies.org/data-center/2020-time-series-study/). 
+
+Navigating to "User Guide and Codebook", we can download the PDF that contains the survey documentation, titled "ANES 2020 Time Series Study Full Release: User Guide and Codebook". The PDF is 796 pages long, which can be daunting, except we know to focus our attention on the most critical sections.
 
 #### Introduction {-}
 
@@ -76,7 +78,7 @@ For weight | Use variance unit/PSU/cluster | and use variance stratum
 V200010a| V200010c| V200010d
 V200010b| V200010c| V200010d
 
-As mentioned above, we want to conduct ANES data analysis with weights to accurately represent the population. Recall that "Sample Design and Respondent Recruitment" section mentioned:
+As mentioned above, we want to conduct ANES data analysis with weights to accurately represent the population. A supplemental document called ["How to Analyze ANES Survey Data"]^(DeBell, Matthew. 2010. How to Analyze ANES Survey Data. ANES Technical Report Series no. nes012492. Palo Alto, CA, and Ann Arbor, MI: Stanford University and the University of Michigan) provided in the technical documentation is a 'how-to guide' to do this properly. Recall that "Sample Design and Respondent Recruitment" section mentioned:
 
 > The target population for the fresh cross-section was the 231 million non-institutional U.S. citizens aged 18 or older living in the 50 US states or the District of Columbia.
 
@@ -107,6 +109,7 @@ summary(anes_des)
 #### Codebook {-}
 
 The section below the 
+The codebook also lets us know how missing values are coded (in this case, as `-8`).
 
 ### Example: 2017-2019 National Survey of Family Growth (NSFG)
 
@@ -121,7 +124,7 @@ des_nsfg <- nsfgdata %>%
 
 ## Working with missing data
 
-If a respondent does not reply to a survey question, we indicate the missing data with a code in the data file. For example, a "Yes" response can be coded to 1, a "No" response to 2, and a missing response to 9. When we are running analysis in R, we want to ensure that we are treating missing responses as missing data and not numeric data.
+If a respondent does not reply to a survey question, we indicate the missing data with a code in the data file. For example, a "Yes" response can be coded to 1, a "No" response to 2, and a missing response to 9. When we are running analysis in R, we want to ensure that we are treating missing responses as missing data (i.e., `NA`) and not numeric data.
 
 As survey analysts, we have to consider the implications of missing data in our analyses. For instance, we can perform listwise deletion, a method that drops all rows from a data frame that have a missing value in any column, using `drop_na()` from {tidyr}. In the example tibble below, only the first row will remain:
 
@@ -137,15 +140,22 @@ dat %>%
   tidyr::drop_na()
 ```
 
-However, if our data is not missing completely at random, listwise deletion may produce biased estimates (there may be a pattern of respondents who do not respond to certain questions).
+However, if our data is not missing completely at random, listwise deletion may produce biased estimates (there may be a pattern of respondents who do not respond to certain questions). In these circumstances, other options are better for analysis. See Allison (2002) for more detail.
+<!--TODO: I don't think it fits this chapter, but we should mention best pratices for reporting missing data-->
 
 ## Accounting for skip patterns
+
+
 
 ### Searching for public-use survey data
 
 A common question that comes up for aspiring survey analysts is, "What are some examples of public-use survey data?". When writing this book, we asked ourselves this question to provide relevant, interesting, and high-quality examples for our readers.
 
+A few things we considered were whether a survey had both continuous and discrete data, how difficult it was to  
+
+* Analyze Survey Data for Free ([asdfree.com](https://asdfree.com))
+
 ### Exercises
 
 
-<!--TODO: cite How to Analyze ANES Survey Data-->
+<!--TODO: cite ANES, How to Analyze ANES Survey Data-->
