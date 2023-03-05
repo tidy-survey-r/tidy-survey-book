@@ -1,0 +1,164 @@
+---
+title: "Residential Energy Consumption Survey (RECS) 2020 Data Prep"
+output: 
+  github_document:
+    html_preview: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data information
+
+All data and resources were downloaded from https://www.eia.gov/consumption/residential/data/2020/index.php?view=microdata on March 5, 2023.
+
+```{r}
+#| label: loadpackageh
+#| message: FALSE
+
+library(here) #easy relative paths
+```
+
+```{r}
+#| label: loadpackages
+
+library(tidyverse) #data manipulation
+library(haven) #data import
+library(tidylog) #informative logging messages
+```
+
+## Import data and create derived variables
+
+```{r}
+#| label: derivedata
+
+recs_in <- read_csv(here("RawData", "RECS_2020", "recs2020_public_v1.csv"))
+
+#TOTCSQFT, TOTHSQFT, TOTSQFT_EN, TOTUCSQFT, TOTUSQFT, CDD50, HDD50, GNDHDD65, BTUEL, DOLLAREL, , BTUNG, DOLLARNG, BTULP, DOLLARLP, BTUFO, DOLLARFO, TOTALBTU, TOTALDOL, BTUWOOD=WOODBTU, BTUPELLET=PELLETBTU 
+
+recs <- recs_in %>%
+  select(DOEID, REGIONC, DIVISION, STATE_FIPS, state_postal, state_name, UATYP10, TYPEHUQ, YEARMADERANGE, HEATHOME, HEATCNTL, TEMPHOME, TEMPGONE, TEMPNITE, AIRCOND, COOLCNTL, TEMPHOMEAC, TEMPGONEAC, TEMPNITEAC, NWEIGHT, starts_with("BRRWT"), CDD30YR_pub, CDD65, BA_climate, IECC_climate_code, HDD30YR_pub, HDD65) %>%
+  mutate(
+    Region=parse_factor(
+      str_to_title(REGIONC),
+      levels=c("Northeast", "Midwest", "South", "West")),
+    Division=parse_factor(
+      DIVISION, levels=c("New England", "Middle Atlantic", "East North Central", "West North Central", "South Atlantic", "East South Central", "West South Central", "Mountain North", "Mountain South", "Pacific")),
+    Urbanicity=parse_factor(
+      case_when(
+        UATYP10=="U"~"Urban Area",
+        UATYP10=="C"~"Urban Cluster",
+        UATYP10=="R"~"Rural"
+      ),
+      levels=c("Urban Area", "Urban Cluster", "Rural")
+    ),
+    HousingUnitType=parse_factor(
+      case_when(
+        TYPEHUQ==1~"Mobile home",
+        TYPEHUQ==2~"Single-family detached",
+        TYPEHUQ==3~"Single-family attached",
+        TYPEHUQ==4~"Apartment: 2-4 Units",
+        TYPEHUQ==5~"Apartment: 5 or more units",
+      ), levels=c("Mobile home", "Single-family detached", "Single-family attached", "Apartment: 2-4 Units", "Apartment: 5 or more units")),
+    YearMade=parse_factor(
+      case_when(
+        YEARMADERANGE==1~"Before 1950",
+        YEARMADERANGE==2~"1950-1959",
+        YEARMADERANGE==3~"1960-1969",
+        YEARMADERANGE==4~"1970-1979",
+        YEARMADERANGE==5~"1980-1989",
+        YEARMADERANGE==6~"1990-1999",
+        YEARMADERANGE==7~"2000-2009",
+        YEARMADERANGE==8~"2010-2015",
+        YEARMADERANGE==9~"2016-2020"
+      ),
+      levels=c("Before 1950", "1950-1959", "1960-1969", "1970-1979", "1980-1989", "1990-1999", "2000-2009", "2010-2015", "2016-2020"),
+      ordered = TRUE
+    ),
+    SpaceHeatingUsed=as.logical(HEATHOME),
+    HeatingBehavior=parse_factor(
+      case_when(
+        HEATCNTL==1~"Set one temp and leave it",
+        HEATCNTL==2~"Manually adjust at night/no one home",
+        HEATCNTL==3~"Program thermostat to change at certain times",
+        HEATCNTL==4~"Turn on or off as needed",
+        HEATCNTL==5~"No control",
+        HEATCNTL==99~"Other",
+        HEATCNTL==-2~NA_character_),
+      levels=c("Set one temp and leave it", "Manually adjust at night/no one home", "Program thermostat to change at certain times", "Turn on or off as needed", "No control", "Other")
+    ),
+    WinterTempDay=if_else(TEMPHOME>0, TEMPHOME, NA_real_),
+    WinterTempAway=if_else(TEMPGONE>0, TEMPGONE, NA_real_),
+    WinterTempNight=if_else(TEMPNITE>0, TEMPNITE, NA_real_),
+    ACUsed=as.logical(AIRCOND),
+    ACBehavior=parse_factor(
+      case_when(
+        COOLCNTL==1~"Set one temp and leave it",
+        COOLCNTL==2~"Manually adjust at night/no one home",
+        COOLCNTL==3~"Program thermostat to change at certain times",
+        COOLCNTL==4~"Turn on or off as needed",
+        COOLCNTL==5~"No control",
+        COOLCNTL==99~"Other",
+        COOLCNTL==-2~NA_character_),
+      levels=c("Set one temp and leave it", "Manually adjust at night/no one home", "Program thermostat to change at certain times", "Turn on or off as needed", "No control", "Other")
+    ),
+    SummerTempDay=if_else(TEMPHOMEAC>0, TEMPHOMEAC, NA_real_),
+    SummerTempAway=if_else(TEMPGONEAC>0, TEMPGONEAC, NA_real_),
+    SummerTempNight=if_else(TEMPNITEAC>0, TEMPNITEAC, NA_real_),
+    ClimateRegion_BA=parse_factor(BA_climate),
+    IECC_climate_code_num=as.numeric(str_sub(IECC_climate_code, 1, 1)),
+    IECC_climate_code_ch=match(str_sub(IECC_climate_code, 2, 2), LETTERS),
+    ClimateRegion_IECC=factor(case_when(
+      IECC_climate_code=="1A"~ "1A: Very Hot Humid",
+      IECC_climate_code=="2A"~ "2A: Hot Humid",
+      IECC_climate_code=="2B"~ "2B: Hot Dry",
+      IECC_climate_code=="3A"~ "3A: Warm Humid",
+      IECC_climate_code=="3B"~ "3B: Warm Dry",
+      IECC_climate_code=="3C"~ "3C: Warm Marine",
+      IECC_climate_code=="4A"~ "4A: Mixed Humid",
+      IECC_climate_code=="4B"~ "4B: Mixed Dry",
+      IECC_climate_code=="4C"~ "4C: Mixed Marine",
+      IECC_climate_code=="5A"~ "5A: Cool Humid",
+      IECC_climate_code=="5B"~ "5B: Cool Marine",
+      IECC_climate_code=="5C"~ "5C: Cool Marine",
+      IECC_climate_code=="6A"~ "6A: Cold Humid",
+      IECC_climate_code=="6B"~ "6B: Cold Dry",
+      IECC_climate_code %in% c("7A", "7AK", "7B")~ "7: Very Cold",
+      IECC_climate_code=="8AK"~"8: Subarctic/Arctic"
+    )),
+    ClimateRegion_IECC=fct_reorder(ClimateRegion_IECC, IECC_climate_code_num+IECC_climate_code_ch/10)
+  )
+
+```
+
+## Check derived variables for correct coding
+
+```{r}
+#| label: checkvars
+recs %>% count(Region, REGIONC)
+recs %>% count(Division, DIVISION)
+recs %>% count(Urbanicity, UATYP10)
+recs %>% count(HousingUnitType, TYPEHUQ)
+recs %>% count(YearMade, YEARMADERANGE)
+recs %>% count(SpaceHeatingUsed, HEATHOME)
+recs %>% count(HeatingBehavior, HEATCNTL)
+recs %>% count(ACUsed, AIRCOND)
+recs %>% count(ACBehavior, COOLCNTL)
+recs %>% count(ClimateRegion_BA, BA_climate)
+recs %>% count(ClimateRegion_IECC, IECC_climate_code)
+
+```
+
+
+## Save data
+
+```{r savedat}
+recs_out <- recs %>%
+   select(DOEID, starts_with("state"), Region, Division, Urbanicity, HousingUnitType, YearMade, SpaceHeatingUsed, HeatingBehavior, WinterTempDay, WinterTempAway, WinterTempNight, ACUsed, ACBehavior, SummerTempDay, SummerTempAway, SummerTempNight, NWEIGHT, starts_with("BRRWT"), CDD30YR=CDD30YR_pub, CDD65, ClimateRegion_BA, ClimateRegion_IECC, HDD30YR=HDD30YR_pub, HDD65)
+
+summary(recs_out)
+
+write_rds(recs_out, here("AnalysisData", "recs_2020.rds"))
+```
+
