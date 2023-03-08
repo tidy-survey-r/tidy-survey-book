@@ -1,0 +1,303 @@
+---
+title: "American National Election Studies (ANES) 2020 Time Series Study Data Prep"
+output: 
+  github_document:
+    html_preview: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data information
+
+All data and resources were downloaded from https://electionstudies.org/data-center/2020-time-series-study/ on February 28, 2022.
+
+American National Election Studies. 2021. ANES 2020 Time Series Study Full Release [dataset and documentation].  www.electionstudies.org
+```{r loadpackageh, message=FALSE}
+library(here) # easy relative paths
+```
+
+
+
+```{r loadpackages}
+library(tidyverse) # data manipulation
+library(haven) # data import
+library(tidylog) # informative logging messages
+```
+## Import data and create derived variables
+
+```{r derivedata}
+anes_in_2020 <- read_sav(here("RawData", "ANES_2020", "anes_timeseries_2020_spss_20220210.sav"))
+
+# weight validity for post-election survey
+anes_in_2020 %>%
+   select(V200004, V200010a, V200010b) %>%
+   group_by(V200004) %>% #type of respondent
+   summarise(
+      n=n(),
+      nvalidwt_pre=sum(!is.na(V200010a) & V200010a>0),
+      nvalidwt_post=sum(!is.na(V200010b) & V200010b>0)
+   )
+
+# Are all PSU/Stratum represented in post-weight? If so, we can drop pre-only cases later
+
+anes_in_2020 %>%
+   count(V200010d, V200010c, V200004) %>%
+   group_by(V200010d, V200010c) %>%
+   mutate(
+      Pct=n/sum(n)
+   ) %>%
+   filter(V200004==3) %>%
+   arrange(Pct)
+
+
+anes_2020 <- anes_in_2020 %>%
+   filter(V200004==3) %>%
+   select(
+      "V200010b", # FULL SAMPLE POST-ELECTION WEIGHT
+      "V200010d", # FULL SAMPLE VARIANCE STRATUM
+      "V200010c", # FULL SAMPLE VARIANCE UNIT
+      "V200002", # MODE OF INTERVIEW: PRE-ELECTION INTERVIEW
+      "V201006", # PRE: HOW INTERESTED IN FOLLOWING CAMPAIGNS
+      "V201102", # PRE: DID R VOTE FOR PRESIDENT IN 2016
+      "V201101", # PRE: DID R VOTE FOR PRESIDENT IN 2016 [REVISED]
+      "V201103", # PRE: RECALL OF LAST (2016) PRESIDENTIAL VOTE CHOICE)
+      "V201025x", # PRE: SUMMARY: REGISTRATION AND EARLY VOTE STATUS
+      "V201231x", # PRE: SUMMARY: PARTY ID
+      "V201233", # PRE: HOW OFTEN TRUST GOVERNMENT IN WASHINGTON TO DO WHAT IS RIGHT [REVISED]
+      "V201237", # PRE: HOW OFTEN CAN PEOPLE BE TRUSTED
+      "V201507x", # PRE: SUMMARY: RESPONDENT AGE
+      "V201510", # PRE: HIGHEST LEVEL OF EDUCATION
+      "V201549x", # PRE: SUMMARY: R SELF-IDENTIFIED RACE/ETHNICITY
+      "V201600", # PRE: WHAT IS YOUR (R) SEX? [REVISED]
+      "V201617x", # PRE: SUMMARY: TOTAL (FAMILY) INCOME
+      "V202066", # POST: DID R VOTE IN NOVEMBER 2020 ELECTION
+      "V202109x", # PRE-POST: SUMMARY: VOTER TURNOUT IN 2020
+      "V202072", # POST: DID R VOTE FOR PRESIDENT
+      "V202073", # POST: FOR WHOM DID R VOTE FOR PRESIDENT
+      "V202110x" # PRE-POST: SUMMARY: 2020 PRESIDENTIAL VOTE
+   ) %>%
+   mutate(
+      InterviewMode = fct_recode(as.character(V200002), Video = "1", Telephone = "2", Web = "3"),
+      Weight = V200010b,
+      Stratum = as.factor(V200010d),
+      VarUnit = as.factor(V200010c),
+      Age = if_else(V201507x > 0, as.numeric(V201507x), NA_real_),
+      AgeGroup = cut(Age, c(17, 29, 39, 49, 59, 69, 200),
+                     labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70 or older")
+      ),
+      Gender = factor(
+         case_when(
+            V201600 == 1 ~ "Male",
+            V201600 == 2 ~ "Female",
+            TRUE ~ NA_character_
+         ),
+         levels = c("Male", "Female")
+      ),
+      RaceEth = factor(
+         case_when(
+            V201549x == 1 ~ "White",
+            V201549x == 2 ~ "Black",
+            V201549x == 3 ~ "Hispanic",
+            V201549x == 4 ~ "Asian, NH/PI",
+            V201549x == 5 ~ "AI/AN",
+            V201549x == 6 ~ "Other/multiple race",
+            TRUE ~ NA_character_
+         ),
+         levels = c("White", "Black", "Hispanic", "Asian, NH/PI", "AI/AN", "Other/multiple race", NA_character_)
+      ),
+      PartyID = factor(
+         case_when(
+            V201231x == 1 ~ "Strong democrat",
+            V201231x == 2 ~ "Not very strong democrat",
+            V201231x == 3 ~ "Independent-democrat",
+            V201231x == 4 ~ "Independent",
+            V201231x == 5 ~ "Independent-republican",
+            V201231x == 6 ~ "Not very strong republican",
+            V201231x == 7 ~ "Strong republican",
+            TRUE ~ NA_character_
+         ),
+         levels = c("Strong democrat", "Not very strong democrat", "Independent-democrat", "Independent", "Independent-republican", "Not very strong republican", "Strong republican")
+      ),
+      Education = factor(
+         case_when(
+            V201510 <= 0 ~ NA_character_,
+            V201510 == 1 ~ "Less than HS",
+            V201510 == 2 ~ "High school",
+            V201510 <= 5 ~ "Post HS",
+            V201510 == 6 ~ "Bachelor's",
+            V201510 <= 8 ~ "Graduate",
+            TRUE ~ NA_character_
+         ),
+         levels = c("Less than HS", "High school", "Post HS", "Bachelor's", "Graduate")
+      ),
+      Income = cut(V201617x, c(-5, 1:22),
+                   labels = c(
+                      "Under $9,999",
+                      "$10,000-14,999",
+                      "$15,000-19,999",
+                      "$20,000-24,999",
+                      "$25,000-29,999",
+                      "$30,000-34,999",
+                      "$35,000-39,999",
+                      "$40,000-44,999",
+                      "$45,000-49,999",
+                      "$50,000-59,999",
+                      "$60,000-64,999",
+                      "$65,000-69,999",
+                      "$70,000-74,999",
+                      "$75,000-79,999",
+                      "$80,000-89,999",
+                      "$90,000-99,999",
+                      "$100,000-109,999",
+                      "$110,000-124,999",
+                      "$125,000-149,999",
+                      "$150,000-174,999",
+                      "$175,000-249,999",
+                      "$250,000 or more"
+                   )
+      ),
+      Income7 = fct_collapse(
+         Income,
+         "Under $20k" = c("Under $9,999", "$10,000-14,999", "$15,000-19,999"),
+         "$20-40k" = c("$20,000-24,999", "$25,000-29,999", "$30,000-34,999", "$35,000-39,999"),
+         "$40-60k" = c("$40,000-44,999", "$45,000-49,999", "$50,000-59,999"),
+         "$60-80k" = c("$60,000-64,999", "$65,000-69,999", "$70,000-74,999", "$75,000-79,999"),
+         "$80-100k" = c("$80,000-89,999", "$90,000-99,999"),
+         "$100-125k" = c("$100,000-109,999", "$110,000-124,999"),
+         "$125k or more" = c("$125,000-149,999", "$150,000-174,999", "$175,000-249,999", "$250,000 or more")
+      ),
+      CampaignInterest = factor(
+         case_when(
+            V201006 == 1 ~ "Very much interested",
+            V201006 == 2 ~ "Somewhat interested",
+            V201006 == 3 ~ "Not much interested",
+            TRUE ~ NA_character_
+         ),
+         levels = c("Very much interested", "Somewhat interested", "Not much interested")
+      ),
+      TrustGovernment = factor(
+         case_when(
+            V201233 == 1 ~ "Always",
+            V201233 == 2 ~ "Most of the time",
+            V201233 == 3 ~ "About half the time",
+            V201233 == 4 ~ "Some of the time",
+            V201233 == 5 ~ "Never",
+            TRUE ~ NA_character_
+         ),
+         levels = c("Always", "Most of the time", "About half the time", "Some of the time", "Never")
+      ),
+      TrustPeople = factor(
+         case_when(
+            V201237 == 1 ~ "Always",
+            V201237 == 2 ~ "Most of the time",
+            V201237 == 3 ~ "About half the time",
+            V201237 == 4 ~ "Some of the time",
+            V201237 == 5 ~ "Never",
+            TRUE ~ NA_character_
+         ),
+         levels = c("Always", "Most of the time", "About half the time", "Some of the time", "Never")
+      ),
+      VotedPres2016 = factor(
+         case_when(
+            V201101 == 1 | V201102 == 1 ~ "Yes",
+            V201101 == 2 | V201102 == 2 ~ "No",
+            TRUE ~ NA_character_
+         ),
+         levels = c("Yes", "No")
+      ),
+      VotedPres2016_selection = factor(
+         case_when(
+            V201103 == 1 ~ "Clinton",
+            V201103 == 2 ~ "Trump",
+            V201103 == 5 ~ "Other",
+            TRUE ~ NA_character_
+         ),
+         levels = c("Clinton", "Trump", "Other")
+      ),
+      VotedPres2020 = factor(
+         case_when(
+            V202109x == 1 ~ "Yes",
+            V202109x == 0 ~ "No",
+            TRUE ~ NA_character_
+         ),
+         levels = c("Yes", "No")
+      ),
+      VotedPres2020_selection = factor(
+         case_when(
+            V202073 == 1 ~ "Biden",
+            V202073 == 2 ~ "Trump",
+            V202073 >= 3 & V202073 <= 8~ "Other",
+            V202073 == 11 ~ NA_character_,
+            V202073 == 12 ~ NA_character_,
+            TRUE ~ NA_character_
+         ),
+         levels = c("Biden", "Trump", "Other")
+      ),
+      EarlyVote2020 = factor(
+         case_when(
+            V201025x < 0 ~ NA_character_,
+            V201025x == 4 ~ "Yes",
+            VotedPres2020 == "Yes" ~ "No",
+            TRUE ~ NA_character_), 
+         levels = c("Yes", "No")
+      )
+   )
+
+summary(anes_2020)
+```
+
+## Check derived variables for correct coding
+
+```{r checkvars}
+
+anes_2020 %>% count(InterviewMode, V200002)
+
+anes_2020 %>%
+   group_by(AgeGroup) %>%
+   summarise(
+      minAge = min(Age),
+      maxAge = max(Age),
+      minV = min(V201507x),
+      maxV = max(V201507x)
+   )
+
+anes_2020 %>% count(Gender, V201600)
+
+anes_2020 %>% count(RaceEth, V201549x)
+
+anes_2020 %>% count(PartyID, V201231x)
+
+anes_2020 %>% count(Education, V201510)
+
+anes_2020 %>%
+   count(Income, Income7, V201617x) %>%
+   print(n = 30)
+
+anes_2020 %>% count(CampaignInterest, V201006)
+
+anes_2020 %>% count(TrustGovernment, V201233)
+
+anes_2020 %>% count(TrustPeople, V201237)
+
+anes_2020 %>% count(VotedPres2016, V201101, V201102)
+
+anes_2020 %>% count(VotedPres2016_selection, V201103)
+
+anes_2020 %>% count(VotedPres2020, V202109x)
+
+anes_2020 %>% count(VotedPres2020_selection, V202073)
+
+anes_2020 %>% count(EarlyVote2020, V201025x, VotedPres2020)
+
+anes_2020 %>%
+   summarise(WtSum = sum(Weight, na.rm = TRUE)) %>%
+   pull(WtSum)
+```
+
+## Save data
+
+```{r savedat}
+write_rds(anes_2020, here("AnalysisData", "anes_2020.rds"))
+```
