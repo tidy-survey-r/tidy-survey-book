@@ -148,9 +148,9 @@ Recall the "Sample Design and Respondent Recruitment" section:
 
 > The target population for the fresh cross-section was the 231 million non-institutional U.S. citizens aged 18 or older living in the 50 US states or the District of Columbia.
 
-We will use Current Population Survey (CPS) to find a number of the non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. The {censusapi} package allows us to do this in a reproducible way:
+We will use Current Population Survey (CPS) to find a number of the non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. The {censusapi} package allows us to do this in a reproducible way. Note that we need a Census key to access the Census API.
 
-``` r
+```{r}
 library(censusapi)
 library(tidyverse)
 
@@ -171,33 +171,13 @@ cps_state %>%
   count(state)
 ```
 
-    ## # A tibble: 51 x 2
-    ##    state     n
-    ##    <dbl> <int>
-    ##  1     1  2406
-    ##  2     2  1289
-    ##  3     4  1969
-    ##  4     5  1988
-    ##  5     6  9574
-    ##  6     8  1365
-    ##  7     9  1157
-    ##  8    10  1285
-    ##  9    11  1622
-    ## 10    12  5055
-    ## # ... with 41 more rows
-
-``` r
+```{r}
 # Confirm this is only November 2020
 cps_state %>%
   count(HRMONTH, HRYEAR4)
 ```
 
-    ## # A tibble: 1 x 3
-    ##   HRMONTH HRYEAR4      n
-    ##     <dbl>   <dbl>  <int>
-    ## 1      11    2020 112037
-
-``` r
+```{r}
 # Voting age citizen population
 targetpop <- cps_state %>%
   as_tibble() %>%
@@ -205,9 +185,11 @@ targetpop <- cps_state %>%
          PRCITSHP %in% (1:4)) %>%
   pull(PWSSWGT) %>%
   sum()
+
+targetpop
 ```
 
-The target population in 2020 is 231,592,693. This information gives us what we need to create the post-election survey object with {srvyr}:
+The target population in 2020 is `r scales::comma(targetpop)``. This information gives us what we need to create the post-election survey object with {srvyr}:
 
 ```{r}
 #| eval: FALSE
@@ -215,7 +197,7 @@ library(tidyverse)
 library(here)
 library(srvyr)
 
-anes <- read_rds(here("Data", "anes_2020.rds")) %>%
+anes <- read_rds(here("AnalysisData", "anes_2020.rds")) %>%
   mutate(Weight = V200010b / sum(V200010b) * 231592693)
 
 anes_des <- anes %>%
