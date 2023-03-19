@@ -29,7 +29,8 @@ Each record on the incident file represents one incident, which is not the same 
 
 library(tidyverse)
 library(srvyr)
-library(tidylog)
+library(gt)
+# library(tidylog)
 
 inc_in <- read_rds(here::here("AnalysisData", "ncvs_2021_incident.rds"))
 
@@ -105,11 +106,11 @@ inc_ind <- inc_series %>%
     Violent=V4529_num<=20,
     Property_ReportPolice=Property & ReportPolice,
     Violent_ReportPolice=Violent & ReportPolice,
-    AAST=V4529_num %in% 11:12,
+    AAST=V4529_num %in% 11:13,
     AAST_NoWeap=AAST & WeapCat=="NoWeap",
     AAST_Firearm=AAST & WeapCat=="Firearm",
     AAST_Knife=AAST & WeapCat=="Knife",
-    AAST_Other=AAST & WeapCat=="Other",
+    AAST_Other=AAST & WeapCat=="Other"
   )
 
 
@@ -230,6 +231,7 @@ hh_vsum_der %>% count(Region, V2127B)
 hh_vsum_slim <- hh_vsum_der %>%
   select(YEARQ:V2118, WGTVICCY:ADJINC_WT, Tenure, Urbanicity, Income, PlaceSize, Region)
 
+ANHOPI <- "Asian/ Native Hawaiian/ Other Pacific Islander"
 pers_vsum_der <- pers_vsum %>%
   mutate(
     Sex=fct_reorder(str_sub(V3018, 5), as.numeric(V3018)), 
@@ -238,11 +240,11 @@ pers_vsum_der <- pers_vsum %>%
         str_detect(V3024, "Yes") ~ "Hispanic",
         str_detect(V3023A, "White only")~"White",
         str_detect(V3023A, "Black only")~"Black",
-        str_detect(V3023A, "Asian only")~"Asian/Native Awaiian/Other Pacific Islander",
-        str_detect(V3023A, "Hawaiian/Pacific IS only")~"Asian/Native Awaiian/Other Pacific Islander",
+        str_detect(V3023A, "Asian only")~ANHOPI,
+        str_detect(V3023A, "Hawaiian/Pacific IS only")~ANHOPI,
         TRUE ~ "Other"
       ),
-      levels=c("White", "Black", "Hispanic", "Asian/Native Awaiian/Other Pacific Islander", "Other")
+      levels=c("White", "Black", "Hispanic", ANHOPI, "Other")
     ),
     AgeGroup=case_when(
       V3014<=17 ~ "12-17",
@@ -301,8 +303,217 @@ inc_analysis <- inc_ind %>%
 ```
 
 
-# Survey design objects
+## Calculating estimates
 
-All of the data prep above is necessary to get the data ready for survey analysis. At this point, we can create the design objects and finally begin analysis. Three design objects will be created and these will be used for different types of analysis as it depends which type of estimate you are creating. 
+All of the data prep above is necessary to get the data ready for survey analysis. At this point, we can create the design objects and finally begin analysis. Three design objects will be created and these will be used for different types of analysis as it depends which type of estimate you are creating. We will first create the design objects and then discuss each estimate type: victimization totals, victimization proportions, and victimization rates.
+
+### Survey design objects
+
+For the incident file, the weight of analysis is NEWWGT which was constructed previously. The household and person files use WGTHHCY and WGTPERCY, respectively. For all analyses, V2117 is the strata variable and V2118 is the cluster variable for analysis.
+
+```{r}
+#| label: desobj
+
+des_inc <- inc_analysis %>%
+  as_survey(weight=NEWWGT, strata=V2117, ids=V2118, nest=TRUE)
+
+des_hh <- hh_vsum_slim %>%
+  as_survey(weight=WGTHHCY, strata=V2117, ids=V2118, nest=TRUE)
+
+des_pers <- pers_vsum_slim %>%
+  as_survey(weight=WGTPERCY, strata=V2117, ids=V2118, nest=TRUE)
+
+```
+
+### Victimization totals
+
+There are two ways to calculate victimization totals. These are estimates of the number of victimizations that occur for a particular type of crime and possibly by a characteristic. Using the incident design objects is the most straightforward method but the person and household design objects can be used as well if the adjustment factor is incorporated.
+
+In the example below, the total number of property and violent victimizations are first calculated using the incident file and then using the household and person design objects. The incident file is smaller and thus estimation is faster using that file, but the estimates will be the same as illustrated below:
+
+```{r}
+#| label: victot_examp
+des_inc %>%
+  summarise(
+    Property_Vzn=survey_total(Property, na.rm=TRUE),
+    Violent_Vzn=survey_total(Violent, na.rm=TRUE)
+  )
+
+des_hh %>%
+  summarise(
+    Property_Vzn=survey_total(Property*ADJINC_WT, na.rm=TRUE)
+  )
+
+des_pers %>%
+  summarise(
+    Violent_Vzn=survey_total(Violent*ADJINC_WT, na.rm=TRUE)
+  )
+```
+
+### Victimization proportions
+
+Victimization proportions are proportions describing features of a victimization. The key here is that these are questions among victimizations, not among the population. These types of estimates can only be calculated using the incident design object. These include questions such as:
+
+- What proportion of property victimizations are reported to the police?
+- What proportion of violent victimizations in urban areas?
 
 
+```{r}
+#| label: vic_prop
+
+des_inc %>%
+  filter(Property) %>%
+  group_by(ReportPolice) %>%
+  summarise(
+    Pct=survey_prop(na.rm=TRUE)*100
+  )
+
+des_inc %>%
+  filter(Violent) %>%
+  group_by(Urbanicity) %>%
+  summarise(
+    Pct=survey_prop(na.rm=TRUE)*100
+  )
+```
+
+### Victimization rates
+
+Victimization rates are the estimated number of victimizations per 1,000 households or persons in the population^[BJS publishes victimization rates per 1,000 which is also presented in these examples]. This is not an estimate of proportion of households or persons who are victimized which is a prevalence rate and described in the next section. Victimization rates are estimated using the household or person design objects depending on the type of crime and the adjustment factor must be incorporated.
+
+We return to the example of property and violent victimizations as was used in the example for victimization totals. 
+
+In the next example, the property victimization totals are calculated as above as well as the property victimization rate, using `survey_mean`, and the population size using `survey_total`.
+
+```{r}
+#| label: vic_rate
+
+des_hh %>%
+  summarise(
+    Property_Vzn=survey_total(Property*ADJINC_WT, na.rm=TRUE),
+    Property_Rate=survey_mean(Property*ADJINC_WT*1000, na.rm=TRUE),
+    PopSize=survey_total(1, vartype = NULL)
+  )
+```
+
+
+Victimization rates can also be calculated for particular characteristics of the victimization. In the following example, the rate of aggravated assault with no weapon, with a firearm, with a knife, and with another weapon. 
+
+```{r}
+#| label: pers_rates_char
+
+des_pers %>%
+  summarise(
+    across(starts_with("AAST_"), ~survey_mean(.*ADJINC_WT*1000, na.rm=TRUE))
+  )
+```
+
+A common desire is to calculate victimization rate by several characteristics. For example, violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by` statement for each categorization separately thus we make a function to do this and then use {{purrr}} to loop through the variables. Then, the gt package is used to make a publishable table.
+
+```{r}
+#| rates_demo
+
+pers_est_by <- function(byvar){
+  des_pers %>%
+    rename(Level:={{byvar}}) %>%
+    filter(!is.na(Level)) %>%
+    group_by(Level) %>% 
+    summarise(
+      Violent=survey_mean(Violent*ADJINC_WT*1000, na.rm=TRUE),
+      AAST=survey_mean(AAST*ADJINC_WT*1000, na.rm=TRUE)
+    ) %>%
+    mutate(
+      Variable=byvar,
+      LevelNum=as.numeric(Level),
+      Level=as.character(Level)
+    ) %>%
+    select(Variable, Level, LevelNum, everything())
+}
+
+pers_est_df <- c("Sex", "RaceHispOrigin", "AgeGroup", "MaritalStatus", "Income") %>%
+  map_df(pers_est_by)
+
+pers_est_df %>% 
+  mutate(
+    Variable=case_when(
+      Variable=="RaceHispOrigin"~"Race/Hispanic origin",
+      Variable=="MaritalStatus"~"Marital status",
+      Variable=="AgeGroup"~"Age",
+      TRUE~Variable
+    )
+  ) %>%
+  select(-LevelNum) %>% 
+  group_by(Variable) %>%
+  gt(rowname_col = "Level") %>%
+  tab_spanner(
+    label="Violent crime",
+    id="viol_span",
+    columns=c("Violent", "Violent_se")
+  ) %>%
+  tab_spanner(
+    label="Aggravated assault",
+    columns=c("AAST", "AAST_se")
+  ) %>%
+  cols_label(
+    Violent="Rate",
+    Violent_se="SE",
+    AAST="Rate",
+    AAST_se="SE",
+  ) %>%
+  fmt_number(
+    columns=c("Violent", "Violent_se", "AAST", "AAST_se"),
+    decimals=1
+  ) %>%
+  tab_footnote(
+    footnote="Includes rape or sexual assault, robbery, aggravated assault, and simple assault.",
+    locations=cells_column_spanners(spanners="viol_span")
+  ) %>%
+  tab_footnote(
+    footnote="Excludes persons of Hispanic origin",
+    locations=cells_body(columns="Level", rows= Level %in% c("White", "Black", ANHOPI, "Other"))
+  ) %>%
+  tab_footnote(
+    footnote="Inlcudes persons who identified as Asian only or as Native Hawaiian or Other Pacific Islander only.",
+    locations=cells_body(columns="Level", rows= Level == ANHOPI)
+  ) %>%
+  tab_footnote(
+    footnote="Inlcudes persons who identified as American Indian or Alaska Native only or as two or more races.",
+    locations=cells_body(columns="Level", rows= Level == "Other")
+  ) %>%
+  tab_source_note(source_note="Note: Rates per 1,000 persons age 12 or older.") %>%
+  tab_source_note(source_note="Source: Bureau of Justice Statistics, National Crime Victimization Survey, 2021.") %>%
+  tab_stubhead(label="Victim demographic") %>%
+  tab_header(title="Rate and standard error of violent victimization, by type of crime and demographic characteristics, 2021")  
+
+
+```
+
+
+
+### Prevalence rates
+
+Prevalence rates estimate the proportion of people or households who are victims. This is different from victimization rates as the numerator is the number of people or households who are victimized rather than the number of victimizations. To calculate the prevalence rates, another summary of the data must be done which is calculating and indicator for whether a person or household is a victim of a particular crime at any point in the year. Below is an example to calculate first the indicator and then the prevalence rate of violent crime and aggravated assault.
+
+```{r}
+#| label: prevexamp
+
+des_pers_prev <- 
+  des_pers %>%
+  mutate(Year=floor(YEARQ)) %>%
+  group_by(Year, IDHH, IDPER) %>%
+  mutate(
+    Violent_Ind=sum(Violent)>0,
+    AAST_Ind=sum(AAST)>0
+  ) %>%
+  ungroup()
+
+pers_prev_ests <- des_pers_prev %>%
+  summarise(
+    Violent_Prev=survey_mean(Violent_Ind*100),
+    AAST_Prev=survey_mean(AAST_Ind*100)
+  )
+
+pers_prev_ests
+
+```
+
+In the example above, the indicator is multiplied by 100 to return a percentage rather than a proportion. In 2021, it is estimated that `r round(pers_prev_ests$Violent_Prev, 2)`% of people age 12 and older were a victim of violent crime in the United States and `r round(pers_prev_ests$AAST_Prev, 2)`% were victims of aggravated assault.
