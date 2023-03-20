@@ -1,15 +1,17 @@
 # Modeling {#c08}
 
+<!-- TODO: Add an intro of what modeling is (in the context of survey data) -->
+
 Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey} package as was true in Chapter \@ref(c07). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression, logistic regression, nonlinear models, and  survival analysis. 
 
 In all models in R, you need to specify the structure of the model using a formula. The left side of the formula is the response/dependent variable and the right side of the formula has the predictor/independent variable(s). There are many symbols used in R to specify the formula. 
 
 For example, a linear formula mathematically specified as 
 
-$$Y_i=\beta_0+\beta X_i+\epsilon_i$$ 
+$$Y_i=\beta_0+\beta_1 X_i+\epsilon_i$$ 
 would be specified in R as `y~x` where the intercept is not explicitly included. To fit a model with no intercept, that is, 
 
-$$Y_i=\beta_0+\beta X_i+\epsilon_i$$ 
+$$Y_i=\beta_1 X_i+\epsilon_i$$ 
 
 it can be specified as `y~x-1`. Formula notation details in R can be found in the help file for formula^[Use `help(formula)` in R or find the documentation online at https://stat.ethz.ch/R-manual/R-devel/library/stats/html/formula.html]. A quick overview of the common formula notation is in the following table:
 
@@ -57,7 +59,7 @@ library(broom) # for tidy regression output
 
 Second, we need to read in the data and create the design objects.
 
-Here is how you create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information).
+Here is how you create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information) as well as Chapter "understanding survey documentation" (TODO: add link).
 ```{r anes_des_c07}
 anes <- read_rds(here("AnalysisData", "anes_2020.rds")) %>%
    mutate(Weight=Weight/sum(Weight)*231592693) 
@@ -92,28 +94,28 @@ In ANOVA, we are testing whether the mean of an outcome is the same across two o
 - $H_0: \mu_1 = \mu_2= \dots = \mu_k$ where $\mu_i$ is the is the mean outcome for group $i$
 - $H_A: \text{At least one mean is different}$
 
-To perform this type of test in R, the general syntax is as follows:
-
-```
-des_obj %>%
-  svyglm(design=.,
-         outcomevar~groupvar,
-         na.action=na.exclude,
-         df.resid=degf(.))
-```
-
-where `des_obj` is a design object, `outcomevar` is the outcome variable, `groupvar` is the group variable, and `na.action=na.exclude` is set so that records with missing data in the outcome or group variable are removed for prediction ^[See `help(na.exclude)` for more information on options to use for `na.action`]. The function `svyglm` does not have the design as the first argument so the `.` notation is used to pass it with a pipe.
-
 Some assumptions when using ANOVA on survey data include:
 
 - Outcome variable is normally distributed within each group
 - The variances of the outcome variable between each group are approximately equal
 - We do NOT assume independence between the groups as with general ANOVA. The covariance is accounted for in the survey design
 
-Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer which is encoded in the variable `SummerTempNight`. A descriptive analysis is displayed below of the temperature set by region and the sample sizes. Note that the temperature setting is set to NA when the household does not use air-conditioning.
+To perform this type of test in R, the general syntax is as follows:
+
+```
+des_obj %>%
+  svyglm(design=.,
+         outcomevar~groupvar,
+         na.action=na.omit,
+         df.resid=degf(.))
+```
+
+where `des_obj` is a design object, `outcomevar` is the outcome variable, `groupvar` is the group variable, and `na.action=na.omit` is set so that records with missing data in the outcome or group variable are removed for prediction ^[See `help(na.omit)` for more information on options to use for `na.action`]. The function `svyglm` does not have the design as the first argument so the `.` notation is used to pass it with a pipe.
+
+Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer which is encoded in the variable `SummerTempNight`. A descriptive analysis is displayed below of the temperature set by region and the sample sizes. 
 
 ```{r}
-#| label: anova_prep
+#| label: anova-prep
 recs_des %>%
   filter(ACUsed) %>%
   group_by(Region) %>%
@@ -124,10 +126,10 @@ recs_des %>%
   )
 ```
 
-In the following code, we test whether this temperature varies by region by first using `svyglm` to run the test and then using `broom::tidy` to display the output. 
+In the following code, we test whether this temperature varies by region by first using `svyglm` to run the test and then using `broom::tidy` to display the output. Note that the temperature setting is set to NA when the household does not use air-conditioning and thus `na.action=na.omit` is specified to ignore these cases.
 
 ```{r}
-#| label: anova_ex
+#| label: anova-ex
 anova_out <- recs_des %>%
    svyglm(design=.,
           formula=SummerTempNight~Region,
@@ -144,28 +146,36 @@ Linear regression is a more generalized method than ANOVA. In linear regression,
 
 $$y_i=\beta_0 +\sum_{i=1}^n \beta_i x_i + \epsilon_i$$
 
-where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_n$ are the predictors with $\beta_1, \cdots, \beta_n$ as the associated coefficients, and $\epsilon_i$ is the error. It is assumed that the residuals ($\epsilon_i$) are normally distributed but there is not an assumption of independence and the correlation structure is captured in the survey design object. The syntax for linear regression is nearly identical to ANOVA as follows:
+where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_n$ are the predictors with $\beta_1, \cdots, \beta_n$ as the associated coefficients, and $\epsilon_i$ is the error. 
+
+Assumptions in linear regression using survey data include:
+
+- The residuals ($\epsilon_i$) are normally distributed but there is not an assumption of independence and the correlation structure is captured in the survey design object. 
+- There is a linear relationship between the dependent and independent variable
+- The residuals are homoscedastic, that is the error term is the same across all values of independent variables
+
+The syntax for linear regression is nearly identical to ANOVA as follows:
 
 ```
 des_obj %>%
   svyglm(design=.,
          outcomevar~x1+x2+x3,
-         na.action=na.exclude,
+         na.action=na.omit,
          df.resid=degf(.))
 ```
 
-As discussed in the beginning of the chapter, the formula on the right-hand side can be specified many ways whether interactions are desired or not, for example. On RECS, information on the square footage of homes and the electric bills are obtained. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data.
+As discussed in the beginning of the chapter, the formula on the right-hand side can be specified many ways whether interactions are desired or not, for example. On RECS, information on the square footage of homes and the electric bills are obtained. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to examine whether it is reasonable to assume a linear relationship. In the plot below, each hexogon represents the weighted count of households in the bin.
 
 ```{r}
-#| label: plot_sf_elbill
+#| label: plot-sf-elbill
 #| fig.cap: "Relationship between square footage and dollars spent on electricity, RECS 2015"
 #| echo: FALSE
 #| warning: FALSE
 
 recs %>%
-  ggplot(aes(x=TOTSQFT_EN, y=DOLLAREL, weight=NWEIGHT)) +
-  geom_bin2d() + 
-  scale_fill_gradientn(guide="colourbar",name="Count of Housing Units", labels=scales::comma, 
+  ggplot(aes(x=TOTSQFT_EN, y=DOLLAREL, weight=NWEIGHT/1000000)) +
+  geom_hex() + 
+  scale_fill_gradientn(guide="colourbar",name="Housing Units\n(Millions)", labels=scales::comma, 
                        colours=c("#0B3954", "#087E8B", "#BFD7EA", "#FF8484", "#8D6B94")) +
   xlab("Total square footage") + ylab("Amount spent on electricity") +
   scale_y_continuous(labels=scales::dollar_format()) +
@@ -176,11 +186,11 @@ recs %>%
 The model is fit below with electricity expenditure as the outcome. Some textbooks use the term simple linear regression when a linear model has one continuous independent variable.
 
 ```{r}
-#| label: slr_examp
+#| label: slr-examp
 m_electric_sqft <- recs_des %>%
    svyglm(design=.,
           formula=DOLLAREL~TOTSQFT_EN,
-          na.action=na.exclude)
+          na.action=na.omit)
 tidy(m_electric_sqft)
 ```
 
@@ -190,13 +200,13 @@ In the output above, we can see the estimated coefficients (`estimate`), estimat
 In the following example, a model is fit predicting electricity expenditure including Census region (categorical), Urbanicity, square footage, and whether air-conditioning is used with all two-way interactions are also included.
 
 ```{r}
-#| label: lmr_examp
+#| label: lmr-examp
 
 m_electric_multi <- recs_des %>%
    svyglm(design=.,
           formula=DOLLAREL~(Region+Urbanicity+TOTSQFT_EN+ACUsed)^2-1,
-          na.action=na.exclude)
-tidy(m_electric_multi) %>% print(n=50)
+          na.action=na.omit)
+tidy(m_electric_multi)
 ```
 
 To examine the predictions, residuals and more from the model, the function `augment` from {broom}. The `augment` function will return a tibble with the independent and dependent variables and other fit statistics. The fitted value and standard error are contained in one column and need to be split after using augment as illustrated below.
@@ -205,7 +215,7 @@ These results can then be used in a variety of ways including examining residual
 
 
 ```{r}
-#| label: aug_examp
+#| label: aug-examp
 #| fig.cap: "Residual plot"
 
 fitstats <-
