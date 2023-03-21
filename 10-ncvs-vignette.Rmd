@@ -303,48 +303,72 @@ inc_analysis <- inc_ind %>%
 ```
 
 
-## Calculating estimates
 
-All of the data prep above is necessary to get the data ready for survey analysis. At this point, we can create the design objects and finally begin analysis. Three design objects will be created and these will be used for different types of analysis as it depends which type of estimate you are creating. We will first create the design objects and then discuss each estimate type: victimization totals, victimization proportions, and victimization rates.
 
-### Survey design objects
 
-For the incident file, the weight of analysis is NEWWGT which was constructed previously. The household and person files use WGTHHCY and WGTPERCY, respectively. For all analyses, V2117 is the strata variable and V2118 is the cluster variable for analysis.
+## Survey design objects
+
+All of the data prep above is necessary to get the data ready for survey analysis. At this point, we can create the design objects and finally begin analysis. Three design objects will be created and these will be used for different types of analysis as it depends which type of estimate you are creating. For the incident file, the weight of analysis is NEWWGT which was constructed previously. The household and person files use WGTHHCY and WGTPERCY, respectively. For all analyses, V2117 is the strata variable and V2118 is the cluster variable for analysis.
 
 ```{r}
 #| label: desobj
 
-des_inc <- inc_analysis %>%
+inc_des <- inc_analysis %>%
   as_survey(weight=NEWWGT, strata=V2117, ids=V2118, nest=TRUE)
 
-des_hh <- hh_vsum_slim %>%
+hh_des <- hh_vsum_slim %>%
   as_survey(weight=WGTHHCY, strata=V2117, ids=V2118, nest=TRUE)
 
-des_pers <- pers_vsum_slim %>%
+pers_des <- pers_vsum_slim %>%
   as_survey(weight=WGTPERCY, strata=V2117, ids=V2118, nest=TRUE)
 
 ```
 
+## Calculating estimates
+
+
+We will discuss four estimate types as follows: 
+
+1. Victimization totals are estimates of the number of criminal victimizations with a given characteristic. As demonstrated below, these can be calculated from any of the design objects. The estimated victimization total, $\hat{t}_D$ for domain $D$ is estimated as 
+
+$$ \hat{t}_D = \sum_{ijkl \in D} v_{ijkl}$$
+
+where $v_{ijkl}$ is the series-adjusted victimization weight for household $i$, respondent $j$, reporting period $k$, and victimization $l$.
+
+2. Victimization proportions estimate characteristics among victimizations or victims. Victimization proportions are calculated using the incident design object. The estimated victimization proportion for domain $D$ across level $a$ of covariate $A$, $\hat{p}_{A_a,D}$ is
+
+$$ \hat{p}_{A_a,D} =\frac{\sum_{ijkl \in A_a, D} v_{ijkl}}{\sum_{ijkl \in D} v_{ijkl}}.$$
+The numerator is the number of incidents with a particular characteristic in a domain and the denominator is the number of incidents in a domain.
+
+3. Victimization rates are estimates of number of victimizations per 1,000 persons or households in the population^[BJS publishes victimization rates per 1,000 which is also presented in these examples]. Victimization rates are calculated using the household or person design objects. The estimated victimization rate for crime $C$ in domain $D$ is 
+
+$$V\hat{R}_{C,D}= \frac{\sum_{ijkl \in C,D} v_{ijkl}}{\sum_{ijk \in D} w_{ijk}}\times 1000$$
+where $w_{ijk}$ is the person weight (WGTPERCY) or household weight (WGTHHCY) for personal and household crimes, respectively. The numerator is the number of incidents in a domain and the denominator is the number of persons or households in a domain.
+
+4. Prevalence rates are estimates of the percentage of the population (persons or households) who are victims of a crime. These are estimated using the household or person design objects. The estimated prevalence rate for crime $C$ in domain $D$ is
+
+$$ P\hat{R}_{C, D}= \frac{\sum_{ijk \in {C,D}} I_{ij}w_{ijk}}{\sum_{ijk \in D} w_{ijk}} \times 100$$
+
+where $I_{ij}$ is an indicator that a person or household in domain $D$ was a victim of crime $C$ at any time in the year. The numerator is the number of people who are victims in domain $D$ for crime $C$ and the denominator is the number of people or households in the population. 
+
 ### Victimization totals
 
-There are two ways to calculate victimization totals. These are estimates of the number of victimizations that occur for a particular type of crime and possibly by a characteristic. Using the incident design objects is the most straightforward method but the person and household design objects can be used as well if the adjustment factor is incorporated.
-
-In the example below, the total number of property and violent victimizations are first calculated using the incident file and then using the household and person design objects. The incident file is smaller and thus estimation is faster using that file, but the estimates will be the same as illustrated below:
+There are two ways to calculate victimization totals. Using the incident design objects is the most straightforward method but the person and household design objects can be used as well if the adjustment factor is incorporated. In the example below, the total number of property and violent victimizations are first calculated using the incident file and then using the household and person design objects. The incident file is smaller and thus estimation is faster using that file, but the estimates will be the same as illustrated below:
 
 ```{r}
 #| label: victot_examp
-des_inc %>%
+inc_des %>%
   summarise(
     Property_Vzn=survey_total(Property, na.rm=TRUE),
     Violent_Vzn=survey_total(Violent, na.rm=TRUE)
   )
 
-des_hh %>%
+hh_des %>%
   summarise(
     Property_Vzn=survey_total(Property*ADJINC_WT, na.rm=TRUE)
   )
 
-des_pers %>%
+pers_des %>%
   summarise(
     Violent_Vzn=survey_total(Violent*ADJINC_WT, na.rm=TRUE)
   )
@@ -361,14 +385,14 @@ Victimization proportions are proportions describing features of a victimization
 ```{r}
 #| label: vic_prop
 
-des_inc %>%
+inc_des %>%
   filter(Property) %>%
   group_by(ReportPolice) %>%
   summarise(
     Pct=survey_prop(na.rm=TRUE)*100
   )
 
-des_inc %>%
+inc_des %>%
   filter(Violent) %>%
   group_by(Urbanicity) %>%
   summarise(
@@ -378,16 +402,12 @@ des_inc %>%
 
 ### Victimization rates
 
-Victimization rates are the estimated number of victimizations per 1,000 households or persons in the population^[BJS publishes victimization rates per 1,000 which is also presented in these examples]. This is not an estimate of proportion of households or persons who are victimized which is a prevalence rate and described in the next section. Victimization rates are estimated using the household or person design objects depending on the type of crime and the adjustment factor must be incorporated.
-
-We return to the example of property and violent victimizations as was used in the example for victimization totals. 
-
-In the next example, the property victimization totals are calculated as above as well as the property victimization rate, using `survey_mean`, and the population size using `survey_total`.
+Victimization rates are not an estimate of proportion of households or persons who are victimized which is a prevalence rate and described in the next section. Victimization rates are estimated using the household or person design objects depending on the type of crime and the adjustment factor must be incorporated. We return to the example of property and violent victimizations as was used in the example for victimization totals. In the next example, the property victimization totals are calculated as above as well as the property victimization rate, using `survey_mean`, and the population size using `survey_total`.
 
 ```{r}
 #| label: vic_rate
 
-des_hh %>%
+hh_des %>%
   summarise(
     Property_Vzn=survey_total(Property*ADJINC_WT, na.rm=TRUE),
     Property_Rate=survey_mean(Property*ADJINC_WT*1000, na.rm=TRUE),
@@ -401,7 +421,7 @@ Victimization rates can also be calculated for particular characteristics of the
 ```{r}
 #| label: pers_rates_char
 
-des_pers %>%
+pers_des %>%
   summarise(
     across(starts_with("AAST_"), ~survey_mean(.*ADJINC_WT*1000, na.rm=TRUE))
   )
@@ -413,7 +433,7 @@ A common desire is to calculate victimization rate by several characteristics. F
 #| rates_demo
 
 pers_est_by <- function(byvar){
-  des_pers %>%
+  pers_des %>%
     rename(Level:={{byvar}}) %>%
     filter(!is.na(Level)) %>%
     group_by(Level) %>% 
@@ -469,15 +489,15 @@ pers_est_df %>%
   ) %>%
   tab_footnote(
     footnote="Excludes persons of Hispanic origin",
-    locations=cells_body(columns="Level", rows= Level %in% c("White", "Black", ANHOPI, "Other"))
+    locations=cells_stub(rows= Level %in% c("White", "Black", ANHOPI, "Other"))
   ) %>%
   tab_footnote(
     footnote="Inlcudes persons who identified as Asian only or as Native Hawaiian or Other Pacific Islander only.",
-    locations=cells_body(columns="Level", rows= Level == ANHOPI)
+    locations=cells_stub(rows= Level == ANHOPI)
   ) %>%
   tab_footnote(
     footnote="Inlcudes persons who identified as American Indian or Alaska Native only or as two or more races.",
-    locations=cells_body(columns="Level", rows= Level == "Other")
+    locations=cells_stub(rows= Level == "Other")
   ) %>%
   tab_source_note(source_note="Note: Rates per 1,000 persons age 12 or older.") %>%
   tab_source_note(source_note="Source: Bureau of Justice Statistics, National Crime Victimization Survey, 2021.") %>%
@@ -491,13 +511,13 @@ pers_est_df %>%
 
 ### Prevalence rates
 
-Prevalence rates estimate the proportion of people or households who are victims. This is different from victimization rates as the numerator is the number of people or households who are victimized rather than the number of victimizations. To calculate the prevalence rates, another summary of the data must be done which is calculating and indicator for whether a person or household is a victim of a particular crime at any point in the year. Below is an example to calculate first the indicator and then the prevalence rate of violent crime and aggravated assault.
+Prevalence rates are different from victimization rates as the numerator is the number of people or households who are victimized rather than the number of victimizations. To calculate the prevalence rates, another summary of the data must be done which is calculating and indicator for whether a person or household is a victim of a particular crime at any point in the year. Below is an example to calculate first the indicator and then the prevalence rate of violent crime and aggravated assault.
 
 ```{r}
 #| label: prevexamp
 
-des_pers_prev <- 
-  des_pers %>%
+pers_prev_des <- 
+  pers_des %>%
   mutate(Year=floor(YEARQ)) %>%
   group_by(Year, IDHH, IDPER) %>%
   mutate(
@@ -506,7 +526,7 @@ des_pers_prev <-
   ) %>%
   ungroup()
 
-pers_prev_ests <- des_pers_prev %>%
+pers_prev_ests <- pers_prev_des %>%
   summarise(
     Violent_Prev=survey_mean(Violent_Ind*100),
     AAST_Prev=survey_mean(AAST_Ind*100)
