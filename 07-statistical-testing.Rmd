@@ -1,27 +1,36 @@
 # Statistical testing {#c07}
 
-When analyzing results from a survey, the point estimates described in \@ref(c06) are helpful for understanding the data at a high level, but researchers and the public often want to make comparisons between different groups. These comparisons are calculated through statistical testing where we compare the point estimates and the variance estimates of each statistic to see if there are statistically significant differences. The general idea of statistical testing is the same for data obtained through surveys and data obtained in other methods, but the importance lies in ensuring the variance is calculated correctly. Functions in the {survey} and {srvyr} packages allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and functions:
+When analyzing results from a survey, the point estimates described in Chapter \@ref(c06) are helpful for understanding the data at a high level, but researchers and the public often want to make comparisons between different groups. These comparisons are calculated through statistical testing where we compare the point estimates and the variance estimates of each statistic to see if there are statistically significant differences. The general idea of statistical testing is the same for data obtained through surveys and data obtained through other methods, but the importance lies in ensuring the variance is calculated correctly. Functions in the {survey} packages allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and functions:
 
--   Comparison of proportions and means using `svyttest()`
--   Goodness of fit `svychisq()`
--   Tests of association `svychisq()`
+-  Comparison of proportions and means using `svyttest()`
+-  Goodness of fit `svychisq()`
+-  Tests of association `svychisq()`
 
-These functions are actually from the {survey} package instead of the {srvyr} package and the design object is *not* the first argument. This means that to use these functions with the magrittr pipe `%>%` we will need to use the dot notation. For example:
+Up to this point, the functions that we've provided have used the wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers from the {srvyr} package and are instead pulled directly from the {survey} package. This means that the design object is *not* the first argument and that to use these functions with the magrittr pipe `%>%` and tidyverse syntax we will need to use dot (`.`) notation. Functions that work with the magrittr pipe `%>%` have the first argument as data. When data is run, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to only cars with 6 cylinders we can write the code in one of three ways:
+
+1. `filter(mtcars, cyl == 6)`
+2. `mtcars %>% filter(cyl == 6)`
+3. `mtcars %>% filter(., cyl == 6)`
+
+Each of these code chunks will produce the same output since the argument that takes the data is in the first spot in `filter()`. If you're familiar with the tidyverse, you've probably seen the first two. The third option functions the same way as the second one, but is explicit about where the data is going. Here we're telling R to take what's on the left side of the pipe `mtcars` and pipe it into the spot with the dot (`.`)---the first argument.
+
+In functions that are not part of the tidyverse, the data argument may be in a different spot in the fuctions. For example, in `svyttest()` the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example:
 
 ``` r
-data_svydes %>% 
+svydata_des %>% 
   svyttest(x~y,.)
 ```
 
-Placing the dot (`.`) in the second argument spot, indicates that the survey design object `data_svydes` should be used in the second argument and not the first (which is the default). All examples with these functions from the {survey} packages that use the magrittr pipe will use this dot notation.
+Placing the dot (`.`) in the second argument spot, indicates that the survey design object `svydata_svy` should be used in the second argument and not the first (which is the default). 
 
-## Chapter Set-Up
+
+## Chapter Set-Up {#stattest-setup}
 
 For this chapter, we will be using the same data as we did in \@ref(c06): ANES and RECS. As a reminder, we will need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.
 
 First, make sure you have installed and loaded the following packages:
 
-```{r c07_setup}
+```{r stattest-pkgs}
 #| error: FALSE
 #| warning: FALSE
 #| message: FALSE
@@ -36,55 +45,83 @@ library(here)
 Second, we need to read in the data and create the design objects.
 
 Here is how you create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information).
-```{r anes_des_c07}
+```{r stattest-anesdes}
 anes <- read_rds(here("data", "anes_2020.rds")) %>%
-   mutate(Weight=Weight/sum(Weight)*231592693) 
+  mutate(Weight=Weight/sum(Weight)*231592693) 
 
 anes_des <- anes %>%
-   as_survey_design(weights = Weight,
-                    strata = Stratum,
-                    ids = VarUnit,
-                    nest = TRUE)
+  as_survey_design(weights = Weight,
+          strata = Stratum,
+          ids = VarUnit,
+          nest = TRUE)
 ```
 
 Here is how you create the design object for the RECS data:
-```{r recs_des_c07}
+```{r stattest-recsdes}
 recs <-read_rds(here("data", "recs.rds"))
 
 recs_des <- recs %>%
-  as_survey_rep(weights = NWEIGHT,
-                repweights = starts_with("BRRWT"),
-                type = "Fay",
-                rho = 0.5,
-                mse = TRUE)
+ as_survey_rep(weights = NWEIGHT,
+        repweights = starts_with("BRRWT"),
+        type = "Fay",
+        rho = 0.5,
+        mse = TRUE)
 ```
 
-## Comparison of Proportions and Means
+## Comparison of Proportions and Means {#stattest-ttest}
 
-<!--Stat overview, non code based-->
-Comparing proportions and means uses t-tests. 
+To compare two proportions or means, we use t-tests. This allows us to determine if one proportion or mean is statistically different from the other. T-tests are commonly used to determine if a single estimate is different from a known value (e.g., 0 or 50%) or to compare two group means (e.g., males vs females). For comparing a single estimate to a known value, this is called a *one sample t-test* and we can set up the hypothesis test as:
 
-### Syntax
+- $H_0: \mu = 0$ where $\mu$ is the is the mean outcome and $0$ is the value we are comparing it to
+- $H_A: \mu \neq 0$
 
-Outside of survey data, we can use the `t.test()` function. This function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use the `svyttest()` function. Many of the arguments are the same between the two functions, but instead of providing data, we need to provide the survey design object.
+For comparing two estimates, this is called a *two sample t-test* and we can set up the hypothesis test as:
+
+- $H_0: \mu_1 = \mu_2$ where $\mu_i$ is the is the mean outcome for group $i$
+- $H_A: \mu_1 \neq \mu_2$
+
+Two sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., males vs females), then the t-test run will be an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data taken from the same population in two different time periods (e.g., before and after an intervention). 
+
+The difference between using t-tests with non-survey data and with survey data is based on the underlying variance estimation difference. Chapter \@ref(c05) provides the detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances provided the design object is correct defined.  
+
+### Syntax {#stattest-ttest-syntax}
+
+When we do not have survey data, we may be able to use the `t.test()` function. This function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use the `svyttest()` function. Many of the arguments are the same between the two functions, but there are a two key differences:
+
+- We need to use the survey design object, instead of data
+- We can only use a formula and not separate x and y data
+
+Here is the syntax for the `svyttest()` function:
 
 ``` r
 svyttest(formula, 
-         design,  
+         design, 
          na.rm=FALSE,
          level=0.95,
          ...)
 ```
 
-As mentioned in the beginning of this chapter, the `design` parameter is the second argument of the function, therefore, the dot `(.)` 
+Notice that the first argument here is the `formula` and not the `design`. This means that we must use the dot `(.)` if we pipe in the survey design object (as described at the beginning of this chapter).  Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing the t-test will not computer. Throughout this chapter we will always set `na.rm=TRUE`, but before you begin working with your survey data, you'll want to review the notes provided in Chapter \@ref(C03) to better understand how you want to handle the missing data in your survey.
 
 
-### Examples
+### Examples {#stattest-ttest-examples}
 
-### Exercises
+### Exercises {#stattest-ttest-exercises}
 
-## Comparison of Means
+## Goodness of Fit {#stattest-gof}
 
-## Goodness of Fit
+### Syntax {#stattest-gof-syntax}
 
-## Tests of Association
+### Examples {#stattest-gof-examples}
+
+### Exercises {#stattest-gof-exercises}
+
+## Tests of Association {#stattest-assoc}
+
+### Syntax {#stattest-assoc-syntax}
+
+### Examples {#stattest-assoc-examples}
+
+### Exercises {#stattest-assoc-exercises}
+
+
