@@ -1,234 +1,246 @@
-# Understanding survey data files {#c03}
+# Understanding survey data documentation {#understanding-survey-data-documentation}
 
 ```{r}
-#| include = FALSE
-knitr::opts_chunk$set(eval = TRUE)
+#| include: false
+
+library(tidyverse)
 ```
 
-* [Reading survey documentation](#reading-survey-documentation)
-* [Best practices for loading data into R](#best-practices-for-loading-data-into-r)
-* [Loading survey files into R](#loading-survey-files-into-r)
-* [Missing data]
-* [Accounting for skip patterns]
+Before diving into survey analysis, it's crucial to thoroughly review the survey documentation. This documentation includes technical guides, questionnaires, codebooks, errata, and other useful resources. By taking the time to review these materials, we can gain a comprehensive understanding of the survey data and effectively conduct our analysis.
 
-## Reading survey documentation
+Survey documentation can vary in its organization, format, and ease of use. The information may be stored in any format - PDFs, Excel spreadsheets, Word documents, etc. Some surveys save different documentation together, such as a single document that contains both the codebook and the questionnaire. That's why it's important to know what kind of information is available in each documentation type and what to focus on in each one.
 
-The first step in survey analysis is reading the documentation. Survey documentation can vary in its organization, thoroughness, and ease of use. We recommend focusing on key sections when beginning an analysis.
+## Types of survey documentation
 
-* **Introduction:** The introduction orients us to the survey. Generally, this section provides the background of the project, purpose of the study, and main research questions.
-* **Study design:** The study design section describes how the survey was prepared and administered.
-* **Sample:** The sample section describes the sampling of the survey: how cases were selected, any sampling error that occurred, and limitations of the sample. This section can contain recommendations on how to use sampling weights. This documentation is critical in successfully running our analysis. We go into more detail in [Chapter 05:Specifying sample designs in srvyr](#c05).
+### Technical documentation
+<!-- this is adapted from chapter 05 ending -->
+The technical documentation, which may be called user guides or methodology/analysis guides, will highlight the variables necessary to specify the survey design. We recommend focusing on these key sections:
 
-## Best practices for loading data into R
+* **Introduction:** The introduction orients us to the survey. Generally, this section provides the project's background, the study's purpose, and the main research questions.
+* **Study design:** The study design section describes how researchers prepared and administered the survey was prepared.
+* **Sample:** The sample section describes the sampling of the survey: how researchers selected cases, any sampling error that occurred, and the limitations of the sample. This section can contain recommendations on how to use sampling weights. Look for weight information, whether the survey design is strata and/or clusters/PSUs or replicate weights, and any population sizes or finite population correction. This documentation is critical in successfully running our analysis, and more detail on sample designs is available in [Chapter 05: Specifying sample designs in srvyr](#c05).
 
-We recommend a project-based workflow for analysis projects as described in Hadley Wickham and Garrett Grolemund's book, R for Data Science. [define project-based workflow here] Projects help us practice file system discipline, since we put all the files related to a single project in a designated folder. Since all associated files are in a single location, they are easy to find and organize.
+In addition to survey design, the technical documentation may include other helpful information. Some technical documentation includes syntax for SAS, SUDAAN, Stata, and/or R, meaning we don't have to create this code from scratch. This saves us time and ensures our code is accurate.
 
-The RStudio IDE supports project-based workflows. When we create a project in RStudio, it creates a `.Rproj` file that store settings specific to that project.
+### Questionnaires
 
-The {here} package enables easy file referencing. In a project-based workflow, all paths are relative and, by default, relative to the project’s folder. Use the `here()` function from the here package to build the path when you load or save data.
+A survey questionnaire is the series of questions asked to obtain information from survey respondents. A questionnaire may employ different types of questions, such as multiple-choice, open-ended, Likert scales, or ranking questions, to gather opinions, behaviors, or demographic data. The questionnaire may also randomize responses or include instructions to help the respondent understand the question. A survey may have one questionnaire or multiple, depending on its scale and scope.
 
-## Loading survey files into R
+The questionnaire is an essential resource for understanding and interpreting the survey data, and should be used alongside any analysis. It provides details about each of the questions asked in the survey, such as question name, question wording, response options, skip logic, randomizations, display specification, mode differences, and the universe (if only a subset of respondents were asked the question). 
 
-Survey files come in different file types depending on the program used to output them. R gives us the flexibility to load datasets regardless of their file extension. Here are examples of common public-use survey file formats:
-
-* Delimiter-separated text files
-* Excel files
-* `.rda` files
-* `.dta` files from Stata
-* `.sas` files from SAS
-* `.sav` files from SPSS
-
-For uncommon file formats, we recommend searching StackOverflow or similar community sites to learn how to load them into R.
-
-### Loading delimiter-separated files into R
-
-Delimiter-separated files use specific characters to separate values. For example, CSV files are separated by commas. These file types are widely used and we can use many applications to read and write them.
-
-We can read delimiter-separated files using the tidyverse package {readr}. The {readr} package supports the following files with these `readr::read_*()` functions:
-
-* `read_csv()`: Comma-separated values (CSV) files
-* `read_tsv()`: Tab-separated values (TSV) files
-* `read_delim()`: Delimiter-separated files (CSV and TSV are important special cases)
-* `read_fwf()`: Fixed-width files
-* `read_table()`: Whitespace-separated files
-* `read_log()`: Web log files
+Below in Figure \@ref(fig:que-examp), we show a question from the ANES 2020 questionnaire. This part shows a particular question's question name (`postvote_rvote`), description (Did R Vote?), full wording of the question and responses, response order, universe, question logic (if `vote_pre` = 0), and other specifications. It also includes the variable name, which can be used to link to the codebook.
 
 ```{r}
-library(readr)
-read_csv("anes_timeseries_2020_csv_20220210.csv")
+#| label: que-examp
+#| echo: false
+#| fig.cap: ANES 2020 Questionnaire Example
+#| fig.alt: Question information about the variable postvote_rvote from ANES 2020 questionnaire Survey question, Universe, Logic, Web Spec, Response Order, and Released Variable are included. 
+
+knitr::include_graphics(path="images/questionnaire-example.jpg")
 ```
 
-### Loading Excel files into R
+### Codebooks
 
-Excel, the spreadsheet software program from Microsoft, is a common file format. We can load Excel spreadsheets into R using the {readxl} package. The {readxl} package supports both the legacy `.xls` format and the modern `.xlsx` format. 
+While a questionnaire provides information about the questions asked to respondents, the codebook explains how the survey data was coded and recorded. The codebook lists details such as variable names, variable label, variable meaning, codes for missing data, values labels, and value type (whether it is categorical or continuous, etc.). The codebook enables us to understand the variables and use them appropriately in our analysis.
 
-Let's review the options by running `??readxl::read_excel`:
+Below, we show a question from the ANES 2020 codebook. This part shows a particular variable's name (`V202066`), question wording, value labels, universe, and associated survey question (`postvote_rvote`).
 
-```
-read_excel(
-  path,
-  sheet = NULL,
-  range = NULL,
-  col_names = TRUE,
-  col_types = NULL,
-  na = "",
-  trim_ws = TRUE,
-  skip = 0,
-  n_max = Inf,
-  guess_max = min(1000, n_max),
-  progress = readxl_progress(),
-  .name_repair = "unique"
-)
-```
+![](images/codebook-example.jpg)
 
-We load our file into R by running `read_excel()` and specifying the arguments as necessary:
+It is important to review both questionnaires and codebooks in parallel, as questions and variables are not one-to-one. A single question may have multiple associated variables, or a single variable may summarize multiple questions. Reviewing the codebook clarifies how to analyze the variables.
 
-```{r}
-library(readxl)
-read_excel(path = "anes_timeseries_2020_csv_20220210.xlsx")
-```
+### Errata
 
-### Loading Stata, SAS, and SPSS files into R
+An erratum (singular) or errata (plural) is a document that lists errors found in a publication or dataset, such as a survey questionnaire. The purpose of an erratum is to correct or update mistakes or inaccuracies in the original document.
 
-The {haven} package from the tidyverse imports a variety of proprietary data formats: Stata `.dta` files, SAS `.sas7bdat` and `.sas7bcat` files, and SPSS `.sav` files. These file types can contain labels for variables and values. Using {haven} allows us to retain important information when analyzing tibbles in R.
+For example, if a survey questionnaire contains a question with an error, such as a typo or a confusing wording, an erratum would be created to provide a corrected version of the question. This helps to ensure the accuracy and reliability of the survey data and analysis.
 
-Let's look at Stata first. We can import `.dat` file formats using `haven::read_dat()`. Explore the `haven::read_dat()` options by searching for the help page, `??haven::read_dta`.
+Be sure to review these lists before conducting any analysis to ensure that the most accurate and up-to-date information is used in the analysis.
 
-```r
-read_dta(
-  file,
-  encoding = NULL,
-  col_select = NULL,
-  skip = 0,
-  n_max = Inf,
-  .name_repair = "unique"
-)
-```
+### Additional resources
 
-We load our file into R by running `read_dat()` and specifying the arguments as necessary:
-
-```{r}
-library(haven)
-
-(anes_dta <-
-  read_dta(file = "anes_timeseries_2020_stata_20220210.dta"))
-```
-
-The {haven} package has equivalent functions for SAS and SPSS: `read_sas()` and `read_sav()` respectively. Let's load the ANES 2020 SPSS file:
-
-```{r}
-#| eval = TRUE
-library(haven)
-
-(anes_sav <-
-  read_sav(file = "anes_timeseries_2020_spss_20220210.sav"))
-```
-
-#### Output objects
-
-The output objects are tibbles, a specific type of data frames that make it easier to work in the tidyverse. More information can be found in the [Tibbles chapter of R for Data Science](https://r4ds.had.co.nz/tibbles.html).
-
-#### Importing labeled data
-
-Stata, SPSS, and SAS files often contain labeled variables and values. Labels provide descriptive information about categorical data. With the {haven} package, we can import labels from Stata, SPSS, and SAS into R without loss of fidelity using a special class of data called `haven_labelled`.
-
-Taking a look at the ANES SPSS file:
-
-```{r, R.options=list(max.print = 6)}
-#| message = FALSE,
-#| eval = TRUE
-library(dplyr)
-
-anes_sav %>% 
-  select(1:6) %>% 
-  glimpse()
-```
-
-Note that the categorical variables have a type of `<dbl+lbl>`, meaning that they are labeled. We can confirm with `is.labelled()`:
-
-```{r}
-haven::is.labelled(anes_sav$V200002)
-```
-
-To see everything that a column contains, we can use `attributes()`. 
-Note that the variable labels are stored in `$label` while the value labels are stored in `$labels`.
-
-```{r}
-attributes(anes_sav$V200002) 
-```
-
-#### Working with labeled data in R
-
-Once we import labeled numeric or character vectors into R, we want to create an *intermediate* object that we convert into a regular R data frame. That is, we should not intend to keep the labeled vectors indefinitely.
-
-There are two ways of creating this intermediate object:
-
-1. Convert the vector into a factor 
-
-Factors in R are vectors of integer values that display corresponding character values. The possible character values are called levels, which are sorted in alphabetical order by default. Factors are often used for categorical data, where there is a finite number of distinct values.
-
-Here is a dummy example of factors:
-
-```{r}
-response <- c("strongly agree", "agree", "agree", "disagree")
-response_levels <- c("strongly agree", "agree", "disagree", "strongly disagree")
-factors <- factor(response, levels = response_levels)
-factors
-```
-
-Recall that factors are integer vectors, though they may look like character strings. We can confirm by looking at the vector's structure:
-
-```{r}
-#| eval = TRUE
-glimpse(factors)
-```
-
-R's factors differ from Stata, SPSS, or SAS' labeled vectors. However, we can leverage them to assign a dataset's value labels with `as_factor()`.
-
-```{r}
-anes_sav %>% 
-  transmute(V200002 = as_factor(V200002))
-```
-
-The `as_factor()` function can be applied to all columns in a data frame or individual ones.
-
-```{r}
-anes_sav_factor <-
-  anes_sav %>% 
-  as_factor()
-
-anes_sav_factor %>% 
-  select(1:6) %>% 
-  glimpse()
-```
-
-2. Stripping the labels
-
-The second option is to 'zap', or strip, the labels from the dataset. Similar to `as_factor()`, we can use `zap_*` to a specific column or an entire data frame.
-
-We can remove the variable label using `zap_label()`:
-
-```{r}
-zap_label(anes_sav) %>% 
-  select(1:6) %>% 
-  glimpse()
-```
-
-To remove the value labels, we can use `zap_labels()`:
-
-```{r}
-#| eval = FALSE
-zap_labels(anes_sav) %>% 
-  select(1:6) %>% 
-  glimpse()
-```
-
-
-
-## Missing data
-
-Stata, SPSS, and SAS files each handle missing values in different ways. For SAS and Stata, {haven} provides `tagged` missing values which extend R's regular `NA` by adding a single character label. A `tagged` missing value adds a single character label to R's regular `NA`. These values behave identical to `NA` in regular R operations while preserving the value of the tag.
-
-SPSS's user-defined values work differently to SAS and Stata. Each column can have either up to three distinct values that are considered as missing, or a range. The {haven} package provides `labeled_spss()` as a subclass of `labeled()` to model additional user-defined missing values.
+Surveys may have additional resources, such as interviewer instructions or "show cards" held up to respondents to help them answer a question. Review the survey website to find out more about these resources.
 
 ## Working with missing data
+
+If a respondent does not reply to a survey question, we consider the data missing. Respondents may not respond to a question for a variety of reasons, such as not wanting to answer a particular question, not understanding the question, or simply forgetting to provide a response.
+
+Missing data can be a significant problem in survey analysis, as it can introduce bias and reduce the representativeness of the data. There are several different types of missing data^[Mack C, Su Z, Westreich D. Managing Missing Data in Patient Registries: Addendum to Registries for Evaluating Patient Outcomes: A User’s Guide, Third Edition [Internet]. Rockville (MD): Agency for Healthcare Research and Quality (US); 2018 Feb. Types of Missing Data. Available from: https://www.ncbi.nlm.nih.gov/books/NBK493614/]:
+
+1. Missing completely at random (MCAR): The missing data is unrelated to both observed and unobserved data, and the probability of being missing is the same across all cases. For example, if a respondent missed a question because they had to leave the survey early due to an emergency.
+
+2. Missing at random (MAR): The missing data is related to observed data but not unobserved data, and the probability of being missing is the same within groups. For example, if older respondents choose not to answer specific questions than younger respondents, and we ask about age in the demographic section.
+
+3. Missing not at random (MNAR): The missing data is related to unobserved data, and the probability of being missing varies for reasons that we are not measuring. For example, if respondents with depression do not answer a question about depression severity.
+
+The survey documentation represents the missing data with a code. For example, a survey may have "Yes" responses coded to `1`, "No" responses coded to `2`, and missing responses coded to `-9`. Different codes may be used depending on why certain data is missing, such as non-response or skipped questions. When we are running analysis in R, we want to ensure that we are treating missing responses as missing data (i.e., `NA`) and not numeric data.
+
+As survey analysts, we have to consider the implications of how we handle missing data. For instance, we can analyze only the respondents who answered all questions by performing listwise deletion, a method that drops all rows from a data frame with a missing value in any column. The function `tidyr::drop_na()` can be used for listwise deletion. In the example below, only the first row will remain:
+
+```{r}
+dat <- tibble::tribble(
+  ~col1, ~col2, ~col3,
+    "a",    "d",   "e",
+    "b",    NA,    NA,
+    "c",    NA,    "f"
+  )
+
+dat %>% 
+  tidyr::drop_na()
+```
+
+However, if our data is not missing completely at random (MCAR), listwise deletion may produce biased estimates (there may be a pattern of respondents who do not respond to specific questions). In these circumstances, we should explore other options, such as multiple imputation or weighted estimation. See Allison (2002) for more detail.
+<!-- this was referenced in the ANES user guide but maybe we should not include?-->
+
+### Accounting for skip patterns
+
+Questionnaires may also include skip patterns, in which certain questions are skipped based on the respondent's answers to earlier questions. For example, if a respondent answers "no" to a question on whether they voted in the last election, then they may be instructed to skip a series of questions related to that election.
+
+As with missing data, we need to account for skip patterns in our survey analysis to ensure unbiased and accurate population parameters. We can treat skipped questions as missing data. Or, we can also incorporate skip patterns into the analysis and run analysis that account for the conditional dependence between the skipped questions and the questions that were answered. The appropriate method depends on the nature and extent of the skip patterns in the survey, as well as the research questions and methodology. For example, if we wanted to know what proportion of eligible voters voted for a particular candidate, the denominator would be all who are eligible while if we wanted to know what proportion voted for a particular candidate among those who voted, the denominator would be those who voted. This changes whether the missing values are included or excluded in an analysis.
+
+In summary, we need to have a deep understanding of missing data in our survey before running any analysis. The survey documentation is an important resource for understanding how to deal with missing data. Carefully review the documentation for any guidance from the researchers.
+
+## Example: American National Election Studies (ANES) 2020 survey documentation
+
+Let's look at the survey documentation for the American National Election Studies (ANES) 2020. The survey website is located at [https://electionstudies.org/data-center/2020-time-series-study/](https://electionstudies.org/data-center/2020-time-series-study/). 
+
+Navigating to "User Guide and Codebook," we can download the PDF that contains the survey documentation, titled "ANES 2020 Time Series Study Full Release: User Guide and Codebook". Don't be daunted by the 796-page PDF. We can focus on the most critical information.
+
+#### Introduction {-}
+
+The first section in the User Guide explains that the ANES 2020 Times Series Study is a continuation of a series of election surveys conducted since 1948. These surveys contain data on public opinion and voting behavior in U.S. presidential elections. It states that interviewers used one of three modes (web, video, or telephone). The introduction then summarizes the number of pre-election interviews (8,280) and post-election re-interviews (7,449).
+
+#### Sample Design and Respondent Recruitment {-}
+
+The section "Sample Design and Respondent Recruitment" describes how the survey was conducted: 
+
+> ...a contactless, mixed-mode design.... a sequential mixed-mode design was implemented that included self-administered online surveys, live video interviews conducted online, and telephone interviews.
+
+In addition to respondents who participated in 2016 ANES, the 2020 survey included a freshly-drawn cross-section:
+
+> The target population for the fresh cross-section was the 231 million non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or the District of Columbia.
+
+The document continues with more details on the sample groups.
+
+#### Data Analysis, Weights, and Variance Estimation {-}
+
+The section "Data Analysis, Weights, and Variance Estimation" includes information on weights and strata/cluster variables. Reading through, we can find the full sample weight variables:
+
+> For analysis of the complete set of cases using pre-election data only, including all cases and representative of the 2020 electorate, use the full sample pre-election weight, **V200010a**. For analysis including post-election data for the complete set of participants (i.e., analysis of post-election data only or a combination of pre- and post-election data), use the full sample post-election weight, **V200010b**. Additional weights are provided for analysis of subsets of the data...
+
+The document provides more information about the variables, summarized below:
+
+For weight | Use variance unit/PSU/cluster | and use variance stratum
+-----------|-------------------------------|-------------------------
+V200010a| V200010c| V200010d
+V200010b| V200010c| V200010d
+
+As mentioned above, we want to conduct ANES data analysis with weights to accurately represent the population. The user guide references a supplemental document called "How to Analyze ANES Survey Data"^[DeBell, Matthew. 2010. How to Analyze ANES Survey Data. ANES Technical Report Series no. nes012492. Palo Alto, CA, and Ann Arbor, MI: Stanford University and the University of Michigan] as a 'how-to guide' to help us with our analysis.
+
+Recall the "Sample Design and Respondent Recruitment" section:
+
+> The target population for the fresh cross-section was the 231 million non-institutional U.S. citizens aged 18 or older living in the 50 US states or the District of Columbia.
+
+We will use Current Population Survey (CPS) to find a number of the non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. The {censusapi} package allows us to do this in a reproducible way:
+
+``` r
+library(censusapi)
+library(tidyverse)
+
+cps_state_in <- getCensus(
+  name = "cps/basic/nov",
+  vintage = 2020,
+  region = "state",
+  vars = c("HRHHID", "HRMONTH", "HRYEAR4", "PRTAGE", "PRCITSHP", "PWSSWGT"),
+  key = Sys.getenv("CENSUS_API_KEY")
+)
+
+cps_state <- cps_state_in %>%
+  as_tibble() %>%
+  mutate(across(.fns = as.numeric))
+
+# Confirm this doesn't include territories
+cps_state %>%
+  count(state)
+```
+
+    ## # A tibble: 51 x 2
+    ##    state     n
+    ##    <dbl> <int>
+    ##  1     1  2406
+    ##  2     2  1289
+    ##  3     4  1969
+    ##  4     5  1988
+    ##  5     6  9574
+    ##  6     8  1365
+    ##  7     9  1157
+    ##  8    10  1285
+    ##  9    11  1622
+    ## 10    12  5055
+    ## # ... with 41 more rows
+
+``` r
+# Confirm this is only November 2020
+cps_state %>%
+  count(HRMONTH, HRYEAR4)
+```
+
+    ## # A tibble: 1 x 3
+    ##   HRMONTH HRYEAR4      n
+    ##     <dbl>   <dbl>  <int>
+    ## 1      11    2020 112037
+
+``` r
+# Voting age citizen population
+targetpop <- cps_state %>%
+  as_tibble() %>%
+  filter(PRTAGE >= 18,
+         PRCITSHP %in% (1:4)) %>%
+  pull(PWSSWGT) %>%
+  sum()
+```
+
+The target population in 2020 is 231,592,693. This information gives us what we need to create the post-election survey object with {srvyr}:
+
+```{r}
+#| eval: FALSE
+library(tidyverse)
+library(here)
+library(srvyr)
+
+anes <- read_rds(here("Data", "anes_2020.rds")) %>%
+  mutate(Weight = V200010b / sum(V200010b) * 231592693)
+
+anes_des <- anes %>%
+  as_survey_design(
+    weights = Weight,
+    strata = V200010d,
+    ids = V200010c,
+    nest = TRUE
+  )
+
+summary(anes_des)
+```
+
+#### Codebook {-}
+
+The next chapter of the document is the codebook. As noted above, the codebook provides information about the variables in a survey dataset. We can use it to select the variables for our analysis later on.
+
+## Searching for public-use survey data
+<!--I feel like I put this in here after one of our meetings, don't 100% remember, let me know if it's not worth adding-->
+A common question for aspiring survey analysts is, "What are some examples of public-use survey data?". When writing this book, we asked ourselves this question because we wanted to provide relevant, engaging, and high-quality examples for our readers.
+
+We considered whether a survey had both continuous and discrete data, how difficult it was to analyze, and how recent the survey collection happened. We also thought about how easily accessible the data is and the licensing agreements around using the data. Finally, we wanted to expand our examples beyond North American surveys.
+
+Here are a few public-use survey resources:
+
+* Analyze Survey Data for Free - [asdfree.com](https://asdfree.com)
+* Residential Energy Consumption Survey (RECS) - [https://www.eia.gov/consumption/residential/](https://www.eia.gov/consumption/residential/)
+* The National Crime Victimization Survey (NCVS) - [https://bjs.ojp.gov/data-collection/ncvs](https://bjs.ojp.gov/data-collection/ncvs)
+* Afrobarometer - [https://www.afrobarometer.org/](https://www.afrobarometer.org/)
+* Latin American Public Opinion Project Research institute - [https://www.vanderbilt.edu/lapop/](https://www.vanderbilt.edu/lapop/)
+
+## Exercises
+<!--TODO: add exercises-->
+<!--TODO: citations-->
+>>>>>>> f79e319a86902fd9d0f18cbd915993acf384d2cd
