@@ -12,7 +12,7 @@ Up to this point, the functions that we've provided have used the wrappers from 
 2. `mtcars %>% filter(cyl == 6)`
 3. `mtcars %>% filter(., cyl == 6)`
 
-Each of these code chunks will produce the same output since the argument that takes the data is in the first spot in `filter()`. If you're familiar with the tidyverse, you've probably seen the first two. The third option functions the same way as the second one, but is explicit about where the data is going. Here we're telling R to take what's on the left side of the pipe `mtcars` and pipe it into the spot with the dot (`.`)---the first argument.
+Each of these code chunks will produce the same output since the argument that takes the data is in the first spot in `filter()`. Those who have worked with the tidyverse, the first two are probably familiar. The third option functions the same way as the second one, but is explicit about where the data is going. Here we're telling R to take what's on the left side of the pipe `mtcars` and pipe it into the spot with the dot (`.`)---the first argument.
 
 In functions that are not part of the tidyverse, the data argument may be in a different spot in the fuctions. For example, in `svyttest()` the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example:
 
@@ -28,7 +28,7 @@ Placing the dot (`.`) in the second argument spot, indicates that the survey des
 
 For this chapter, we will be using the same data as we did in \@ref(c06): ANES and RECS. As a reminder, we will need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.
 
-First, make sure you have installed and loaded the following packages:
+First, make sure install and load the following packages:
 
 ```{r stattest-pkgs}
 #| error: FALSE
@@ -44,7 +44,7 @@ library(here)
 
 Second, we need to read in the data and create the design objects.
 
-Here is how you create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information).
+Here is how to create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information).
 ```{r stattest-anesdes}
 anes <- read_rds(here("data", "anes_2020.rds")) %>%
   mutate(Weight=Weight/sum(Weight)*231592693) 
@@ -56,7 +56,7 @@ anes_des <- anes %>%
           nest = TRUE)
 ```
 
-Here is how you create the design object for the RECS data:
+Here is how to create the design object for the RECS data:
 ```{r stattest-recsdes}
 recs <-read_rds(here("data", "recs.rds"))
 
@@ -101,7 +101,18 @@ svyttest(formula,
          ...)
 ```
 
-Notice that the first argument here is the `formula` and not the `design`. This means that we must use the dot `(.)` if we pipe in the survey design object (as described at the beginning of this chapter).  Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing the t-test will not computer. Throughout this chapter we will always set `na.rm=TRUE`, but before you begin working with your survey data, you'll want to review the notes provided in Chapter \@ref(C03) to better understand how you want to handle the missing data in your survey.
+Notice that the first argument here is the `formula` and not the `design`. This means that we must use the dot `(.)` if we pipe in the survey design object (as described at the beginning of this chapter). 
+
+The `formula` argument can take on a couple of different forms depending on what it is that we are measuring.  Here are a few common scenarios:
+
+1. **One-sided t-test:** $var \sim 0$, where $var$ is the measure of interest and $0$ is the value we are comparing it to. For example, we could test if the percent of the population that has blue eyes is different from $0$.
+2. **Two-sided t-test:**
+    a. **Unpaired:**
+        - **2 level grouping variable:** $var \sim groupVar$, where $var$ is the measure of interest and $groupVar$ is a variable with two categories.  For example, we could test if the perfect of the popualtion that has blue eyes is different for men and women. 
+        - **3+ level grouping variable:** $var \sim I(groupVar == Value)$, where $var$ is the measure of interest, $groupVar$ is the categorical variable, and $Value$ is the category level to isolate. We need to use the `I()` function, to tell the program to isolate the category before doing the comparison across groups.  For example, we could test if the test scores in one classroom differed from all other classrooms.
+    b. **Paired:** $I(var_1 - var_2) \sim 0$, where $var_1$ is the first variable of interest and $var_2$ is the second variable of interest. We again will have to use the `I()` function to have the program calculate the difference between the two variables before comparing it against $0$.  For example, we could test if test scores on a subject differed between the start and the end of a course.
+
+Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing the t-test will not computer. Throughout this chapter we will always set `na.rm=TRUE`, but before analyzing the survey data, make sure to review the notes provided in Chapter \@ref(c03) to better understand how to handle missing data.  Finally, the `level` argument is $1-\alpha$, or the amount of type 1 error.  The default is $0.95$.
 
 
 ### Examples {#stattest-ttest-examples}
