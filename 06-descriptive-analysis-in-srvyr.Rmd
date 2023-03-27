@@ -3,7 +3,7 @@
 <!-- Definition of descriptive analytics in the context of complex survey analysis -->
 Descriptive analyses describes and summarizes the basic quantitative information of survey data. Common descriptive analyses include the frequency of observations, distributions of responses, or the mean of a numeric variable. These analyses present large amounts of quantitative data in an understandable way and form the basis of every survey analysis.
 
-In addition to describing our data, we can use these analyses to compare across people or other units. Descriptive analyses help us identify potential errors and assess outliers. We gain crucial information for conducting further analysis.
+In addition to describing our data, we can use these analyses to compare across people or other units. Descriptive analyses help us identify potential errors and assess outliers. We gain crucial information for deciding on deeper analysis.
 <!-- Importance of considering the design and sampling of the survey when analyzing data-->
 
 In complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. This requires reading the survey documentation (as described in Chapter \@ref(c05)) to apply the appropriate sampling weights, PSUs, strata, and replicate weights. Neglecting to incorporate these elements can lead to inaccurate descriptive analyses.
@@ -56,7 +56,6 @@ dstrata <- dstrata %>%
   rename(api_students = api.stu)
 ```
 
-
 Instead of data frames or tibbles, {srvyr} functions are meant for `tbl_svy` objects. Attempting to run data manipulation on non-`tbl_svy` objects will result in an error:
 
 ```{r}
@@ -81,12 +80,11 @@ mtcars %>%
   dplyr::summarize(mean_hp = mean(hp))
 ```
 
-These verbs can be used in conjunction with `group_by()`, applying the functions on a group-by-group basis to create grouped summaries.
+These verbs can be used in conjunction with `group_by()` or `by/.by`, applying the functions on a group-by-group basis to create grouped summaries.
 
 ```{r}
 mtcars %>% 
-  dplyr::group_by(cyl) %>% 
-  dplyr::summarize(mean_hp = mean(hp))
+  dplyr::summarize(mean_hp = mean(hp), by = "cyl")
 ```
 
 We use a similar setup to summarize data in {srvyr}.
@@ -97,6 +95,7 @@ dstrata %>%
             api00_median = survey_median(api00))
 ```
 
+Throughout the chapter, we'll note when a {srvyr} function must be included within `summarize()`.
 
 <!--TODO: end callout note-->
 
@@ -122,15 +121,6 @@ The {srvyr} package includes several functions for determining measures of distr
 * The `survey_quantile()` function calculates quantiles
 * The `survey_ratio()` function calculates ratios
 
-```{r}
-# Calculate the survey proportion of awards
-
-dstrata %>%
-  group_by(awards) %>%
-  summarize(pct = survey_prop())
-```
-Running the above, we see the weighted percentage of students who received awards is 63.9%.
-
 #### Measures of central tendency {-}
 
 Measures of central tendency find the central (or average) responses. These include the mean, median, and mode.
@@ -138,16 +128,6 @@ Measures of central tendency find the central (or average) responses. These incl
 * Examples: Average 2000 Academic Performance Index in California, the median house price in Canada
 
 The `survey_mean()` and `survey_median()` functions from {srvyr} calculate mean and median using survey data, respectively. These functions must be called from within `summarize()`.
-
-```{r}
-# Calculate survey mean of variable api00
-
-dstrata %>%
-  summarize(api00_mean = survey_mean(api00),
-            api00_median = survey_median(api00))
-```
-
-The weighted average score in 2000 was 662.3, and the median score was 668.
 
 #### Measures of dispersion {-}
 
@@ -157,42 +137,13 @@ Measures of dispersion describe how data spreads around the central tendency. Th
 
 The `survey_var()` and `survey_sd()` functions from the {srvyr} package calculate population variance and standard deviation using survey methods, respectively.
 
-```{r}
-# Calculate the variance and standard deviation 
-dstrata %>%
-  summarize(api99_var = survey_var(api00),
-            api99_sd = survey_sd(api00))
-```
-
-In this case, the variance for the 1999 scores was 15190.59	with a standard error of 1273.3 and a standard deviation was 123.3.
-
 ### Bivariate/multivariate analysis
 
 Bivariate analysis concerns the relationship between two variables. Multivariate analysis studies the relationship between multiple variables. A common analysis includes correlation, which is a number between -1 and +1 that denotes the strength of the linear relationship between two variables.
 
 * Examples: Relationship between academic performance scores in 1999 and 2000; relationship between age and income
 
-<!--- TODO: check if this is still true in December 2023 --->
-The {srvyr} package does not include a function for calculating correlations for survey variables. We can use the {survey} package's `svyvar()` to estimate the variance between the variables and then run `cov2cor()` to get the correlation.
-
-```{r}
-var <- survey::svyvar(~api00 + api99, design = dstrata)
-vmat <- as.matrix(var)
-attr(vmat, "var") <- NULL # Remove extra info
-attr(vmat, "statistic") <- NULL # Remove extra info
-stats::cov2cor(vmat)
-
-# Another option, using the native R pipe and labelled::remove_attributes()
-
-dstrata |>
- survey::svyvar(~api00 + api99, design = _) |>
- as.matrix(x = _) |>
- labelled::remove_attributes(x = _, "var") |>
- labelled::remove_attributes(x = _, "statistic") |>
- stats::cov2cor(V = _)
-```
-
-These is a strong correlation (0.97) between a district's score in 1999 and 2000.
+We can use the {srvyr} package's `survey_corr()` function to calculate correlation and its variation using survey methods.
 
 ## Deciding on descriptive analyses
 <!-- TODO: simplify this sentence -->
@@ -215,7 +166,7 @@ Recall from [Chapter 05](#c05) the general process for estimation with the {srvy
 2. Subset the data for subpopulations using `dplyr::filter()`, if needed.
 3. Specify domains of analysis using `dplyr::group_by()`, if needed.
 4. Within `srvyr::summarize()`, specify variables to calculate ,means, totals, proportions, quantiles, and more.
-
+<!-- edit this depending on how much we've talked about it in earlier chapters-->
 The Residential Energy Consumption Survey (RECS) provides data on energy consumption and expenditures. It is funded by Energy Information Administration and collects information through energy suppliers through in-person, phone, and web interviews. It has been fielded 14 times between 1950 and 2020. Topics include appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.
 
 The survey targets primary occupied housing units in the US. RECS uses Balanced Repeated Replication (BRR) to estimate the variances. The full sample information is available on the [EIA website](https://www.eia.gov/consumption/residential/index.php). 
