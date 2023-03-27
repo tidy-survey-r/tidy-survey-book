@@ -12,14 +12,17 @@ Up to this point, the functions that we've provided have used the wrappers from 
 2. `mtcars %>% filter(cyl == 6)`
 3. `mtcars %>% filter(., cyl == 6)`
 
-Each of these code chunks will produce the same output since the argument that takes the data is in the first spot in `filter()`. Those who have worked with the tidyverse, the first two are probably familiar. The third option functions the same way as the second one, but is explicit about where the data is going. Here we're telling R to take what's on the left side of the pipe `mtcars` and pipe it into the spot with the dot (`.`)---the first argument.
+Each of these lines of code will produce the same output since the argument that takes the data is in the first spot in `filter()`. Those who have worked with the tidyverse, the first two are probably familiar. The third option functions the same way as the second one, but is explicit about where the data is going. Here we're telling R to take what's on the left side of the pipe `mtcars` and pipe it into the spot with the dot (`.`)---the first argument.
 
-In functions that are not part of the tidyverse, the data argument may be in a different spot in the fuctions. For example, in `svyttest()` the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example:
+In functions that are not part of the tidyverse, the data argument may be in a different spot in the functions. For example, in `svyttest()` the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example:
 
-``` r
+```{r stattest-dotex}
+#| eval: FALSE
+
 svydata_des %>% 
   svyttest(x~y,.)
 ```
+
 
 Placing the dot (`.`) in the second argument spot, indicates that the survey design object `svydata_svy` should be used in the second argument and not the first (which is the default). 
 
@@ -105,19 +108,121 @@ Notice that the first argument here is the `formula` and not the `design`. This 
 
 The `formula` argument can take on a couple of different forms depending on what it is that we are measuring.  Here are a few common scenarios:
 
-1. **One-sided t-test:** $var \sim 0$, where $var$ is the measure of interest and $0$ is the value we are comparing it to. For example, we could test if the percent of the population that has blue eyes is different from $0$.
+1. **One-sided t-test:** 
+    a. **Comparison to 0:** $var \sim 0$, where $var$ is the measure of interest and $0$ is the value we are comparing it to. For example, we could test if the percent of the population that has blue eyes is different from $0$.
+    b. **Comparison to a different value:** $I(var - value) \sim 0$, where $var$ is the measure of interest and $value$ is what we are comparing to. We need to use the `I()` function, to tell the program to calculate the difference between the variable and the comparison value prior to testing. For example, we could test if the percent of the population that has blue eyes is different from $25%$.
 2. **Two-sided t-test:**
     a. **Unpaired:**
         - **2 level grouping variable:** $var \sim groupVar$, where $var$ is the measure of interest and $groupVar$ is a variable with two categories.  For example, we could test if the perfect of the popualtion that has blue eyes is different for men and women. 
-        - **3+ level grouping variable:** $var \sim I(groupVar == Value)$, where $var$ is the measure of interest, $groupVar$ is the categorical variable, and $Value$ is the category level to isolate. We need to use the `I()` function, to tell the program to isolate the category before doing the comparison across groups.  For example, we could test if the test scores in one classroom differed from all other classrooms.
+        - **3+ level grouping variable:** $var \sim I(groupVar == level)$, where $var$ is the measure of interest, $groupVar$ is the categorical variable, and $level$ is the category level to isolate. Again we need to use the `I()` function to tell the program to isolate the category before doing the comparison across groups.  For example, we could test if the test scores in one classroom differed from all other classrooms.
     b. **Paired:** $I(var_1 - var_2) \sim 0$, where $var_1$ is the first variable of interest and $var_2$ is the second variable of interest. We again will have to use the `I()` function to have the program calculate the difference between the two variables before comparing it against $0$.  For example, we could test if test scores on a subject differed between the start and the end of a course.
 
 Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing the t-test will not computer. Throughout this chapter we will always set `na.rm=TRUE`, but before analyzing the survey data, make sure to review the notes provided in Chapter \@ref(c03) to better understand how to handle missing data.  Finally, the `level` argument is $1-\alpha$, or the amount of type 1 error.  The default is $0.95$.
 
-
 ### Examples {#stattest-ttest-examples}
+Let's walk through a few examples using the ANES and RECS data.  See \@ref(stattest-setup) to set up the design objects.
+
+#### Example 1: One-sided t-test {.unnumbered #stattest-ttest-ex1}
+
+ANES asked respondents if they voted early in the 2020 election.  In our data, we've called this variable `EarlyVote2020`.  If we want to see if the percent of the U.S. voting eligble population that early voted is greater than 0%, we could set up the hypothesis as follows:
+
+- $H_0: p = 0$ where $p$ is the percent of U.S. voting eligible population that voted early
+- $H_A: p \neq 0$
+
+To conduct this in R, we would then use the `svyttest()` function:
+```{r stattest-ex1}
+ex1<-anes_des %>%
+   svyttest(formula=I(EarlyVote2020=="Yes")~0,
+            design=.,
+            na.rm=TRUE)
+
+ex1
+```
+Note that because `EarlyVote202` is a factor, we need to specify which level we are interested in.  In this case we want to isolate those that did vot early in 2020.  The results indicate that on average `r round(ex1$estimate*100,1)`% of the U.S. voting eligible population voted early in the 2020 election.  We also see that the t-statistic is `r ex1$statistic` and the p-value is `r ex1$p.value`, indicating that the average is statistically different from 0 at an $\alpha$ level of $0.05$.
+
+<!--Add in callout box about how to use the $ notation to help call out the different values?  Maybe indicate how this will be covered more in the reporting chapter?-->
+<!--What about a callout box about tidy()?-->
+
+#### Example 2: One-sided t-test {.unnumbered #stattest-ttest-ex2}
+
+RECS asks respondents to indicate what temperature they set their house to during the summer at night.  In our dataset, we've called this variable `SummerTempNight`.  If we want to see if the U.S. household sets their temperature at a value different from 68$^\circ$F, we could set up the hypothesis as follows:
+
+- $H_0: \mu = 68$ where $\mu$ is the is average temperature U.S. Households set their thermostat to in the summer at night
+- $H_A: \mu \neq 68$
+
+To conduct this in R, we would then use the `svyttest()` function, and the `I()` function in the formula:
+```{r stattest-ex2}
+ex2<-recs_des %>%
+   svyttest(formula=I(SummerTempNight-68)~0,
+            design=.,
+            na.rm=TRUE)
+
+ex2
+```
+
+The estimate in this case differs from example one in that the estimate is not displaying $\mu$ but rather $\mu - 68$.  If we wanted the average we could do one of the following:
+```{r stattest-ex2-svymean}
+recs_des %>% summarize(mu=survey_mean(SummerTempNight,na.rm=TRUE))
+```
+
+Or, we could take our t-test estimate (`ex2$estimate`) and add it to 68: 
+```{r stattest-ex2-add}
+ex2$estimate + 68
+```
+
+The result is the same in both methods, so we see that the average temperature U.S. Households set their thermostat to in the summer at night is `r round(ex2$estimate + 68,1)`.  Looking at the output from the` svyttest()`, the t-statistic is `r ex2$statistic` and the p-value is `r ex2$p.value`, indicating that the average is statistically different from 68$^\circ$F at an $\alpha$ level of $0.05$.
+
+
+#### Example 3: Unpaired two-sided t-test {.unnumbered #stattest-ttest-ex3}
+
+Two additional variables we have on the RECS data are the electric bill cost (`DOLLAREL`) and whether the house used AC or not (`ACUsed`).  If we want to know if the U.S. households that used AC had high electrical bills than those that did not, we could set up the hypothesis as follows:
+
+- $H_0: \mu_{AC} = \mu_{noAC}$ where $\mu_{AC}$ is the electrical bill cost for U.S. households that used AC and $\mu_{noAC}$ is the electrical bill cost for U.S. household that did not use AC
+- $H_A: \mu_{AC} \neq \mu_{noAC}$
+ 
+Let's take a quick look at the data to see the format the data are in:
+```{r stattest-ex3-desc}
+recs_des %>% 
+  group_by(ACUsed) %>% 
+  summarize(mean=survey_mean(DOLLAREL,na.rm=TRUE))
+```
+
+To conduct this in R, we would then use `svyttest()`:
+```{r stattest-ex3}
+ex3<-recs_des %>%
+   svyttest(formula=DOLLAREL~ACUsed,
+            design=.,
+            na.rm=TRUE)
+
+ex3
+```
+The results indicate that the differnce in electical bill for those that used AC and those that did not is on average \$`r round(ex3$estimate,2)`. The difference does appear to be statistically significant as the t-statistic is `r ex3$statistic` and the p-value is `r ex3$p.value`.
+
+#### Example 4: Paired two-sided t-test {.unnumbered #stattest-ttest-ex4}
+
+To conduct a paired t-test that looks at differences at two timepoints, we use the same `I()` notatation we've been using.  For example, let's say we want to test whether the temperature that U.S. households set their thermostat to differs depending on the season (comparing summer temperature and winter temperature).  We could set up the hypothesis as follows:
+
+- $H_0: \mu_{summer} = \mu_{winter}$ where $\mu_{summer}$ is the temperature that U.S. households set their thermostat to during summer nights, and $\mu_{winter}$ is the etemperature that U.S. households set their thermostat to during winter nights
+- $H_A: \mu_{summer} \neq \mu_{winter}$
+
+To conduct this in R:
+```{r stattest-ex4}
+ex4<-recs_des %>%
+   svyttest(design=.,
+            formula=I(SummerTempNight-WinterTempNight)~0,
+            na.rm=TRUE)
+
+ex4
+```
+
+U.S. households set their thermostat on average `r round(ex4$estimate,1)`$^\circ$F warmer in summer nights than winter nights, and it is statistically significant (t=`r ex4$statistic`, p-value=`r ex4$p.value`).
 
 ### Exercises {#stattest-ttest-exercises}
+
+Here are some exercises for practicing conducting t-tests using `svyttest()`:
+
+2. Using the RECS data, 
+3. Using the ANES data, does the average age of those who voted for Biden differ from those that voted for another candidate?
 
 ## Goodness of Fit {#stattest-gof}
 
