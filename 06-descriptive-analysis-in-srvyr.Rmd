@@ -183,9 +183,7 @@ library(readr)
 library(here)
 
 recs <-
-  read_rds(here::here(
-    "data", "recs.rds"
-  ))
+  read_rds(here::here("AnalysisData", "recs_2015.rds"))
 
 recs_des <- recs %>%
   as_survey_rep(
@@ -280,12 +278,10 @@ To calculate a population count estimate with `survey_total()`, we can run the b
 
 ```{r}
 recs_des %>%
-  summarize(survey_total(), .groups = "drop")
+  summarize(survey_total())
 ```
 
-The `.groups =` argument controls the grouping structure of the output. When the output no longer have grouping variables because they are dropped, it becomes ungrouped. <!-- TODO: Check this after dplyr 1.1.0 is released -->
-
-Notice that `recs_des %>% summarize(survey_total(), .groups = "drop")` is equivalent to the `survey_count()` call:
+Note that `recs_des %>% summarize(survey_total(), .groups = "drop")` is equivalent to the `survey_count()` call:
 
 ```{r}
 recs_des %>%
@@ -333,7 +329,7 @@ Looking at responses by urbanicity, we can calculate the weighted proportion for
 ```{r survey_p_ex1}
 recs_des %>%
   group_by(Urbanicity) %>%
-  summarize(p1 = survey_prop(),
+  summarize(p1 = survey_mean(),
             .groups = "drop")
 ```
 
@@ -348,6 +344,15 @@ recs_des %>%
             .groups = "drop")
 ```
 
+Note that when we run `survey_prop()`, we see a message that says:
+
+```
+When `proportion` is unspecified, `survey_prop()` now defaults to `proportion = TRUE`.
+ℹ This should improve confidence interval coverage.
+```
+
+This is something to keep in mind (if we intend `proportion = FALSE)`.
+
 ### Calculate proportions with confidence intervals
 
 We calculate confidence intervals by setting the `vartype` to `ci` within `summarize` when using `survey_mean()` or `survey_mean()`. The confidence intervals provide us with an upper and lower column for each method.
@@ -355,24 +360,25 @@ We calculate confidence intervals by setting the `vartype` to `ci` within `summa
 ```{r survey_p_ci}
 recs_des %>%
   group_by(Urbanicity) %>%
-  summarize(pd = survey_prop(
-    vartype = "ci"
-    ) %>% round(4))
+  summarize(pd = survey_prop(vartype = "ci") %>% 
+              round(4))
 ```
+69.6% of the responses are from people in urban areas, with a lower confidence interval bound of 65.2% and a upper confidence interval bound of 73.62%.
 
 We can change the proportion method by adding `prop_method`. The available options are `"logit"`, `"likelihood"`, `"asin"`, `"beta"`, and `"mean"`.
 
-Using `proportion = TRUE` makes confidence intervals more accurate near 0 and 1.
+`proportion = TRUE` is the default for `svy_prop()`. It makes confidence intervals more accurate near 0 and 1. Here, we rerun the previous function using the logit proportion method and with `proportion = FALSE`.
 
 ```{r}
 recs_des %>%
   group_by(Urbanicity) %>%
   summarize(pl = survey_prop(
-    proportion = TRUE,
-    prop_method = "logit",
+    proportion = FALSE,
+    prop_method = "xlogit",
     vartype = "ci"
   ) %>% round(4))
 ```
+Our results have changed slightly: 69.6% of the responses are from people in urban areas, with a lower confidence interval bound of 65.3% and a upper confidence interval bound of 73.8%.
 
 ### Other functions that use survey methods
 
@@ -384,7 +390,7 @@ The {srvyr} package includes other functions for summarizing datasets, as mentio
 * Range: `survey_quantile()`
 * Variance: `survey_var()`, `survey_sd()`
 
-While we will not cover each one in depth; however, the same principles above apply.
+While we will not cover each one in depth; however, the same principles that we covered above apply.
 
 ### Calculate conditional proportions with more than one group
 
@@ -419,8 +425,7 @@ Since `interact` groups by multiple variables as if they were a single variable,
 
 ```{r}
 recs_des %>%
-  filter(!is.na(VotedPres2020),!is.na(VotedPres2016)) %>%
-  group_by(interact(VotedPres2016, VotedPres2020)) %>% #<<
+  group_by(interact(Region, Urbanicity)) %>%
   summarize(p = survey_mean(),
             N = survey_total(),
             .groups = "drop") %>% 
@@ -433,11 +438,12 @@ Note above that functions `survey_total()`, `survey_mean()`, and `survey_prop()`
 
 ```{r survey_p_deff}
 recs_des %>%
-  filter(!is.na(VotedPres2016),!is.na(VotedPres2020)) %>%
-  group_by(interact(VotedPres2016, VotedPres2020)) %>%
-  summarize(p = survey_mean(deff = TRUE), #<<
-            N = survey_total())
+  group_by(interact(Region, Urbanicity)) %>%
+  summarize(p = survey_mean(deff = TRUE),
+            N = survey_total(),
+            .groups = "drop")
 ```
+
 
 ## Summary
 
