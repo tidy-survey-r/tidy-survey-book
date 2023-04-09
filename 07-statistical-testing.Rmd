@@ -2,9 +2,11 @@
 
 When analyzing results from a survey, the point estimates described in Chapter \@ref(c06) are helpful for understanding the data at a high level, but researchers and the public often want to make comparisons between different groups. These comparisons are calculated through statistical testing where we compare the point estimates and the variance estimates of each statistic to see if there are statistically significant differences. The general idea of statistical testing is the same for data obtained through surveys and data obtained through other methods, but the importance lies in ensuring the variance is calculated correctly. Functions in the {survey} packages allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and functions:
 
--  Comparison of proportions and means using `svyttest()`
--  Goodness of fit `svychisq()`
--  Tests of association `svychisq()`
+-  Comparison of proportions `svyttest()`
+-  Comparison of means `svyttest()`
+-  Goodness of fit tests `svygofchisq()`
+-  Tests of independence `svychisq()`
+-  Tests of homogeneity `svychisq()`
 
 Up to this point, the functions that we've provided have used the wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers from the {srvyr} package and are instead pulled directly from the {survey} package. This means that the design object is *not* the first argument and that to use these functions with the magrittr pipe `%>%` and tidyverse syntax we will need to use dot (`.`) notation. Functions that work with the magrittr pipe `%>%` have the first argument as data. When data is run, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to only cars with 6 cylinders we can write the code in one of three ways:
 
@@ -85,7 +87,7 @@ For comparing two estimates, this is called a *two sample t-test* and we can set
 
 Two sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., males vs females), then the t-test run will be an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data taken from the same population in two different time periods (e.g., before and after an intervention). 
 
-The difference between using t-tests with non-survey data and with survey data is based on the underlying variance estimation difference. Chapter \@ref(c05) provides the detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances provided the design object is correct defined.  
+The difference between using t-tests with non-survey data and with survey data is based on the underlying variance estimation difference. Chapter \@ref(c05) provides the detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances provided the design object is correctly defined.  
 
 ### Syntax {#stattest-ttest-syntax}
 
@@ -117,7 +119,7 @@ The `formula` argument can take on a couple of different forms depending on what
         - **3+ level grouping variable:** $var \sim I(groupVar == level)$, where $var$ is the measure of interest, $groupVar$ is the categorical variable, and $level$ is the category level to isolate. Again we need to use the `I()` function to tell the program to isolate the category before doing the comparison across groups.  For example, we could test if the test scores in one classroom differed from all other classrooms.
     b. **Paired:** $I(var_1 - var_2) \sim 0$, where $var_1$ is the first variable of interest and $var_2$ is the second variable of interest. We again will have to use the `I()` function to have the program calculate the difference between the two variables before comparing it against $0$.  For example, we could test if test scores on a subject differed between the start and the end of a course.
 
-Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing the t-test will not computer. Throughout this chapter we will always set `na.rm=TRUE`, but before analyzing the survey data, make sure to review the notes provided in Chapter \@ref(c03) to better understand how to handle missing data.  Finally, the `level` argument is $1-\alpha$, or the amount of type 1 error.  The default is $0.95$.
+Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing the t-test will not compute. Throughout this chapter we will always set `na.rm=TRUE`, but before analyzing the survey data, make sure to review the notes provided in Chapter \@ref(c03) to better understand how to handle missing data.  Finally, the `level` argument is $1-\alpha$, or the amount of type 1 error.  The default is $0.95$.
 
 ### Examples {#stattest-ttest-examples}
 Let's walk through a few examples using the ANES and RECS data.  See \@ref(stattest-setup) to set up the design objects.
@@ -196,7 +198,7 @@ ex3<-recs_des %>%
 
 ex3
 ```
-The results indicate that the differnce in electical bill for those that used AC and those that did not is on average \$`r round(ex3$estimate,2)`. The difference does appear to be statistically significant as the t-statistic is `r ex3$statistic` and the p-value is `r ex3$p.value`.
+The results indicate that the difference in electrical bill for those that used AC and those that did not is on average \$`r round(ex3$estimate,2)`. The difference does appear to be statistically significant as the t-statistic is `r ex3$statistic` and the p-value is `r ex3$p.value`.
 
 #### Example 4: Paired two-sided t-test {.unnumbered #stattest-ttest-ex4}
 
@@ -205,7 +207,7 @@ To conduct a paired t-test that looks at differences at two timepoints, we use t
 - $H_0: \mu_{summer} = \mu_{winter}$ where $\mu_{summer}$ is the temperature that U.S. households set their thermostat to during summer nights, and $\mu_{winter}$ is the etemperature that U.S. households set their thermostat to during winter nights
 - $H_A: \mu_{summer} \neq \mu_{winter}$
 
-To conduct this in R:
+To conduct this in R, we would then use `svyttest()` and `I()`:
 ```{r stattest-ex4}
 ex4<-recs_des %>%
    svyttest(design=.,
@@ -221,23 +223,100 @@ U.S. households set their thermostat on average `r round(ex4$estimate,1)`$^\circ
 
 Here are some exercises for practicing conducting t-tests using `svyttest()`:
 
-2. Using the RECS data, 
-3. Using the ANES data, does the average age of those who voted for Biden differ from those that voted for another candidate?
+1. Using the RECS data, do more than 50% of U.S. household use AC (`ACUsed`)?
+```{r stattest-solution1}
+solution1<-recs_des %>%
+   svyttest(design=.,
+            formula=I((ACUsed==TRUE)-0.5)~0,
+            na.rm=TRUE)
 
-## Goodness of Fit {#stattest-gof}
+solution1
+```
+2. Using the RECS data, does the average temperature that U.S. households set their thermostats to differ between the day and night in the winter (`WinterTempDay` and `WinterTempNight`)?
+```{r stattest-solution2}
+solution2<-recs_des %>% 
+  svyttest(design=.,
+           formula=I(WinterTempDay-WinterTempNight)~0,
+           na.rm=TRUE)
 
-### Syntax {#stattest-gof-syntax}
+solution2
+```
 
-### Examples {#stattest-gof-examples}
+3. Using the ANES data, does the average age (`Age`) of those who voted for Biden in 2020 (`VotedPres2020_selection`) differ from those that voted for another candidate?
+```{r stattest-solution3}
+solution3<-anes_des %>%
+   svyttest(design=.,
+            formula=Age~I(VotedPres2020_selection=="Biden"),
+            na.rm=TRUE)
 
-### Exercises {#stattest-gof-exercises}
+solution3
+```
 
-## Tests of Association {#stattest-assoc}
+## Chi-Square Tests {#stattest-chi}
 
-### Syntax {#stattest-assoc-syntax}
+Chi-square tests ($\chi^2$) allow us to examine multiple proportions using goodness-of-fit test, test of independence, or test of homogeneity. All three of these tests the same $\chi^2$ distributions but with slightly different underlying assumptions.
 
-### Examples {#stattest-assoc-examples}
+First, **goodness-of-fit** tests are used when comparing *observed* data to *expected* data. For example, this could be used to determine if respondent demographics (the observed data) match known population information (the expected data). In this case, we can set up the hypothesis test as:
 
-### Exercises {#stattest-assoc-exercises}
+- $H_0: p_1 = \pi_1, ~ p_2 = \pi_2, ~ ..., ~ p_k = \pi_k$ where $p_i$ is the observed proportion for category $i$, $\pi_i$ is expected proportion for category $i$, and $k$ is the number of categories
+- $H_A:$ at least one level of $p_i$ does not match $\pi_i$
+
+Second, **tests of independence** are used when comparing two types of *observed* data to see if there is a relationship. For example, this could be used to determine if the proportion of respondents who voted for each political party in the Presidential election matches the proportion of respondents who voted for each political party in a local election. In this case, we can set up the hypothesis test as:
+
+- $H_0:$ The two variables/factors are independent
+- $H_A:$ The two variables/factors are *not* independent 
+
+Third, **tests of homogeneity** are used to compare two distributions to see if they match. For example, this could be used to determine if the highest education achieved is the same for both men and women.  In this case, we can set up the hypothesis test as:
+
+- $H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}$ where $p_{ia}$ is the observed proportion of category $i$ for subgroup $a$, $p_{ib}$ is the observed proportion of category $i$ for subgropu $a$, and $k$ is the number of categories
+- $H_A:$ at least one category of $p_{ia}$ does not match $p_{ib}$
+
+The difference between using $\chi^2$ tests with non-survey data and with survey data is based on the underlying variance estimation difference. The functions in the {survey} package will account for these nuances provided the design object is correctly defined.  
+
+<!--Chapter 5 provides se for individual mean/proportion estimates, but does it provide the details for doing these?  Do we want to include the details here?  -->
+
+### Syntax {#stattest-chi-syntax}
+
+As with t-tests, when we do not have survey data, we may be able to use the `chisq.test()` function.  However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:
+
+-  `svygofchisq()`: For goodness of fit tests
+-  `svychisq()`: For tests of independence and homogeneity
+
+This non-survey data function requires either a single set of counts and given proportions (for goodness of fit tests), or two sets of counts for tests of independence and homogeneity.  The survey versions of this function require formulas instead of counts.
+
+First, the function for the goodness of fit tests is `svygofchisq()`:
+
+``` r
+svygofchisq(formula,
+            p,
+            design, 
+            na.rm=TRUE,
+            ...)
+```
+
+In this function, you'll notice that the first argument is the `formula`, the second argument is `p` which are the expected proportions, and the third argument is the `design`.  Therefore, we again must use the dot `(.)` notation if we pipe in the survey design object (as described at the beginning of this chapter).  For the goodness of fit tests, the formula will be a single variable `formula=~VARIABLE` as we are comparing the observed data from this variable to expected data.  The expected data are then presented in `p`, and needs to be a vector of the same length as the number of categories in the variable.  For example, if we want to know if the proportion of males and females match a distribution of 30/70, then the sex variable (with 2 categories) would be used in the formula `formula=~SEX` and the proportions would be included as `p=c(.3,.7)`.  The examples below provide more detail and tips on how to make sure the levels are matching up correctly.
+<!--Check to see if the variable needs to be a factor.  Would be good to mention that here.-->
+
+The function for tests of independence and homogeneity (`svychisq()`) is similar to the goodness of fit function in that the `formula` argument is first.  However, instead of an argument for the expected proportions, the `svychisq()` function has an argument to select the statistic used for the test:
+
+``` r
+svychisq(formula,
+         design, 
+         statistic = c("F",  "Chisq", "Wald", "adjWald", 
+                       "lincom", "saddlepoint"),
+         na.rm=TRUE,
+         ...)
+```
+
+Each statistic is used for different purposes: `F` and `Chisq` are used primarily for tests of homogeneity, while `Wald` and `adjWald` are recommended for tests of independence.<!--How much detail do we want to go into for this?-->The formula argument will always be one sided unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula=~VAR1+VAR2`.
+
+Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument.  This argument defaults to `FALSE`, which means if any data is missing the $\chi^2$ test will not compute. Throughout this chapter we will always set `na.rm=TRUE`, but before analyzing the survey data, make sure to review the notes provided in Chapter \@ref(c03) to better understand how to handle missing data.
+
+
+### Examples {#stattest-chi-examples}
+
+### Exercises {#stattest-chi-exercises}
+
+
 
 
