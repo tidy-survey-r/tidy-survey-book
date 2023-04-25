@@ -2,7 +2,9 @@
 
 <!-- TODO: Add an intro of what modeling is (in the context of survey data) -->
 
-Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey} package as was true in Chapter \@ref(c07). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression, logistic regression, nonlinear models, and  survival analysis. 
+Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey} package as was true in Chapter \@ref(c07). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression, logistic regression, nonlinear models, and  survival analysis.
+
+Accounting for the survey design and weights in modeling can generalize a model to the target population. When using the survey design objects, the statistical tests account for the fact that the observations may not be independent. There is some debate as to whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg].
 
 In all models in R, you need to specify the structure of the model using a formula. The left side of the formula is the response/dependent variable and the right side of the formula has the predictor/independent variable(s). There are many symbols used in R to specify the formula. 
 
@@ -70,7 +72,8 @@ anes_des <- anes %>%
                     nest = TRUE)
 ```
 
-Here is how you create the design object for the RECS data:
+Here is how you create the design object for the RECS data. More details for this are included in the RECS documentation and Chapter "unerstanding survey documentation" (TODO: add link)
+
 ```{r recs_des_c07}
 recs <-read_rds(here("AnalysisData", "recs_2015.rds"))
 recs_des <- recs %>%
@@ -151,7 +154,7 @@ where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_n$ are th
 Assumptions in linear regression using survey data include:
 
 - The residuals ($\epsilon_i$) are normally distributed but there is not an assumption of independence and the correlation structure is captured in the survey design object. 
-- There is a linear relationship between the dependent and independent variable
+- There is a linear relationship between the outcome variable and the independent variables
 - The residuals are homoscedastic, that is the error term is the same across all values of independent variables
 
 The syntax for linear regression is nearly identical to ANOVA as follows:
@@ -164,7 +167,7 @@ des_obj %>%
          df.resid=degf(.))
 ```
 
-As discussed in the beginning of the chapter, the formula on the right-hand side can be specified many ways whether interactions are desired or not, for example. On RECS, information on the square footage of homes and the electric bills are obtained. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to examine whether it is reasonable to assume a linear relationship. In the plot below, each hexogon represents the weighted count of households in the bin.
+As discussed in the beginning of the chapter, the formula on the right-hand side can be specified many ways whether interactions are desired or not, for example. On RECS, information on the square footage of homes and the electric bills are obtained. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to examine whether it is reasonable to assume a linear relationship. In the plot below, each hexagon represents the weighted count of households in the bin.
 
 ```{r}
 #| label: plot-sf-elbill
@@ -197,7 +200,7 @@ tidy(m_electric_sqft)
 In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% round(3))*100` cents and that square footage is significantly associated with electricity expenditure. This is a very simple model and there are likely many more factors in electricity expenditure including the type of cooling, number of appliances, location, and more. 
 
 
-In the following example, a model is fit predicting electricity expenditure including Census region (categorical), Urbanicity, square footage, and whether air-conditioning is used with all two-way interactions are also included.
+In the following example, a model is fit predicting electricity expenditure including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning is used (logical/categorical) with all two-way interactions also included.
 
 ```{r}
 #| label: lmr-examp
@@ -234,4 +237,79 @@ fitstats %>%
   theme_bw()
 
 ```
+
+## Logistic regression
+
+Logistic regression is used to model a binary outcome and is a specific type of a generalized linear model (GLM). A GLM uses a link function to link the response variable to the linear model. In logistic regression, the link model is the logit function. Specifically, the model is specified as follows:
+
+$$ y_i \sim \text{Bernoulli}(\pi_i)$$
+
+\begin{equation}
+\log \left(\frac{\pi_i}{1-\pi_i} \right)=\beta_0 +\sum_{i=1}^n \beta_i x_i
+(\#eq:logoddlin)
+\end{equation}
+
+which can be re-expressed as
+
+$$ \pi_i=\frac{\exp \left(\beta_0 +\sum_{i=1}^n \beta_i x_i \right)}{1+\exp \left(\beta_0 +\sum_{i=1}^n \beta_i x_i \right)}.$$
+where $y_i$ is the outcome, $\beta_0$ is an intercept, and $x_1, \cdots, x_n$ are the predictors with $\beta_1, \cdots, \beta_n$ as the associated coefficients. 
+
+Assumptions in logistic regression using survey data include:
+
+- The outcome variable has 2 levels
+- There is a linear relationship between the independent variables and the log odds \@ref(eq:logoddlin)
+- The residuals are homoscedastic, that is the error term is the same across all values of independent variables
+
+The syntax for logistic regression is as follows:
+
+```
+des_obj %>%
+  svyglm(design=.,
+         outcomevar~x1+x2+x3,
+         na.action=na.omit,
+         df.resid=degf(.),
+         family= quasibinomial(), # use this to avoid warning about non-integers
+         )
+```
+
+Note this is the same function as used in both ANOVA and linear regression. However, we've added the link function quasibinomial. While you can use the binomial link function, it is recommended to use the quasibinomial as your weights may not be integers and the quasibinomial also allows for overdispersion. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of two ways with survey data:
+
+- A factor variable where not being the first level of the factor indicates a "success"
+- A numeric variable which is 1 or 0 where 1 indicates a success
+- A logical variable where TRUE indicates a success
+
+In the following example, the ANES data is used and we are modeling whether someone has trust usually in the government by who someone voted in 2020. As a reminder, the main candidates were Biden and Trump though people could vote for someone else in neither the Democratic or Republican parties. Those votes are all grouped into an "Other" category.
+
+```{r}
+#| label: logisticexamp
+anes_des_der <- anes_des %>%
+  mutate(TrustGovernmentUsually=case_when(
+    is.na(TrustGovernment)~NA,
+    TRUE~TrustGovernment %in% c("Always", "Most of the time")))
+
+anes_des_der %>%
+  group_by(VotedPres2020_selection) %>%
+  summarise(
+    pct_trust=survey_mean(TrustGovernmentUsually, na.rm=TRUE)
+  )
+
+logistic_out <- anes_des_der %>%
+  svyglm(design=.,
+         formula=TrustGovernmentUsually~ VotedPres2020_selection,
+         family = quasibinomial) 
+
+tidy(logistic_out)
+tidy(logistic_out, exponentiate = TRUE) %>% select(term, estimate)
+```
+
+```{r}
+#| label: logisticcalc
+#| echo: false
+or_trump <- tidy(logistic_out, exponentiate = TRUE) %>% filter(str_detect(term, "Trump")) %>% pull(estimate)
+or_other <- tidy(logistic_out, exponentiate = TRUE) %>% filter(str_detect(term, "Other")) %>% pull(estimate)
+
+```
+
+
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient when the `tidy` function is run the first time. The second time the `tidy` function is used, the coefficients are exponentiated which illustrates the odds. In this example, we can interpret this as saying that the odds of trusting in government for someone who voted for Trump is `r signif(or_trump*100, 3)`% as likely to trust the government compared to a person who voted for Biden (the reference level) while a person who voted for neither Biden nor Trump is `r signif(or_other*100, 3)`% as likely to trust the government as someone who voted for Biden.
 
