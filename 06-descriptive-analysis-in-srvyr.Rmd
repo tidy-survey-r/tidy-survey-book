@@ -1,5 +1,9 @@
 # Descriptive analyses in srvyr {#c06}
 
+```{r, include=FALSE}
+knitr::opts_chunk$set(tidy = TRUE)
+```
+
 Descriptive analyses describes and summarizes the basic quantitative information of survey data. Common descriptive analyses include the frequency of observations, distributions of responses, or the mean of a numeric variable. These analyses present large amounts of quantitative data in an understandable way and form the basis of every survey analysis.
 
 In addition to describing our data, we can use these analyses to compare across people or other units. Descriptive analyses help us identify potential errors and assess outliers. We gain crucial information for deciding on deeper analysis.
@@ -71,7 +75,7 @@ mtcars %>%
 
 Because this book focuses on survey analysis, most of our pipes will stem from a survey object. We will not be including the namespace for each function (e.g., `srvyr::summarize()`).
 
-Several functions in {srvyr} must be called within {srvyr}'s `summarize()` function. Recall that `dplyr::summarize()` collapses many values down to a single summary:
+Several functions in {srvyr} must be called within `srvyr::summarize()`. Recall that `dplyr::summarize()` collapses many values down to a single summary:
 
 ```{r}
 mtcars %>% 
@@ -81,14 +85,17 @@ mtcars %>%
 These verbs can be used in conjunction with `group_by()` or `by/.by`, applying the functions on a group-by-group basis to create grouped summaries.
 
 ```{r}
-mtcars %>% 
-  dplyr::summarize(mean_hp = mean(hp), by = "cyl")
+mtcars %>%
+  group_by(cyl) %>%
+  dplyr::summarize(mean_hp = mean(hp),
+                   .groups = "drop")
 ```
 
 We use a similar setup to summarize data in {srvyr}.
 
 ```{r}
 dstrata %>%
+  group_by(stype) %>%
   summarize(api00_mean = survey_mean(api00),
             api00_median = survey_median(api00))
 ```
@@ -149,7 +156,7 @@ We select measures based on the type of variable we are analyzing. Variables are
 
 * Categorical/nominal data: variables with levels or descriptions that cannot be ordered, such as region of the country (North, South, East, and West)
 * Ordinal data: variables that can be ordered, such as those from a Likert scale (strongly disagree, disagree, agree, and strongly agree)
-* Interval/ratio: variables that are counted or measured, such as age or income
+* Interval/ratio: variables that are counted or measured, such as the total cost of electricity
   * Within interval/ratio data are *discrete* variables, whose values are whole numbers, such as number of children, and *continuous* variables, whose values can lie anywhere on an interval, such as weight.
   
 If our variable is categorical, such as gender or occupation, we might use frequency counts or percentages, while if the variable is continuous, such as income or age, we might use mean, median, or standard deviation.
@@ -158,7 +165,7 @@ Choosing appropriate measures is important to reach valid conclusions. Different
 
 Our survey data may represent categorical variables using numeric codes. For example, the North, South, East, and West regions of the United States might be coded as 1, 2, 3, and 4, respectively. Though this is a categorical variable, this variable might be automatically read as numeric values when we import our data. This can lead to the common mistake of applying `survey_mean()` to all numeric columns in the dataset, including categorical values. 
 
-This practice can create a false impression of the distribution and lead to incorrect inferences because categorical variables lack a natural zero point or linear ordering, making measures like mean inappropriate. Instead, it is crucial to inspect the codebook, understand the type of variable, and choose appropriate measures such as frequency counts or percentages to describe the responses across regions.
+This practice can lead to incorrect inferences because categorical variables lack a natural zero point or linear ordering, making measures like mean inappropriate. Instead, it is crucial to inspect the codebook, understand the type of variable, and choose appropriate measures such as frequency counts or percentages to describe the data across regions.
 
 ## Descriptive analysis using the {srvyr} package
 
@@ -170,6 +177,9 @@ Recall from [Chapter 05](#c05) the general process for estimation with the {srvy
 2. Subset the data for subpopulations using `dplyr::filter()`, if needed.
 3. Specify domains of analysis using `dplyr::group_by()`, if needed.
 4. Within `srvyr::summarize()`, specify variables to calculate ,means, totals, proportions, quantiles, and more.
+
+Filtering should be done after creating the `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()` because these functions incorporate the survey design information into the resulting object.
+
 <!-- TODO: edit this depending on how much we've talked about it in earlier chapters-->
 The Residential Energy Consumption Survey (RECS) provides data on energy consumption and expenditures. It is funded by Energy Information Administration and collects information through energy suppliers through in-person, phone, and web interviews. It has been fielded 14 times between 1950 and 2020. Topics include appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.
 
@@ -201,7 +211,7 @@ recs_des <- recs %>%
 
 ### Count observations using survey methods with `survey_count()`
 
-With `srvyr::survey_count()`, you can produce weighted counts and variance of your choice. The syntax is very similar to the `dplyr::count()` syntax. However, it can only be called on `tbl_srvy()` objects. Let's explore the syntax:
+With `srvyr::survey_count()`, we can calculate the number of observations or cases for a given variable or combination of variables. The syntax is very similar to the `dplyr::count()` syntax; however, as noted above, it can only be called on `tbl_srvy()` objects. Let's explore the syntax:
 
 ```r
 survey_count(
@@ -237,9 +247,9 @@ recs_des %>% #  Specify the sample design
   survey_count() # Run `survey_count()`
 ```
 
-There are 118,208,250 weighted total responses in the survey.
+There are 118,208,250 observations in the survey.
 
-`srvyr::count()` can take one or many variables. To calculate a cross-tab of population in each age group and gender, we run the below:
+`srvyr::count()` can take one or many variables. To calculate the number of observations for a combination of variables, such as Region and Division, we run the below:
 
 ```{r}
 recs_des %>%
@@ -247,11 +257,11 @@ recs_des %>%
   survey_count(Region, Division, name = "N") 
 ```
 
-When we run the cross-tab, we see that there are 5,638,844 responses from the Northeast's New England division.
+When we run the crosstab, we see that there are 5,638,844 observations from the Northeast's New England division, 15,377,694 from the Northeast's Middle Atlantic division, and so on.
 
-### Calculate totals using survey methods using `survey_total()`
+### Calculate total sums using survey methods using `survey_total()`
 
-With `srvyr::survey_total()`, we can calculate totals from complex survey data. Let's explore the syntax:
+With `srvyr::survey_total()`, we can calculate the sum of numeric variable values. Let's explore the syntax:
 
 ```r
 survey_total(
@@ -283,21 +293,38 @@ To calculate a population count estimate with `survey_total()`, we can run the b
 
 ```{r}
 recs_des %>%
-  summarize(survey_total())
+  summarize(survey_total(),
+            .groups = "drop")
 ```
 
-Note that `recs_des %>% summarize(survey_total(), .groups = "drop")` is equivalent to the `survey_count()` call:
+Note that the result from `recs_des %>% summarize(survey_total(), .groups = "drop")` is equivalent to the `survey_count()` call. However, the `survey_total()` function is called within `summarize`, where as `survey_count()`, like `dplyr::count()`, is not.
+
+The differences between `survey_total()` and `survey_count()` is more evident when specifying numeric variables to sum. Let's sum the total cost of electricity in whole dollars from variable `DOLLAREL`. We also calculate an unweighted estimate using `unweighted`.
 
 ```{r}
 recs_des %>%
-  survey_count()
+  summarize(
+    elec_bill = survey_total(DOLLAREL),
+    elec_unweight = unweighted(sum(!is.na(DOLLAREL))),
+    .groups = "drop"
+  )
 ```
 
-The `survey_total()` function is called within `summarize`, where as `survey_count()`, like `dplyr::count()`, is not.
+$162,495,237,023 was spent on electricity. The unweighted sum is $5686.
+
+Since we are using the {srvyr} package, we can use `group_by()` to calculate the cost of electricity by different groups. Let's see how much the cost of electricity in whole dollars differed between regions:
+
+```{r}
+recs_des %>%
+  group_by(Region) %>%
+  cascade(elec_bill = survey_total(!is.na(DOLLAREL)))
+```
+
+The Northeast spent $28,271,369,286 on electricity, the Midwest spent $31,527,659,004, the South spent $72,463,508,778, and the West spent $30,232,699,955. 
 
 ### Calculate mean/proportion using survey methods with `survey_mean()` and `survey_prop()`
 
-The `srvyr::survey_mean()` and `survey_prop()` functions calculate the means and proportions from complex survey data. Like `survey_total()`, they are called within `summarize()`. Let's explore the syntax:
+The `srvyr::survey_mean()` and `survey_prop()` functions calculate the means (of continuous variables) and proportions (of categorical variables) of survey data while accounting for complex survey design. Like `survey_total()`, they are called within `summarize()`. Let's explore the syntax:
 
 ```r
 survey_mean(
@@ -329,25 +356,38 @@ The steps involved are:
 * Specify the cross tab in `group_by()`,
 * Run `survey_mean()` or `survey_prop()` within `summarize()`
 
-Looking at responses by urbanicity, we can calculate the weighted proportion for each group in the data:
+We can calculate the weighted average cost of electricity for each region in the U.S.:
 
 ```{r survey_p_ex1}
 recs_des %>%
-  group_by(Urbanicity) %>%
-  summarize(p1 = survey_mean(),
+  group_by(Region) %>%
+  summarize(elec_bill = survey_mean(DOLLAREL),
             .groups = "drop")
 ```
 
-69.6% of the responses are from people in urban areas, 10.5% from urban clusters, and 19.8% from rural areas.
+On average, respondents from the Northeast spent $1346 on electricity. In the Midwest, they spent $1196, in the South they spent $1631, and finally, $1146 in the West.
 
-The `survey_prop()` function is equivalent to leaving out the `x` argument in `survey_mean()`.
+We use `srvyr::survey_prop()` to estimate the proportion of categorical variables in a survey.
 
 ```{r}
 recs_des %>%
-  group_by(Urbanicity) %>%
-  summarize(p1 = survey_prop(),
+  group_by(Region) %>%
+  summarize(survey_prop(),
             .groups = "drop")
 ```
+
+17.8% of the observations are in the Northeast, 22.3% in the Midwest, and so on.
+
+`survey_prop()` is essentially the same as using `survey_mean()` with a categorical variable and without specifying a numeric variable in the `x` argument. The following code will give us the same results as above:
+
+```{r}
+recs_des %>%
+  group_by(Region) %>%
+  summarize(survey_mean(),
+            .groups = "drop")
+```
+
+### The `proportion` argument
 
 Note that when we run `survey_prop()`, we see a message that says:
 
@@ -356,7 +396,40 @@ When `proportion` is unspecified, `survey_prop()` now defaults to `proportion = 
 ℹ This should improve confidence interval coverage.
 ```
 
-This is something to keep in mind (if we intend `proportion = FALSE)`.
+If the `proportion` argument is not specified in the function call, `survey_prop()` defaults to `proportion = TRUE`. This change was made to improve the accuracy of the confidence intervals calculated by the function since the function defaulted to `proportion = FALSE` in the past. The warning message is intended to alert users to this change, and to suggest that any code relying on the previous default setting may need to be updated.
+
+### Print total overall numbers in our output
+
+If we want to see the total overall numbers from our `survey_mean()` function, we can use `cascade`. `cascade` is similar to `summarize` but calculates summary statistics for the total of a group in addition to each group.
+
+```{r}
+recs_des %>%
+  group_by(ACUsed) %>%
+  cascade(ElBill = survey_mean(DOLLAREL,
+                               na.rm = TRUE))
+```
+
+Note that the overall average electricity cost appears as `NA`. The average electricity cost for those who do not use AC is $972. For those who do use AC, it is $1435. Overall, it is $1375.
+
+### Removing `NA` for calculating results
+
+If we run the example below, we get an error:
+
+```{r survey_mean_ex2_sol}
+#| error: true
+recs_des %>%
+  summarize(TD_mean = survey_mean(x = SummerTempDay))
+```
+
+Because of the `NA` in `SummerTempDay`, `survey_mean()` cannot calculate the average temperature. We can fix this with the argument `na.rm = TRUE`:
+
+```{r}
+recs_des %>%
+  summarize(TD_mean = survey_mean(x = SummerTempDay,
+                                  na.rm = TRUE))
+```
+
+The mean temperature set in a summer day in 72.4 degrees.
 
 ### Calculate proportions with confidence intervals
 
@@ -373,7 +446,7 @@ recs_des %>%
 
 We can change the proportion method by adding `prop_method`. The available options are `"logit"`, `"likelihood"`, `"asin"`, `"beta"`, and `"mean"`.
 
-`proportion = TRUE` is the default for `svy_prop()`. It makes confidence intervals more accurate near 0 and 1. Here, we rerun the previous function using the logit proportion method and with `proportion = FALSE`.
+As noted above, `svy_prop()` defaults to `proportion = TRUE`. Here, we rerun the previous function using the logit proportion method and with `proportion = FALSE`.
 
 ```{r}
 recs_des %>%
@@ -397,7 +470,7 @@ The {srvyr} package includes other functions for summarizing datasets, as mentio
 * Range: `survey_quantile()`
 * Variance: `survey_var()`, `survey_sd()`
 
-While we will not cover each one in depth; however, the same principles that we covered above apply.
+We will not cover each one in depth; however, the same principles that we covered above apply.
 
 ### Calculate conditional proportions with more than one group
 
