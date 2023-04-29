@@ -1,17 +1,14 @@
 # Descriptive analyses in srvyr {#c06}
 
-<!-- Definition of descriptive analytics in the context of complex survey analysis -->
 Descriptive analyses describes and summarizes the basic quantitative information of survey data. Common descriptive analyses include the frequency of observations, distributions of responses, or the mean of a numeric variable. These analyses present large amounts of quantitative data in an understandable way and form the basis of every survey analysis.
 
 In addition to describing our data, we can use these analyses to compare across people or other units. Descriptive analyses help us identify potential errors and assess outliers. We gain crucial information for deciding on deeper analysis.
-<!-- Importance of considering the design and sampling of the survey when analyzing data-->
 
 In complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. This requires reading the survey documentation (as described in Chapter \@ref(c05)) to apply the appropriate sampling weights, PSUs, strata, and replicate weights. Neglecting to incorporate these elements can lead to inaccurate descriptive analyses.
 
 The functions in the {srvyr} package allow us to run descriptive analyses while applying design and sampling elements. We can run multiple calculations in the same command thanks to the 'pipe-able' functions. The package also provides consistent return types so we can use outputs with other packages like {ggplot2}.
-<!-- Overview of the topics covered in the chapter -->
+
 This chapter describes the types of descriptive analytics and the steps involved in running descriptive analysis with {srvyr}.
-<!-- ## Techniques for descriptive analyses -->
 
 ```{r}
 #| include: false
@@ -23,8 +20,9 @@ dstrata <- apistrat %>%
   as_survey_design(strata = stype, weights = pw)
 ```
 
-#### Similarities between {dplyr} and {srvyr} functions {-}
 <!-- TODO: Put this in a callout box -->
+#### Similarities between {dplyr} and {srvyr} functions {-}
+
 One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package. We can use pipes to specify a `tbl_svy` object, apply a function, and then take that output and feed it into the first argument of the next function. Functions follow the 'tidy' convention of snake_case functions names.
 
 ```{r}
@@ -34,7 +32,7 @@ dstrata %>% # A `tbl_svy` object
   summarize(api99_var = survey_var(api00),
             api99_sd = survey_sd(api00))
 ```
-<!-- I wonder if this should be in the survey design object chapter? -->
+
 The functions in {srvyr} also play nicely with other tidyverse functions. If we wanted to create our survey object by selecting specific columns, we could use `dplyr::select()`'s special selection functions (such as `starts_with()`, `one_of()`, etc.).
 
 ```{r}
@@ -101,7 +99,7 @@ Throughout the chapter, we'll note when a {srvyr} function must be included with
 
 ## Types of descriptive analyses
 
-Descriptive analysis can be categorized into univariate and multivariate analysis, depending on the number of variables we include. Below, we describe the descriptive analysis for single or multiple variables and a minimal example of the {srvyr} functions associated with the measures. In the next section, we will explain each of the functions in-depth.
+Descriptive analysis can be categorized into univariate and multivariate analysis, depending on the number of variables we include. Below, we describe the descriptive analysis for single or multiple variables and a description of the {srvyr} functions associated with the measures. In the next section, we will explain each of the functions in-depth.
 
 ### Univariate analysis
 
@@ -146,15 +144,21 @@ Bivariate analysis concerns the relationship between two variables. Multivariate
 We can use the {srvyr} package's `survey_corr()` function to calculate correlation and its variation using survey methods.
 
 ## Deciding on descriptive analyses
-<!-- TODO: simplify this sentence -->
-We choose which measures to look at depending on which are appropriate for the type of variable we are examining. Variables are classified as categorical/nominal, ordinal, and interval/ratio.
+
+We select measures based on the type of variable we are analyzing. Variables are classified as categorical/nominal, ordinal, and interval/ratio.
 
 * Categorical/nominal data: variables with levels or descriptions that cannot be ordered, such as region of the country (North, South, East, and West)
 * Ordinal data: variables that can be ordered, such as those from a Likert scale (strongly disagree, disagree, agree, and strongly agree)
 * Interval/ratio: variables that are counted or measured, such as age or income
   * Within interval/ratio data are *discrete* variables, whose values are whole numbers, such as number of children, and *continuous* variables, whose values can lie anywhere on an interval, such as weight.
   
-We use different measures based on whether our variables are interval/ratio, ordinal, or nominal.
+If our variable is categorical, such as gender or occupation, we might use frequency counts or percentages, while if the variable is continuous, such as income or age, we might use mean, median, or standard deviation.
+
+Choosing appropriate measures is important to reach valid conclusions. Different variable types have distinct properties and levels of measurement, and we cannot apply all measures to all variables.
+
+Our survey data may represent categorical variables using numeric codes. For example, the North, South, East, and West regions of the United States might be coded as 1, 2, 3, and 4, respectively. Though this is a categorical variable, this variable might be automatically read as numeric values when we import our data. This can lead to the common mistake of applying `survey_mean()` to all numeric columns in the dataset, including categorical values. 
+
+This practice can create a false impression of the distribution and lead to incorrect inferences because categorical variables lack a natural zero point or linear ordering, making measures like mean inappropriate. Instead, it is crucial to inspect the codebook, understand the type of variable, and choose appropriate measures such as frequency counts or percentages to describe the responses across regions.
 
 ## Descriptive analysis using the {srvyr} package
 
@@ -166,7 +170,7 @@ Recall from [Chapter 05](#c05) the general process for estimation with the {srvy
 2. Subset the data for subpopulations using `dplyr::filter()`, if needed.
 3. Specify domains of analysis using `dplyr::group_by()`, if needed.
 4. Within `srvyr::summarize()`, specify variables to calculate ,means, totals, proportions, quantiles, and more.
-<!-- edit this depending on how much we've talked about it in earlier chapters-->
+<!-- TODO: edit this depending on how much we've talked about it in earlier chapters-->
 The Residential Energy Consumption Survey (RECS) provides data on energy consumption and expenditures. It is funded by Energy Information Administration and collects information through energy suppliers through in-person, phone, and web interviews. It has been fielded 14 times between 1950 and 2020. Topics include appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.
 
 The survey targets primary occupied housing units in the US. RECS uses Balanced Repeated Replication (BRR) to estimate the variances. The full sample information is available on the [EIA website](https://www.eia.gov/consumption/residential/index.php). 
@@ -210,7 +214,6 @@ survey_count(
   vartype = c("se", "ci", "var", "cv")
   )
 ```
-
 The arguments are:
 
 * `x`: a `tbl_svy` object created by `as_survey`
@@ -224,7 +227,7 @@ The arguments are:
 The steps to use `survey_count()` are:
 
 * Specify the sample design,
-* Filter subsets using `dplyr::filter()`, if needed
+* Filter subsets using `dplyr::filter()`, if needed,
 * Run `survey_count()`, specifying the required arguments within the function
 
 Let's see the weighted count of responses in RECS:
@@ -243,6 +246,8 @@ recs_des %>%
   # Specify the required arguments within the function
   survey_count(Region, Division, name = "N") 
 ```
+
+When we run the cross-tab, we see that there are 5,638,844 responses from the Northeast's New England division.
 
 ### Calculate totals using survey methods using `survey_total()`
 
@@ -285,7 +290,7 @@ Note that `recs_des %>% summarize(survey_total(), .groups = "drop")` is equivale
 
 ```{r}
 recs_des %>%
-  survey_count() 
+  survey_count()
 ```
 
 The `survey_total()` function is called within `summarize`, where as `survey_count()`, like `dplyr::count()`, is not.
@@ -363,6 +368,7 @@ recs_des %>%
   summarize(pd = survey_prop(vartype = "ci") %>% 
               round(4))
 ```
+
 69.6% of the responses are from people in urban areas, with a lower confidence interval bound of 65.2% and a upper confidence interval bound of 73.62%.
 
 We can change the proportion method by adding `prop_method`. The available options are `"logit"`, `"likelihood"`, `"asin"`, `"beta"`, and `"mean"`.
@@ -378,6 +384,7 @@ recs_des %>%
     vartype = "ci"
   ) %>% round(4))
 ```
+
 Our results have changed slightly: 69.6% of the responses are from people in urban areas, with a lower confidence interval bound of 65.3% and a upper confidence interval bound of 73.8%.
 
 ### Other functions that use survey methods
@@ -411,7 +418,11 @@ From the table, we see that the weighted proportion is 15.5%. Note that column `
 
 ### Calculate joint proportions with more than one group
 
-When we want to calculate multiple variables as if they were a single variable, we use {srvyr}'s `interact`. We use `interact` within `group_by()` to calculate the  joint proportions of two or more variables.
+When we want to calculate proportions for multiple variables together as if they were a single variable, we use {srvyr}'s `interact`. We use `interact` within `group_by()` to calculate the  joint proportions of two or more variables.
+
+For example, if we have a survey dataset with variables such as age, gender, and income, we could use `interact` to create summary statistics for each combination of age and gender, or for each combination of income and gender. We can examine how these variables are related to each other, and whether there are any differences or similarities between different groups.
+
+In the example below, we calculate Region and Urbanicity together:
 
 ```{r survey_p_joint}
 recs_des %>%
@@ -420,6 +431,8 @@ recs_des %>%
             N = survey_total(),
             .groups = "drop")
 ```
+
+Running `survey_mean()` with `interact`, we see that 13.2% of the dataset is from the Northeast Urban Area, wherewas 0.182% is from the Northeast Urban Cluster.
 
 Since `interact` groups by multiple variables as if they were a single variable, the proportions in column `p` sum to 100% across more than a single grouping variable.
 
@@ -434,7 +447,13 @@ recs_des %>%
 
 ### Calculate proportions with design effects
 
-Note above that functions `survey_total()`, `survey_mean()`, and `survey_prop()` have the argument `deff`. `deff` stands for Design Effect, the ratio of two variances. Use `deff = TRUE` argument to specify whether the design effect should be returned.
+Note above that functions `survey_total()`, `survey_mean()`, and `survey_prop()` have the argument `deff`. `deff` stands for Design Effect, the ratio of two variances. Use `deff = TRUE` argument to specify whether to return the design effect.
+
+Calculating proportions with design effects is important when analyzing survey data that has been collected using a complex sampling design. Since a complex sampling design means that the probability of selecting each individual in the sample is different, this can lead to the observations in the sample being correlated with each other.
+
+Design effects account for this correlation and adjust the standard errors of estimates, which in turn can affect the significance of test statistics and the accuracy of confidence intervals. Calculating proportions with design effects is important because it helps to produce accurate estimates of population proportions that account for the complex nature of the survey data.
+
+Deff compares the variance of the current samplng, including its design elements, to the variance of a hypothetical simple random sample (SRS) of the same size. A Deff value less than 1 indicates that the sample design is more efficient than an SRS of the same size.
 
 ```{r survey_p_deff}
 recs_des %>%
@@ -444,7 +463,6 @@ recs_des %>%
             .groups = "drop")
 ```
 
+Rerunning `survey_mean()`, we see that `p_deff` is greater than 1 for the proportions. It is common for Deff to be greater than 1 when using complex sampling designs (such as in the case of RECS). A high Deff can occur due to various factors, such as stratification, clustering, or unequal selection probabilities, which are often used to improve the precision of estimates or to reduce sampling costs. These design features can increase the complexity of the sample design and lead to a higher Deff, but they can also improve the accuracy and representativeness of the survey estimates.
 
-## Summary
-
-
+## Exercises
