@@ -2,7 +2,7 @@
 
 <!-- TODO: Add an intro of what modeling is (in the context of survey data) -->
 
-Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey} package as was true in Chapter \@ref(c07). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression, logistic regression, nonlinear models, and  survival analysis.
+Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey}[@lumley2010complex; @R-survey] package as was true in Chapter \@ref(c07). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression, logistic regression, nonlinear models, and  survival analysis.
 
 Accounting for the survey design and weights in modeling can generalize a model to the target population. When using the survey design objects, the statistical tests account for the fact that the observations may not be independent. There is some debate as to whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg].
 
@@ -147,9 +147,9 @@ In the output above, we can see the estimated coefficients (`estimate`), estimat
 
 Linear regression is a more generalized method than ANOVA. In linear regression, we are fitting a model of a continuous outcome with any number of predictors which are categorical or continuous. We form these models as follows:
 
-$$y_i=\beta_0 +\sum_{i=1}^n \beta_i x_i + \epsilon_i$$
+$$y_i=\beta_0 +\sum_{i=1}^p \beta_i x_i + \epsilon_i$$
 
-where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_n$ are the predictors with $\beta_1, \cdots, \beta_n$ as the associated coefficients, and $\epsilon_i$ is the error. 
+where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_n$ are the predictors with $\beta_1, \cdots, \beta_p$ as the associated coefficients, and $\epsilon_i$ is the error. 
 
 Assumptions in linear regression using survey data include:
 
@@ -245,13 +245,13 @@ Logistic regression is used to model a binary outcome and is a specific type of 
 $$ y_i \sim \text{Bernoulli}(\pi_i)$$
 
 \begin{equation}
-\log \left(\frac{\pi_i}{1-\pi_i} \right)=\beta_0 +\sum_{i=1}^n \beta_i x_i
+\log \left(\frac{\pi_i}{1-\pi_i} \right)=\beta_0 +\sum_{i=1}^p \beta_i x_i
 (\#eq:logoddlin)
 \end{equation}
 
 which can be re-expressed as
 
-$$ \pi_i=\frac{\exp \left(\beta_0 +\sum_{i=1}^n \beta_i x_i \right)}{1+\exp \left(\beta_0 +\sum_{i=1}^n \beta_i x_i \right)}.$$
+$$ \pi_i=\frac{\exp \left(\beta_0 +\sum_{i=1}^p \beta_i x_i \right)}{1+\exp \left(\beta_0 +\sum_{i=1}^p \beta_i x_i \right)}.$$
 where $y_i$ is the outcome, $\beta_0$ is an intercept, and $x_1, \cdots, x_n$ are the predictors with $\beta_1, \cdots, \beta_n$ as the associated coefficients. 
 
 Assumptions in logistic regression using survey data include:
@@ -268,7 +268,7 @@ des_obj %>%
          outcomevar~x1+x2+x3,
          na.action=na.omit,
          df.resid=degf(.),
-         family= quasibinomial(), # use this to avoid warning about non-integers
+         family= quasibinomial, # use this to avoid warning about non-integers
          )
 ```
 
@@ -278,10 +278,11 @@ Note this is the same function as used in both ANOVA and linear regression. Howe
 - A numeric variable which is 1 or 0 where 1 indicates a success
 - A logical variable where TRUE indicates a success
 
-In the following example, the ANES data is used and we are modeling whether someone has trust usually in the government by who someone voted in 2020. As a reminder, the main candidates were Biden and Trump though people could vote for someone else in neither the Democratic or Republican parties. Those votes are all grouped into an "Other" category.
+In the following example, the ANES data is used and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted in 2020. As a reminder, the main candidates were Biden and Trump though people could vote for someone else in neither the Democratic or Republican parties. Those votes are all grouped into an "Other" category. We first create a binary outcome for trusting in the government and plot the data. A scatter plot of the raw data is not useful as it is all 0 and 1 outcomes so instead a summary of the data is plotted.
 
 ```{r}
-#| label: logisticexamp
+#| label: logisticexamp-plot
+#| fig.cap: "Relationship between candidate selection and trust in government, ANES 2020"
 anes_des_der <- anes_des %>%
   mutate(TrustGovernmentUsually=case_when(
     is.na(TrustGovernment)~NA,
@@ -290,23 +291,39 @@ anes_des_der <- anes_des %>%
 anes_des_der %>%
   group_by(VotedPres2020_selection) %>%
   summarise(
-    pct_trust=survey_mean(TrustGovernmentUsually, na.rm=TRUE)
-  )
+    pct_trust=survey_mean(TrustGovernmentUsually, na.rm=TRUE, proportion=TRUE, vartype="ci"),
+    .groups="drop"
+  ) %>%
+  filter(complete.cases(.)) %>%
+  ggplot(aes(x=VotedPres2020_selection  , y=pct_trust)) +
+  geom_bar(stat="identity") +
+  geom_errorbar(aes(ymin=pct_trust_low, ymax=pct_trust_upp), width=.2) +
+  xlab("Election choice (2022)") +
+  ylab("Usually trust the government")+
+  scale_y_continuous(labels=scales::percent)
+```
 
-logistic_out <- anes_des_der %>%
+
+Next, we fit the model. 
+
+```{r}
+#| label: logisticexamp-model
+logistic_trust_vote <- anes_des_der %>%
   svyglm(design=.,
-         formula=TrustGovernmentUsually~ VotedPres2020_selection,
+         formula=TrustGovernmentUsually~ VotedPres2020_selection ,
          family = quasibinomial) 
 
-tidy(logistic_out)
-tidy(logistic_out, exponentiate = TRUE) %>% select(term, estimate)
+tidy(logistic_trust_vote)
+tidy(logistic_trust_vote, exponentiate = TRUE) %>% select(term, estimate)
+
 ```
+
 
 ```{r}
 #| label: logisticcalc
 #| echo: false
-or_trump <- tidy(logistic_out, exponentiate = TRUE) %>% filter(str_detect(term, "Trump")) %>% pull(estimate)
-or_other <- tidy(logistic_out, exponentiate = TRUE) %>% filter(str_detect(term, "Other")) %>% pull(estimate)
+or_trump <- tidy(logistic_trust_vote, exponentiate = TRUE) %>% filter(str_detect(term, "Trump")) %>% pull(estimate)
+or_other <- tidy(logistic_trust_vote, exponentiate = TRUE) %>% filter(str_detect(term, "Other")) %>% pull(estimate)
 
 ```
 
