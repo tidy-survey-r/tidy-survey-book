@@ -175,7 +175,7 @@ hh_in <-
 pers_in <-
   read_rds(here::here("AnalysisData", "ncvs_2021_person.rds"))
 
-# Set up a list of 0s for each crime type/characteristic to replace NA's later
+# Set up a list of 0s for each crime type/characteristic to replace NA's
 hh_z_list <- rep(0, ncol(inc_hh_sums) - 3) %>% as.list() %>%
   setNames(names(inc_hh_sums)[-(1:3)])
 pers_z_list <- rep(0, ncol(inc_pers_sums) - 4) %>% as.list() %>%
@@ -204,10 +204,12 @@ For the household file, we create categories for tenure (rental status), urbanic
 hh_vsum_der <- hh_vsum %>%
   mutate(
     Tenure = factor(
-      case_when(str_detect(V2015, "1") ~ "Owned",!is.na(V2015) ~ "Rented"),
+      case_when(str_detect(V2015, "1") ~ "Owned",
+                !is.na(V2015) ~ "Rented"),
       levels = c("Owned", "Rented")
     ),
-    Urbanicity = fct_reorder(str_remove(V2143, "\\(\\d\\) "), as.numeric(V2143)),
+    Urbanicity = fct_reorder(str_remove(V2143, "\\(\\d\\) "),
+                             as.numeric(V2143)),
     SC214A_num = as.numeric(str_extract(SC214A, "\\d+")),
     Income = case_when(
       SC214A_num <= 8 ~ "Less than $25,000",
@@ -218,8 +220,8 @@ hh_vsum_der <- hh_vsum %>%
     ),
     Income = fct_reorder(Income, SC214A_num),
     V2126B_num = as.numeric(str_extract(V2126B, "\\d+")),
-    PlaceSize = case_when(
-      V2126B_num <= 20 ~ str_sub(V2126B, 6),!is.na(V2126B_num) ~ "1,000,000 or more"
+    PlaceSize = case_when(V2126B_num <= 20 ~ str_sub(V2126B, 6),
+                          !is.na(V2126B_num) ~ "1,000,000 or more"
     ),
     PlaceSize = fct_reorder(PlaceSize, V2126B_num),
     Region = fct_reorder(str_sub(V2127B, 5), as.numeric(V2127B))
@@ -273,8 +275,9 @@ pers_vsum_der <- pers_vsum %>%
                  "Divorced", "Separated")
     )
   ) %>%
-  left_join(select(hh_vsum_slim, YEARQ, IDHH, V2117, V2118, Tenure:Region),
-            by = c("YEARQ", "IDHH"))
+  left_join(
+    select(hh_vsum_slim, YEARQ, IDHH, V2117, V2118, Tenure:Region),
+    by = c("YEARQ", "IDHH"))
 
 pers_vsum_der %>% count(Sex, V3018)
 pers_vsum_der %>% count(V3023A)
@@ -387,10 +390,12 @@ inc_des %>%
   )
 
 hh_des %>%
-  summarize(Property_Vzn = survey_total(Property * ADJINC_WT, na.rm = TRUE))
+  summarize(
+    Property_Vzn = survey_total(Property * ADJINC_WT, na.rm = TRUE))
 
 pers_des %>%
-  summarize(Violent_Vzn = survey_total(Violent * ADJINC_WT, na.rm = TRUE))
+  summarize(
+    Violent_Vzn = survey_total(Violent * ADJINC_WT, na.rm = TRUE))
 ```
 
 ### Victimization proportions
@@ -422,7 +427,8 @@ Victimization rates are not an estimate of the proportion of households or perso
 hh_des %>%
   summarize(
     Property_Vzn = survey_total(Property * ADJINC_WT, na.rm = TRUE),
-    Property_Rate = survey_mean(Property * ADJINC_WT * 1000, na.rm = TRUE),
+    Property_Rate = survey_mean(Property * ADJINC_WT * 1000, 
+                                na.rm = TRUE),
     PopSize = survey_total(1, vartype = NULL)
   )
 ```
@@ -513,7 +519,8 @@ pers_est_df %>%
     Alaska Native only or as two or more races.",
     locations = cells_stub(rows = Level == "Other")
   ) %>%
-  tab_source_note(source_note = "Note: Rates per 1,000 persons age 12 or older.") %>%
+  tab_source_note(
+    source_note = "Note: Rates per 1,000 persons age 12 or older.") %>%
   tab_source_note(source_note = "Source: Bureau of Justice Statistics,
                   National Crime Victimization Survey, 2021.") %>%
   tab_stubhead(label = "Victim demographic") %>%
