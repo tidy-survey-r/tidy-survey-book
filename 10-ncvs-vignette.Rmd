@@ -20,9 +20,9 @@ We will focus on the household, person, and incident files. From these files, we
 
 ## Data file preparation
 
-Some work is necessary to prepare the files before analysis. The design variables indicating pseudostratum (`V2117`) and half-sample code (`V2118`) are only included on the household file so need to be added to the person and incident files for any analysis. 
+Some work is necessary to prepare the files before analysis. The design variables indicating pseudostratum (`V2117`) and half-sample code (`V2118`) are only included on the household file, so they must be added to the person and incident files for any analysis. 
 
-To calculate victimization rates, we need to know about the victimization status for both victims and non-victims so the incident file must be summarized and then merged on to the household or person files for person-level and household-level crimes, respectively. We begin this vignette discussing how to create these incident summary files. This is following Section 2.2 of the NCVS User's Guide.
+To calculate victimization rates, we need to know about the victimization status for both victims and non-victims. The incident file must be summarized and then merged onto the household or person files for person-level and household-level crimes, respectively. We begin this vignette by discussing how to create these incident summary files. This is following Section 2.2 of the NCVS User's Guide.
 
 ### Preparing files for estimation of victimization rates
 
@@ -57,7 +57,7 @@ inc_series <- inc_in %>%
   )
 ```
 
-The next step in preparing the files for estimation is to create indicators on the victimization file for characteristics of interest. Almost all BJS publications limit the analysis to records where the victimization occurred in the United States, where V4022 is not equal to 1, and we will do this for all estimates as well.
+The next step in preparing the files for estimation is to create indicators on the victimization file for characteristics of interest. Almost all BJS publications limit the analysis to records where the victimization occurred in the United States, where `V4022` is not equal to 1, and we will do this for all estimates as well.
 
 In the following example, we will create the following indicators:
 
@@ -204,8 +204,7 @@ For the household file, we create categories for tenure (rental status), urbanic
 hh_vsum_der <- hh_vsum %>%
   mutate(
     Tenure = factor(
-      case_when(str_detect(V2015, "1") ~ "Owned",
-                !is.na(V2015) ~ "Rented"),
+      case_when(str_detect(V2015, "1") ~ "Owned",!is.na(V2015) ~ "Rented"),
       levels = c("Owned", "Rented")
     ),
     Urbanicity = fct_reorder(str_remove(V2143, "\\(\\d\\) "),
@@ -220,8 +219,8 @@ hh_vsum_der <- hh_vsum %>%
     ),
     Income = fct_reorder(Income, SC214A_num),
     V2126B_num = as.numeric(str_extract(V2126B, "\\d+")),
-    PlaceSize = case_when(V2126B_num <= 20 ~ str_sub(V2126B, 6),
-                          !is.na(V2126B_num) ~ "1,000,000 or more"
+    PlaceSize = case_when(
+      V2126B_num <= 20 ~ str_sub(V2126B, 6),!is.na(V2126B_num) ~ "1,000,000 or more"
     ),
     PlaceSize = fct_reorder(PlaceSize, V2126B_num),
     Region = fct_reorder(str_sub(V2127B, 5), as.numeric(V2127B))
@@ -275,9 +274,8 @@ pers_vsum_der <- pers_vsum %>%
                  "Divorced", "Separated")
     )
   ) %>%
-  left_join(
-    select(hh_vsum_slim, YEARQ, IDHH, V2117, V2118, Tenure:Region),
-    by = c("YEARQ", "IDHH"))
+  left_join(select(hh_vsum_slim, YEARQ, IDHH, V2117, V2118, Tenure:Region),
+            by = c("YEARQ", "IDHH"))
 
 pers_vsum_der %>% count(Sex, V3018)
 pers_vsum_der %>% count(V3023A)
@@ -321,7 +319,7 @@ inc_analysis <- inc_ind %>%
 
 ## Survey design objects
 
-All of the data prep above is necessary to prepare the data for survey analysis. At this point, we can create the design objects and finally begin analysis. We will create three design objects for different types of analysis as they depend on which type of estimate you are creating. For the incident data, the weight of analysis is `NEWWGT`, which was constructed previously. The household and person data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster variable for analysis.
+All of the data prep above is necessary to prepare the data for survey analysis. At this point, we can create the design objects and finally begin analysis. We will create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster variable for analysis.
 
 ```{r}
 #| label: desobj
@@ -355,7 +353,7 @@ pers_des <- pers_vsum_slim %>%
 
 We will discuss four estimate types as follows: 
 
-1. Victimization totals are estimates of the number of criminal victimizations with a given characteristic. As demonstrated below, these can be calculated from any of the design objects. The estimated victimization total, $\hat{t}_D$ for domain $D$ is estimated as 
+1. Victimization totals estimate the number of criminal victimizations with a given characteristic. As demonstrated below, these can be calculated from any of the design objects. The estimated victimization total, $\hat{t}_D$ for domain $D$ is estimated as 
 
 $$ \hat{t}_D = \sum_{ijkl \in D} v_{ijkl}$$
 
@@ -427,7 +425,7 @@ Victimization rates are not an estimate of the proportion of households or perso
 hh_des %>%
   summarize(
     Property_Vzn = survey_total(Property * ADJINC_WT, na.rm = TRUE),
-    Property_Rate = survey_mean(Property * ADJINC_WT * 1000, 
+    Property_Rate = survey_mean(Property * ADJINC_WT * 1000,
                                 na.rm = TRUE),
     PopSize = survey_total(1, vartype = NULL)
   )
@@ -444,7 +442,7 @@ pers_des %>%
   ))
 ```
 
-A common desire is to calculate victimization rate by several characteristics. For example, violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by()` statement for each categorization separately, thus we make a function to do this and then use `map_df()` from the {purrr} package to loop through the variables. Finally, the {gt} package is used to make a publishable table.
+A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by()` statement for each categorization separately. Thus, we make a function to do this and then use `map_df()` from the {purrr} package to loop through the variables. Finally, the {gt} package is used to make a publishable table.
 
 ```{r}
 #| rates-demo
@@ -530,7 +528,7 @@ pers_est_df %>%
 
 ### Prevalence rates
 
-Prevalence rates are different from victimization rates as the numerator is the number of people or households who are victimized rather than the number of victimizations. To calculate the prevalence rates, another summary of the data must be done which is calculating and indicator for whether a person or household is a victim of a particular crime at any point in the year. Below is an example to calculate first the indicator and then the prevalence rate of violent crime and aggravated assault.
+Prevalence rates are different from victimization rates as the numerator is the number of people or households who are victimized rather than the number of victimizations. To calculate the prevalence rates, another summary of the data must be done, which is calculating an indicator for whether a person or household is a victim of a particular crime at any point in the year. Below is an example of calculating first the indicator and then the prevalence rate of violent crime and aggravated assault.
 
 ```{r}
 #| label: prevexamp
@@ -555,7 +553,7 @@ pers_prev_ests
 
 ```
 
-In the example above, the indicator is multiplied by 100 to return a percentage rather than a proportion. In 2021, it is estimated that `r round(pers_prev_ests$Violent_Prev, 2)`% of people age 12 and older were a victim of violent crime in the United States and `r round(pers_prev_ests$AAST_Prev, 2)`% were victims of aggravated assault.
+In the example above, the indicator is multiplied by 100 to return a percentage rather than a proportion. In 2021, we estimate that `r round(pers_prev_ests$Violent_Prev, 2)`% of people age 12 and older were a victim of violent crime in the United States and `r round(pers_prev_ests$AAST_Prev, 2)`% were victims of aggravated assault.
 
 ## Exercises
 
