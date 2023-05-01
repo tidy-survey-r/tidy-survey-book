@@ -2,7 +2,7 @@
 
 <!-- TODO: Add an intro of what modeling is (in the context of survey data) -->
 
-Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey}[@lumley2010complex; @R-survey] package as was true in Chapter \@ref(c07). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression, logistic regression, nonlinear models, and  survival analysis.
+Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey}[@lumley2010complex; @R-survey] package as was true in Chapter \@ref(c07). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression and logistic regression. For details on other types of regression including ordinal regression, loglinear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or poisson model in Appendix E of his book.
 
 Accounting for the survey design and weights in modeling can generalize a model to the target population. When using the survey design objects, the statistical tests account for the fact that the observations may not be independent. There is some debate as to whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg].
 
@@ -129,7 +129,7 @@ recs_des %>%
   )
 ```
 
-In the following code, we test whether this temperature varies by region by first using `svyglm` to run the test and then using `broom::tidy` to display the output. Note that the temperature setting is set to NA when the household does not use air-conditioning and thus `na.action=na.omit` is specified to ignore these cases.
+In the following code, we test whether this temperature varies by region by first using `svyglm()` to run the test and then using `broom::tidy()` to display the output. Note that the temperature setting is set to NA when the household does not use air-conditioning and thus `na.action=na.omit` is specified to ignore these cases.
 
 ```{r}
 #| label: anova-ex
@@ -141,7 +141,7 @@ anova_out <- recs_des %>%
 tidy(anova_out)
 ```
 
-In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In this output, the intercept represents the reference value which is the Northeast region. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, `r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(estimate) %>% round(3)` degrees higher than in the Northeast during summer nights.
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In this output, the intercept represents the reference value which is the Northeast region. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, `r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(estimate) %>% signif(3)` degrees higher than in the Northeast during summer nights.
 
 ### Linear regression
 
@@ -197,7 +197,7 @@ m_electric_sqft <- recs_des %>%
 tidy(m_electric_sqft)
 ```
 
-In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% round(3))*100` cents and that square footage is significantly associated with electricity expenditure. This is a very simple model and there are likely many more factors in electricity expenditure including the type of cooling, number of appliances, location, and more. 
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% signif(3))*100` cents and that square footage is significantly associated with electricity expenditure. This is a very simple model and there are likely many more factors in electricity expenditure including the type of cooling, number of appliances, location, and more. 
 
 
 In the following example, a model is fit predicting electricity expenditure including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning is used (logical/categorical) with all two-way interactions also included.
@@ -209,10 +209,21 @@ m_electric_multi <- recs_des %>%
    svyglm(design=.,
           formula=DOLLAREL~(Region+Urbanicity+TOTSQFT_EN+ACUsed)^2-1,
           na.action=na.omit)
-tidy(m_electric_multi)
+tidy(m_electric_multi) %>% print(n=50)
 ```
 
-To examine the predictions, residuals and more from the model, the function `augment` from {broom}. The `augment` function will return a tibble with the independent and dependent variables and other fit statistics. The fitted value and standard error are contained in one column and need to be split after using augment as illustrated below.
+As shown above, there are many terms in this model. To test whether coefficients for a term are different from zero, the function `regTermTest()` can be used. For example, in the above regression, we can test whether the interaction of region and urbanicity is significant as follows:
+
+```{r}
+#| label: lmr-test-term
+
+urb_reg_test <- regTermTest(m_electric_multi, ~Urbanicity:Region)
+urb_reg_test
+```
+
+As demonstrated above, there is a significant interaction betwee urbanicity and region (p-value=`r signif(urb_reg_test$p, 3)`).
+
+To examine the predictions, residuals and more from the model, the function `augment` from {broom} can be used. The `augment` function will return a tibble with the independent and dependent variables and other fit statistics. The fitted value and standard error are contained in one column and need to be split after using augment as illustrated below.
 
 These results can then be used in a variety of ways including examining residual plots as is illustrated below:
 
