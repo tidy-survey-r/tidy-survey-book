@@ -8,27 +8,30 @@ When analyzing results from a survey, the point estimates described in Chapter \
 -  Tests of independence `svychisq()`
 -  Tests of homogeneity `svychisq()`
 
-Up to this point, the functions that we've provided have used the wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers from the {srvyr} package and are instead pulled directly from the {survey} package. This means that the design object is *not* the first argument and that to use these functions with the magrittr pipe `%>%` and tidyverse syntax we will need to use dot (`.`) notation. Functions that work with the magrittr pipe `%>%` have the first argument as data. When data is run, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to only cars with 6 cylinders we can write the code in one of three ways:
+Up to this point, the functions that we've provided have used the wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers from the {srvyr} package and are instead used directly from the {survey} package. This means that the design object is *not* the first argument and that to use these functions with the magrittr pipe `%>%` and tidyverse syntax we will need to use dot (`.`) notation. Functions that work with the magrittr pipe `%>%` have the first argument as data. When data is run, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to only cars with 6 cylinders we can write the code in one of three ways:
 
 1. `filter(mtcars, cyl == 6)`
 2. `mtcars %>% filter(cyl == 6)`
 3. `mtcars %>% filter(., cyl == 6)`
-
-Each of these lines of code will produce the same output since the argument that takes the data is in the first spot in `filter()`. Those who have worked with the tidyverse, the first two are probably familiar. The third option functions the same way as the second one, but is explicit about where the data is going. Here we're telling R to take what's on the left side of the pipe `mtcars` and pipe it into the spot with the dot (`.`)---the first argument.
+4. `mtcars %>% filter(.data= ., cyl == 6)`
+Each of these lines of code will produce the same output since the argument that takes the data is in the first spot in `filter()`. Those who have worked with the tidyverse, the first two are probably familiar. The third option functions the same way as the second one, but is explicit that `mtcars` goes in the first argument and the fourth option indicates that mtcars is going into the named argument of `.data`. Here we're telling R to take what's on the left side of the pipe `mtcars` and pipe it into the spot with the dot (`.`)---the first argument.
 
 In functions that are not part of the tidyverse, the data argument may be in a different spot in the functions. For example, in `svyttest()` the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example:
 
-```{r stattest-dotex}
-#| label: stattest-dotex
-#| eval: FALSE
+```
 svydata_des %>% 
-  svyttest(x~y,.)
+  svyttest(x~y, .)
 ```
 
 
 Placing the dot (`.`) in the second argument spot, indicates that the survey design object `svydata_svy` should be used in the second argument and not the first (which is the default). 
 
+Alternatively, named arguments could be used to place the dot first as in the following:
 
+```
+svydata_des %>% 
+  svyttest(design = ., x~y)
+```
 ## Chapter Set-Up {#stattest-setup}
 
 For this chapter, we will be using the same data as we did in \@ref(c06): ANES and RECS. As a reminder, we will need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.
@@ -51,7 +54,7 @@ Second, we need to read in the data and create the design objects.
 
 Here is how to create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information).
 ```{r stattest-anesdes}
-anes <- read_rds(here("data", "anes_2020.rds")) %>%
+anes <- read_rds(here("AnalysisData", "anes_2020.rds")) %>%
   mutate(Weight=Weight/sum(Weight)*231592693) 
 
 anes_des <- anes %>%
@@ -63,7 +66,7 @@ anes_des <- anes %>%
 
 Here is how to create the design object for the RECS data:
 ```{r stattest-recsdes}
-recs <-read_rds(here("data", "recs.rds"))
+recs <-read_rds(here("AnalysisData", "recs_2015.rds"))
 
 recs_des <- recs %>%
  as_survey_rep(weights = NWEIGHT,
@@ -98,9 +101,7 @@ When we do not have survey data, we may be able to use the `t.test()` function. 
 
 Here is the syntax for the `svyttest()` function:
 
-``` {r}
-#| label: stattest-ttest-syntax
-#| eval: FALSE
+```
 svyttest(formula, 
          design, 
          na.rm=FALSE,
@@ -113,13 +114,13 @@ Notice that the first argument here is the `formula` and not the `design`. This 
 The `formula` argument can take on a couple of different forms depending on what it is that we are measuring.  Here are a few common scenarios:
 
 1. **One-sided t-test:** 
-    a. **Comparison to 0:** $var \sim 0$, where $var$ is the measure of interest and $0$ is the value we are comparing it to. For example, we could test if the proportion of the population that has blue eyes is different from $0$.
-    b. **Comparison to a different value:** $I(var - value) \sim 0$, where $var$ is the measure of interest and $value$ is what we are comparing to. We need to use the `I()` function, to tell the program to calculate the difference between the variable and the comparison value prior to testing. For example, we could test if the proportion of the population that has blue eyes is different from $25%$.
+    a. **Comparison to 0:** `var ~ 0`, where `var` is the measure of interest and `0` is the value we are comparing it to. For example, we could test if the proportion of the population that has blue eyes is different from `0`.
+    b. **Comparison to a different value:** `I(var - value) ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. We need to use the `I()` function, to tell the program to calculate the difference between the variable and the comparison value prior to testing. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `I(var - 0.25)~0`.
 2. **Two-sided t-test:**
     a. **Unpaired:**
-        - **2 level grouping variable:** $var \sim groupVar$, where $var$ is the measure of interest and $groupVar$ is a variable with two categories.  For example, we could test if the perfect of the popualtion that has blue eyes is different for men and women. 
-        - **3+ level grouping variable:** $var \sim I(groupVar == level)$, where $var$ is the measure of interest, $groupVar$ is the categorical variable, and $level$ is the category level to isolate. Again we need to use the `I()` function to tell the program to isolate the category before doing the comparison across groups.  For example, we could test if the test scores in one classroom differed from all other classrooms.
-    b. **Paired:** $I(var_1 - var_2) \sim 0$, where $var_1$ is the first variable of interest and $var_2$ is the second variable of interest. We again will have to use the `I()` function to have the program calculate the difference between the two variables before comparing it against $0$.  For example, we could test if test scores on a subject differed between the start and the end of a course.
+        - **2 level grouping variable:** `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories.  For example, we could test if the proportion of the population that has blue eyes is different for children aged 5-10 years old compared to children under 5 years old. 
+        - **3+ level grouping variable:** `var ~ I(groupVar == level)`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. Again we need to use the `I()` function to tell the program to isolate the category before doing the comparison across groups.  For example, we could test if the test scores in one classroom differed from all other classrooms.
+    b. **Paired:** `I(var_1 - var_2) ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. We again will have to use the `I()` function to have the program calculate the difference between the two variables before comparing it against `0`.  For example, we could test if test scores on a subject differed between the start and the end of a course.
 
 Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing the t-test will not compute. Throughout this chapter we will always set `na.rm=TRUE`, but before analyzing the survey data, make sure to review the notes provided in Chapter \@ref(c03) to better understand how to handle missing data.  Finally, the `level` argument is $1-\alpha$, or the amount of type 1 error.  The default is $0.95$.
 
@@ -294,9 +295,7 @@ The non-survey data function of `chisq.test()` requires either a single set of c
 
 First, the function for the goodness of fit tests is `svygofchisq()`:
 
-``` {r}
-#| label: stattest-chi-gofsyntax
-#| eval: FALSE
+```
 svygofchisq(formula,
             p,
             design, 
@@ -308,9 +307,7 @@ In this function, you'll notice that the first argument is the `formula`, the se
 
 The function for tests of independence and homogeneity (`svychisq()`) is similar to the goodness of fit function in that the `formula` argument is first.  However, instead of an argument for the expected proportions, the `svychisq()` function has an argument to select the statistic used for the test:
 
-``` {r}
-#| label: stattest-chi-chisqsyntax
-#| eval: FALSE
+```
 svychisq(formula,
          design, 
          statistic = c("F",  "Chisq", "Wald", "adjWald", 
