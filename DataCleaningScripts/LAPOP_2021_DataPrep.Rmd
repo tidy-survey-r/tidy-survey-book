@@ -1,0 +1,75 @@
+---
+title: "AmericasBarometer 2021"
+output: 
+  github_document:
+    html_preview: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data information
+
+All data and resources were downloaded from http://datasets.americasbarometer.org/database/ on May 7, 2023.
+
+```{r}
+#| label: loadpackageh
+#| message: FALSE
+
+library(here) #easy relative paths
+```
+
+```{r}
+#| label: loadpackages
+
+library(tidyverse) #data manipulation
+library(haven) #data import
+library(tidylog) #informative logging messages
+```
+
+## Import data and create derived variables
+
+```{r}
+#| label: derivedata
+
+stata_files <- list.files(here("RawData", "LAPOP_2021"), "*.dta")
+
+read_stata_unlabeled <- function(file){
+  read_stata(file) %>%
+    zap_labels() %>%
+    zap_label()
+}
+  
+lapop_in <- here("RawData", "LAPOP_2021", stata_files) %>%
+  map_df(read_stata_unlabeled)
+
+#q1tb: gender, q2: age, covid2at: worried about covid, 
+# idio2: econ sit, idio2cov: econ sit - covid, a4: most serious problem
+# jca13: coup justified when corruption
+# m1: rating of leader, 
+# mil10a: opinion of china, ccch1: china influence on economy
+# mil10e: opinion of US, ccus1: us influence on economy
+lapop <- lapop_in %>%
+  select(pais, strata, upm, weight1500, strata, core_a_core_b,
+         q1tb, q2, covid2at, a4, idio2, idio2cov, jc13,
+         m1, mil10a, mil10e, ccch1, ccch3, ccus1, ccus3,
+         edr, ocup4a, q14, q11n, q12c, q12bn,
+         starts_with("covidedu1"), r15, r18n, r18,
+         conocim, sexi
+         ) 
+
+ 
+```
+
+
+
+## Save data
+
+```{r savedat}
+
+summary(lapop)
+
+write_rds(lapop, here("AnalysisData", "lapop_2021.rds"))
+```
+
