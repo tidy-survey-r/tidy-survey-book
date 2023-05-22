@@ -23,7 +23,7 @@
 <meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
 
 
-<meta name="date" content="2023-05-10" />
+<meta name="date" content="2023-05-22" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -247,7 +247,22 @@ div.csl-indent {
 </ul></li>
 <li class="chapter" data-level="6.4" data-path="c06.html"><a href="c06.html#exercises-2"><i class="fa fa-check"></i><b>6.4</b> Exercises</a></li>
 </ul></li>
-<li class="chapter" data-level="7" data-path="c07.html"><a href="c07.html"><i class="fa fa-check"></i><b>7</b> Statistical testing</a></li>
+<li class="chapter" data-level="7" data-path="c07.html"><a href="c07.html"><i class="fa fa-check"></i><b>7</b> Statistical testing</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="c07.html"><a href="c07.html#stattest-setup"><i class="fa fa-check"></i><b>7.1</b> Chapter Set-Up</a></li>
+<li class="chapter" data-level="7.2" data-path="c07.html"><a href="c07.html#stattest-ttest"><i class="fa fa-check"></i><b>7.2</b> Comparison of Proportions and Means</a>
+<ul>
+<li class="chapter" data-level="7.2.1" data-path="c07.html"><a href="c07.html#stattest-ttest-syntax"><i class="fa fa-check"></i><b>7.2.1</b> Syntax</a></li>
+<li class="chapter" data-level="7.2.2" data-path="c07.html"><a href="c07.html#stattest-ttest-examples"><i class="fa fa-check"></i><b>7.2.2</b> Examples</a></li>
+<li class="chapter" data-level="7.2.3" data-path="c07.html"><a href="c07.html#stattest-ttest-exercises"><i class="fa fa-check"></i><b>7.2.3</b> Exercises</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="c07.html"><a href="c07.html#stattest-chi"><i class="fa fa-check"></i><b>7.3</b> Chi-Square Tests</a>
+<ul>
+<li class="chapter" data-level="7.3.1" data-path="c07.html"><a href="c07.html#stattest-chi-syntax"><i class="fa fa-check"></i><b>7.3.1</b> Syntax</a></li>
+<li class="chapter" data-level="7.3.2" data-path="c07.html"><a href="c07.html#stattest-chi-examples"><i class="fa fa-check"></i><b>7.3.2</b> Examples</a></li>
+<li class="chapter" data-level="7.3.3" data-path="c07.html"><a href="c07.html#stattest-chi-exercises"><i class="fa fa-check"></i><b>7.3.3</b> Exercises</a></li>
+</ul></li>
+</ul></li>
 <li class="chapter" data-level="8" data-path="c08.html"><a href="c08.html"><i class="fa fa-check"></i><b>8</b> Modeling</a></li>
 <li class="chapter" data-level="9" data-path="c09.html"><a href="c09.html"><i class="fa fa-check"></i><b>9</b> Presenting results</a></li>
 <li class="appendix"><span><b>Appendix</b></span></li>
@@ -275,7 +290,2104 @@ div.csl-indent {
             <section class="normal" id="section-">
 <div id="c07" class="section level1 hasAnchor" number="7">
 <h1><span class="header-section-number">Chapter 7</span> Statistical testing<a href="c07.html#c07" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>When analyzing results from a survey, the point estimates described in Chapter <a href="c06.html#c06">6</a> are helpful for understanding the data at a high level, but researchers and the public often want to make comparisons between different groups. These comparisons are calculated through statistical testing where we compare the point estimates and the variance estimates of each statistic to see if there are statistically significant differences. The general idea of statistical testing is the same for data obtained through surveys and data obtained through other methods, but the importance lies in ensuring the variance is calculated correctly. Functions in the {survey} packages allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and functions:</p>
+<ul>
+<li>Comparison of proportions <code>svyttest()</code></li>
+<li>Comparison of means <code>svyttest()</code></li>
+<li>Goodness of fit tests <code>svygofchisq()</code></li>
+<li>Tests of independence <code>svychisq()</code></li>
+<li>Tests of homogeneity <code>svychisq()</code></li>
+</ul>
+<p>Up to this point, the functions that we’ve provided have used the wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers from the {srvyr} package and are instead used directly from the {survey} package. This means that the design object is <em>not</em> the first argument and that to use these functions with the magrittr pipe <code>%&gt;%</code> and tidyverse syntax we will need to use dot (<code>.</code>) notation. Functions that work with the magrittr pipe <code>%&gt;%</code> have the first argument as data. When data is run, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the <code>mtcars</code> data and filter to only cars with 6 cylinders we can write the code in one of three ways:</p>
+<ol style="list-style-type: decimal">
+<li><code>filter(mtcars, cyl == 6)</code></li>
+<li><code>mtcars %&gt;% filter(cyl == 6)</code></li>
+<li><code>mtcars %&gt;% filter(., cyl == 6)</code></li>
+<li><code>mtcars %&gt;% filter(.data= ., cyl == 6)</code></li>
+</ol>
+<p>Each of these lines of code will produce the same output since the argument that takes the data is in the first spot in <code>filter()</code>. Those who have worked with the tidyverse, the first two are probably familiar. The third option functions the same way as the second one, but is explicit that <code>mtcars</code> goes in the first argument and the fourth option indicates that mtcars is going into the named argument of <code>.data</code>. Here we’re telling R to take what’s on the left side of the pipe <code>mtcars</code> and pipe it into the spot with the dot (<code>.</code>)—the first argument.</p>
+<p>In functions that are not part of the tidyverse, the data argument may be in a different spot in the functions. For example, in <code>svyttest()</code> the data argument is in the second spot, which means we need to place the dot (<code>.</code>) in the second spot and not the first. For example:</p>
+<pre><code>svydata_des %&gt;% 
+  svyttest(x~y, .)</code></pre>
+<p>Placing the dot (<code>.</code>) in the second argument spot, indicates that the survey design object <code>svydata_svy</code> should be used in the second argument and not the first (which is the default).</p>
+<p>Alternatively, named arguments could be used to place the dot first as in the following:</p>
+<pre><code>svydata_des %&gt;% 
+  svyttest(design = ., x~y)</code></pre>
+<div id="stattest-setup" class="section level2 hasAnchor" number="7.1">
+<h2><span class="header-section-number">7.1</span> Chapter Set-Up<a href="c07.html#stattest-setup" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>For this chapter, we will be using the same data as we did in <a href="c06.html#c06">6</a>: ANES and RECS. As a reminder, we will need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.</p>
+<p>First, make sure install and load the following packages:</p>
+<div class="sourceCode" id="cb140"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb140-1"><a href="c07.html#cb140-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb140-2"><a href="c07.html#cb140-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey) <span class="co"># for survey analysis</span></span>
+<span id="cb140-3"><a href="c07.html#cb140-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr) <span class="co"># for tidy survey analysis</span></span>
+<span id="cb140-4"><a href="c07.html#cb140-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb140-5"><a href="c07.html#cb140-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb140-6"><a href="c07.html#cb140-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt) <span class="co"># for output of readable tables</span></span></code></pre></div>
+<p>Second, we need to read in the data and create the design objects.</p>
+<p>Here is how to create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information).</p>
+<div class="sourceCode" id="cb141"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb141-1"><a href="c07.html#cb141-1" aria-hidden="true" tabindex="-1"></a>anes <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="fu">here</span>(<span class="st">&quot;AnalysisData&quot;</span>, <span class="st">&quot;anes_2020.rds&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb141-2"><a href="c07.html#cb141-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Weight=</span>Weight<span class="sc">/</span><span class="fu">sum</span>(Weight)<span class="sc">*</span><span class="dv">231592693</span>) </span>
+<span id="cb141-3"><a href="c07.html#cb141-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb141-4"><a href="c07.html#cb141-4" aria-hidden="true" tabindex="-1"></a>anes_des <span class="ot">&lt;-</span> anes <span class="sc">%&gt;%</span></span>
+<span id="cb141-5"><a href="c07.html#cb141-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> Weight,</span>
+<span id="cb141-6"><a href="c07.html#cb141-6" aria-hidden="true" tabindex="-1"></a>          <span class="at">strata =</span> Stratum,</span>
+<span id="cb141-7"><a href="c07.html#cb141-7" aria-hidden="true" tabindex="-1"></a>          <span class="at">ids =</span> VarUnit,</span>
+<span id="cb141-8"><a href="c07.html#cb141-8" aria-hidden="true" tabindex="-1"></a>          <span class="at">nest =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Here is how to create the design object for the RECS data:</p>
+<div class="sourceCode" id="cb142"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb142-1"><a href="c07.html#cb142-1" aria-hidden="true" tabindex="-1"></a>recs <span class="ot">&lt;-</span><span class="fu">read_rds</span>(<span class="fu">here</span>(<span class="st">&quot;AnalysisData&quot;</span>, <span class="st">&quot;recs_2015.rds&quot;</span>))</span>
+<span id="cb142-2"><a href="c07.html#cb142-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb142-3"><a href="c07.html#cb142-3" aria-hidden="true" tabindex="-1"></a>recs_des <span class="ot">&lt;-</span> recs <span class="sc">%&gt;%</span></span>
+<span id="cb142-4"><a href="c07.html#cb142-4" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> NWEIGHT,</span>
+<span id="cb142-5"><a href="c07.html#cb142-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;BRRWT&quot;</span>),</span>
+<span id="cb142-6"><a href="c07.html#cb142-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">type =</span> <span class="st">&quot;Fay&quot;</span>,</span>
+<span id="cb142-7"><a href="c07.html#cb142-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">rho =</span> <span class="fl">0.5</span>,</span>
+<span id="cb142-8"><a href="c07.html#cb142-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">mse =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+<div id="stattest-ttest" class="section level2 hasAnchor" number="7.2">
+<h2><span class="header-section-number">7.2</span> Comparison of Proportions and Means<a href="c07.html#stattest-ttest" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>To compare two proportions or means, we use t-tests. This allows us to determine if one proportion or mean is statistically different from the other. T-tests are commonly used to determine if a single estimate is different from a known value (e.g., 0 or 50%) or to compare two group means (e.g., males vs females). For comparing a single estimate to a known value, this is called a <em>one sample t-test</em> and we can set up the hypothesis test as:</p>
+<ul>
+<li><span class="math inline">\(H_0: \mu = 0\)</span> where <span class="math inline">\(\mu\)</span> is the is the mean outcome and <span class="math inline">\(0\)</span> is the value we are comparing it to</li>
+<li><span class="math inline">\(H_A: \mu \neq 0\)</span></li>
+</ul>
+<p>For comparing two estimates, this is called a <em>two sample t-test</em> and we can set up the hypothesis test as:</p>
+<ul>
+<li><span class="math inline">\(H_0: \mu_1 = \mu_2\)</span> where <span class="math inline">\(\mu_i\)</span> is the is the mean outcome for group <span class="math inline">\(i\)</span></li>
+<li><span class="math inline">\(H_A: \mu_1 \neq \mu_2\)</span></li>
+</ul>
+<p>Two sample t-tests can also be <em>paired</em> or <em>unpaired</em>. If the data come from two different populations (e.g., males vs females), then the t-test run will be an <em>unpaired</em> or <em>independent samples</em> t-test. <em>Paired</em> t-tests occur when the data come from the same population. This is commonly seen with data taken from the same population in two different time periods (e.g., before and after an intervention).</p>
+<p>The difference between using t-tests with non-survey data and with survey data is based on the underlying variance estimation difference. Chapter <a href="c05.html#c05">5</a> provides the detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances provided the design object is correctly defined.</p>
+<div id="stattest-ttest-syntax" class="section level3 hasAnchor" number="7.2.1">
+<h3><span class="header-section-number">7.2.1</span> Syntax<a href="c07.html#stattest-ttest-syntax" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>When we do not have survey data, we may be able to use the <code>t.test()</code> function. This function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use the <code>svyttest()</code> function. Many of the arguments are the same between the two functions, but there are a two key differences:</p>
+<ul>
+<li>We need to use the survey design object, instead of data</li>
+<li>We can only use a formula and not separate x and y data</li>
+</ul>
+<p>Here is the syntax for the <code>svyttest()</code> function:</p>
+<pre><code>svyttest(formula, 
+         design, 
+         na.rm=FALSE,
+         level=0.95,
+         ...)</code></pre>
+<p>Notice that the first argument here is the <code>formula</code> and not the <code>design</code>. This means that we must use the dot <code>(.)</code> if we pipe in the survey design object (as described at the beginning of this chapter).</p>
+<p>The <code>formula</code> argument can take on a couple of different forms depending on what it is that we are measuring. Here are a few common scenarios:</p>
+<ol style="list-style-type: decimal">
+<li><strong>One-sample t-test:</strong>
+<ol style="list-style-type: lower-alpha">
+<li><strong>Comparison to 0:</strong> <code>var ~ 0</code>, where <code>var</code> is the measure of interest and <code>0</code> is the value we are comparing it to. For example, we could test if the proportion of the population that has blue eyes is different from <code>0</code>.</li>
+<li><strong>Comparison to a different value:</strong> <code>I(var - value) ~ 0</code>, where <code>var</code> is the measure of interest and <code>value</code> is what we are comparing to. We need to use the <code>I()</code> function, to tell the program to calculate the difference between the variable and the comparison value prior to testing. For example, we could test if the proportion of the population that has blue eyes is different from <code>25%</code> by using <code>I(var - 0.25)~0</code>.</li>
+</ol></li>
+<li><strong>Two-sample t-test:</strong>
+<ol style="list-style-type: lower-alpha">
+<li><strong>Unpaired:</strong>
+<ul>
+<li><strong>2 level grouping variable:</strong> <code>var ~ groupVar</code>, where <code>var</code> is the measure of interest and <code>groupVar</code> is a variable with two categories. For example, we could test if the proportion of the population that has blue eyes is different for children aged 5-10 years old compared to children under 5 years old.</li>
+<li><strong>3+ level grouping variable:</strong> <code>var ~ I(groupVar == level)</code>, where <code>var</code> is the measure of interest, <code>groupVar</code> is the categorical variable, and <code>level</code> is the category level to isolate. Again we need to use the <code>I()</code> function to tell the program to isolate the category before doing the comparison across groups. For example, we could test if the test scores in one classroom differed from all other classrooms.</li>
+</ul></li>
+<li><strong>Paired:</strong> <code>I(var_1 - var_2) ~ 0</code>, where <code>var_1</code> is the first variable of interest and <code>var_2</code> is the second variable of interest. We again will have to use the <code>I()</code> function to have the program calculate the difference between the two variables before comparing it against <code>0</code>. For example, we could test if test scores on a subject differed between the start and the end of a course.</li>
+</ol></li>
+</ol>
+<p>Additionally, the <code>na.rm</code> argument defaults to <code>FALSE</code>, which means if any data is missing the t-test will not compute. Throughout this chapter we will always set <code>na.rm=TRUE</code>, but before analyzing the survey data, make sure to review the notes provided in Chapter <a href="#c03"><strong>??</strong></a> to better understand how to handle missing data. Finally, the <code>level</code> argument is <span class="math inline">\(1-\alpha\)</span>, or the amount of type 1 error. The default is <span class="math inline">\(0.95\)</span>.</p>
+</div>
+<div id="stattest-ttest-examples" class="section level3 hasAnchor" number="7.2.2">
+<h3><span class="header-section-number">7.2.2</span> Examples<a href="c07.html#stattest-ttest-examples" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Let’s walk through a few examples using the ANES and RECS data. See Section <a href="c07.html#stattest-setup">7.1</a> above to set up the design objects.</p>
+<div id="stattest-ttest-ex1" class="section level4 unnumbered hasAnchor">
+<h4>Example 1: One-sample t-test<a href="c07.html#stattest-ttest-ex1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<!--Would love to do a comparison to 0 for this example, but have changed it for now.  Thoughts?-->
+<p>ANES asked respondents if they voted for president in the 2020 election. In our data, we’ve called this variable <code>VotedPres2020</code>. Let’s look at the proportion of the U.S. voting eligible population that voted for president in 2020 using the <code>survey_prop()</code> function we learned in Chapter <a href="c06.html#c06">6</a>.</p>
+<div class="sourceCode" id="cb144"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb144-1"><a href="c07.html#cb144-1" aria-hidden="true" tabindex="-1"></a>voteprop<span class="ot">&lt;-</span>anes_des <span class="sc">%&gt;%</span> </span>
+<span id="cb144-2"><a href="c07.html#cb144-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020) <span class="sc">%&gt;%</span> </span>
+<span id="cb144-3"><a href="c07.html#cb144-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">survey_prop</span>())</span>
+<span id="cb144-4"><a href="c07.html#cb144-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb144-5"><a href="c07.html#cb144-5" aria-hidden="true" tabindex="-1"></a>voteprop</span></code></pre></div>
+<pre><code>## # A tibble: 3 × 3
+##   VotedPres2020    coef    `_se`
+##   &lt;fct&gt;           &lt;dbl&gt;    &lt;dbl&gt;
+## 1 Yes           0.772   0.00757 
+## 2 No            0.227   0.00763 
+## 3 &lt;NA&gt;          0.00113 0.000464</code></pre>
+<p>Based on this, we see that 77.2% of the U.S. voting eligible population voted for president in 2020. If we wanted to know how this compares to other countries, we can use <code>svyttest()</code>. For example, if we know that the voter turnout in Germany in the 2017 general election was 76.2%, we could set up our hypothesis as:</p>
+<ul>
+<li><span class="math inline">\(H_0: p = 0.762\)</span> where <span class="math inline">\(p\)</span> is the proportion of U.S. voting eligible population that voted for president in 2020</li>
+<li><span class="math inline">\(H_A: p \neq 0.762\)</span></li>
+</ul>
+<p>To conduct this in R, we would then use the <code>svyttest()</code> function:</p>
+<div class="sourceCode" id="cb146"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb146-1"><a href="c07.html#cb146-1" aria-hidden="true" tabindex="-1"></a>ttest_ex1<span class="ot">&lt;-</span>anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb146-2"><a href="c07.html#cb146-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">svyttest</span>(<span class="at">formula=</span><span class="fu">I</span>(<span class="fu">I</span>(VotedPres2020<span class="sc">==</span><span class="st">&quot;Yes&quot;</span>)<span class="sc">-</span><span class="fl">0.762</span>)<span class="sc">~</span><span class="dv">0</span>,</span>
+<span id="cb146-3"><a href="c07.html#cb146-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">design=</span>.,</span>
+<span id="cb146-4"><a href="c07.html#cb146-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb146-5"><a href="c07.html#cb146-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb146-6"><a href="c07.html#cb146-6" aria-hidden="true" tabindex="-1"></a>ttest_ex1</span></code></pre></div>
+<pre><code>## 
+##  Design-based one-sample t-test
+## 
+## data:  I(I(VotedPres2020 == &quot;Yes&quot;) - 0.762) ~ 0
+## t = 1.4, df = 50, p-value = 0.2
+## alternative hypothesis: true mean is not equal to 0
+## 95 percent confidence interval:
+##  -0.004729  0.025899
+## sample estimates:
+##    mean 
+## 0.01058</code></pre>
+<p>Note that because <code>VotedPres2020</code> is a factor, we need to specify which level we are interested in. In this case we want to isolate those that did vote for president in 2020. The output from the <code>svyttest()</code> function can be a bit hard to read. Using the {broom} package from the tidyverse we can clean up the output into a tibble to more easily what the test is telling us.</p>
+<div class="sourceCode" id="cb148"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb148-1"><a href="c07.html#cb148-1" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(ttest_ex1)</span></code></pre></div>
+<pre><code>## # A tibble: 1 × 8
+##   estimate statistic p.value parameter conf.low conf.high method        
+##      &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;         
+## 1   0.0106      1.39   0.171        50 -0.00473    0.0259 Design-based …
+## # ℹ 1 more variable: alternative &lt;chr&gt;</code></pre>
+<p>The estimate that is presented here is actually the difference between the U.S. proportion and the Germany proportion we are comparing to. We can see that there is a difference of 1.06 percentage points. Additionally, we can see the t-statistic value in the <code>statistic</code> column is 1.39 and the p-value is 0.171. These results indicate that the U.S. and Germany have similar voter turnout.</p>
+<!--Add in callout box about how to use the $ notation to help call out the different values?  Maybe indicate how this will be covered more in the reporting chapter?-->
+</div>
+<div id="stattest-ttest-ex2" class="section level4 unnumbered hasAnchor">
+<h4>Example 2: One-sample t-test<a href="c07.html#stattest-ttest-ex2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>RECS asks respondents to indicate what temperature they set their house to during the summer at night. In our data, we’ve called this variable <code>SummerTempNight</code>. If we want to see if the U.S. household sets their temperature at a value different from 68<span class="math inline">\(^\circ\)</span>F, we could set up the hypothesis as follows:</p>
+<ul>
+<li><span class="math inline">\(H_0: \mu = 68\)</span> where <span class="math inline">\(\mu\)</span> is the is average temperature U.S. Households set their thermostat to in the summer at night</li>
+<li><span class="math inline">\(H_A: \mu \neq 68\)</span></li>
+</ul>
+<p>To conduct this in R, we would then use the <code>svyttest()</code> function, and the <code>I()</code> function in the formula:</p>
+<div class="sourceCode" id="cb150"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb150-1"><a href="c07.html#cb150-1" aria-hidden="true" tabindex="-1"></a>ttest_ex2<span class="ot">&lt;-</span>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb150-2"><a href="c07.html#cb150-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">svyttest</span>(<span class="at">formula=</span><span class="fu">I</span>(SummerTempNight<span class="dv">-68</span>)<span class="sc">~</span><span class="dv">0</span>,</span>
+<span id="cb150-3"><a href="c07.html#cb150-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">design=</span>.,</span>
+<span id="cb150-4"><a href="c07.html#cb150-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb150-5"><a href="c07.html#cb150-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-6"><a href="c07.html#cb150-6" aria-hidden="true" tabindex="-1"></a>ttest_ex2</span></code></pre></div>
+<pre><code>## 
+##  Design-based one-sample t-test
+## 
+## data:  I(SummerTempNight - 68) ~ 0
+## t = 41, df = 94, p-value &lt;2e-16
+## alternative hypothesis: true mean is not equal to 0
+## 95 percent confidence interval:
+##  3.425 3.773
+## sample estimates:
+##  mean 
+## 3.599</code></pre>
+<p>The estimate in this case differs from example one in that the estimate is not displaying <span class="math inline">\(\mu\)</span> but rather <span class="math inline">\(\mu - 68\)</span>. If we wanted the average we could do one of the following:</p>
+<div class="sourceCode" id="cb152"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb152-1"><a href="c07.html#cb152-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span> <span class="fu">summarize</span>(<span class="at">mu=</span><span class="fu">survey_mean</span>(SummerTempNight,<span class="at">na.rm=</span><span class="cn">TRUE</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 1 × 2
+##      mu  mu_se
+##   &lt;dbl&gt;  &lt;dbl&gt;
+## 1  71.6 0.0878</code></pre>
+<p>Or, we could take our t-test estimate (<code>ttest_ex2$estimate</code>) and add it to 68:</p>
+<div class="sourceCode" id="cb154"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb154-1"><a href="c07.html#cb154-1" aria-hidden="true" tabindex="-1"></a>ttest_ex2<span class="sc">$</span>estimate <span class="sc">+</span> <span class="dv">68</span></span></code></pre></div>
+<pre><code>## mean 
+## 71.6</code></pre>
+<p>The result is the same in both methods, so we see that the average temperature U.S. Households set their thermostat to in the summer at night is 71.6. Looking at the output from the <code>svyttest()</code>, the t-statistic is 41.013 and the p-value is 8.6732^{-62}, indicating that the average is statistically different from 68<span class="math inline">\(^\circ\)</span>F at an <span class="math inline">\(\alpha\)</span> level of <span class="math inline">\(0.05\)</span>.</p>
+</div>
+<div id="stattest-ttest-ex3" class="section level4 unnumbered hasAnchor">
+<h4>Example 3: Unpaired two-sample t-test<a href="c07.html#stattest-ttest-ex3" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Two additional variables we have on the RECS data are the electric bill cost (<code>DOLLAREL</code>) and whether the house used AC or not (<code>ACUsed</code>). If we want to know if the U.S. households that used AC had higher electrical bills compared to those that did not, we could set up the hypothesis as follows:</p>
+<ul>
+<li><span class="math inline">\(H_0: \mu_{AC} = \mu_{noAC}\)</span> where <span class="math inline">\(\mu_{AC}\)</span> is the electrical bill cost for U.S. households that used AC and <span class="math inline">\(\mu_{noAC}\)</span> is the electrical bill cost for U.S. household that did not use AC</li>
+<li><span class="math inline">\(H_A: \mu_{AC} \neq \mu_{noAC}\)</span></li>
+</ul>
+<p>Let’s take a quick look at the data to see the format the data are in:</p>
+<div class="sourceCode" id="cb156"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb156-1"><a href="c07.html#cb156-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span> </span>
+<span id="cb156-2"><a href="c07.html#cb156-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ACUsed) <span class="sc">%&gt;%</span> </span>
+<span id="cb156-3"><a href="c07.html#cb156-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean=</span><span class="fu">survey_mean</span>(DOLLAREL,<span class="at">na.rm=</span><span class="cn">TRUE</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 3
+##   ACUsed  mean mean_se
+##   &lt;lgl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+## 1 FALSE   972.    25.8
+## 2 TRUE   1435.    15.8</code></pre>
+<p>To conduct this in R, we would then use <code>svyttest()</code>:</p>
+<div class="sourceCode" id="cb158"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb158-1"><a href="c07.html#cb158-1" aria-hidden="true" tabindex="-1"></a>ttest_ex3<span class="ot">&lt;-</span>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb158-2"><a href="c07.html#cb158-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">svyttest</span>(<span class="at">formula=</span>DOLLAREL<span class="sc">~</span>ACUsed,</span>
+<span id="cb158-3"><a href="c07.html#cb158-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">design=</span>.,</span>
+<span id="cb158-4"><a href="c07.html#cb158-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb158-5"><a href="c07.html#cb158-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb158-6"><a href="c07.html#cb158-6" aria-hidden="true" tabindex="-1"></a>ttest_ex3</span></code></pre></div>
+<pre><code>## 
+##  Design-based t-test
+## 
+## data:  DOLLAREL ~ ACUsed
+## t = 15, df = 94, p-value &lt;2e-16
+## alternative hypothesis: true difference in mean is not equal to 0
+## 95 percent confidence interval:
+##  400.7 525.1
+## sample estimates:
+## difference in mean 
+##              462.9</code></pre>
+<p>The results indicate that the difference in electrical bill for those that used AC and those that did not is on average $462.87. The difference does appear to be statistically significant as the t-statistic is 14.772 and the p-value is 3.0763^{-26}.</p>
+</div>
+<div id="stattest-ttest-ex4" class="section level4 unnumbered hasAnchor">
+<h4>Example 4: Paired two-sample t-test<a href="c07.html#stattest-ttest-ex4" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>To conduct a paired t-test that looks at differences at two time points, we use the same <code>I()</code> notatation we’ve been using. For example, let’s say we want to test whether the temperature that U.S. households set their thermostat to differs depending on the season (comparing summer temperature and winter temperature). We could set up the hypothesis as follows:</p>
+<ul>
+<li><span class="math inline">\(H_0: \mu_{summer} = \mu_{winter}\)</span> where <span class="math inline">\(\mu_{summer}\)</span> is the temperature that U.S. households set their thermostat to during summer nights, and <span class="math inline">\(\mu_{winter}\)</span> is the temperature that U.S. households set their thermostat to during winter nights</li>
+<li><span class="math inline">\(H_A: \mu_{summer} \neq \mu_{winter}\)</span></li>
+</ul>
+<p>To conduct this in R, we would then use <code>svyttest()</code> and <code>I()</code>:</p>
+<div class="sourceCode" id="cb160"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb160-1"><a href="c07.html#cb160-1" aria-hidden="true" tabindex="-1"></a>ttest_ex4<span class="ot">&lt;-</span>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb160-2"><a href="c07.html#cb160-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">svyttest</span>(<span class="at">design=</span>.,</span>
+<span id="cb160-3"><a href="c07.html#cb160-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">formula=</span><span class="fu">I</span>(SummerTempNight<span class="sc">-</span>WinterTempNight)<span class="sc">~</span><span class="dv">0</span>,</span>
+<span id="cb160-4"><a href="c07.html#cb160-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb160-5"><a href="c07.html#cb160-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb160-6"><a href="c07.html#cb160-6" aria-hidden="true" tabindex="-1"></a>ttest_ex4</span></code></pre></div>
+<pre><code>## 
+##  Design-based one-sample t-test
+## 
+## data:  I(SummerTempNight - WinterTempNight) ~ 0
+## t = 29, df = 94, p-value &lt;2e-16
+## alternative hypothesis: true mean is not equal to 0
+## 95 percent confidence interval:
+##  2.995 3.434
+## sample estimates:
+##  mean 
+## 3.215</code></pre>
+<p>U.S. households set their thermostat on average 3.2<span class="math inline">\(^\circ\)</span>F warmer in summer nights than winter nights, and it is statistically significant (t=29.0788, p-value=8.8271^{-49}).</p>
+</div>
+</div>
+<div id="stattest-ttest-exercises" class="section level3 hasAnchor" number="7.2.3">
+<h3><span class="header-section-number">7.2.3</span> Exercises<a href="c07.html#stattest-ttest-exercises" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Here are some exercises for practicing conducting t-tests using <code>svyttest()</code>:</p>
+<ol style="list-style-type: decimal">
+<li>Using the RECS data, do more than 50% of U.S. household use AC (<code>ACUsed</code>)?</li>
+</ol>
+<div class="sourceCode" id="cb162"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb162-1"><a href="c07.html#cb162-1" aria-hidden="true" tabindex="-1"></a>ttest_solution1<span class="ot">&lt;-</span>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb162-2"><a href="c07.html#cb162-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">svyttest</span>(<span class="at">design=</span>.,</span>
+<span id="cb162-3"><a href="c07.html#cb162-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">formula=</span><span class="fu">I</span>((ACUsed<span class="sc">==</span><span class="cn">TRUE</span>)<span class="sc">-</span><span class="fl">0.5</span>)<span class="sc">~</span><span class="dv">0</span>,</span>
+<span id="cb162-4"><a href="c07.html#cb162-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb162-5"><a href="c07.html#cb162-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb162-6"><a href="c07.html#cb162-6" aria-hidden="true" tabindex="-1"></a>ttest_solution1</span></code></pre></div>
+<pre><code>## 
+##  Design-based one-sample t-test
+## 
+## data:  I((ACUsed == TRUE) - 0.5) ~ 0
+## t = 45, df = 94, p-value &lt;2e-16
+## alternative hypothesis: true mean is not equal to 0
+## 95 percent confidence interval:
+##  0.3533 0.3861
+## sample estimates:
+##   mean 
+## 0.3697</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Using the RECS data, does the average temperature that U.S. households set their thermostats to differ between the day and night in the winter (<code>WinterTempDay</code> and <code>WinterTempNight</code>)?</li>
+</ol>
+<div class="sourceCode" id="cb164"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb164-1"><a href="c07.html#cb164-1" aria-hidden="true" tabindex="-1"></a>ttest_solution2<span class="ot">&lt;-</span>recs_des <span class="sc">%&gt;%</span> </span>
+<span id="cb164-2"><a href="c07.html#cb164-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyttest</span>(<span class="at">design=</span>.,</span>
+<span id="cb164-3"><a href="c07.html#cb164-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">formula=</span><span class="fu">I</span>(WinterTempDay<span class="sc">-</span>WinterTempNight)<span class="sc">~</span><span class="dv">0</span>,</span>
+<span id="cb164-4"><a href="c07.html#cb164-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb164-5"><a href="c07.html#cb164-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb164-6"><a href="c07.html#cb164-6" aria-hidden="true" tabindex="-1"></a>ttest_solution2</span></code></pre></div>
+<pre><code>## 
+##  Design-based one-sample t-test
+## 
+## data:  I(WinterTempDay - WinterTempNight) ~ 0
+## t = 31, df = 94, p-value &lt;2e-16
+## alternative hypothesis: true mean is not equal to 0
+## 95 percent confidence interval:
+##  1.787 2.028
+## sample estimates:
+##  mean 
+## 1.907</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Using the ANES data, does the average age (<code>Age</code>) of those who voted for Biden in 2020 (<code>VotedPres2020_selection</code>) differ from those that voted for another candidate?</li>
+</ol>
+<div class="sourceCode" id="cb166"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb166-1"><a href="c07.html#cb166-1" aria-hidden="true" tabindex="-1"></a>ttest_solution3<span class="ot">&lt;-</span>anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb166-2"><a href="c07.html#cb166-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">svyttest</span>(<span class="at">design=</span>.,</span>
+<span id="cb166-3"><a href="c07.html#cb166-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">formula=</span>Age<span class="sc">~</span><span class="fu">I</span>(VotedPres2020_selection<span class="sc">==</span><span class="st">&quot;Biden&quot;</span>),</span>
+<span id="cb166-4"><a href="c07.html#cb166-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb166-5"><a href="c07.html#cb166-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-6"><a href="c07.html#cb166-6" aria-hidden="true" tabindex="-1"></a>ttest_solution3</span></code></pre></div>
+<pre><code>## 
+##  Design-based t-test
+## 
+## data:  Age ~ I(VotedPres2020_selection == &quot;Biden&quot;)
+## t = -6, df = 50, p-value = 2e-07
+## alternative hypothesis: true difference in mean is not equal to 0
+## 95 percent confidence interval:
+##  -4.824 -2.395
+## sample estimates:
+## difference in mean 
+##              -3.61</code></pre>
+</div>
+</div>
+<div id="stattest-chi" class="section level2 hasAnchor" number="7.3">
+<h2><span class="header-section-number">7.3</span> Chi-Square Tests<a href="c07.html#stattest-chi" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Chi-square tests (<span class="math inline">\(\chi^2\)</span>) allow us to examine multiple proportions using goodness-of-fit test, test of independence, or test of homogeneity. All three of these tests the same <span class="math inline">\(\chi^2\)</span> distributions but with slightly different underlying assumptions.</p>
+<p>First, <strong>goodness-of-fit</strong> tests are used when comparing <em>observed</em> data to <em>expected</em> data. For example, this could be used to determine if respondent demographics (the observed data) match known population information (the expected data). In this case, we can set up the hypothesis test as:</p>
+<ul>
+<li><span class="math inline">\(H_0: p_1 = \pi_1, ~ p_2 = \pi_2, ~ ..., ~ p_k = \pi_k\)</span> where <span class="math inline">\(p_i\)</span> is the observed proportion for category <span class="math inline">\(i\)</span>, <span class="math inline">\(\pi_i\)</span> is expected proportion for category <span class="math inline">\(i\)</span>, and <span class="math inline">\(k\)</span> is the number of categories</li>
+<li><span class="math inline">\(H_A:\)</span> at least one level of <span class="math inline">\(p_i\)</span> does not match <span class="math inline">\(\pi_i\)</span></li>
+</ul>
+<p>Second, <strong>tests of independence</strong> are used when comparing two types of <em>observed</em> data to see if there is a relationship. For example, this could be used to determine if the proportion of respondents who voted for each political party in the Presidential election matches the proportion of respondents who voted for each political party in a local election. In this case, we can set up the hypothesis test as:</p>
+<ul>
+<li><span class="math inline">\(H_0:\)</span> The two variables/factors are independent</li>
+<li><span class="math inline">\(H_A:\)</span> The two variables/factors are <em>not</em> independent</li>
+</ul>
+<p>Third, <strong>tests of homogeneity</strong> are used to compare two distributions to see if they match. For example, this could be used to determine if the highest education achieved is the same for both men and women. In this case, we can set up the hypothesis test as:</p>
+<ul>
+<li><span class="math inline">\(H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}\)</span> where <span class="math inline">\(p_{ia}\)</span> is the observed proportion of category <span class="math inline">\(i\)</span> for subgroup <span class="math inline">\(a\)</span>, <span class="math inline">\(p_{ib}\)</span> is the observed proportion of category <span class="math inline">\(i\)</span> for subgroup <span class="math inline">\(a\)</span>, and <span class="math inline">\(k\)</span> is the number of categories</li>
+<li><span class="math inline">\(H_A:\)</span> at least one category of <span class="math inline">\(p_{ia}\)</span> does not match <span class="math inline">\(p_{ib}\)</span></li>
+</ul>
+<p>The difference between using <span class="math inline">\(\chi^2\)</span> tests with non-survey data and with survey data is based on the underlying variance estimation difference. The functions in the {survey} package will account for these nuances provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter <a href="c05.html#c05">5</a>.</p>
+<div id="stattest-chi-syntax" class="section level3 hasAnchor" number="7.3.1">
+<h3><span class="header-section-number">7.3.1</span> Syntax<a href="c07.html#stattest-chi-syntax" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>As with t-tests, when we do not have survey data, we may be able to use the <code>chisq.test()</code> function. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:</p>
+<ul>
+<li><code>svygofchisq()</code>: For goodness of fit tests</li>
+<li><code>svychisq()</code>: For tests of independence and homogeneity</li>
+</ul>
+<p>The non-survey data function of <code>chisq.test()</code> requires either a single set of counts and given proportions (for goodness of fit tests), or two sets of counts for tests of independence and homogeneity. The functions that we use with survey data require respondent level data and formulas instead of counts. This ensures that the variances are correctly calculated.</p>
+<p>First, the function for the goodness of fit tests is <code>svygofchisq()</code>:</p>
+<pre><code>svygofchisq(formula,
+            p,
+            design, 
+            na.rm=TRUE,
+            ...)</code></pre>
+<p>In this function, you’ll notice that the first argument is the <code>formula</code>, the second argument is <code>p</code> which are the expected proportions, and the third argument is the <code>design</code>. Therefore, we again must use the dot <code>(.)</code> notation if we pipe in the survey design object (as described at the beginning of this chapter). For the goodness of fit tests, the formula will be a single variable <code>formula=~VARIABLE</code> as we are comparing the observed data from this variable to expected data. The expected probabilities are then entered in the <code>p</code> argument, and needs to be a vector of the same length as the number of categories in the variable. For example, if we want to know if the proportion of males and females match a distribution of 30/70, then the sex variable (with 2 categories) would be used in the formula <code>formula=~SEX</code> and the proportions would be included as <code>p=c(.3,.7)</code>. It is important to note that the variable entered into the formula should be formatted as either a factor or a character. The examples below provide more detail and tips on how to make sure the levels are matching up correctly.</p>
+<p>The function for tests of independence and homogeneity (<code>svychisq()</code>) is similar to the goodness of fit function in that the <code>formula</code> argument is first. However, instead of an argument for the expected proportions, the <code>svychisq()</code> function has an argument to select the statistic used for the test:</p>
+<pre><code>svychisq(formula,
+         design, 
+         statistic = c(&quot;F&quot;,  &quot;Chisq&quot;, &quot;Wald&quot;, &quot;adjWald&quot;, 
+                       &quot;lincom&quot;, &quot;saddlepoint&quot;),
+         na.rm=TRUE,
+         ...)</code></pre>
+<p>There are 6 statistics that are accepted in this formula. For tests of homogeneity (when comparing cross tabulations) the <code>F</code> or <code>Chisq</code> statistics should be used.<a href="#fn12" class="footnote-ref" id="fnref12"><sup>12</sup></a> The <code>F</code> statistic is the default and uses the Rao-Scott second-order correction. This correction is designed to assist with complicated sampling design (i.e., those other than a simple random sample) (CITE)<a href="#fn13" class="footnote-ref" id="fnref13"><sup>13</sup></a>. The <code>Chisq</code> statistic is an adjusted version of the Pearson <span class="math inline">\(\chi^2\)</span> statistic. The version of this statistic in the <code>svychisq()</code> function compares the design effect estimate from the provided survey data to what the <span class="math inline">\(\chi^2\)</span> distribution would have been if the data came from a simple random sampling.For tests of independence, the <code>Wald</code> and <code>adjWald</code> are recommended as they provide a better adjustment for variable comparisons. If the data has a small number of primary sampling units (PSUs) in comparison to the degrees of freedom, then the <code>adjWald</code> statistic should be used to account for this. The <code>lincom</code> and <code>saddlepoint</code> statistics are available for more complicated data structures.<!--I'm struggling to find a lot of information around these last two statistics, any thoughts/suggestions?--></p>
+<p>The formula argument will always be one sided unlike the <code>svyttest()</code> function. The two variables of interest should be included with a plus sign: <code>formula=~VAR1+VAR2</code>. As with the <code>svygofchisq()</code> function, the variables entered into the formula should be formatted as either a factor or a character.</p>
+<p>Additionally, as with the t-test function, both <code>svygofchisq()</code> and <code>svychisq()</code> have the <code>na.rm</code> argument. This argument defaults to <code>FALSE</code>, however, unlike the t-test function if any data is missing the <span class="math inline">\(\chi^2\)</span> tests will assume that <code>NA</code> is a category and will include it in the calculation. Throughout this chapter we will always set <code>na.rm=TRUE</code>, but before analyzing the survey data, make sure to review the notes provided in Chapter <a href="#c03"><strong>??</strong></a> to better understand how to handle missing data.</p>
+</div>
+<div id="stattest-chi-examples" class="section level3 hasAnchor" number="7.3.2">
+<h3><span class="header-section-number">7.3.2</span> Examples<a href="c07.html#stattest-chi-examples" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Let’s walk through a few examples using the ANES data. See Section <a href="c07.html#stattest-setup">7.1</a> above to set up the design object.</p>
+<div id="stattest-chi-ex1" class="section level4 unnumbered hasAnchor">
+<h4>Example 1: Goodness of Fit Test<a href="c07.html#stattest-chi-ex1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>ANES asked respondents their highest education level. Based on the data from the 2020 American Community Survey (ACS) 5-year estimates<a href="#fn14" class="footnote-ref" id="fnref14"><sup>14</sup></a>, the education distribution of those 18+ in the U.S. is as follows:
+- 11% had less than High School degree
+- 27% had a High School degree
+- 29% had some college or associate’s degree
+- 33% had a bachelor’s degree or higher</p>
+<p>If we want to see if the weighted distribution from the ANES 2020 data matches this distribution, we could set up the hypothesis as follows:</p>
+<ul>
+<li><span class="math inline">\(H_0: p_1 = 0.11, ~ p_2 = 0.27, ~ p_3 = 0.29, ~ p_4 = 0.33\)</span></li>
+<li><span class="math inline">\(H_A:\)</span> at least one of the education levels does not match between the ANES and the ACS</li>
+</ul>
+<p>To conduct this in R, let’s first take a look at the education variable (<code>Education</code>) we have on the ANES data. Using the <code>survey_mean()</code> function discussed in Chapter <a href="c06.html#c06">6</a>, we can see the different levels of education we have and estimated proportion.</p>
+<div class="sourceCode" id="cb170"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb170-1"><a href="c07.html#cb170-1" aria-hidden="true" tabindex="-1"></a>anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb170-2"><a href="c07.html#cb170-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Education) <span class="sc">%&gt;%</span></span>
+<span id="cb170-3"><a href="c07.html#cb170-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Education)) <span class="sc">%&gt;%</span></span>
+<span id="cb170-4"><a href="c07.html#cb170-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">p=</span><span class="fu">survey_mean</span>())</span></code></pre></div>
+<pre><code>## # A tibble: 5 × 3
+##   Education         p    p_se
+##   &lt;fct&gt;         &lt;dbl&gt;   &lt;dbl&gt;
+## 1 Less than HS 0.0805 0.00568
+## 2 High school  0.277  0.0102 
+## 3 Post HS      0.290  0.00713
+## 4 Bachelor&#39;s   0.226  0.00633
+## 5 Graduate     0.126  0.00499</code></pre>
+<p>Based on this output, we can see that we have different levels than the ACS data provides. Specifically, the education data from ANES has two levels for Bachelor’s Degree or Higher (Bachelor’s and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. We case use the {forcats} package and the <code>fct_collapse()</code> function to create a new variable to use. Then we will use the <code>svygofchisq()</code> function to compare the ANES data to the ACS data:</p>
+<div class="sourceCode" id="cb172"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb172-1"><a href="c07.html#cb172-1" aria-hidden="true" tabindex="-1"></a>anes_des_educ<span class="ot">&lt;-</span>anes_des <span class="sc">%&gt;%</span> </span>
+<span id="cb172-2"><a href="c07.html#cb172-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Education2=</span></span>
+<span id="cb172-3"><a href="c07.html#cb172-3" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fct_collapse</span>(Education,</span>
+<span id="cb172-4"><a href="c07.html#cb172-4" aria-hidden="true" tabindex="-1"></a>                        <span class="st">&quot;Bachelor or Higher&quot;</span><span class="ot">=</span><span class="fu">c</span>(<span class="st">&quot;Bachelor&#39;s&quot;</span>,</span>
+<span id="cb172-5"><a href="c07.html#cb172-5" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;Graduate&quot;</span>)))</span>
+<span id="cb172-6"><a href="c07.html#cb172-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb172-7"><a href="c07.html#cb172-7" aria-hidden="true" tabindex="-1"></a>chi_ex1<span class="ot">&lt;-</span>anes_des_educ <span class="sc">%&gt;%</span> </span>
+<span id="cb172-8"><a href="c07.html#cb172-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svygofchisq</span>(<span class="at">formula=</span><span class="sc">~</span>Education2,</span>
+<span id="cb172-9"><a href="c07.html#cb172-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">p=</span><span class="fu">c</span>(<span class="fl">0.11</span>,<span class="fl">0.27</span>,<span class="fl">0.29</span>,<span class="fl">0.33</span>),</span>
+<span id="cb172-10"><a href="c07.html#cb172-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">design=</span>.,</span>
+<span id="cb172-11"><a href="c07.html#cb172-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb172-12"><a href="c07.html#cb172-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb172-13"><a href="c07.html#cb172-13" aria-hidden="true" tabindex="-1"></a>chi_ex1</span></code></pre></div>
+<pre><code>## 
+##  Design-based chi-squared test for given probabilities
+## 
+## data:  ~Education2
+## X-squared = 2177472, scale = 1.1e+05, df = 2.3e+00, p-value =
+## 9e-05</code></pre>
+<p>The output from the <code>svygofchisq()</code> indicates that at least one proportion from ANES does not match the ACS data ( <span class="math inline">\(\chi^2=\)</span> 2.1775^{6}; <span class="math inline">\(p-value=\)</span> 8.74^{-5} ). To get a better idea of the differences, we can use the <code>expected</code> output along with <code>survey_mean()</code> to create a comparison table:
+<!--This doesn't render correctly in HTML but does ok in PDF.--></p>
+<div class="sourceCode" id="cb174"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb174-1"><a href="c07.html#cb174-1" aria-hidden="true" tabindex="-1"></a>ex1_expected<span class="ot">&lt;-</span><span class="fu">tibble</span>(<span class="at">ExpectedCount=</span>chi_ex1<span class="sc">$</span>expected) <span class="sc">%&gt;%</span></span>
+<span id="cb174-2"><a href="c07.html#cb174-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Education=</span><span class="fu">names</span>(chi_ex1<span class="sc">$</span>expected),</span>
+<span id="cb174-3"><a href="c07.html#cb174-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">Education=</span><span class="fu">str_sub</span>(Education,<span class="dv">11</span>,<span class="fu">nchar</span>(Education)),</span>
+<span id="cb174-4"><a href="c07.html#cb174-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">ExpectedProb=</span>ExpectedCount<span class="sc">/</span><span class="fu">sum</span>(ExpectedCount)) <span class="sc">%&gt;%</span> </span>
+<span id="cb174-5"><a href="c07.html#cb174-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Education,<span class="at">Expected=</span>ExpectedProb)</span>
+<span id="cb174-6"><a href="c07.html#cb174-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb174-7"><a href="c07.html#cb174-7" aria-hidden="true" tabindex="-1"></a>ex1_observed<span class="ot">&lt;-</span>anes_des_educ <span class="sc">%&gt;%</span> </span>
+<span id="cb174-8"><a href="c07.html#cb174-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Education2)) <span class="sc">%&gt;%</span> </span>
+<span id="cb174-9"><a href="c07.html#cb174-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Education2) <span class="sc">%&gt;%</span> </span>
+<span id="cb174-10"><a href="c07.html#cb174-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed=</span><span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb174-11"><a href="c07.html#cb174-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Education=</span>Education2)</span>
+<span id="cb174-12"><a href="c07.html#cb174-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb174-13"><a href="c07.html#cb174-13" aria-hidden="true" tabindex="-1"></a>ex1_table<span class="ot">&lt;-</span>ex1_expected <span class="sc">%&gt;%</span> </span>
+<span id="cb174-14"><a href="c07.html#cb174-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(ex1_observed,<span class="at">by=</span><span class="st">&quot;Education&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb174-15"><a href="c07.html#cb174-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Education=</span><span class="fu">factor</span>(Education,</span>
+<span id="cb174-16"><a href="c07.html#cb174-16" aria-hidden="true" tabindex="-1"></a>                          <span class="at">levels=</span><span class="fu">c</span>(<span class="st">&quot;Less than HS&quot;</span>,<span class="st">&quot;High school&quot;</span>,</span>
+<span id="cb174-17"><a href="c07.html#cb174-17" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">&quot;Post HS&quot;</span>,<span class="st">&quot;Bachelor or Higher&quot;</span>)))</span>
+<span id="cb174-18"><a href="c07.html#cb174-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb174-19"><a href="c07.html#cb174-19" aria-hidden="true" tabindex="-1"></a>ex1_table</span></code></pre></div>
+<pre><code>## # A tibble: 4 × 5
+##   Education          Expected Observed Observed_low Observed_upp
+##   &lt;fct&gt;                 &lt;dbl&gt;    &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 Less than HS           0.11   0.0805       0.0691       0.0919
+## 2 High school            0.27   0.277        0.257        0.298 
+## 3 Post HS                0.29   0.290        0.276        0.305 
+## 4 Bachelor or Higher     0.33   0.352        0.337        0.367</code></pre>
+<p>This output includes our expected proportions from the ACS that we provided the <code>svygofchisq()</code> function along with output of the observed proportions and their confidence intervals. From this table we can see that the “High school” and “Post HS” categories have proportions that are nearly identical, but that the other two categories are slightly different. Looking at the confidence intervals we can see that the ANES data skews to include fewer people in the “Less than HS” category and more people in the “Bachelor or Higher” category. This may be easier to see in graphical form:
+<!--Will want to remove the legend title...need to look this up.  Is there anyway to reduce the width of the error bars, the ends are really wide?--></p>
+<div class="sourceCode" id="cb176"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb176-1"><a href="c07.html#cb176-1" aria-hidden="true" tabindex="-1"></a>ex1_table <span class="sc">%&gt;%</span> </span>
+<span id="cb176-2"><a href="c07.html#cb176-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols=</span><span class="fu">c</span>(<span class="st">&quot;Expected&quot;</span>,<span class="st">&quot;Observed&quot;</span>),</span>
+<span id="cb176-3"><a href="c07.html#cb176-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to=</span><span class="st">&quot;Names&quot;</span>,</span>
+<span id="cb176-4"><a href="c07.html#cb176-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to=</span><span class="st">&quot;Proportion&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb176-5"><a href="c07.html#cb176-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Observed_low=</span><span class="fu">case_when</span>(Names<span class="sc">==</span><span class="st">&quot;Observed&quot;</span><span class="sc">~</span>Observed_low),</span>
+<span id="cb176-6"><a href="c07.html#cb176-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">Observed_upp=</span><span class="fu">case_when</span>(Names<span class="sc">==</span><span class="st">&quot;Observed&quot;</span><span class="sc">~</span>Observed_upp)) <span class="sc">%&gt;%</span></span>
+<span id="cb176-7"><a href="c07.html#cb176-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>Education,<span class="at">y=</span>Proportion,<span class="at">color=</span>Names)) <span class="sc">+</span> </span>
+<span id="cb176-8"><a href="c07.html#cb176-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span> </span>
+<span id="cb176-9"><a href="c07.html#cb176-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin=</span>Observed_low,<span class="at">ymax=</span>Observed_upp)) <span class="sc">+</span> </span>
+<span id="cb176-10"><a href="c07.html#cb176-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>()</span></code></pre></div>
+<p><img src="bookdown_files/figure-html/stattest-chi-ex1-graph-1.png" width="672" /></p>
+</div>
+<div id="stattest-chi-ex2" class="section level4 unnumbered hasAnchor">
+<h4>Example 2: Test of Independence<a href="c07.html#stattest-chi-ex2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>ANES asked respondents two questions about trust:
+- How often can you trust the federal government to do what is right?
+- How often can you trust other people?</p>
+<p>If we want to see if the distributions of these two questions are similar or not we can conduct a test of independence. Here is how the hypothesis could be set up:</p>
+<ul>
+<li><span class="math inline">\(H_0:\)</span> People’s trust in the federal government and their trust in other people are independent (i.e, <em>not</em> related)</li>
+<li><span class="math inline">\(H_A:\)</span> People’s trust in the federal government and their trust in other people are <em>not</em> independent (i.e, they are related)</li>
+</ul>
+<p>To conduct this in R, we will use the <code>svychisq()</code> function to compare the two variables:</p>
+<div class="sourceCode" id="cb177"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb177-1"><a href="c07.html#cb177-1" aria-hidden="true" tabindex="-1"></a>chi_ex2<span class="ot">&lt;-</span>anes_des <span class="sc">%&gt;%</span> </span>
+<span id="cb177-2"><a href="c07.html#cb177-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svychisq</span>(<span class="at">formula=</span><span class="sc">~</span>TrustGovernment<span class="sc">+</span>TrustPeople,</span>
+<span id="cb177-3"><a href="c07.html#cb177-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">design=</span>.,</span>
+<span id="cb177-4"><a href="c07.html#cb177-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">statistic=</span><span class="st">&quot;Wald&quot;</span>,</span>
+<span id="cb177-5"><a href="c07.html#cb177-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb177-6"><a href="c07.html#cb177-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-7"><a href="c07.html#cb177-7" aria-hidden="true" tabindex="-1"></a>chi_ex2</span></code></pre></div>
+<pre><code>## 
+##  Design-based Wald test of association
+## 
+## data:  NextMethod()
+## F = 21, ndf = 16, ddf = 51, p-value &lt;2e-16</code></pre>
+<p>The output from <code>svychisq()</code> indicates that at the distribution of people’s trust in the federal government and their trust in other people are <em>not</em> independent, meaning that they are related. Let’s out put the distributions in a table to see the relationship. The <code>observed</code> output from the test provides a cross tabulation of the counts for each category:</p>
+<div class="sourceCode" id="cb179"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb179-1"><a href="c07.html#cb179-1" aria-hidden="true" tabindex="-1"></a>chi_ex2<span class="sc">$</span>observed</span></code></pre></div>
+<pre><code>##                      TrustPeople
+## TrustGovernment         Always Most of the time About half the time
+##   Always                16.470           25.009              31.848
+##   Most of the time      11.020          539.377             196.258
+##   About half the time   11.772          934.858             861.971
+##   Some of the time      17.007         1353.779             839.863
+##   Never                  3.174          236.785             174.272
+##                      TrustPeople
+## TrustGovernment       Some of the time    Never
+##   Always                        36.854    5.523
+##   Most of the time             206.556   27.184
+##   About half the time          428.871   65.024
+##   Some of the time             932.628   89.596
+##   Never                        217.994  189.307</code></pre>
+<p>However, as researchers, we often want to know about the proportions and not just the respondent counts from the survey. There are a couple of different ways that you can do this. The first is using the counts from <code>chi_ex2$observed</code> and calculating the proportion from that. We can then pivot the table to create a cross tabulation similar to the counts table above. Adding in <code>group_by()</code> to the code, means that we are obtaining the proportions within each level of that variable. In this case, we are looking at the distribution of <code>TrustGovernment</code> for each level of <code>TrustPeople</code>.</p>
+<div class="sourceCode" id="cb181"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb181-1"><a href="c07.html#cb181-1" aria-hidden="true" tabindex="-1"></a>chi_ex2<span class="sc">$</span>observed <span class="sc">%&gt;%</span> <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb181-2"><a href="c07.html#cb181-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(TrustPeople) <span class="sc">%&gt;%</span> </span>
+<span id="cb181-3"><a href="c07.html#cb181-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop=</span><span class="fu">round</span>(n<span class="sc">/</span><span class="fu">sum</span>(n),<span class="dv">3</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb181-4"><a href="c07.html#cb181-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>n) <span class="sc">%&gt;%</span> </span>
+<span id="cb181-5"><a href="c07.html#cb181-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from=</span>TrustPeople,<span class="at">values_from=</span>prop) <span class="sc">%&gt;%</span> </span>
+<span id="cb181-6"><a href="c07.html#cb181-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb181-7"><a href="c07.html#cb181-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb181-8"><a href="c07.html#cb181-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb181-9"><a href="c07.html#cb181-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;Trust in People&quot;</span>,</span>
+<span id="cb181-10"><a href="c07.html#cb181-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">everything</span>()</span>
+<span id="cb181-11"><a href="c07.html#cb181-11" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<div id="edxahdlkim" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#edxahdlkim table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
+#edxahdlkim thead, #edxahdlkim tbody, #edxahdlkim tfoot, #edxahdlkim tr, #edxahdlkim td, #edxahdlkim th {
+  border-style: none;
+}
+
+#edxahdlkim p {
+  margin: 0;
+  padding: 0;
+}
+
+#edxahdlkim .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#edxahdlkim .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#edxahdlkim .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#edxahdlkim .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#edxahdlkim .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#edxahdlkim .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#edxahdlkim .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#edxahdlkim .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#edxahdlkim .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#edxahdlkim .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#edxahdlkim .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#edxahdlkim .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#edxahdlkim .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#edxahdlkim .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#edxahdlkim .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#edxahdlkim .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#edxahdlkim .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#edxahdlkim .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#edxahdlkim .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#edxahdlkim .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#edxahdlkim .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#edxahdlkim .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#edxahdlkim .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#edxahdlkim .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#edxahdlkim .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#edxahdlkim .gt_left {
+  text-align: left;
+}
+
+#edxahdlkim .gt_center {
+  text-align: center;
+}
+
+#edxahdlkim .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#edxahdlkim .gt_font_normal {
+  font-weight: normal;
+}
+
+#edxahdlkim .gt_font_bold {
+  font-weight: bold;
+}
+
+#edxahdlkim .gt_font_italic {
+  font-style: italic;
+}
+
+#edxahdlkim .gt_super {
+  font-size: 65%;
+}
+
+#edxahdlkim .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#edxahdlkim .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#edxahdlkim .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#edxahdlkim .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#edxahdlkim .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#edxahdlkim .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#edxahdlkim .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings gt_spanner_row">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" scope="col" id="Trust in Government">Trust in Government</th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="5" scope="colgroup" id="Trust in People">
+        <span class="gt_column_spanner">Trust in People</span>
+      </th>
+    </tr>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Always">Always</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Most of the time">Most of the time</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="About half the time">About half the time</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Some of the time">Some of the time</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Never">Never</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><th id="stub_1_1" scope="row" class="gt_row gt_left gt_stub">Always</th>
+<td headers="stub_1_1 Always" class="gt_row gt_right">0.277</td>
+<td headers="stub_1_1 Most of the time" class="gt_row gt_right">0.008</td>
+<td headers="stub_1_1 About half the time" class="gt_row gt_right">0.015</td>
+<td headers="stub_1_1 Some of the time" class="gt_row gt_right">0.020</td>
+<td headers="stub_1_1 Never" class="gt_row gt_right">0.015</td></tr>
+    <tr><th id="stub_1_2" scope="row" class="gt_row gt_left gt_stub">Most of the time</th>
+<td headers="stub_1_2 Always" class="gt_row gt_right">0.185</td>
+<td headers="stub_1_2 Most of the time" class="gt_row gt_right">0.175</td>
+<td headers="stub_1_2 About half the time" class="gt_row gt_right">0.093</td>
+<td headers="stub_1_2 Some of the time" class="gt_row gt_right">0.113</td>
+<td headers="stub_1_2 Never" class="gt_row gt_right">0.072</td></tr>
+    <tr><th id="stub_1_3" scope="row" class="gt_row gt_left gt_stub">About half the time</th>
+<td headers="stub_1_3 Always" class="gt_row gt_right">0.198</td>
+<td headers="stub_1_3 Most of the time" class="gt_row gt_right">0.303</td>
+<td headers="stub_1_3 About half the time" class="gt_row gt_right">0.410</td>
+<td headers="stub_1_3 Some of the time" class="gt_row gt_right">0.235</td>
+<td headers="stub_1_3 Never" class="gt_row gt_right">0.173</td></tr>
+    <tr><th id="stub_1_4" scope="row" class="gt_row gt_left gt_stub">Some of the time</th>
+<td headers="stub_1_4 Always" class="gt_row gt_right">0.286</td>
+<td headers="stub_1_4 Most of the time" class="gt_row gt_right">0.438</td>
+<td headers="stub_1_4 About half the time" class="gt_row gt_right">0.399</td>
+<td headers="stub_1_4 Some of the time" class="gt_row gt_right">0.512</td>
+<td headers="stub_1_4 Never" class="gt_row gt_right">0.238</td></tr>
+    <tr><th id="stub_1_5" scope="row" class="gt_row gt_left gt_stub">Never</th>
+<td headers="stub_1_5 Always" class="gt_row gt_right">0.053</td>
+<td headers="stub_1_5 Most of the time" class="gt_row gt_right">0.077</td>
+<td headers="stub_1_5 About half the time" class="gt_row gt_right">0.083</td>
+<td headers="stub_1_5 Some of the time" class="gt_row gt_right">0.120</td>
+<td headers="stub_1_5 Never" class="gt_row gt_right">0.503</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+<p>The second option is to use <code>group_by()</code> and <code>survey_mean()</code> functions to calculate the proportions from the ANES design object. A reminder, that with more than one variable listed in the <code>group_by()</code> statement, the proportions are within the first variable listed. As above, we are looking at the distribution of <code>TrustGovernment</code> for each level of <code>TrustPeople</code>.</p>
+<div class="sourceCode" id="cb182"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb182-1"><a href="c07.html#cb182-1" aria-hidden="true" tabindex="-1"></a>chi_ex2_obs<span class="ot">&lt;-</span>anes_des <span class="sc">%&gt;%</span> </span>
+<span id="cb182-2"><a href="c07.html#cb182-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(TrustPeople),<span class="sc">!</span><span class="fu">is.na</span>(TrustGovernment)) <span class="sc">%&gt;%</span> </span>
+<span id="cb182-3"><a href="c07.html#cb182-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(TrustPeople,TrustGovernment) <span class="sc">%&gt;%</span> </span>
+<span id="cb182-4"><a href="c07.html#cb182-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed=</span><span class="fu">round</span>(<span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>),<span class="dv">3</span>)) </span>
+<span id="cb182-5"><a href="c07.html#cb182-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb182-6"><a href="c07.html#cb182-6" aria-hidden="true" tabindex="-1"></a>chi_ex2_obs <span class="sc">%&gt;%</span> </span>
+<span id="cb182-7"><a href="c07.html#cb182-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop=</span><span class="fu">paste0</span>(Observed,<span class="st">&quot; (&quot;</span>,Observed_low,<span class="st">&quot;, &quot;</span>,</span>
+<span id="cb182-8"><a href="c07.html#cb182-8" aria-hidden="true" tabindex="-1"></a>                     Observed_upp,<span class="st">&quot;)&quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb182-9"><a href="c07.html#cb182-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(TrustGovernment,TrustPeople,prop) <span class="sc">%&gt;%</span> </span>
+<span id="cb182-10"><a href="c07.html#cb182-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from=</span>TrustPeople,<span class="at">values_from=</span>prop) <span class="sc">%&gt;%</span> </span>
+<span id="cb182-11"><a href="c07.html#cb182-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb182-12"><a href="c07.html#cb182-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb182-13"><a href="c07.html#cb182-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb182-14"><a href="c07.html#cb182-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;Trust in People&quot;</span>,</span>
+<span id="cb182-15"><a href="c07.html#cb182-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">everything</span>()</span>
+<span id="cb182-16"><a href="c07.html#cb182-16" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<div id="jslvphoojc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jslvphoojc table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#jslvphoojc thead, #jslvphoojc tbody, #jslvphoojc tfoot, #jslvphoojc tr, #jslvphoojc td, #jslvphoojc th {
+  border-style: none;
+}
+
+#jslvphoojc p {
+  margin: 0;
+  padding: 0;
+}
+
+#jslvphoojc .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#jslvphoojc .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#jslvphoojc .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#jslvphoojc .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#jslvphoojc .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#jslvphoojc .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#jslvphoojc .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#jslvphoojc .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#jslvphoojc .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#jslvphoojc .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#jslvphoojc .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#jslvphoojc .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#jslvphoojc .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#jslvphoojc .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#jslvphoojc .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jslvphoojc .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#jslvphoojc .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#jslvphoojc .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#jslvphoojc .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jslvphoojc .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#jslvphoojc .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jslvphoojc .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#jslvphoojc .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jslvphoojc .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jslvphoojc .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jslvphoojc .gt_left {
+  text-align: left;
+}
+
+#jslvphoojc .gt_center {
+  text-align: center;
+}
+
+#jslvphoojc .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#jslvphoojc .gt_font_normal {
+  font-weight: normal;
+}
+
+#jslvphoojc .gt_font_bold {
+  font-weight: bold;
+}
+
+#jslvphoojc .gt_font_italic {
+  font-style: italic;
+}
+
+#jslvphoojc .gt_super {
+  font-size: 65%;
+}
+
+#jslvphoojc .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#jslvphoojc .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#jslvphoojc .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#jslvphoojc .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#jslvphoojc .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#jslvphoojc .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#jslvphoojc .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings gt_spanner_row">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" scope="col" id="Trust in Government">Trust in Government</th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="5" scope="colgroup" id="Trust in People">
+        <span class="gt_column_spanner">Trust in People</span>
+      </th>
+    </tr>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Always">Always</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Most of the time">Most of the time</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="About half the time">About half the time</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Some of the time">Some of the time</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Never">Never</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><th id="stub_1_1" scope="row" class="gt_row gt_center gt_stub">Always</th>
+<td headers="stub_1_1 Always" class="gt_row gt_right">0.277 (0.11, 0.444)</td>
+<td headers="stub_1_1 Most of the time" class="gt_row gt_right">0.008 (0.004, 0.012)</td>
+<td headers="stub_1_1 About half the time" class="gt_row gt_right">0.015 (0.006, 0.024)</td>
+<td headers="stub_1_1 Some of the time" class="gt_row gt_right">0.02 (0.008, 0.033)</td>
+<td headers="stub_1_1 Never" class="gt_row gt_right">0.015 (0, 0.029)</td></tr>
+    <tr><th id="stub_1_2" scope="row" class="gt_row gt_center gt_stub">Most of the time</th>
+<td headers="stub_1_2 Always" class="gt_row gt_right">0.185 (-0.009, 0.38)</td>
+<td headers="stub_1_2 Most of the time" class="gt_row gt_right">0.175 (0.157, 0.192)</td>
+<td headers="stub_1_2 About half the time" class="gt_row gt_right">0.093 (0.078, 0.109)</td>
+<td headers="stub_1_2 Some of the time" class="gt_row gt_right">0.113 (0.085, 0.141)</td>
+<td headers="stub_1_2 Never" class="gt_row gt_right">0.072 (0.021, 0.123)</td></tr>
+    <tr><th id="stub_1_3" scope="row" class="gt_row gt_center gt_stub">About half the time</th>
+<td headers="stub_1_3 Always" class="gt_row gt_right">0.198 (0.046, 0.35)</td>
+<td headers="stub_1_3 Most of the time" class="gt_row gt_right">0.303 (0.281, 0.324)</td>
+<td headers="stub_1_3 About half the time" class="gt_row gt_right">0.41 (0.378, 0.441)</td>
+<td headers="stub_1_3 Some of the time" class="gt_row gt_right">0.235 (0.2, 0.271)</td>
+<td headers="stub_1_3 Never" class="gt_row gt_right">0.173 (0.099, 0.246)</td></tr>
+    <tr><th id="stub_1_4" scope="row" class="gt_row gt_center gt_stub">Some of the time</th>
+<td headers="stub_1_4 Always" class="gt_row gt_right">0.286 (0.069, 0.503)</td>
+<td headers="stub_1_4 Most of the time" class="gt_row gt_right">0.438 (0.415, 0.462)</td>
+<td headers="stub_1_4 About half the time" class="gt_row gt_right">0.399 (0.365, 0.433)</td>
+<td headers="stub_1_4 Some of the time" class="gt_row gt_right">0.512 (0.481, 0.543)</td>
+<td headers="stub_1_4 Never" class="gt_row gt_right">0.238 (0.178, 0.298)</td></tr>
+    <tr><th id="stub_1_5" scope="row" class="gt_row gt_center gt_stub">Never</th>
+<td headers="stub_1_5 Always" class="gt_row gt_right">0.053 (-0.01, 0.117)</td>
+<td headers="stub_1_5 Most of the time" class="gt_row gt_right">0.077 (0.064, 0.089)</td>
+<td headers="stub_1_5 About half the time" class="gt_row gt_right">0.083 (0.063, 0.103)</td>
+<td headers="stub_1_5 Some of the time" class="gt_row gt_right">0.12 (0.097, 0.142)</td>
+<td headers="stub_1_5 Never" class="gt_row gt_right">0.503 (0.422, 0.583)</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+<p>Both methods produce the same output as the the <code>svychisq()</code> function does account for the survey design. However, calculating the proportions directly from the design object means that you can also obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those that never trust people 50.3% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people.</p>
+<p>We may find it easier to look at these proportions graphically. We can use <code>gglot()</code> and facets to provide an overview:
+<!--Need to clean this up to make it readable. Need to also add in a higher facet title to indicate that is trusting people-->
+<!--Perhaps a mosaic plot instead?--></p>
+<div class="sourceCode" id="cb183"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb183-1"><a href="c07.html#cb183-1" aria-hidden="true" tabindex="-1"></a>chi_ex2_obs <span class="sc">%&gt;%</span> </span>
+<span id="cb183-2"><a href="c07.html#cb183-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>TrustGovernment,<span class="at">y=</span>Observed,<span class="at">color=</span>TrustGovernment)) <span class="sc">+</span> </span>
+<span id="cb183-3"><a href="c07.html#cb183-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span>TrustPeople,<span class="at">ncol=</span><span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb183-4"><a href="c07.html#cb183-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb183-5"><a href="c07.html#cb183-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin=</span>Observed_low,<span class="at">ymax=</span>Observed_upp)) <span class="sc">+</span> </span>
+<span id="cb183-6"><a href="c07.html#cb183-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">&quot;Proportion&quot;</span>) <span class="sc">+</span></span>
+<span id="cb183-7"><a href="c07.html#cb183-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>()</span></code></pre></div>
+<p><img src="bookdown_files/figure-html/stattest-chi-ex2-graph-1.png" width="672" /></p>
+</div>
+<div id="stattest-chi-ex3" class="section level4 unnumbered hasAnchor">
+<h4>Example 3: Test of Homogeneity<a href="c07.html#stattest-chi-ex3" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Each election cycle, researchers and politicians often look at specific demographics to understand how each group is leaning or voting towards candidates. The ANES data is post-election, but we can still look to see if there are differences in how specific demographic groups voted.</p>
+<p>If we want to see if there is a difference in how each age group voted for the 2020 candidates, this would be a test of homogeneity and the hypothesis could be set up as:</p>
+<!--Need to figure out how to make this readable.-->
+<ul>
+<li><span class="math inline">\(H_0: p_{1_{Biden}} = p_{1_{Trump}} = p_{1_{Other}},\\  p_{2_{Biden}} = p_{2_{Trump}} = p_{2_{Other}},\\  p_{3_{Biden}} = p_{3_{Trump}} = p_{3_{Other}},\\  p_{4_{Biden}} = p_{4_{Trump}} = p_{4_{Other}},\\  p_{5_{Biden}} = p_{5_{Trump}} = p_{5_{Other}},\\  p_{6_{Biden}} = p_{6_{Trump}} = p_{6_{Other}}\)</span>
+where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proportion of each age group (<span class="math inline">\(i\)</span>) that voted for Biden, <span class="math inline">\(p_{i_{Trump}}\)</span> is the observed proportion of each age group (<span class="math inline">\(i\)</span>) that voted for Trump, and <span class="math inline">\(p_{i_{Other}}\)</span> is the observed proportion of each age group (<span class="math inline">\(i\)</span>) that voted for another candidate</li>
+<li><span class="math inline">\(H_A:\)</span> at least one category of <span class="math inline">\(p_{i_{Biden}}\)</span> does not match <span class="math inline">\(p_{i_{Trump}}\)</span> or <span class="math inline">\(p_{i_{Other}}\)</span></li>
+</ul>
+<p>To conduct this in R, we will use the <code>svychisq()</code> function to compare the two variables:</p>
+<div class="sourceCode" id="cb184"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb184-1"><a href="c07.html#cb184-1" aria-hidden="true" tabindex="-1"></a>chi_ex3<span class="ot">&lt;-</span>anes_des <span class="sc">%&gt;%</span> </span>
+<span id="cb184-2"><a href="c07.html#cb184-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(VotedPres2020<span class="sc">==</span><span class="st">&quot;Yes&quot;</span> <span class="sc">&amp;</span> </span>
+<span id="cb184-3"><a href="c07.html#cb184-3" aria-hidden="true" tabindex="-1"></a>           <span class="sc">!</span><span class="fu">is.na</span>(VotedPres2020_selection) <span class="sc">&amp;</span> </span>
+<span id="cb184-4"><a href="c07.html#cb184-4" aria-hidden="true" tabindex="-1"></a>           <span class="sc">!</span><span class="fu">is.na</span>(AgeGroup)) <span class="sc">%&gt;%</span> </span>
+<span id="cb184-5"><a href="c07.html#cb184-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svychisq</span>(<span class="at">formula=</span><span class="sc">~</span>AgeGroup<span class="sc">+</span>VotedPres2020_selection,</span>
+<span id="cb184-6"><a href="c07.html#cb184-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">design=</span>.,</span>
+<span id="cb184-7"><a href="c07.html#cb184-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">statistic=</span><span class="st">&quot;Chisq&quot;</span>,</span>
+<span id="cb184-8"><a href="c07.html#cb184-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb184-9"><a href="c07.html#cb184-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb184-10"><a href="c07.html#cb184-10" aria-hidden="true" tabindex="-1"></a>chi_ex3</span></code></pre></div>
+<pre><code>## 
+##  Pearson&#39;s X^2: Rao &amp; Scott adjustment
+## 
+## data:  NextMethod()
+## X-squared = 169, df = 10, p-value &lt;2e-16</code></pre>
+<p>The output from <code>svychisq()</code> indicates that there is a difference in how each age group voted in the 2020 election. To get a better idea of the different distributions, let’s out put proportions to see the relationship. As we learned in Example 2 above, we can use <code>chi_ex3$observed</code> or if we want to get the variance information (which is crucial with survey data), we can use <code>survey_mean()</code>. Remember, when we have two variables in <code>group_by()</code>, we are obtaining the proportions within each level of the variable listed. In this case, we are looking at the distribution of <code>AgeGroup</code> for each level of <code>VotedPres2020_selection</code>.</p>
+<div class="sourceCode" id="cb186"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb186-1"><a href="c07.html#cb186-1" aria-hidden="true" tabindex="-1"></a>chi_ex3_obs<span class="ot">&lt;-</span>anes_des <span class="sc">%&gt;%</span> </span>
+<span id="cb186-2"><a href="c07.html#cb186-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(VotedPres2020<span class="sc">==</span><span class="st">&quot;Yes&quot;</span> <span class="sc">&amp;</span> </span>
+<span id="cb186-3"><a href="c07.html#cb186-3" aria-hidden="true" tabindex="-1"></a>           <span class="sc">!</span><span class="fu">is.na</span>(VotedPres2020_selection) <span class="sc">&amp;</span> </span>
+<span id="cb186-4"><a href="c07.html#cb186-4" aria-hidden="true" tabindex="-1"></a>           <span class="sc">!</span><span class="fu">is.na</span>(AgeGroup)) <span class="sc">%&gt;%</span> </span>
+<span id="cb186-5"><a href="c07.html#cb186-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection,AgeGroup) <span class="sc">%&gt;%</span> </span>
+<span id="cb186-6"><a href="c07.html#cb186-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed=</span><span class="fu">round</span>(<span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>),<span class="dv">3</span>)) </span>
+<span id="cb186-7"><a href="c07.html#cb186-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb186-8"><a href="c07.html#cb186-8" aria-hidden="true" tabindex="-1"></a>chi_ex3_obs <span class="sc">%&gt;%</span> </span>
+<span id="cb186-9"><a href="c07.html#cb186-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop=</span><span class="fu">paste0</span>(Observed,<span class="st">&quot; (&quot;</span>,Observed_low,<span class="st">&quot;, &quot;</span>,</span>
+<span id="cb186-10"><a href="c07.html#cb186-10" aria-hidden="true" tabindex="-1"></a>                     Observed_upp,<span class="st">&quot;)&quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb186-11"><a href="c07.html#cb186-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(AgeGroup,VotedPres2020_selection,prop) <span class="sc">%&gt;%</span> </span>
+<span id="cb186-12"><a href="c07.html#cb186-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from=</span>VotedPres2020_selection,<span class="at">values_from=</span>prop) <span class="sc">%&gt;%</span> </span>
+<span id="cb186-13"><a href="c07.html#cb186-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;AgeGroup&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb186-14"><a href="c07.html#cb186-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Age Group&quot;</span>)</span></code></pre></div>
+<div id="uphlolqabb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#uphlolqabb table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#uphlolqabb thead, #uphlolqabb tbody, #uphlolqabb tfoot, #uphlolqabb tr, #uphlolqabb td, #uphlolqabb th {
+  border-style: none;
+}
+
+#uphlolqabb p {
+  margin: 0;
+  padding: 0;
+}
+
+#uphlolqabb .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#uphlolqabb .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#uphlolqabb .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#uphlolqabb .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#uphlolqabb .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#uphlolqabb .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#uphlolqabb .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#uphlolqabb .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#uphlolqabb .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#uphlolqabb .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#uphlolqabb .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#uphlolqabb .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#uphlolqabb .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#uphlolqabb .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#uphlolqabb .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#uphlolqabb .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#uphlolqabb .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#uphlolqabb .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#uphlolqabb .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#uphlolqabb .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#uphlolqabb .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#uphlolqabb .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#uphlolqabb .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#uphlolqabb .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#uphlolqabb .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#uphlolqabb .gt_left {
+  text-align: left;
+}
+
+#uphlolqabb .gt_center {
+  text-align: center;
+}
+
+#uphlolqabb .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#uphlolqabb .gt_font_normal {
+  font-weight: normal;
+}
+
+#uphlolqabb .gt_font_bold {
+  font-weight: bold;
+}
+
+#uphlolqabb .gt_font_italic {
+  font-style: italic;
+}
+
+#uphlolqabb .gt_super {
+  font-size: 65%;
+}
+
+#uphlolqabb .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#uphlolqabb .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#uphlolqabb .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#uphlolqabb .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#uphlolqabb .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#uphlolqabb .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#uphlolqabb .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Age Group">Age Group</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Biden">Biden</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Trump">Trump</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Other">Other</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><th id="stub_1_1" scope="row" class="gt_row gt_center gt_stub">18-29</th>
+<td headers="stub_1_1 Biden" class="gt_row gt_right">0.204 (0.177, 0.231)</td>
+<td headers="stub_1_1 Trump" class="gt_row gt_right">0.114 (0.095, 0.133)</td>
+<td headers="stub_1_1 Other" class="gt_row gt_right">0.227 (0.15, 0.304)</td></tr>
+    <tr><th id="stub_1_2" scope="row" class="gt_row gt_center gt_stub">30-39</th>
+<td headers="stub_1_2 Biden" class="gt_row gt_right">0.169 (0.153, 0.185)</td>
+<td headers="stub_1_2 Trump" class="gt_row gt_right">0.147 (0.123, 0.17)</td>
+<td headers="stub_1_2 Other" class="gt_row gt_right">0.306 (0.214, 0.398)</td></tr>
+    <tr><th id="stub_1_3" scope="row" class="gt_row gt_center gt_stub">40-49</th>
+<td headers="stub_1_3 Biden" class="gt_row gt_right">0.163 (0.146, 0.18)</td>
+<td headers="stub_1_3 Trump" class="gt_row gt_right">0.157 (0.136, 0.178)</td>
+<td headers="stub_1_3 Other" class="gt_row gt_right">0.209 (0.128, 0.29)</td></tr>
+    <tr><th id="stub_1_4" scope="row" class="gt_row gt_center gt_stub">50-59</th>
+<td headers="stub_1_4 Biden" class="gt_row gt_right">0.154 (0.136, 0.173)</td>
+<td headers="stub_1_4 Trump" class="gt_row gt_right">0.234 (0.207, 0.261)</td>
+<td headers="stub_1_4 Other" class="gt_row gt_right">0.107 (0.041, 0.172)</td></tr>
+    <tr><th id="stub_1_5" scope="row" class="gt_row gt_center gt_stub">60-69</th>
+<td headers="stub_1_5 Biden" class="gt_row gt_right">0.179 (0.16, 0.199)</td>
+<td headers="stub_1_5 Trump" class="gt_row gt_right">0.192 (0.172, 0.213)</td>
+<td headers="stub_1_5 Other" class="gt_row gt_right">0.102 (0.025, 0.178)</td></tr>
+    <tr><th id="stub_1_6" scope="row" class="gt_row gt_center gt_stub">70 or older</th>
+<td headers="stub_1_6 Biden" class="gt_row gt_right">0.13 (0.118, 0.143)</td>
+<td headers="stub_1_6 Trump" class="gt_row gt_right">0.156 (0.139, 0.174)</td>
+<td headers="stub_1_6 Other" class="gt_row gt_right">0.049 (0, 0.098)</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+<p>We can see that the age group distribution was younger for Biden and other candidates, and older for Trump. For example, of those that voted for Biden, 20.4% were in the 18-29 age group compared to only 11.4% of those that voted for Trump where in that age group. On the other side, 23.4% of those that voted for Trump were in the 50-59 age group compared to only 15.4% of those that voted for Biden.</p>
+</div>
+</div>
+<div id="stattest-chi-exercises" class="section level3 hasAnchor" number="7.3.3">
+<h3><span class="header-section-number">7.3.3</span> Exercises<a href="c07.html#stattest-chi-exercises" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Here are some exercises for practicing conducting chi-squared tests using <code>svygofchisq()</code> and <code>svychisq()</code>:</p>
+<ol style="list-style-type: decimal">
+<li>If you wanted to determine if the political party affiliation differed for males and females, what test would you use?
+<ol style="list-style-type: lower-alpha">
+<li>Goodness of fit test (<code>svygofchisq()</code>)</li>
+<li>Test of independence (<code>svychisq()</code>)</li>
+<li>Test of homogeneity (<code>svychisq()</code>)</li>
+</ol></li>
+</ol>
+<div class="sourceCode" id="cb187"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb187-1"><a href="c07.html#cb187-1" aria-hidden="true" tabindex="-1"></a>chisq_solution1<span class="ot">&lt;-</span><span class="st">&quot;c. Test of homogeneity (`svychisq()`)&quot;</span></span>
+<span id="cb187-2"><a href="c07.html#cb187-2" aria-hidden="true" tabindex="-1"></a>chisq_solution1</span></code></pre></div>
+<pre><code>## [1] &quot;c. Test of homogeneity (`svychisq()`)&quot;</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>In the RECS data, is there a relationship between the type of housing unit (<code>HousingUnitType</code>) and the year the house was built (<code>YearMade</code>)?</li>
+</ol>
+<div class="sourceCode" id="cb189"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb189-1"><a href="c07.html#cb189-1" aria-hidden="true" tabindex="-1"></a>chisq_solution2<span class="ot">&lt;-</span>recs_des <span class="sc">%&gt;%</span> </span>
+<span id="cb189-2"><a href="c07.html#cb189-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svychisq</span>(<span class="at">formula=</span><span class="sc">~</span>HousingUnitType<span class="sc">+</span>YearMade,</span>
+<span id="cb189-3"><a href="c07.html#cb189-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">design=</span>.,</span>
+<span id="cb189-4"><a href="c07.html#cb189-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">statistic=</span><span class="st">&quot;Wald&quot;</span>,</span>
+<span id="cb189-5"><a href="c07.html#cb189-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb189-6"><a href="c07.html#cb189-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb189-7"><a href="c07.html#cb189-7" aria-hidden="true" tabindex="-1"></a>chisq_solution2</span></code></pre></div>
+<pre><code>## 
+##  Design-based Wald test of association
+## 
+## data:  NextMethod()
+## F = 32, ndf = 28, ddf = 95, p-value &lt;2e-16</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>In the ANES data, is there a difference in the distribution of gender (<code>Gender</code>) across early voting status in 2020 (<code>EarlyVote2020</code>)?</li>
+</ol>
+<div class="sourceCode" id="cb191"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb191-1"><a href="c07.html#cb191-1" aria-hidden="true" tabindex="-1"></a>chisq_solution3<span class="ot">&lt;-</span>anes_des <span class="sc">%&gt;%</span> </span>
+<span id="cb191-2"><a href="c07.html#cb191-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svychisq</span>(<span class="at">formula=</span><span class="sc">~</span>Gender<span class="sc">+</span>EarlyVote2020,</span>
+<span id="cb191-3"><a href="c07.html#cb191-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">design=</span>.,</span>
+<span id="cb191-4"><a href="c07.html#cb191-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">statistic=</span><span class="st">&quot;F&quot;</span>,</span>
+<span id="cb191-5"><a href="c07.html#cb191-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb191-6"><a href="c07.html#cb191-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb191-7"><a href="c07.html#cb191-7" aria-hidden="true" tabindex="-1"></a>chisq_solution3</span></code></pre></div>
+<pre><code>## 
+##  Pearson&#39;s X^2: Rao &amp; Scott adjustment
+## 
+## data:  NextMethod()
+## F = 0.27, ndf = 1, ddf = 51, p-value = 0.6</code></pre>
+
+</div>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="12">
+<li id="fn12"><p>These two statistics can also be used for goodness of fit tests, if the <code>svygofchisq()</code> function is not used.<a href="c07.html#fnref12" class="footnote-back">↩︎</a></p></li>
+<li id="fn13"><p><a href="http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf" class="uri">http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf</a><a href="c07.html#fnref13" class="footnote-back">↩︎</a></p></li>
+<li id="fn14"><p>Data was pulled from data.census.gov using the S1501 Education Attainment 2020: ACS 5-Year Estimates Subject Tables<a href="c07.html#fnref14" class="footnote-back">↩︎</a></p></li>
+</ol>
 </div>
             </section>
 
