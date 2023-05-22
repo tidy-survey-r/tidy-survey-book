@@ -14,6 +14,7 @@ Up to this point, the functions that we've provided have used the wrappers from 
 2. `mtcars %>% filter(cyl == 6)`
 3. `mtcars %>% filter(., cyl == 6)`
 4. `mtcars %>% filter(.data= ., cyl == 6)`
+
 Each of these lines of code will produce the same output since the argument that takes the data is in the first spot in `filter()`. Those who have worked with the tidyverse, the first two are probably familiar. The third option functions the same way as the second one, but is explicit that `mtcars` goes in the first argument and the fourth option indicates that mtcars is going into the named argument of `.data`. Here we're telling R to take what's on the left side of the pipe `mtcars` and pipe it into the spot with the dot (`.`)---the first argument.
 
 In functions that are not part of the tidyverse, the data argument may be in a different spot in the functions. For example, in `svyttest()` the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example:
@@ -113,10 +114,10 @@ Notice that the first argument here is the `formula` and not the `design`. This 
 
 The `formula` argument can take on a couple of different forms depending on what it is that we are measuring.  Here are a few common scenarios:
 
-1. **One-sided t-test:** 
+1. **One-sample t-test:** 
     a. **Comparison to 0:** `var ~ 0`, where `var` is the measure of interest and `0` is the value we are comparing it to. For example, we could test if the proportion of the population that has blue eyes is different from `0`.
     b. **Comparison to a different value:** `I(var - value) ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. We need to use the `I()` function, to tell the program to calculate the difference between the variable and the comparison value prior to testing. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `I(var - 0.25)~0`.
-2. **Two-sided t-test:**
+2. **Two-sample t-test:**
     a. **Unpaired:**
         - **2 level grouping variable:** `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories.  For example, we could test if the proportion of the population that has blue eyes is different for children aged 5-10 years old compared to children under 5 years old. 
         - **3+ level grouping variable:** `var ~ I(groupVar == level)`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. Again we need to use the `I()` function to tell the program to isolate the category before doing the comparison across groups.  For example, we could test if the test scores in one classroom differed from all other classrooms.
@@ -127,28 +128,50 @@ Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data 
 ### Examples {#stattest-ttest-examples}
 Let's walk through a few examples using the ANES and RECS data.  See Section \@ref(stattest-setup) above to set up the design objects.
 
-#### Example 1: One-sided t-test {.unnumbered #stattest-ttest-ex1}
+#### Example 1: One-sample t-test {.unnumbered #stattest-ttest-ex1}
+<!--Would love to do a comparison to 0 for this example, but have changed it for now.  Thoughts?-->
 
-ANES asked respondents if they voted early in the 2020 election.  In our data, we've called this variable `EarlyVote2020`.  If we want to see if the proportion of the U.S. voting eligible population that early voted is greater than 0%, we could set up the hypothesis as follows:
+ANES asked respondents if they voted for president in the 2020 election.  In our data, we've called this variable `VotedPres2020`. Let's look at the proportion of the U.S. voting eligible population that voted for president in 2020 using the `survey_prop()` function we learned in Chapter \@ref(c06). 
 
-- $H_0: p = 0$ where $p$ is the proportion of U.S. voting eligible population that voted early
-- $H_A: p \neq 0$
+```{r}
+#| label: stattest-ttest-voteprop
+
+voteprop<-anes_des %>% 
+  group_by(VotedPres2020) %>% 
+  summarize(survey_prop())
+
+voteprop
+
+```
+
+Based on this, we see that `r signif(voteprop*100,3)`% of the U.S. voting eligible population voted for president in 2020. If we wanted to know how this compares to other countries, we can use `svyttest()`.  For example, if we know that the voter turnout in Germany in the 2017 general election was 76.2%, we could set up our hypothesis as:
+
+- $H_0: p = 0.762$ where $p$ is the proportion of U.S. voting eligible population that voted for president in 2020
+- $H_A: p \neq 0.762$
 
 To conduct this in R, we would then use the `svyttest()` function:
 ```{r}
 #| label: stattest-ttest-ex1
 ttest_ex1<-anes_des %>%
-   svyttest(formula=I(EarlyVote2020=="Yes")~0,
+   svyttest(formula=I(I(VotedPres2020=="Yes")-0.762)~0,
             design=.,
             na.rm=TRUE)
 
 ttest_ex1
 ```
-Note that because `EarlyVote202` is a factor, we need to specify which level we are interested in.  In this case we want to isolate those that did vot early in 2020.  The results indicate that on average `r round(ttest_ex1$estimate*100,1)`% of the U.S. voting eligible population voted early in the 2020 election.  We also see that the t-statistic is `r ttest_ex1$statistic` and the p-value is `r ttest_ex1$p.value`, indicating that the average is statistically different from 0 at an $\alpha$ level of $0.05$.
+
+Note that because `VotedPres2020` is a factor, we need to specify which level we are interested in.  In this case we want to isolate those that did vote for president in 2020.  The output from the `svyttest()` function can be a bit hard to read.  Using the {broom} package from the tidyverse we can clean up the output into a tibble to more easily what the test is telling us.
+```{r}
+#| label: stattest-ttest-ex1-broom
+broom::tidy(ttest_ex1)
+```
+
+The estimate that is presented here is actually the difference between the U.S. proportion and the Germany proportion we are comparing to.  We can see that there is a difference of `r signif(ttest_ex1$estimate*100,3)` percentage points.  Additionally, we can see the t-statistic value in the `statistic` column is `r signif(ttest_ex1$statistic,3)` and the p-value is `r signif(ttest_ex1$p.value,3)`. These results indicate that the U.S. and Germany have similar voter turnout.
 
 <!--Add in callout box about how to use the $ notation to help call out the different values?  Maybe indicate how this will be covered more in the reporting chapter?-->
 
-#### Example 2: One-sided t-test {.unnumbered #stattest-ttest-ex2}
+
+#### Example 2: One-sample t-test {.unnumbered #stattest-ttest-ex2}
 
 RECS asks respondents to indicate what temperature they set their house to during the summer at night.  In our data, we've called this variable `SummerTempNight`.  If we want to see if the U.S. household sets their temperature at a value different from 68$^\circ$F, we could set up the hypothesis as follows:
 
@@ -181,9 +204,9 @@ ttest_ex2$estimate + 68
 The result is the same in both methods, so we see that the average temperature U.S. Households set their thermostat to in the summer at night is `r round(ttest_ex2$estimate + 68,1)`.  Looking at the output from the `svyttest()`, the t-statistic is `r ttest_ex2$statistic` and the p-value is `r ttest_ex2$p.value`, indicating that the average is statistically different from 68$^\circ$F at an $\alpha$ level of $0.05$.
 
 
-#### Example 3: Unpaired two-sided t-test {.unnumbered #stattest-ttest-ex3}
+#### Example 3: Unpaired two-sample t-test {.unnumbered #stattest-ttest-ex3}
 
-Two additional variables we have on the RECS data are the electric bill cost (`DOLLAREL`) and whether the house used AC or not (`ACUsed`).  If we want to know if the U.S. households that used AC had high electrical bills than those that did not, we could set up the hypothesis as follows:
+Two additional variables we have on the RECS data are the electric bill cost (`DOLLAREL`) and whether the house used AC or not (`ACUsed`).  If we want to know if the U.S. households that used AC had higher electrical bills compared to those that did not, we could set up the hypothesis as follows:
 
 - $H_0: \mu_{AC} = \mu_{noAC}$ where $\mu_{AC}$ is the electrical bill cost for U.S. households that used AC and $\mu_{noAC}$ is the electrical bill cost for U.S. household that did not use AC
 - $H_A: \mu_{AC} \neq \mu_{noAC}$
@@ -208,7 +231,7 @@ ttest_ex3
 ```
 The results indicate that the difference in electrical bill for those that used AC and those that did not is on average \$`r round(ttest_ex3$estimate,2)`. The difference does appear to be statistically significant as the t-statistic is `r ttest_ex3$statistic` and the p-value is `r ttest_ex3$p.value`.
 
-#### Example 4: Paired two-sided t-test {.unnumbered #stattest-ttest-ex4}
+#### Example 4: Paired two-sample t-test {.unnumbered #stattest-ttest-ex4}
 
 To conduct a paired t-test that looks at differences at two time points, we use the same `I()` notatation we've been using.  For example, let's say we want to test whether the temperature that U.S. households set their thermostat to differs depending on the season (comparing summer temperature and winter temperature).  We could set up the hypothesis as follows:
 
@@ -339,7 +362,20 @@ If we want to see if the weighted distribution from the ANES 2020 data matches t
 - $H_0: p_1 = 0.11, ~ p_2 = 0.27, ~ p_3 = 0.29, ~ p_4 = 0.33$
 - $H_A:$ at least one of the education levels does not match between the ANES and the ACS
 
-To conduct this in R, we first need to adjust the education variable we have on ANES (`Education`) to have the same categories as the data from the ACS.  We do this using the {forcats} package and the `fct_collapse()` function. The education data from ANES has two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data.  Then we will use the `svygofchisq()` function to compare the ANES data to the ACS data:
+To conduct this in R, let's first take a look at the education variable (`Education`) we have on the ANES data.  Using the `survey_mean()` function discussed in Chapter \@ref(ch06), we can see the different levels of education we have and estimated proportion.
+
+```{r}
+#| label: stattest-chi-ex1-educmean
+
+anes_des %>%
+  group_by(Education) %>%
+  filter(!is.na(Education)) %>%
+  summarise(p=survey_mean())
+
+```
+
+Based on this output, we can see that we have different levels than the ACS data provides. Specifically, the education data from ANES has two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data.  We case use the {forcats} package and the `fct_collapse()` function to create a new variable to use. Then we will use the `svygofchisq()` function to compare the ANES data to the ACS data:
+
 ```{r}
 #| label: stattest-chi-ex1
 anes_des_educ<-anes_des %>% 
@@ -357,6 +393,8 @@ chi_ex1<-anes_des_educ %>%
 chi_ex1
 ```
 The output from the `svygofchisq()` indicates that at least one proportion from ANES does not match the ACS data ($\chi^2=$`r chi_ex1$statistic`; $p-value=$`r chi_ex1$p.value`. To get a better idea of the differences, we can use the `expected` output along with `survey_mean()` to create a comparison table:
+<!--This doesn't render correctly in HTML but does ok in PDF.-->
+
 ```{r}
 #| label: stattest-chi-ex1-table
 ex1_expected<-tibble(ExpectedCount=chi_ex1$expected) %>%
@@ -462,6 +500,7 @@ Both methods produce the same output as the the `svychisq()` function does accou
 
 We may find it easier to look at these proportions graphically.  We can use `gglot()` and facets to provide an overview:
 <!--Need to clean this up to make it readable. Need to also add in a higher facet title to indicate that is trusting people-->
+<!--Perhaps a mosaic plot instead?-->
 ```{r}
 #| label: stattest-chi-ex2-graph
 chi_ex2_obs %>% 
