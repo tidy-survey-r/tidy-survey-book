@@ -1,0 +1,109 @@
+---
+title: "National Crime Victimization Survey (NCVS) 2021 Data Prep"
+output: 
+  github_document:
+    html_preview: false
+bibliography: ../book.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data information
+
+Complete data is not stored on this repository but can be obtained on [ICPSR](https://www.icpsr.umich.edu/web/ICPSR/studies/38429) by downloading the R version of data files (@ncvs_data_2021). The files used here are from Version 1 and were downloaded on March 11, 2023.
+
+This script selects a subset of columns of several files and only retains those on this repository.
+
+```{r}
+#| label: loadpackageh
+#| message: FALSE
+library(here) #easy relative paths
+```
+
+```{r}
+#| label: loadpackages
+library(tidyverse) #data manipulation
+library(tidylog) #informative logging messages
+```
+
+## Incident data file
+
+```{r}
+#| label: incfile
+
+incfiles <- load(here("RawData", "NCVS_2021", "ICPSR_38429", "DS0004", "38429-0004-Data.rda"),
+     verbose=TRUE)
+
+inc_in <- get(incfiles) %>%
+  as_tibble()
+
+inc_slim <- inc_in %>%
+  select(
+    YEARQ, IDHH, IDPER, V4012, WGTVICCY, # identifiers and weight
+    num_range("V", 4016:4019), # series crime information
+    V4021B, V4022, V4024, # time of incident, location of incident (macro and micro)
+    num_range("V", 4049:4058), #weapon type
+    V4234, V4235, num_range("V", 4241:4245), V4248, num_range("V", 4256:4278), starts_with("V4277"), # victim-offender relationship
+    V4399, # report to police
+    V4529 # type of crime
+  )
+
+summary(inc_slim)
+
+write_rds(inc_slim, here("AnalysisData", "ncvs_2021_incident.rds"))
+```
+
+
+## Person data file
+
+```{r}
+#| label: persfile
+
+persfiles <- load(here("RawData", "NCVS_2021", "ICPSR_38429", "DS0003", "38429-0003-Data.rda"),
+     verbose=TRUE)
+
+pers_in <- get(persfiles) %>%
+  as_tibble()
+
+pers_slim <- pers_in %>%
+  select(
+    YEARQ, IDHH, IDPER, WGTPERCY, # identifiers and weight
+    V3014, V3015, V3018, V3023A, V3024, V3084, V3086 
+    # age, marital status, sex, race, hispanic origin, gender, sexual orientation
+  )
+
+summary(pers_slim)
+
+write_rds(pers_slim, here("AnalysisData", "ncvs_2021_person.rds"))
+```
+
+## Household data file
+
+
+```{r}
+#| label: hhfile
+
+hhfiles <- load(here("RawData", "NCVS_2021", "ICPSR_38429", "DS0002", "38429-0002-Data.rda"),
+     verbose=TRUE)
+
+hh_in <- get(hhfiles) %>%
+  as_tibble()
+
+hh_slim <- hh_in %>%
+  select(
+    YEARQ, IDHH, WGTHHCY, V2117, V2118, # identifiers, weight, design
+    V2015, V2143, SC214A, V2122, V2126B, V2127B, V2129
+    # tenure, urbanicity, income, family structure, place size, region, msa status
+  )
+
+summary(hh_slim)
+
+write_rds(hh_slim, here("AnalysisData", "ncvs_2021_household.rds"))
+```
+
+## Resources
+
+- [USER’S GUIDE TO NATIONAL CRIME VICTIMIZATION SURVEY (NCVS) DIRECT VARIANCE ESTIMATION](https://bjs.ojp.gov/sites/g/files/xyckuh236/files/media/document/ncvs_variance_user_guide_11.06.14.pdf)
+-[Appendix C: Examples in SAS](https://bjs.ojp.gov/sites/g/files/xyckuh236/files/media/document/variance_guide_appendix_c_sas.pdf)
