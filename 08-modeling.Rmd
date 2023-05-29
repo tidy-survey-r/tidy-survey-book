@@ -1,8 +1,6 @@
 # Modeling {#c08}
 
-<!-- TODO: Add an intro of what modeling is (in the context of survey data) -->
-
-Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey}[@lumley2010complex; @R-survey] package as was true in Chapter \@ref(c07). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression and logistic regression. For details on other types of regression including ordinal regression, loglinear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or poisson model in Appendix E of his book.
+Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey}[@lumley2010complex; @R-survey] package as was true in Chapter \@ref(c07). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression and logistic regression. For details on other types of regression including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or poisson model in Appendix E of his book.
 
 Accounting for the survey design and weights in modeling can generalize a model to the target population. When using the survey design objects, the statistical tests account for the fact that the observations may not be independent. There is some debate as to whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg].
 
@@ -72,7 +70,7 @@ anes_des <- anes %>%
                     nest = TRUE)
 ```
 
-Here is how you create the design object for the RECS data. More details for this are included in the RECS documentation and Chapter "unerstanding survey documentation" (TODO: add link)
+Here is how you create the design object for the RECS data. More details for this are included in the RECS documentation and Chapter "understanding survey documentation" (TODO: add link)
 
 ```{r recs_des_c07}
 recs <-read_rds(here("AnalysisData", "recs_2015.rds"))
@@ -113,7 +111,7 @@ des_obj %>%
          df.resid=degf(.))
 ```
 
-where `des_obj` is a design object, `outcomevar` is the outcome variable, `groupvar` is the group variable, and `na.action=na.omit` is set so that records with missing data in the outcome or group variable are removed for prediction ^[See `help(na.omit)` for more information on options to use for `na.action`]. The function `svyglm` does not have the design as the first argument so the `.` notation is used to pass it with a pipe.
+where `des_obj` is a design object, `outcomevar` is the outcome variable, `groupvar` is the group variable, and `na.action=na.omit` is set so that records with missing data in the outcome or group variable are removed for prediction ^[See `help(na.omit)` for more information on options to use for `na.action`]. The function `svyglm()` does not have the design as the first argument so the `.` notation is used to pass it with a pipe.
 
 Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer which is encoded in the variable `SummerTempNight`. A descriptive analysis is displayed below of the temperature set by region and the sample sizes. 
 
@@ -141,7 +139,7 @@ anova_out <- recs_des %>%
 tidy(anova_out)
 ```
 
-In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In this output, the intercept represents the reference value which is the Northeast region. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, `r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(estimate) %>% signif(3)` degrees higher than in the Northeast during summer nights.
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In this output, the intercept represents the reference value which is the Northeast region^[To change the reference level, reorder the factor before modeling using the function `relevel()` from {{stats}} or using one of many factor ordering functions in {{forcats}} such as `fct_relevel()` or `fct_infreq()`]. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, `r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(estimate) %>% signif(3)` degrees higher than in the Northeast during summer nights.
 
 ### Linear regression
 
@@ -223,7 +221,7 @@ urb_reg_test
 
 As demonstrated above, there is a significant interaction betwee urbanicity and region (p-value=`r signif(urb_reg_test$p, 3)`).
 
-To examine the predictions, residuals and more from the model, the function `augment` from {broom} can be used. The `augment` function will return a tibble with the independent and dependent variables and other fit statistics. The fitted value and standard error are contained in one column and need to be split after using augment as illustrated below.
+To examine the predictions, residuals and more from the model, the function `augment()` from {broom} can be used. The `augment()` function will return a tibble with the independent and dependent variables and other fit statistics. The `augment()` function has not been specifically written for objects of class `svrepglm` and as such, a warning will be displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using augment to get the predicted (`.fitted`) and standard error (`.se.fit`) values as demonstrated below.
 
 These results can then be used in a variety of ways including examining residual plots as is illustrated below:
 
@@ -248,6 +246,85 @@ fitstats %>%
   theme_bw()
 
 ```
+
+
+Additionally, `augment()` can be used to predict outcomes for data that was not used in modeling. Perhaps, you would like to predict the energy expenditure for a home in an urban area in the south which uses air-conditioning and is 2,500 square feet. First, make a tibble including that additional data and then use the `newdata` argument in the augment function.
+
+```{r}
+#| label: predict-new-dat
+
+add_data <- recs %>% select(DOEID, Region, Urbanicity, TOTSQFT_EN, ACUsed, DOLLAREL) %>%
+  rbind(tibble(DOEID=NA, Region="South", Urbanicity="Urban Area", TOTSQFT_EN=2500, ACUsed=TRUE, DOLLAREL=NA)) %>% tail(1)
+pred_data <- augment(m_electric_multi, newdata = add_data) %>%
+    mutate(
+    .se.fit=sqrt(attr(.fitted, "var")), # extract the variance of the fitted value
+    .fitted=as.numeric(.fitted) 
+    ) 
+
+pred_data 
+```
+
+In the above example, it is predicted that the energy expenditure would be $`r pred_data %>% slice_tail(n=1) %>% pull(.fitted) %>% round(2)`.
+
+### Exercises
+
+1. The type of housing unit may have an impact on energy expense. Is there any relationship between housing unit type (`HousingUnitType`) and total energy expenditure (`TOTALDOL`)? First, find the average energy expenditure by housing unit type as a descriptive analysis and then do the test. The reference level in the comparison should be the housing unit type which is most common.
+
+```{r}
+#| label: model-lin-sol-1
+recs_des %>%
+  group_by(HousingUnitType) %>%
+  summarise(
+    Expense=survey_mean(TOTALDOL, na.rm=TRUE),
+    HUs=survey_total()) %>%
+  arrange(desc(HUs))
+
+exp_unit_out <- recs_des %>%
+  mutate(HousingUnitType=fct_infreq(HousingUnitType, NWEIGHT)) %>%
+  svyglm(design=.,
+         formula=TOTALDOL~HousingUnitType,
+         na.action=na.omit
+  )
+
+tidy(exp_unit_out)
+
+# Single-family detached units are most common
+# There is a significant relationship between energy expenditure and housing unit type
+```
+
+2. Does temperature play a role in energy expenditure? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65&deg;F (18.3&deg;C) it is in a location. On a day that averages 65&deg;F and below, CDD65=0. While a day that averages 85&deg;F would have CDD80=20 because it is 20 degrees warmer. For each day in the year, this is summed to give an indicator for how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65&deg;F (18.3&deg;C)^[https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php]. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.
+
+```{r}
+temps_sqft_exp <- recs_des %>%
+   svyglm(design=.,
+          formula=DOLLAREL~(TOTSQFT_EN+CDD65+HDD65)^2,
+          na.action=na.omit)
+
+tidy(temps_sqft_exp)
+```
+
+3. Continuing with your results from question 2, create a plot between the actual expenditures and the predicted expenditures and a residual plot for the predicted expenditures.
+
+```{r}
+temps_sqft_exp_fit <- temps_sqft_exp %>%
+  augment() %>%
+  mutate(
+    .se.fit=sqrt(attr(.fitted, "var")), # extract the variance of the fitted value
+    .fitted=as.numeric(.fitted) 
+  ) 
+
+temps_sqft_exp_fit %>%
+  ggplot(aes(x=DOLLAREL, y=.fitted)) + 
+  geom_point() +
+  geom_abline(intercept=0, slope=1, colour="red")
+
+temps_sqft_exp_fit %>%
+  ggplot(aes(x=.fitted, y=.resid)) + 
+  geom_point() +
+  geom_hline(yintercept =0, colour="red") +
+  theme_bw()
+```
+
 
 ## Logistic regression
 
@@ -283,7 +360,7 @@ des_obj %>%
          )
 ```
 
-Note this is the same function as used in both ANOVA and linear regression. However, we've added the link function quasibinomial. While you can use the binomial link function, it is recommended to use the quasibinomial as your weights may not be integers and the quasibinomial also allows for overdispersion. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of two ways with survey data:
+Note `svyglm()` is the same function as used in both ANOVA and linear regression. However, we've added the link function quasibinomial. While you can use the binomial link function, it is recommended to use the quasibinomial as your weights may not be integers and the quasibinomial also allows for overdispersion. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of two ways with survey data:
 
 - A factor variable where not being the first level of the factor indicates a "success"
 - A numeric variable which is 1 or 0 where 1 indicates a success
@@ -339,5 +416,53 @@ or_other <- tidy(logistic_trust_vote, exponentiate = TRUE) %>% filter(str_detect
 ```
 
 
-In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient when the `tidy` function is run the first time. The second time the `tidy` function is used, the coefficients are exponentiated which illustrates the odds. In this example, we can interpret this as saying that the odds of trusting in government for someone who voted for Trump is `r signif(or_trump*100, 3)`% as likely to trust the government compared to a person who voted for Biden (the reference level) while a person who voted for neither Biden nor Trump is `r signif(or_other*100, 3)`% as likely to trust the government as someone who voted for Biden.
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient when the `tidy()` function is run the first time. The second time the `tidy` function is used, the coefficients are exponentiated which illustrates the odds. In this example, we can interpret this as saying that the odds of trusting in government for someone who voted for Trump is `r signif(or_trump*100, 3)`% as likely to trust the government compared to a person who voted for Biden (the reference level) while a person who voted for neither Biden nor Trump is `r signif(or_other*100, 3)`% as likely to trust the government as someone who voted for Biden.
+
+As with linear regression, the `augment()` can be used to predict values. By default, the prediction is the link function and not the probability. To predict the probability, add an argument of `type.predict="response"` as demonstrated below:
+
+```{r}
+#| label: logistic-aug
+logistic_trust_vote %>%
+  augment(type.predict = "response") %>% 
+  mutate(.se.fit=sqrt(attr(.fitted, "var")), # extract the variance of the fitted value
+         .fitted=as.numeric(.fitted)) %>%
+  select(TrustGovernmentUsually, VotedPres2020_selection, .fitted, .se.fit)
+```
+
+
+### Exercises
+
+1. Early voting expanded in 2020^[https://www.npr.org/2020/10/26/927803214/62-million-and-counting-americans-are-breaking-early-voting-records]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`). Include two-way interactions.
+
+```{r}
+#| label: ex-logistic-1
+
+earlyvote_mod <- anes_des %>%
+  filter(!is.na(EarlyVote2020)) %>%
+  svyglm(design=.,
+         formula=EarlyVote2020~ (Age+Education+PartyID)^2 ,
+         family = quasibinomial) 
+
+tidy(earlyvote_mod) %>% arrange(p.value)
+
+```
+
+2. Continuing from exercise 1, predict the probability of early voting for 2 people - each are 28 years old and have a graduate degree but one person is a strong democrat and the other is a strong republican.
+
+```{r}
+#| label: ex-logistic-2
+
+add_vote_dat <- anes %>%
+  select(EarlyVote2020, Age, Education, PartyID) %>%
+  rbind(
+    tibble(EarlyVote2020=NA, Age=28, Education="Graduate", PartyID=c("Strong democrat", "Strong republican"))
+  ) %>%
+  tail(2)
+
+log_ex_2_out <- earlyvote_mod %>%
+  augment(newdata=add_vote_dat, type.predict = "response") %>%
+    mutate(.se.fit=sqrt(attr(.fitted, "var")), # extract the variance of the fitted value
+         .fitted=as.numeric(.fitted))
+
+```
 
