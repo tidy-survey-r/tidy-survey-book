@@ -37,6 +37,7 @@ library(srvyr)
 library(sf)
 library(rnaturalearth) #getting world maps
 library(gt)
+library(ggpattern)
 
 ambarom_in <- read_rds(here::here("AnalysisData", "lapop_2021.rds"))
 
@@ -326,48 +327,67 @@ covid_worry_country_ests %>%
 
 ```
 
-While the table presents the data well, a map could also be used. To obtain maps of the countries, the package {{rnaturalearth}} is used subsetting North and South America. That map (without data) is plotted. In the first map, the map is very wide as the Aleutian islands in Alaska extend into the Eastern Hemisphere. The shape file is cropped to only the western hemisphere to remove some of the trailing islands of Alaska and then plotted. 
+While the table presents the data well, a map could also be used. To obtain maps of the countries, the package {{rnaturalearth}} is used subsetting North and South America using the function `ne_countries()`. This returns an sf object with many columns but most importantly `soverignt` (soverignty), `geounit` (country or territory), and `geometry` (the shape). The United States, Puerto Rico, and the US Virgin Islands are all separate units but have the same sovereignty.
 
-Then, using the `anti_join()` function, it is verified that all countries in the survey data are also in the map data. As shown below, United States is referred to as "United States" in the survey data but "Untied States of America" in the map data. 
-
+That map (without data) is plotted. In the first map, the map is very wide as the Aleutian islands in Alaska extend into the Eastern Hemisphere. The shape file is cropped to only the Western Hemisphere to remove some of the trailing islands of Alaska and then plotted. 
 
 ```{r}
-#| label: makemaps-blank
-
+#| label: americas-map
+#| fig.cap: "Map of North and South America"
 country_shape <- ne_countries(scale = "medium", returnclass = "sf", continent=c("North America", "South America"))
 
 country_shape %>%
   ggplot() + geom_sf()
+```
 
+```{r}
+#| label: americas-map-crop
+#| fig.cap: "Map of North and South America, cropped to the Western Hemisphere"
 country_shape %>%
   st_crop(c(xmin=-180, xmax=0, ymin=-90, ymax=90)) %>%
-  st_transform(crs = "+proj=laea +x_0=0 +y_0=0 +lon_0=-90 +lat_0=0") %>%
   ggplot() + geom_sf()
 
-# Checking for mis-matches
+```
+
+Then, using the `anti_join()` function, it is verified that all countries in the survey data are also in the map data. As shown below, United States is referred to as "United States" in the survey data but "Untied States of America" in the map data. 
+
+```{r}
+#| label: map-merge-check
+
 survey_country_list <- ambarom %>% distinct(Country) 
 survey_country_list %>% anti_join(country_shape, by=c("Country"="geounit"))
-country_shape %>% as_tibble() %>% select(geounit) %>% 
+country_shape %>% as_tibble() %>% select(geounit, sovereignt) %>% 
   anti_join(survey_country_list, by=c("geounit"="Country")) %>%
   arrange(geounit) %>%
   print(n=30)
 ```
 
+
 With the mismatched names, there are several ways to remedy the data to be able to join later. The simplest fix is to rename the data on the shape object before doing any merging. We then can plot the survey estimates after merging on the data.
 
 ```{r}
-#| label: make-maps-covid
+#| label: update-map-usa
 
 country_shape_upd <- country_shape %>% 
   mutate(geounit=if_else(geounit=="United States of America", "United States", geounit)) %>%
-  st_crop(c(xmin=-180, xmax=0, ymin=-90, ymax=90)) %>%
-  st_transform(crs = "+proj=laea +x_0=0 +y_0=0 +lon_0=-90 +lat_0=0")
-
-country_shape_upd %>%
-  full_join(covid_worry_country_ests, by=c("geounit"="Country")) %>%
-  ggplot(aes(fill=p)) +
-  geom_sf()
+  st_crop(c(xmin=-180, xmax=0, ymin=-90, ymax=90)) 
 ```
 
+
+To merge on the data and make a map, we begin with the map file, merge on the estimates data, and then plot as shown below.
+
+```{r}
+#| label: make-maps-covid
+#| fig.cap="Percent of people worried someone in their household will get COVID-19 in the next 3 months by country"
+
+covid_worry_sf <- country_shape_upd %>%
+  full_join(covid_worry_country_ests, by=c("geounit"="Country")) 
+
+ggplot() +
+  geom_sf(data=covid_worry_sf, aes(fill=p, geometry=geometry)) +
+  scale_fill_gradientn(guide="colourbar",name="Percent", labels=scales::comma, 
+                       colours=c("#BFD7EA", "#087E8B", "#0B3954"), na.value=NA) +
+  geom_sf_pattern(data=filter(covid_worry_sf, is.na(p)), pattern="crosshatch", pattern_fill="black", fill=NA)
+```
 
 
