@@ -14,20 +14,32 @@ library(here) #easy relative paths
 library(tidyverse) #data manipulation
 library(haven) #data import
 library(tidylog) #informative logging messages
+library(osfr) # be sure to have PAT saved in Renviron as OSF_PAT
 ```
 
 ## Import data and create derived variables
 
 ``` r
-stata_files <- list.files(here("RawData", "LAPOP_2021"), "*.dta")
+stata_files <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
+  osf_ls_files(path="LAPOP_2021", n_max=40, pattern=".dta")
 
-read_stata_unlabeled <- function(file){
-  read_stata(file) %>%
+read_stata_unlabeled <- function(osf_tbl_i){
+  filedet <- osf_tbl_i %>%
+    osf_download(conflicts="overwrite", path=here("osf_dl"))
+  
+  tibin <- filedet %>%
+    pull(local_path) %>%
+    read_stata() %>%
     zap_labels() %>%
     zap_label()
-}
   
-lapop_in <- here("RawData", "LAPOP_2021", stata_files) %>%
+  unlink(pull(filedet, "local_path"))
+  
+  return(tibin)
+}
+
+lapop_in <- stata_files %>% 
+  split(1:nrow(stata_files)) %>%
   map_df(read_stata_unlabeled)
 
 # https://www.vanderbilt.edu/lapop/ab2021/AB2021-Core-Questionnaire-v17.5-Eng-210514-W-v2.pdf 
@@ -99,5 +111,20 @@ summary(lapop)
     ##  NA's   :51297   NA's   :51297   NA's   :1240    NA's   :4118    NA's   :4386    NA's   :4249
 
 ``` r
-write_rds(lapop, here("AnalysisData", "lapop_2021.rds"))
+lapop_temp_loc <- here("osf_dl", "lapop_2021.rds")
+
+write_rds(lapop, lapop_temp_loc)
+
+target_dir <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") 
+
+osf_upload(target_dir, path=lapop_temp_loc, conflicts="overwrite")
+```
+
+    ## # A tibble: 1 × 3
+    ##   name           id                       meta            
+    ##   <chr>          <chr>                    <list>          
+    ## 1 lapop_2021.rds 647cddbbbf3d0f09ccd873b8 <named list [3]>
+
+``` r
+unlink(lapop_temp_loc)
 ```
