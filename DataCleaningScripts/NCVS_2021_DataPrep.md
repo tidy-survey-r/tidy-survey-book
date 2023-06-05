@@ -18,49 +18,18 @@ library(here) #easy relative paths
 
 ``` r
 library(tidyverse) #data manipulation
-```
-
-    ## ── Attaching packages ────────────────────────────────────────────────────── tidyverse 1.3.2 ──
-    ## ✔ ggplot2 3.4.0     ✔ purrr   0.3.5
-    ## ✔ tibble  3.1.8     ✔ dplyr   1.1.0
-    ## ✔ tidyr   1.2.1     ✔ stringr 1.5.0
-    ## ✔ readr   2.1.3     ✔ forcats 0.5.2
-    ## ── Conflicts ───────────────────────────────────────────────────────── tidyverse_conflicts() ──
-    ## ✖ dplyr::filter() masks stats::filter()
-    ## ✖ dplyr::lag()    masks stats::lag()
-
-``` r
 library(tidylog) #informative logging messages
+library(osfr)
 ```
-
-    ## 
-    ## Attaching package: 'tidylog'
-    ## 
-    ## The following objects are masked from 'package:dplyr':
-    ## 
-    ##     add_count, add_tally, anti_join, count, distinct, distinct_all, distinct_at,
-    ##     distinct_if, filter, filter_all, filter_at, filter_if, full_join, group_by,
-    ##     group_by_all, group_by_at, group_by_if, inner_join, left_join, mutate,
-    ##     mutate_all, mutate_at, mutate_if, relocate, rename, rename_all, rename_at,
-    ##     rename_if, rename_with, right_join, sample_frac, sample_n, select, select_all,
-    ##     select_at, select_if, semi_join, slice, slice_head, slice_max, slice_min,
-    ##     slice_sample, slice_tail, summarise, summarise_all, summarise_at, summarise_if,
-    ##     summarize, summarize_all, summarize_at, summarize_if, tally, top_frac, top_n,
-    ##     transmute, transmute_all, transmute_at, transmute_if, ungroup
-    ## 
-    ## The following objects are masked from 'package:tidyr':
-    ## 
-    ##     drop_na, fill, gather, pivot_longer, pivot_wider, replace_na, spread, uncount
-    ## 
-    ## The following object is masked from 'package:stats':
-    ## 
-    ##     filter
 
 ## Incident data file
 
 ``` r
-incfiles <- load(here("RawData", "NCVS_2021", "ICPSR_38429", "DS0004", "38429-0004-Data.rda"),
-     verbose=TRUE)
+inc_file_osf_det <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
+  osf_ls_files(path="NCVS_2021/DS0004") %>%
+  osf_download(conflicts="overwrite", path=here("osf_dl"))
+
+incfiles <- load(pull(inc_file_osf_det, local_path), verbose=TRUE)
 ```
 
     ## Loading objects:
@@ -69,6 +38,14 @@ incfiles <- load(here("RawData", "NCVS_2021", "ICPSR_38429", "DS0004", "38429-00
 ``` r
 inc_in <- get(incfiles) %>%
   as_tibble()
+
+unlink(pull(inc_file_osf_det, local_path))
+
+make_num_fact <- function(x){
+  xchar <- sub("^\\(0*([0-9]+)\\).+$", "\\1", x)
+  xnum <- as.numeric(xchar)
+  fct_reorder(xchar, xnum, .na_rm = TRUE)
+}
 
 inc_slim <- inc_in %>%
   select(
@@ -79,161 +56,219 @@ inc_slim <- inc_in %>%
     V4234, V4235, num_range("V", 4241:4245), V4248, num_range("V", 4256:4278), starts_with("V4277"), # victim-offender relationship
     V4399, # report to police
     V4529 # type of crime
+  ) %>%
+  mutate(
+    IDHH=as.character(IDHH),
+    IDPER=as.character(IDPER),
+    across(where(is.factor), make_num_fact)
   )
 ```
 
     ## select: dropped 1,201 variables (V4001, V4002, V4003, V4004, V4005, …)
 
+    ## mutate: converted 'IDHH' from factor to character (0 new NA)
+
+    ##         converted 'IDPER' from factor to character (0 new NA)
+
+    ##         changed 8,982 values (100%) of 'V4017' (0 new NA)
+
+    ##         changed 157 values (2%) of 'V4018' (0 new NA)
+
+    ##         changed 153 values (2%) of 'V4019' (0 new NA)
+
+    ##         changed 8,982 values (100%) of 'V4021B' (0 new NA)
+
+    ##         changed 8,982 values (100%) of 'V4022' (0 new NA)
+
+    ##         changed 8,982 values (100%) of 'V4024' (0 new NA)
+
+    ##         changed 2,737 values (30%) of 'V4049' (0 new NA)
+
+    ##         changed 409 values (5%) of 'V4050' (0 new NA)
+
+    ##         changed 409 values (5%) of 'V4051' (0 new NA)
+
+    ##         changed 409 values (5%) of 'V4052' (0 new NA)
+
+    ##         changed 409 values (5%) of 'V4053' (0 new NA)
+
+    ##         changed 409 values (5%) of 'V4054' (0 new NA)
+
+    ##         changed 409 values (5%) of 'V4055' (0 new NA)
+
+    ##         changed 409 values (5%) of 'V4056' (0 new NA)
+
+    ##         changed 409 values (5%) of 'V4057' (0 new NA)
+
+    ##         changed 409 values (5%) of 'V4058' (0 new NA)
+
+    ##         changed 2,827 values (31%) of 'V4234' (0 new NA)
+
+    ##         changed 398 values (4%) of 'V4235' (0 new NA)
+
+    ##         changed 2,096 values (23%) of 'V4241' (0 new NA)
+
+    ##         changed 920 values (10%) of 'V4242' (0 new NA)
+
+    ##         changed 1,246 values (14%) of 'V4243' (0 new NA)
+
+    ##         changed 831 values (9%) of 'V4244' (0 new NA)
+
+    ##         changed 1,075 values (12%) of 'V4245' (0 new NA)
+
+    ##         changed 353 values (4%) of 'V4256' (0 new NA)
+
+    ##         changed 231 values (3%) of 'V4257' (0 new NA)
+
+    ##         changed 139 values (2%) of 'V4258' (0 new NA)
+
+    ##         changed 139 values (2%) of 'V4259' (0 new NA)
+
+    ##         changed 139 values (2%) of 'V4260' (0 new NA)
+
+    ##         changed 139 values (2%) of 'V4261' (0 new NA)
+
+    ##         changed 139 values (2%) of 'V4262' (0 new NA)
+
+    ##         changed 181 values (2%) of 'V4263' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4264' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4265' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4266' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4267' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4268' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4269' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4270' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4271' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4272' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4273' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4274' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4275' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4276' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4277' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4278' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4277A' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4277B' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4277C' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4277D' (0 new NA)
+
+    ##         changed 104 values (1%) of 'V4277E' (0 new NA)
+
+    ##         changed 8,982 values (100%) of 'V4399' (0 new NA)
+
+    ##         changed 8,982 values (100%) of 'V4529' (0 new NA)
+
 ``` r
 summary(inc_slim)
 ```
 
-    ##      YEARQ                             IDHH                              IDPER     
-    ##  Min.   :2021   1840783525391971564938155:  11   184078352539197156493815501:  11  
-    ##  1st Qu.:2021   1998740225522643563236167:  10   199874022552264356323616702:  10  
-    ##  Median :2021   2028125215026030564499142:  10   183682029235977456363634401:   9  
-    ##  Mean   :2021   1785034192131022563459232:   9   189309199952428956594913501:   9  
-    ##  3rd Qu.:2021   1836820292359774563636344:   9   171160359239283356443813202:   8  
-    ##  Max.   :2021   1893091999524289565949135:   9   178565133359491856593411301:   8  
-    ##                 (Other)                  :8924   (Other)                    :8927  
-    ##      V4012          WGTVICCY           V4016                       V4017     
-    ##  Min.   :1.000   Min.   :  221.6   Min.   :  1.000   (1) 1-5 incidents:8825  
-    ##  1st Qu.:1.000   1st Qu.:  867.3   1st Qu.:  1.000   (2) 6 > incidents: 131  
-    ##  Median :1.000   Median : 1352.3   Median :  1.000   (8) Residue      :  26  
-    ##  Mean   :1.179   Mean   : 1674.9   Mean   :  4.324                           
-    ##  3rd Qu.:1.000   3rd Qu.: 2217.4   3rd Qu.:  1.000                           
-    ##  Max.   :7.000   Max.   :10106.2   Max.   :998.000                           
-    ##                                                                              
-    ##            V4018                       V4019                        V4021B    
-    ##  (1) Similar  : 127   (1) Yes (not series):  10   (07) Aft 12pm-6am    :1855  
-    ##  (2) Different:   4   (2) No (is series)  : 117   (09) DK day/night    :1217  
-    ##  (8) Residue  :  26   (8) Residue         :  26   (02) Aft 12am-3pm    :1145  
-    ##  NA's         :8825   NA's                :8829   (03) Aft 3pm-6pm     : 940  
-    ##                                                   (08) DK time of night: 856  
-    ##                                                   (04) DK time of day  : 833  
-    ##                                                   (Other)              :2136  
-    ##                   V4022                       V4024                 V4049     
-    ##  (1) Outside U.S.    :  34   (05) N/hme-own yrd  :3210   (1) Yes       : 409  
-    ##  (2) Not in city etc :  65   (01) R/hme-own dwell:1481   (2) No        :1803  
-    ##  (3) Same city etc   :7697   (07) N/hme-on street: 727   (3) Don't know: 525  
-    ##  (4) Diff city etc   :1143   (21) Open-on street : 453   (8) Residue   :   0  
-    ##  (5) Don't know      :  39   (16) Park-noncomm   : 449   NA's          :6245  
-    ##  (6) DK if 2, 4, or 5:   0   (06) N/hme apt hall : 429                        
-    ##  (8) Residue         :   4   (Other)             :2233                        
-    ##                   V4050              V4051              V4052              V4053     
-    ##  (1) At least 1 entry: 380   (0) No     : 278   (0) No     : 390   (0) No     : 334  
-    ##  (3) Yes weapon-NA   :  26   (1) Yes    : 131   (1) Yes    :  19   (1) Yes    :  75  
-    ##  (7) Gun type unknown:   3   (8) Residue:   0   (8) Residue:   0   (8) Residue:   0  
-    ##  (8) No good entry   :   0   NA's       :8573   NA's       :8573   NA's       :8573  
-    ##  NA's                :8573                                                           
-    ##                                                                                      
-    ##                                                                                      
-    ##          V4054              V4055              V4056              V4057     
-    ##  (0) No     : 394   (0) No     : 302   (0) No     : 360   (0) No     : 406  
-    ##  (1) Yes    :  15   (1) Yes    : 107   (1) Yes    :  49   (1) Yes    :   3  
-    ##  (8) Residue:   0   (8) Residue:   0   (8) Residue:   0   (8) Residue:   0  
-    ##  NA's       :8573   NA's       :8573   NA's       :8573   NA's       :8573  
-    ##                                                                             
-    ##                                                                             
-    ##                                                                             
-    ##                   V4058                    V4234              V4235     
-    ##  (0) No out of range : 380   (1) Only one     :2076   (1) Yes    :  20  
-    ##  (8) 1 > out of range:  29   (2) More than one: 353   (2) No     : 291  
-    ##  NA's                :8573   (3) Don't know   : 311   (8) Residue:  87  
-    ##                              (8) Residue      :  87   NA's       :8584  
-    ##                              NA's             :6155                     
-    ##                                                                         
-    ##                                                                         
-    ##                V4241                   V4242                      V4243     
-    ##  (1) Knew/had seen:1176   (1) Yes         : 326   (1) Sight only     : 171  
-    ##  (2) Stranger     : 793   (2) Not sure    : 240   (2) Casual acquaint: 292  
-    ##  (3) Don't know   :  57   (3) No          : 271   (3) Well known     : 701  
-    ##  (6) DK if 2 or 3 :   0   (6) DK if 1 or 2:   0   (6) DK know if 2, 3:   1  
-    ##  (8) Residue      :  70   (8) Residue     :  83   (8) Residue        :  81  
-    ##  NA's             :6886   NA's            :8062   NA's               :7736  
-    ##                                                                             
-    ##          V4244                         V4245          V4248                      V4256     
-    ##  (1) Yes    : 307   (07) Boy/girlfrnd, ex : 149   Min.   : 2.000   (3) All strangers: 194  
-    ##  (2) No     : 424   (08) Friend or ex     : 139   1st Qu.: 2.000   (1) All known    :  83  
-    ##  (3) Other  :   4   (11) Neighbor         : 137   Median : 2.000   (2) Some known   :  37  
-    ##  (8) Residue:  96   (13) Other nonrelative: 114   Mean   : 7.992   (4) Don't know   :  20  
-    ##  NA's       :8151   (98) Residue          :  85   3rd Qu.: 3.000   (8) Residue      :  17  
-    ##                     (Other)               : 451   Max.   :98.000   (Other)          :   2  
-    ##                     NA's                  :7907   NA's   :8629     NA's             :8629  
-    ##            V4257                       V4258              V4259              V4260     
-    ##  (1) Yes      :  65   (1) At least 1 entry: 122   (0) No     :  85   (0) No     :  76  
-    ##  (2) Not sure :  63   (8) No good entry   :  17   (1) Yes    :  37   (1) Yes    :  46  
-    ##  (3) No       :  85   NA's                :8843   (8) Residue:  17   (8) Residue:  17  
-    ##  (6) DK 1 or 2:   0                               NA's       :8843   NA's       :8843  
-    ##  (8) Residue  :  18                                                                    
-    ##  NA's         :8751                                                                    
-    ##                                                                                        
-    ##          V4261                       V4262              V4263                       V4264     
-    ##  (0) No     :  77   (0) No out of range : 122   (1) Yes    :  65   (1) At least 1 entry:  87  
-    ##  (1) Yes    :  45   (8) 1 > out of range:  17   (2) No     :  98   (8) No good entry   :  17  
-    ##  (8) Residue:  17   NA's                :8843   (3) Other  :   0   NA's                :8878  
-    ##  NA's       :8843                               (8) Residue:  18                              
-    ##                                                 NA's       :8801                              
-    ##                                                                                               
-    ##                                                                                               
-    ##          V4265              V4266              V4267              V4268     
-    ##  (0) No     :  87   (0) No     :  83   (0) No     :  82   (0) No     :  84  
-    ##  (1) Yes    :   0   (1) Yes    :   4   (1) Yes    :   5   (1) Yes    :   3  
-    ##  (8) Residue:  17   (8) Residue:  17   (8) Residue:  17   (8) Residue:  17  
-    ##  NA's       :8878   NA's       :8878   NA's       :8878   NA's       :8878  
-    ##                                                                             
-    ##                                                                             
-    ##                                                                             
-    ##          V4269              V4270              V4271              V4272     
-    ##  (0) No     :  84   (0) No     :  83   (0) No     :  84   (0) No     :  66  
-    ##  (1) Yes    :   3   (1) Yes    :   4   (1) Yes    :   3   (1) Yes    :  21  
-    ##  (8) Residue:  17   (8) Residue:  17   (8) Residue:  17   (8) Residue:  17  
-    ##  NA's       :8878   NA's       :8878   NA's       :8878   NA's       :8878  
-    ##                                                                             
-    ##                                                                             
-    ##                                                                             
-    ##          V4273              V4274              V4275              V4276     
-    ##  (0) No     :  81   (0) No     :  84   (0) No     :  64   (0) No     :  85  
-    ##  (1) Yes    :   6   (1) Yes    :   3   (1) Yes    :  23   (1) Yes    :   2  
-    ##  (8) Residue:  17   (8) Residue:  17   (8) Residue:  17   (8) Residue:  17  
-    ##  NA's       :8878   NA's       :8878   NA's       :8878   NA's       :8878  
-    ##                                                                             
-    ##                                                                             
-    ##                                                                             
-    ##          V4277                       V4278              V4277A             V4277B    
-    ##  (0) No     :  62   (0) No out of range :  85   (0) No     :  87   (0) No     :  87  
-    ##  (1) Yes    :  25   (8) 1 > out of range:  19   (1) Yes    :   0   (1) Yes    :   0  
-    ##  (8) Residue:  17   NA's                :8878   (8) Residue:  17   (8) Residue:  17  
-    ##  NA's       :8878                               NA's       :8878   NA's       :8878  
-    ##                                                                                      
-    ##                                                                                      
-    ##                                                                                      
-    ##          V4277C             V4277D             V4277E                V4399     
-    ##  (0) No     :  87   (0) No     :  84   (0) No     :  87   (1) Yes       :3175  
-    ##  (1) Yes    :   0   (1) Yes    :   3   (1) Yes    :   0   (2) No        :5692  
-    ##  (8) Residue:  17   (8) Residue:  17   (8) Residue:  17   (3) Don't know: 103  
-    ##  NA's       :8878   NA's       :8878   NA's       :8878   (8) Residue   :  12  
-    ##                                                                                
-    ##                                                                                
-    ##                                                                                
-    ##                    V4529     
-    ##  (56) Theft $50-$249  :1689  
-    ##  (57) Theft $250+     :1431  
-    ##  (55) Theft $10-$49   :1011  
-    ##  (58) Theft value NA  : 799  
-    ##  (32) Burg, ent wo for: 637  
-    ##  (20) Verbal thr aslt : 609  
-    ##  (Other)              :2806
+    ##      YEARQ          IDHH              IDPER               V4012          WGTVICCY           V4016        
+    ##  Min.   :2021   Length:8982        Length:8982        Min.   :1.000   Min.   :  221.6   Min.   :  1.000  
+    ##  1st Qu.:2021   Class :character   Class :character   1st Qu.:1.000   1st Qu.:  867.3   1st Qu.:  1.000  
+    ##  Median :2021   Mode  :character   Mode  :character   Median :1.000   Median : 1352.3   Median :  1.000  
+    ##  Mean   :2021                                         Mean   :1.179   Mean   : 1674.9   Mean   :  4.324  
+    ##  3rd Qu.:2021                                         3rd Qu.:1.000   3rd Qu.: 2217.4   3rd Qu.:  1.000  
+    ##  Max.   :2021                                         Max.   :7.000   Max.   :10106.2   Max.   :998.000  
+    ##                                                                                                          
+    ##  V4017     V4018       V4019          V4021B     V4022        V4024       V4049       V4050       V4051     
+    ##  1:8825   1   : 127   1   :  10   7      :1855   1:  34   5      :3210   1   : 409   1   : 380   0   : 278  
+    ##  2: 131   2   :   4   2   : 117   9      :1217   2:  65   1      :1481   2   :1803   3   :  26   1   : 131  
+    ##  8:  26   8   :  26   8   :  26   2      :1145   3:7697   7      : 727   3   : 525   7   :   3   NA's:8573  
+    ##           NA's:8825   NA's:8829   3      : 940   4:1143   21     : 453   NA's:6245   NA's:8573              
+    ##                                   8      : 856   5:  39   16     : 449                                      
+    ##                                   4      : 833   8:   4   6      : 429                                      
+    ##                                   (Other):2136            (Other):2233                                      
+    ##   V4052       V4053       V4054       V4055       V4056       V4057       V4058       V4234       V4235     
+    ##  0   : 390   0   : 334   0   : 394   0   : 302   0   : 360   0   : 406   0   : 380   1   :2076   1   :  20  
+    ##  1   :  19   1   :  75   1   :  15   1   : 107   1   :  49   1   :   3   8   :  29   2   : 353   2   : 291  
+    ##  NA's:8573   NA's:8573   NA's:8573   NA's:8573   NA's:8573   NA's:8573   NA's:8573   3   : 311   8   :  87  
+    ##                                                                                      8   :  87   NA's:8584  
+    ##                                                                                      NA's:6155              
+    ##                                                                                                             
+    ##                                                                                                             
+    ##   V4241       V4242       V4243       V4244          V4245          V4248         V4256       V4257     
+    ##  1   :1176   1   : 326   1   : 171   1   : 307   7      : 149   Min.   : 2.000   1   :  83   1   :  65  
+    ##  2   : 793   2   : 240   2   : 292   2   : 424   8      : 139   1st Qu.: 2.000   2   :  37   2   :  63  
+    ##  3   :  57   3   : 271   3   : 701   3   :   4   11     : 137   Median : 2.000   3   : 194   3   :  85  
+    ##  8   :  70   8   :  83   6   :   1   8   :  96   13     : 114   Mean   : 7.992   4   :  20   8   :  18  
+    ##  NA's:6886   NA's:8062   8   :  81   NA's:8151   98     :  85   3rd Qu.: 3.000   6   :   2   NA's:8751  
+    ##                          NA's:7736               (Other): 451   Max.   :98.000   8   :  17              
+    ##                                                  NA's   :7907   NA's   :8629     NA's:8629              
+    ##   V4258       V4259       V4260       V4261       V4262       V4263       V4264       V4265       V4266     
+    ##  1   : 122   0   :  85   0   :  76   0   :  77   0   : 122   1   :  65   1   :  87   0   :  87   0   :  83  
+    ##  8   :  17   1   :  37   1   :  46   1   :  45   8   :  17   2   :  98   8   :  17   8   :  17   1   :   4  
+    ##  NA's:8843   8   :  17   8   :  17   8   :  17   NA's:8843   8   :  18   NA's:8878   NA's:8878   8   :  17  
+    ##              NA's:8843   NA's:8843   NA's:8843               NA's:8801                           NA's:8878  
+    ##                                                                                                             
+    ##                                                                                                             
+    ##                                                                                                             
+    ##   V4267       V4268       V4269       V4270       V4271       V4272       V4273       V4274       V4275     
+    ##  0   :  82   0   :  84   0   :  84   0   :  83   0   :  84   0   :  66   0   :  81   0   :  84   0   :  64  
+    ##  1   :   5   1   :   3   1   :   3   1   :   4   1   :   3   1   :  21   1   :   6   1   :   3   1   :  23  
+    ##  8   :  17   8   :  17   8   :  17   8   :  17   8   :  17   8   :  17   8   :  17   8   :  17   8   :  17  
+    ##  NA's:8878   NA's:8878   NA's:8878   NA's:8878   NA's:8878   NA's:8878   NA's:8878   NA's:8878   NA's:8878  
+    ##                                                                                                             
+    ##                                                                                                             
+    ##                                                                                                             
+    ##   V4276       V4277       V4278       V4277A      V4277B      V4277C      V4277D      V4277E     V4399   
+    ##  0   :  85   0   :  62   0   :  85   0   :  87   0   :  87   0   :  87   0   :  84   0   :  87   1:3175  
+    ##  1   :   2   1   :  25   8   :  19   8   :  17   8   :  17   8   :  17   1   :   3   8   :  17   2:5692  
+    ##  8   :  17   8   :  17   NA's:8878   NA's:8878   NA's:8878   NA's:8878   8   :  17   NA's:8878   3: 103  
+    ##  NA's:8878   NA's:8878                                                   NA's:8878               8:  12  
+    ##                                                                                                          
+    ##                                                                                                          
+    ##                                                                                                          
+    ##      V4529     
+    ##  56     :1689  
+    ##  57     :1431  
+    ##  55     :1011  
+    ##  58     : 799  
+    ##  32     : 637  
+    ##  20     : 609  
+    ##  (Other):2806
 
 ``` r
-write_rds(inc_slim, here("AnalysisData", "ncvs_2021_incident.rds"))
+inc_temp_loc <- here("osf_dl", "ncvs_2021_incident.rds")
+write_rds(inc_slim, inc_temp_loc)
+target_dir <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") 
+osf_upload(target_dir, path=inc_temp_loc, conflicts="overwrite")
+```
+
+    ## # A tibble: 1 × 3
+    ##   name                   id                       meta            
+    ##   <chr>                  <chr>                    <list>          
+    ## 1 ncvs_2021_incident.rds 647cfbcd85df4808fa7753f2 <named list [3]>
+
+``` r
+unlink(inc_temp_loc)
 ```
 
 ## Person data file
 
 ``` r
-persfiles <- load(here("RawData", "NCVS_2021", "ICPSR_38429", "DS0003", "38429-0003-Data.rda"),
-     verbose=TRUE)
+pers_file_osf_det <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
+  osf_ls_files(path="NCVS_2021/DS0003") %>%
+  osf_download(conflicts="overwrite", path=here("osf_dl"))
+
+persfiles <- load(pull(pers_file_osf_det, local_path), verbose=TRUE)
 ```
 
     ## Loading objects:
@@ -243,62 +278,84 @@ persfiles <- load(here("RawData", "NCVS_2021", "ICPSR_38429", "DS0003", "38429-0
 pers_in <- get(persfiles) %>%
   as_tibble()
 
+unlink(pull(pers_file_osf_det, local_path))
+
 pers_slim <- pers_in %>%
   select(
     YEARQ, IDHH, IDPER, WGTPERCY, # identifiers and weight
     V3014, V3015, V3018, V3023A, V3024, V3084, V3086 
     # age, marital status, sex, race, hispanic origin, gender, sexual orientation
+  ) %>%
+  mutate(
+    IDHH=as.character(IDHH),
+    IDPER=as.character(IDPER),
+    across(where(is.factor), make_num_fact)
   )
 ```
 
     ## select: dropped 418 variables (V3001, V3002, V3003, V3004, V3005, …)
 
+    ## mutate: converted 'IDHH' from factor to character (0 new NA)
+
+    ##         converted 'IDPER' from factor to character (0 new NA)
+
+    ##         changed 291,878 values (100%) of 'V3015' (0 new NA)
+
+    ##         changed 291,878 values (100%) of 'V3018' (0 new NA)
+
+    ##         changed 291,878 values (100%) of 'V3023A' (0 new NA)
+
+    ##         changed 291,878 values (100%) of 'V3024' (0 new NA)
+
+    ##         changed 216,287 values (74%) of 'V3084' (0 new NA)
+
+    ##         changed 216,287 values (74%) of 'V3086' (0 new NA)
+
 ``` r
 summary(pers_slim)
 ```
 
-    ##      YEARQ                             IDHH                                IDPER       
-    ##  Min.   :2021   1836871692353234563244164:    20   171005136582712356493416301:     2  
-    ##  1st Qu.:2021   1925751333331323563434126:    20   171005136582712356493416302:     2  
-    ##  Median :2021   1955834133528905565959117:    20   171005136582712356493416303:     2  
-    ##  Mean   :2021   2039603903163915564492131:    20   171005136582712356493416304:     2  
-    ##  3rd Qu.:2021   2092801999265729563608161:    20   171005192538805556494916301:     2  
-    ##  Max.   :2021   1711814192521784563459133:    18   171005392545800456494413301:     2  
-    ##                 (Other)                  :291760   (Other)                    :291866  
-    ##     WGTPERCY           V3014                     V3015                V3018       
-    ##  Min.   :    0.0   Min.   :12.00   (1) Married      :148131   (1) Male   :140922  
-    ##  1st Qu.:  432.2   1st Qu.:31.00   (2) Widowed      : 17668   (2) Female :150956  
-    ##  Median :  791.5   Median :48.00   (3) Divorced     : 28596   (8) Residue:     0  
-    ##  Mean   :  956.5   Mean   :47.57   (4) Separated    :  4524                       
-    ##  3rd Qu.: 1397.4   3rd Qu.:64.00   (5) Never married: 90425                       
-    ##  Max.   :10691.5   Max.   :90.00   (8) Residue      :  2534                       
-    ##                                                                                   
-    ##                         V3023A               V3024       
-    ##  (01) White only           :236785   (1) Yes    : 41450  
-    ##  (02) Black only           : 30972   (2) No     :249306  
-    ##  (04) Asian only           : 16337   (8) Residue:  1122  
-    ##  (03) Am Ind/AK native only:  1776                       
-    ##  (06) White-Black          :  1590                       
-    ##  (07) White-Amer Ind       :  1465                       
-    ##  (Other)                   :  2953                       
-    ##                                        V3084                      V3086       
-    ##  (8) Residue                              :151725   (1) Male         : 29733  
-    ##  (2) Straight, that is, not lesbian or gay: 61108   (2) Female       : 34489  
-    ##  (6) Refused                              :  1477   (3) Transgender  :    56  
-    ##  (1) Lesbian or gay                       :   924   (4) None of these:   115  
-    ##  (3) Bisexual                             :   611   (8) Residue      :151894  
-    ##  (Other)                                  :   442   NA's             : 75591  
-    ##  NA's                                     : 75591
+    ##      YEARQ          IDHH              IDPER              WGTPERCY           V3014       V3015      V3018     
+    ##  Min.   :2021   Length:291878      Length:291878      Min.   :    0.0   Min.   :12.00   1:148131   1:140922  
+    ##  1st Qu.:2021   Class :character   Class :character   1st Qu.:  432.2   1st Qu.:31.00   2: 17668   2:150956  
+    ##  Median :2021   Mode  :character   Mode  :character   Median :  791.5   Median :48.00   3: 28596             
+    ##  Mean   :2021                                         Mean   :  956.5   Mean   :47.57   4:  4524             
+    ##  3rd Qu.:2021                                         3rd Qu.: 1397.4   3rd Qu.:64.00   5: 90425             
+    ##  Max.   :2021                                         Max.   :10691.5   Max.   :90.00   8:  2534             
+    ##                                                                                                              
+    ##      V3023A       V3024          V3084         V3086       
+    ##  1      :236785   1: 41450   8      :151725   1   : 29733  
+    ##  2      : 30972   2:249306   2      : 61108   2   : 34489  
+    ##  4      : 16337   8:  1122   6      :  1477   3   :    56  
+    ##  3      :  1776              1      :   924   4   :   115  
+    ##  6      :  1590              3      :   611   8   :151894  
+    ##  7      :  1465              (Other):   442   NA's: 75591  
+    ##  (Other):  2953              NA's   : 75591
 
 ``` r
-write_rds(pers_slim, here("AnalysisData", "ncvs_2021_person.rds"))
+pers_temp_loc <- here("osf_dl", "ncvs_2021_person.rds")
+write_rds(pers_slim, pers_temp_loc)
+target_dir <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") 
+osf_upload(target_dir, path=pers_temp_loc, conflicts="overwrite")
+```
+
+    ## # A tibble: 1 × 3
+    ##   name                 id                       meta            
+    ##   <chr>                <chr>                    <list>          
+    ## 1 ncvs_2021_person.rds 647cfe9ba8dbe909bacb51bf <named list [3]>
+
+``` r
+unlink(pers_temp_loc)
 ```
 
 ## Household data file
 
 ``` r
-hhfiles <- load(here("RawData", "NCVS_2021", "ICPSR_38429", "DS0002", "38429-0002-Data.rda"),
-     verbose=TRUE)
+hh_file_osf_det <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
+  osf_ls_files(path="NCVS_2021/DS0002") %>%
+  osf_download(conflicts="overwrite", path=here("osf_dl"))
+
+hhfiles <- load(pull(hh_file_osf_det, local_path), verbose=TRUE)
 ```
 
     ## Loading objects:
@@ -308,63 +365,73 @@ hhfiles <- load(here("RawData", "NCVS_2021", "ICPSR_38429", "DS0002", "38429-000
 hh_in <- get(hhfiles) %>%
   as_tibble()
 
+unlink(pull(hh_file_osf_det, local_path))
+
 hh_slim <- hh_in %>%
   select(
     YEARQ, IDHH, WGTHHCY, V2117, V2118, # identifiers, weight, design
     V2015, V2143, SC214A, V2122, V2126B, V2127B, V2129
     # tenure, urbanicity, income, family structure, place size, region, msa status
+  ) %>%
+  mutate(
+    IDHH=as.character(IDHH),
+    across(where(is.factor), make_num_fact)
   )
 ```
 
     ## select: dropped 440 variables (V2001, V2002, V2003, V2004, V2005, …)
 
+    ## mutate: converted 'IDHH' from factor to character (0 new NA)
+
+    ##         changed 150,138 values (59%) of 'V2015' (0 new NA)
+
+    ##         changed 256,460 values (100%) of 'V2143' (0 new NA)
+
+    ##         changed 253,779 values (99%) of 'SC214A' (0 new NA)
+
+    ##         changed 256,460 values (100%) of 'V2122' (0 new NA)
+
+    ##         changed 256,460 values (100%) of 'V2126B' (0 new NA)
+
+    ##         changed 256,460 values (100%) of 'V2127B' (0 new NA)
+
+    ##         changed 256,460 values (100%) of 'V2129' (0 new NA)
+
 ``` r
 summary(hh_slim)
 ```
 
-    ##      YEARQ                             IDHH           WGTHHCY           V2117       
-    ##  Min.   :2021   1710051325461935564934133:     2   Min.   :   0.0   Min.   :  1.00  
-    ##  1st Qu.:2021   1710051365827123564934163:     2   1st Qu.:   0.0   1st Qu.: 24.00  
-    ##  Median :2021   1710051925388055564949163:     2   Median : 399.4   Median : 48.00  
-    ##  Mean   :2021   1710051925567116564949143:     2   Mean   : 504.2   Mean   : 58.85  
-    ##  3rd Qu.:2021   1710053925458004564944133:     2   3rd Qu.: 829.1   3rd Qu.: 88.00  
-    ##  Max.   :2021   1710053965525445564944113:     2   Max.   :4515.8   Max.   :160.00  
-    ##                 (Other)                  :256448                                    
-    ##      V2118                        V2015                 V2143       
-    ##  Min.   :1.000   (1) Owned/being bght:101944   (1) Urban   : 26878  
-    ##  1st Qu.:1.000   (2) Rented for cash : 46269   (2) Suburban:173491  
-    ##  Median :2.000   (3) No cash rent    :  1925   (3) Rural   : 56091  
-    ##  Mean   :1.526   (8) Residue         :     0   (8) Residue :     0  
-    ##  3rd Qu.:2.000   NA's                :106322                        
-    ##  Max.   :3.000                                                      
-    ##                                                                     
-    ##                      SC214A      
-    ##  (13) $50,000 to $74,999: 44601  
-    ##  (16) $100,000-$149,999 : 34287  
-    ##  (15) $75,000 to $99,999: 33353  
-    ##  (12) $40,000 to $49,999: 23282  
-    ##  (18) $200,000 or more  : 16892  
-    ##  (Other)                :101364  
-    ##  NA's                   :  2681  
-    ##                                                                V2122       
-    ##  (33) Other combinations                                          :106322  
-    ##  (32) Lone female reference person only                           : 28306  
-    ##  (16) Lone male reference person only                             : 23617  
-    ##  (08) Male reference person, married female partner only          : 21383  
-    ##  (24) Female reference person, married male partner only          : 15629  
-    ##  (04) Male reference person, married female partner, children only: 10477  
-    ##  (Other)                                                          : 50726  
-    ##                   V2126B                V2127B                      V2129       
-    ##  (00) Not in a place :69484   (1) Northeast:41585   (1) City of (S)MSA : 80895  
-    ##  (16) 10,000-49,999  :53002   (2) Midwest  :74666   (2) (S)MSA not city:135438  
-    ##  (13) Under 10,000   :39873   (3) South    :87783   (3) Not (S)MSA     : 40127  
-    ##  (17) 50,000-99,999  :27205   (4) West     :52426   (8) Residue        :     0  
-    ##  (18) 100,000-249,999:24461                                                     
-    ##  (20) 500,000-999,999:15194                                                     
-    ##  (Other)             :27241
+    ##      YEARQ          IDHH              WGTHHCY           V2117            V2118        V2015        V2143     
+    ##  Min.   :2021   Length:256460      Min.   :   0.0   Min.   :  1.00   Min.   :1.000   1   :101944   1: 26878  
+    ##  1st Qu.:2021   Class :character   1st Qu.:   0.0   1st Qu.: 24.00   1st Qu.:1.000   2   : 46269   2:173491  
+    ##  Median :2021   Mode  :character   Median : 399.4   Median : 48.00   Median :2.000   3   :  1925   3: 56091  
+    ##  Mean   :2021                      Mean   : 504.2   Mean   : 58.85   Mean   :1.526   NA's:106322             
+    ##  3rd Qu.:2021                      3rd Qu.: 829.1   3rd Qu.: 88.00   3rd Qu.:2.000                           
+    ##  Max.   :2021                      Max.   :4515.8   Max.   :160.00   Max.   :3.000                           
+    ##                                                                                                              
+    ##      SC214A           V2122            V2126B      V2127B    V2129     
+    ##  13     : 44601   33     :106322   0      :69484   1:41585   1: 80895  
+    ##  16     : 34287   32     : 28306   16     :53002   2:74666   2:135438  
+    ##  15     : 33353   16     : 23617   13     :39873   3:87783   3: 40127  
+    ##  12     : 23282   8      : 21383   17     :27205   4:52426             
+    ##  18     : 16892   24     : 15629   18     :24461                       
+    ##  (Other):101364   4      : 10477   20     :15194                       
+    ##  NA's   :  2681   (Other): 50726   (Other):27241
 
 ``` r
-write_rds(hh_slim, here("AnalysisData", "ncvs_2021_household.rds"))
+hh_temp_loc <- here("osf_dl", "ncvs_2021_household.rds")
+write_rds(hh_slim, hh_temp_loc)
+target_dir <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") 
+osf_upload(target_dir, path=hh_temp_loc, conflicts="overwrite")
+```
+
+    ## # A tibble: 1 × 3
+    ##   name                    id                       meta            
+    ##   <chr>                   <chr>                    <list>          
+    ## 1 ncvs_2021_household.rds 647cfe323c3a380880a046d8 <named list [3]>
+
+``` r
+unlink(hh_temp_loc)
 ```
 
 ## Resources

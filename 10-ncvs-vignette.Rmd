@@ -48,16 +48,35 @@ Each record on the incident file represents one victimization, which is not the 
 library(tidyverse)
 library(srvyr)
 library(gt)
+library(osfr)
 
-inc_in <-
-  read_rds(here::here("AnalysisData", "ncvs_2021_incident.rds"))
+get_file_osf_tsr <- function(fn){
+#' Downloads file from Tidy Survey Analysis in R
+#' Reads in file
+#' Deletes file from computer
+  
+  dat_det <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") %>%
+    osf_ls_files() %>%
+    filter(name==fn) %>%
+    osf_download(conflicts="overwrite", path="osf_dl")
+  
+  out <- dat_det %>%
+    pull(local_path) %>%
+    read_rds()
+  
+  unlink(pull(dat_det, local_path))
+  
+  return(out)
+}
+
+inc_in <- get_file_osf_tsr("ncvs_2021_incident.rds")
 
 inc_series <- inc_in %>%
   mutate(
     series = case_when(
-      str_detect(V4017, "(1)|(8)") |
-        str_detect(V4018, "(2)|(8)") |
-        str_detect(V4019, "(1)|(8)") ~ 1,
+      V4017 %in% c(1, 8) ~ 1,
+      V4018 %in% c(2, 8) ~ 1,
+      V4019 %in% c(1, 8) ~ 1,
       TRUE ~ 2 # series
     ),
     n10v4016 = case_when(V4016 %in% c(997, 998) ~ NA_real_,
@@ -164,21 +183,19 @@ A brief codebook for this section is as follows:
 #| label: inc-inds
 
 inc_ind <- inc_series %>%
-  filter(V4022 != "(1) Outside U.S.") %>%
+  filter(V4022 != 1) %>%
   mutate(
     WeapCat = case_when(
       is.na(V4049) ~ NA_character_,
-      V4049 == "(2) No" ~ "NoWeap",
-      V4049 == "(3) Don't know" ~ "UnkWeapUse",
-      V4050 == "(3) Yes weapon-NA" ~ "Other",
-      V4051 == "(1) Yes" |
-        V4052 == "(1) Yes" | V4050 == "(7) Gun type unknown" ~
-        "Firearm",
-      V4053 == "(1) Yes" | V4054 == "(1) Yes" ~ "Knife",
+      V4049 == 2 ~ "NoWeap",
+      V4049 == 3 ~ "UnkWeapUse",
+      V4050 == 3 ~ "Other",
+      V4051 == 1 | V4052 == 1 | V4050 == 7 ~ "Firearm",
+      V4053 == 1 | V4054 == 1 ~ "Knife",
       TRUE ~ "Other"
     ),
     V4529_num = parse_number(as.character(V4529)),
-    ReportPolice = V4399 == "(1) Yes",
+    ReportPolice = V4399 == 1,
     Property = V4529_num >= 31,
     Violent = V4529_num <= 20,
     Property_ReportPolice = Property & ReportPolice,
@@ -245,11 +262,9 @@ where $w_{ijk}$ is the person weight (`WGTPERCY`) for personal crimes or the hou
 ```{r}
 #| label: merge-inc-sum
 
-hh_in <-
-  read_rds(here::here("AnalysisData", "ncvs_2021_household.rds"))
+hh_in <- get_file_osf_tsr("ncvs_2021_household.rds")
 
-pers_in <-
-  read_rds(here::here("AnalysisData", "ncvs_2021_person.rds"))
+pers_in <- get_file_osf_tsr("ncvs_2021_person.rds")
 
 # Set up a list of 0s for each crime type/characteristic to replace NA's
 hh_z_list <- rep(0, ncol(inc_hh_sums) - 3) %>% as.list() %>%
@@ -358,26 +373,42 @@ Brief codebook for person variables:
 hh_vsum_der <- hh_vsum %>%
   mutate(
     Tenure = factor(
-      case_when(str_detect(V2015, "1") ~ "Owned",!is.na(V2015) ~ "Rented"),
+      case_when(V2015==1 ~ "Owned",!is.na(V2015) ~ "Rented"),
       levels = c("Owned", "Rented")
     ),
-    Urbanicity = fct_reorder(str_remove(V2143, "\\(\\d\\) "),
-                             as.numeric(V2143)),
-    SC214A_num = as.numeric(str_extract(SC214A, "\\d+")),
+    Urbanicity = factor(case_when(
+      V2143==1~"Urban",
+      V2143==2~"Suburban",
+      V2143==3~"Rural"
+    ), levels=c("Urban", "Suburban", "Rural")),
+    SC214A_num = as.numeric(as.character(SC214A)),
     Income = case_when(
       SC214A_num <= 8 ~ "Less than $25,000",
       SC214A_num <= 12 ~ "$25,000-49,999",
       SC214A_num <= 15 ~ "$50,000-99,999",
       SC214A_num <= 17 ~ "$100,000-199,999",
-      SC214A_num <= 18 ~ "$200,000 or more",
+      SC214A_num <= 18 ~ "$200,000 or more"
     ),
-    Income = fct_reorder(Income, SC214A_num),
-    V2126B_num = as.numeric(str_extract(V2126B, "\\d+")),
-    PlaceSize = case_when(
-      V2126B_num <= 20 ~ str_sub(V2126B, 6),!is.na(V2126B_num) ~ "1,000,000 or more"
+    Income = fct_reorder(Income, SC214A_num, .na_rm = FALSE),
+    PlaceSize = case_match(
+      as.numeric(as.character(V2126B)),
+      0 ~ "Not in a place",
+      13 ~ "Under 10,000",
+      16 ~ "10,000-49,999",
+      17 ~ "50,000-99,999",
+      18 ~ "100,000-249,999",
+      19 ~ "250,000-499,999",
+      20 ~ "500,000-999,999",
+      c(21, 22, 23)~"1,000,000 or more"),
+    PlaceSize=fct_reorder(PlaceSize, as.numeric(V2126B)),
+    Region= case_match(
+      as.numeric(V2127B),
+      1~"Northeast",
+      2~"Midwest",
+      3~"South",
+      4~"West"
     ),
-    PlaceSize = fct_reorder(PlaceSize, V2126B_num),
-    Region = fct_reorder(str_sub(V2127B, 5), as.numeric(V2127B))
+    Region=fct_reorder(Region, as.numeric(V2127B))
   )
 
 hh_vsum_der %>% count(Tenure, V2015)
@@ -395,34 +426,44 @@ hh_vsum_slim <- hh_vsum_der %>%
          PlaceSize,
          Region)
 
+
 NHOPI <- "Native Hawaiian or Other Pacific Islander" # made for usage later
 pers_vsum_der <- pers_vsum %>%
   mutate(
-    Sex = fct_reorder(str_sub(V3018, 5), as.numeric(V3018)),
+    Sex = factor(
+      case_when(
+        V3018==1~"Male",
+        V3018==2~"Female"
+      )
+    ),
     RaceHispOrigin = factor(
       case_when(
-        str_detect(V3024, "Yes") ~ "Hispanic",
-        str_detect(V3023A, "White only") ~ "White",
-        str_detect(V3023A, "Black only") ~ "Black",
-        str_detect(V3023A, "Asian only") ~ "Asian",
-        str_detect(V3023A, "Hawaiian/Pacific IS only") ~ NHOPI,
+        V3024==1 ~ "Hispanic",
+        V3023A==1 ~ "White",
+        V3023A==2 ~ "Black",
+        V3023A==4 ~ "Asian",
+        V3023A==5 ~ NHOPI,
         TRUE ~ "Other"
       ),
-      levels = c("White", "Black", "Hispanic", NHOPI, "Other")
+      levels = c("White", "Black", "Hispanic", "Asian", NHOPI, "Other")
     ),
+    V3014_num=as.numeric(as.character(V3014)),
     AgeGroup = case_when(
-      V3014 <= 17 ~ "12-17",
-      V3014 <= 24 ~ "18-24",
-      V3014 <= 34 ~ "25-34",
-      V3014 <= 49 ~ "35-49",
-      V3014 <= 64 ~ "50-64",
-      V3014 <= 90 ~ "65 or older",
+      V3014_num <= 17 ~ "12-17",
+      V3014_num <= 24 ~ "18-24",
+      V3014_num <= 34 ~ "25-34",
+      V3014_num <= 49 ~ "35-49",
+      V3014_num <= 64 ~ "50-64",
+      V3014_num <= 90 ~ "65 or older",
     ),
-    AgeGroup = fct_reorder(AgeGroup, V3014),
+    AgeGroup = fct_reorder(AgeGroup, V3014_num),
     MaritalStatus = factor(
       case_when(
-        str_detect(V3015, "Residue") ~ NA_character_,
-        TRUE ~ str_sub(V3015, 5)
+        V3015==1~"Married",
+        V3015==2~"Widowed",
+        V3015==3~"Divorced",
+        V3015==4~"Separated",
+        V3015==5~"Never married"
       ),
       levels = c("Never married", "Married", "Widowed",
                  "Divorced", "Separated")
@@ -432,7 +473,6 @@ pers_vsum_der <- pers_vsum %>%
             by = c("YEARQ", "IDHH"))
 
 pers_vsum_der %>% count(Sex, V3018)
-pers_vsum_der %>% count(V3023A)
 pers_vsum_der %>% count(RaceHispOrigin, V3024)
 pers_vsum_der %>%
   filter(RaceHispOrigin != "Hispanic" | is.na(RaceHispOrigin)) %>%
