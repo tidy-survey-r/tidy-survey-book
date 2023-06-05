@@ -15,24 +15,31 @@ library(here) #easy relative paths
 library(tidyverse) #data manipulation
 library(haven) #data import
 library(tidylog) #informative logging messages
+library(osfr)
 ```
 
 ## Import data and create derived variables
 
 ``` r
-recs_in <- read_csv(here("RawData", "RECS_2020", "recs2020_public_v1.csv"))
+recs_file_osf_det <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
+  osf_ls_files(path="RECS_2020", pattern="csv") %>%
+  osf_download(conflicts="overwrite", path=here("osf_dl"))
+
+recs_in <- read_csv(pull(recs_file_osf_det, local_path))
 ```
 
     ## Rows: 18496 Columns: 601
-    ## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    ## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────
     ## Delimiter: ","
     ## chr   (8): REGIONC, DIVISION, STATE_FIPS, state_postal, state_name, BA_climate, IECC_climate_code, UATYP10
-    ## dbl (593): DOEID, HDD65, CDD65, HDD30YR_pub, CDD30YR_pub, TYPEHUQ, CELLAR, CRAWL, CONCRETE, BASEOTH, BASEFIN, ATTIC, ATTICFIN, STORIES, PRKGPL...
+    ## dbl (593): DOEID, HDD65, CDD65, HDD30YR_pub, CDD30YR_pub, TYPEHUQ, CELLAR, CRAWL, CONCRETE, BASEOTH, BASEFI...
     ## 
     ## ℹ Use `spec()` to retrieve the full column specification for this data.
     ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ``` r
+unlink(pull(recs_file_osf_det, local_path))
+
 #TOTCSQFT, TOTHSQFT, TOTSQFT_EN, TOTUCSQFT, TOTUSQFT, CDD50, HDD50, GNDHDD65, BTUEL, DOLLAREL, , BTUNG, DOLLARNG, BTULP, DOLLARLP, BTUFO, DOLLARFO, TOTALBTU, TOTALDOL, BTUWOOD=WOODBTU, BTUPELLET=PELLETBTU 
 
 recs <- recs_in %>%
@@ -350,39 +357,67 @@ recs_out <- recs %>%
 summary(recs_out)
 ```
 
-    ##      DOEID         STATE_FIPS        state_postal        state_name              Region                   Division            Urbanicity   
-    ##  Min.   :100001   Length:18496       Length:18496       Length:18496       Northeast:3657   South Atlantic    :3256   Urban Area   :12395  
-    ##  1st Qu.:104625   Class :character   Class :character   Class :character   Midwest  :3832   Pacific           :2497   Urban Cluster: 2020  
-    ##  Median :109249   Mode  :character   Mode  :character   Mode  :character   South    :6426   East North Central:2014   Rural        : 4081  
-    ##  Mean   :109249                                                            West     :4581   Middle Atlantic   :1977                        
-    ##  3rd Qu.:113872                                                                             West South Central:1827                        
-    ##  Max.   :118496                                                                             West North Central:1818                        
-    ##                                                                                             (Other)           :5107                        
-    ##                    HousingUnitType         YearMade    SpaceHeatingUsed                                      HeatingBehavior WinterTempDay  
-    ##  Mobile home               :  974   1970-1979  :2817   Mode :logical    Set one temp and leave it                    :7776   Min.   :50.00  
-    ##  Single-family detached    :12319   2000-2009  :2748   FALSE:791        Manually adjust at night/no one home         :4644   1st Qu.:68.00  
-    ##  Single-family attached    : 1751   Before 1950:2721   TRUE :17705      Program thermostat to change at certain times:3310   Median :70.00  
-    ##  Apartment: 2-4 Units      : 1013   1990-1999  :2451                    Turn on or off as needed                     :1491   Mean   :69.77  
-    ##  Apartment: 5 or more units: 2439   1980-1989  :2435                    No control                                   : 438   3rd Qu.:72.00  
-    ##                                     1960-1969  :1867                    Other                                        :  46   Max.   :90.00  
-    ##                                     (Other)    :3457                    NA                                           : 791   NA's   :791    
-    ##  WinterTempAway  WinterTempNight   ACUsed                                                ACBehavior   SummerTempDay   SummerTempAway 
-    ##  Min.   :50.00   Min.   :50.00   Mode :logical   Set one temp and leave it                    :6687   Min.   :50.00   Min.   :50.00  
-    ##  1st Qu.:65.00   1st Qu.:65.00   FALSE:2396      Manually adjust at night/no one home         :3637   1st Qu.:70.00   1st Qu.:70.00  
-    ##  Median :68.00   Median :68.00   TRUE :16100     Program thermostat to change at certain times:2637   Median :72.00   Median :74.00  
-    ##  Mean   :67.46   Mean   :68.02                   Turn on or off as needed                     :2727   Mean   :72.01   Mean   :73.45  
-    ##  3rd Qu.:70.00   3rd Qu.:70.00                   No control                                   : 409   3rd Qu.:75.00   3rd Qu.:78.00  
-    ##  Max.   :90.00   Max.   :90.00                   Other                                        :   3   Max.   :90.00   Max.   :90.00  
-    ##  NA's   :791     NA's   :791                     NA                                           :2396   NA's   :2396    NA's   :2396   
-    ##  SummerTempNight    NWEIGHT           CDD30YR         CDD65         ClimateRegion_BA       ClimateRegion_IECC    HDD30YR          HDD65      
-    ##  Min.   :50.00   Min.   :  437.9   Min.   :   0   Min.   :   0   Cold       :7116    4A: Mixed Humid:4095     Min.   :    0   Min.   :    0  
-    ##  1st Qu.:68.00   1st Qu.: 4018.7   1st Qu.: 601   1st Qu.: 814   Mixed-Humid:5579    5A: Cool Humid :4014     1st Qu.: 2898   1st Qu.: 2434  
-    ##  Median :72.00   Median : 6119.4   Median :1020   Median :1179   Hot-Humid  :2545    3A: Warm Humid :2160     Median : 4825   Median : 4396  
-    ##  Mean   :71.22   Mean   : 6678.7   Mean   :1310   Mean   :1526   Hot-Dry    :1577    6A: Cold Humid :1654     Mean   : 4679   Mean   : 4272  
-    ##  3rd Qu.:74.00   3rd Qu.: 8890.0   3rd Qu.:1703   3rd Qu.:1805   Marine     : 911    2A: Hot Humid  :1459     3rd Qu.: 6290   3rd Qu.: 5810  
-    ##  Max.   :90.00   Max.   :29279.1   Max.   :4905   Max.   :5534   Very-Cold  : 572    3B: Warm Dry   :1144     Max.   :16071   Max.   :17383  
-    ##  NA's   :2396                                                    (Other)    : 196    (Other)        :3970
+    ##      DOEID         STATE_FIPS        state_postal        state_name              Region    
+    ##  Min.   :100001   Length:18496       Length:18496       Length:18496       Northeast:3657  
+    ##  1st Qu.:104625   Class :character   Class :character   Class :character   Midwest  :3832  
+    ##  Median :109249   Mode  :character   Mode  :character   Mode  :character   South    :6426  
+    ##  Mean   :109249                                                            West     :4581  
+    ##  3rd Qu.:113872                                                                            
+    ##  Max.   :118496                                                                            
+    ##                                                                                            
+    ##                Division            Urbanicity                      HousingUnitType         YearMade   
+    ##  South Atlantic    :3256   Urban Area   :12395   Mobile home               :  974   1970-1979  :2817  
+    ##  Pacific           :2497   Urban Cluster: 2020   Single-family detached    :12319   2000-2009  :2748  
+    ##  East North Central:2014   Rural        : 4081   Single-family attached    : 1751   Before 1950:2721  
+    ##  Middle Atlantic   :1977                         Apartment: 2-4 Units      : 1013   1990-1999  :2451  
+    ##  West South Central:1827                         Apartment: 5 or more units: 2439   1980-1989  :2435  
+    ##  West North Central:1818                                                            1960-1969  :1867  
+    ##  (Other)           :5107                                                            (Other)    :3457  
+    ##  SpaceHeatingUsed                                      HeatingBehavior WinterTempDay   WinterTempAway 
+    ##  Mode :logical    Set one temp and leave it                    :7776   Min.   :50.00   Min.   :50.00  
+    ##  FALSE:791        Manually adjust at night/no one home         :4644   1st Qu.:68.00   1st Qu.:65.00  
+    ##  TRUE :17705      Program thermostat to change at certain times:3310   Median :70.00   Median :68.00  
+    ##                   Turn on or off as needed                     :1491   Mean   :69.77   Mean   :67.46  
+    ##                   No control                                   : 438   3rd Qu.:72.00   3rd Qu.:70.00  
+    ##                   Other                                        :  46   Max.   :90.00   Max.   :90.00  
+    ##                   NA                                           : 791   NA's   :791     NA's   :791    
+    ##  WinterTempNight   ACUsed                                                ACBehavior   SummerTempDay  
+    ##  Min.   :50.00   Mode :logical   Set one temp and leave it                    :6687   Min.   :50.00  
+    ##  1st Qu.:65.00   FALSE:2396      Manually adjust at night/no one home         :3637   1st Qu.:70.00  
+    ##  Median :68.00   TRUE :16100     Program thermostat to change at certain times:2637   Median :72.00  
+    ##  Mean   :68.02                   Turn on or off as needed                     :2727   Mean   :72.01  
+    ##  3rd Qu.:70.00                   No control                                   : 409   3rd Qu.:75.00  
+    ##  Max.   :90.00                   Other                                        :   3   Max.   :90.00  
+    ##  NA's   :791                     NA                                           :2396   NA's   :2396   
+    ##  SummerTempAway  SummerTempNight    NWEIGHT           CDD30YR         CDD65         ClimateRegion_BA
+    ##  Min.   :50.00   Min.   :50.00   Min.   :  437.9   Min.   :   0   Min.   :   0   Cold       :7116   
+    ##  1st Qu.:70.00   1st Qu.:68.00   1st Qu.: 4018.7   1st Qu.: 601   1st Qu.: 814   Mixed-Humid:5579   
+    ##  Median :74.00   Median :72.00   Median : 6119.4   Median :1020   Median :1179   Hot-Humid  :2545   
+    ##  Mean   :73.45   Mean   :71.22   Mean   : 6678.7   Mean   :1310   Mean   :1526   Hot-Dry    :1577   
+    ##  3rd Qu.:78.00   3rd Qu.:74.00   3rd Qu.: 8890.0   3rd Qu.:1703   3rd Qu.:1805   Marine     : 911   
+    ##  Max.   :90.00   Max.   :90.00   Max.   :29279.1   Max.   :4905   Max.   :5534   Very-Cold  : 572   
+    ##  NA's   :2396    NA's   :2396                                                    (Other)    : 196   
+    ##        ClimateRegion_IECC    HDD30YR          HDD65      
+    ##  4A: Mixed Humid:4095     Min.   :    0   Min.   :    0  
+    ##  5A: Cool Humid :4014     1st Qu.: 2898   1st Qu.: 2434  
+    ##  3A: Warm Humid :2160     Median : 4825   Median : 4396  
+    ##  6A: Cold Humid :1654     Mean   : 4679   Mean   : 4272  
+    ##  2A: Hot Humid  :1459     3rd Qu.: 6290   3rd Qu.: 5810  
+    ##  3B: Warm Dry   :1144     Max.   :16071   Max.   :17383  
+    ##  (Other)        :3970
 
 ``` r
-write_rds(recs_out, here("AnalysisData", "recs_2020.rds"))
+recs_der_tmp_loc <- here("osf_dl", "recs_2020.rds")
+write_rds(recs_out, recs_der_tmp_loc)
+target_dir <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") 
+osf_upload(target_dir, path=recs_der_tmp_loc, conflicts="overwrite")
+```
+
+    ## # A tibble: 1 × 3
+    ##   name          id                       meta            
+    ##   <chr>         <chr>                    <list>          
+    ## 1 recs_2020.rds 647d2d6bbf3d0f09b6d87a32 <named list [3]>
+
+``` r
+unlink(recs_der_tmp_loc)
 ```
