@@ -26,6 +26,7 @@ library(here) #easy relative paths
 library(tidyverse) #data manipulation
 library(haven) #data import
 library(tidylog) #informative logging messages
+library(osfr)
 ```
 
 ## Import data and create derived variables
@@ -33,7 +34,13 @@ library(tidylog) #informative logging messages
 ```{r}
 #| label: derivedata
 
-recs_in <- read_csv(here("RawData", "RECS_2020", "recs2020_public_v1.csv"))
+recs_file_osf_det <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
+  osf_ls_files(path="RECS_2020", pattern="csv") %>%
+  osf_download(conflicts="overwrite", path=here("osf_dl"))
+
+recs_in <- read_csv(pull(recs_file_osf_det, local_path))
+
+unlink(pull(recs_file_osf_det, local_path))
 
 #TOTCSQFT, TOTHSQFT, TOTSQFT_EN, TOTUCSQFT, TOTUSQFT, CDD50, HDD50, GNDHDD65, BTUEL, DOLLAREL, , BTUNG, DOLLARNG, BTULP, DOLLARLP, BTUFO, DOLLARFO, TOTALBTU, TOTALDOL, BTUWOOD=WOODBTU, BTUPELLET=PELLETBTU 
 
@@ -159,6 +166,11 @@ recs_out <- recs %>%
 
 summary(recs_out)
 
-write_rds(recs_out, here("AnalysisData", "recs_2020.rds"))
+recs_der_tmp_loc <- here("osf_dl", "recs_2020.rds")
+write_rds(recs_out, recs_der_tmp_loc)
+target_dir <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") 
+osf_upload(target_dir, path=recs_der_tmp_loc, conflicts="overwrite")
+unlink(recs_der_tmp_loc)
+
 ```
 
