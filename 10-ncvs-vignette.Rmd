@@ -42,34 +42,16 @@ Each record on the incident file represents one victimization, which is not the 
 
 
 ```{r}
-#| label: incfile
+#| label: ncvs-vign-incfile
 #| message: false
 
 library(tidyverse)
 library(srvyr)
 library(gt)
 library(osfr)
+source("helper-fun/helper-functions.R")
 
-get_file_osf_tsr <- function(fn){
-#' Downloads file from Tidy Survey Analysis in R
-#' Reads in file
-#' Deletes file from computer
-  
-  dat_det <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") %>%
-    osf_ls_files() %>%
-    filter(name==fn) %>%
-    osf_download(conflicts="overwrite", path="osf_dl")
-  
-  out <- dat_det %>%
-    pull(local_path) %>%
-    read_rds()
-  
-  unlink(pull(dat_det, local_path))
-  
-  return(out)
-}
-
-inc_in <- get_file_osf_tsr("ncvs_2021_incident.rds")
+inc_in <- read_rds_tsr("ncvs_2021_incident.rds")
 
 inc_series <- inc_in %>%
   mutate(
@@ -180,7 +162,7 @@ A brief codebook for this section is as follows:
 |||59|Attempted theft|
 
 ```{r}
-#| label: inc-inds
+#| label: ncvs-vign-inc-inds
 
 inc_ind <- inc_series %>%
   filter(V4022 != 1) %>%
@@ -228,7 +210,7 @@ In the code above, some checking of derived variables is done. This is a good po
 After creating indicators of victimization types and characteristics, the file is summarized, and crimes are summed across persons or households by `YEARQ.` Property crimes are summed across households, and personal crimes (violent plus purse snatching and pocket-picking) are summed across persons. The indicators are summed using the `serieswgt`, and the variable `WGTVICCY` needs to be retained for later analysis.
 
 ```{r}
-#| label: inc-sum
+#| label: ncvs-vign-inc-sum
 
 inc_hh_sums <-
   inc_ind %>%
@@ -260,11 +242,11 @@ $$ A_{ijk}=\frac{v_{ijk}}{w_{ijk}}$$
 where $w_{ijk}$ is the person weight (`WGTPERCY`) for personal crimes or the household weight (`WGTHHCY`) for household crimes and $v_{ijk}$ is the victimization weight (`WGTVICCY`) for household $i$, respondent $j$, in reporting period $k$. The adjustment factor is set to 0 if no incidents are reported.
 
 ```{r}
-#| label: merge-inc-sum
+#| label: ncvs-vign-merge-inc-sum
 
-hh_in <- get_file_osf_tsr("ncvs_2021_household.rds")
+hh_in <- read_rds_tsr("ncvs_2021_household.rds")
 
-pers_in <- get_file_osf_tsr("ncvs_2021_person.rds")
+pers_in <- read_rds_tsr("ncvs_2021_person.rds")
 
 # Set up a list of 0s for each crime type/characteristic to replace NA's
 hh_z_list <- rep(0, ncol(inc_hh_sums) - 3) %>% as.list() %>%
@@ -368,7 +350,7 @@ Brief codebook for person variables:
 |||2|No|
 
 ```{r}
-#| label: hh-pers-der
+#| label: ncvs-vign-hh-pers-der
 
 hh_vsum_der <- hh_vsum %>%
   mutate(
@@ -490,7 +472,7 @@ pers_vsum_slim <- pers_vsum_der %>%
 The tibbles `hh_vsum_slim` and `pers_vsum_slim` can now be used to create design objects and calculate crime rate estimates. To calculate estimates about types of crime, such as what percentage of violent crimes are reported to the police, we must use the incident file. The incident file is not guaranteed to have every pseudostratum and half-sample code, so dummy records are created to append before estimation. Finally, demographic variables are merged onto the incident tibble.
 
 ```{r}
-#| label: inc-analysis
+#| label: ncvs-vign-inc-analysis
 dummy_records <- hh_vsum_slim %>%
   distinct(V2117, V2118) %>%
   mutate(Dummy = 1,
@@ -516,7 +498,7 @@ inc_analysis <- inc_ind %>%
 All of the data prep above is necessary to prepare the data for survey analysis. At this point, we can create the design objects and finally begin analysis. We will create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster variable for analysis.
 
 ```{r}
-#| label: desobj
+#| label: ncvs-vign-desobj
 
 inc_des <- inc_analysis %>%
   as_survey(
@@ -574,7 +556,7 @@ where $I_{ij}$ is an indicator that a person or household in domain $D$ was a vi
 There are two ways to calculate victimization totals. Using the incident design object is the most straightforward method, but the person and household design objects can be used as well if the adjustment factor is incorporated. In the example below, the total number of property and violent victimizations are first calculated using the incident file and then using the household and person design objects. The incident file is smaller, and thus, estimation is faster using that file, but the estimates will be the same as illustrated below:
 
 ```{r}
-#| label: victot-examp
+#| label: ncvs-vign-victot-examp
 inc_des %>%
   summarize(
     Property_Vzn = survey_total(Property, na.rm = TRUE),
@@ -598,7 +580,7 @@ Victimization proportions are proportions describing features of a victimization
 - What proportion of violent victimizations are in urban areas?
 
 ```{r}
-#| label: vic-prop
+#| label: ncvs-vign-vic-prop
 inc_des %>%
   filter(Property) %>%
   group_by(ReportPolice) %>%
@@ -615,7 +597,7 @@ inc_des %>%
 Victimization rates measure the number of victimizations per population and are not an estimate of the proportion of households or persons who are victimized, which is a prevalence rate and described in the next section. Victimization rates are estimated using the household or person design objects depending on the type of crime, and the adjustment factor must be incorporated. We return to the example of property and violent victimizations used in the example for victimization totals. In the following example, the property victimization totals are calculated as above, as well as the property victimization rate, using `survey_mean()`, and the population size using `survey_total()`.
 
 ```{r}
-#| label: vic-rate
+#| label: ncvs-vign-vic-rate
 hh_des %>%
   summarize(
     Property_Vzn = survey_total(Property * ADJINC_WT, na.rm = TRUE),
@@ -628,7 +610,7 @@ hh_des %>%
 Victimization rates can also be calculated for particular characteristics of the victimization. In the following example, the rate of aggravated assault with no weapon, with a firearm, with a knife, and with another weapon.
 
 ```{r}
-#| label: pers-rates-char
+#| label: ncvs-vign-pers-rates-char
 pers_des %>%
   summarize(across(
     starts_with("AAST_"),
@@ -725,7 +707,7 @@ pers_est_df %>%
 Prevalence rates are different from victimization rates as the numerator is the number of people or households who are victimized rather than the number of victimizations. To calculate the prevalence rates, another summary of the data must be done, which is calculating an indicator for whether a person or household is a victim of a particular crime at any point in the year. Below is an example of calculating first the indicator and then the prevalence rate of violent crime and aggravated assault.
 
 ```{r}
-#| label: prevexamp
+#| label: ncvs-vign-prevexamp
 
 pers_prev_des <-
   pers_des %>%
@@ -754,7 +736,7 @@ In the example above, the indicator is multiplied by 100 to return a percentage 
 1. What proportion of completed motor vehicle thefts are not reported to the police? Hint: Use codebook to look at definition of Type of Crime (V4529).
 
 ```{r}
-#| label: ncvs-des-sol1
+#| label: ncvs-vign-des-sol1
 ans1 <- inc_des %>%
   filter(str_detect(V4529, "40|41")) %>%
   group_by(ReportPolice) %>%
@@ -769,7 +751,7 @@ ans1 %>% filter(!ReportPolice) %>% pull(Pct)
 2. How many violent crimes occur in each region?
 
 ```{r}
-#| label: ncvs-des-sol2
+#| label: ncvs-vign-des-sol2
 
 inc_des %>%
   filter(Violent) %>%
@@ -780,7 +762,7 @@ inc_des %>%
 3. What is the property victimization rate among each income level?
 
 ```{r}
-#| label: ncvs-des-sol3
+#| label: ncvs-vign-des-sol3
 
 hh_des %>%
   group_by(Income) %>%
