@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 6 Descriptive analyses in srvyr | Tidy Survey Book</title>
   <meta name="description" content="Bookdown for upcoming book on survey analysis the tidy way." />
-  <meta name="generator" content="bookdown 0.30 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 6 Descriptive analyses in srvyr | Tidy Survey Book" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
 
 
-<meta name="date" content="2023-05-29" />
+<meta name="date" content="2023-06-12" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -119,6 +119,10 @@ code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
 <style type="text/css">
 /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
 div.csl-bib-body { }
@@ -330,46 +334,46 @@ div.csl-indent {
 <div id="similarities-between-dplyr-and-srvyr-functions" class="section level4 unnumbered hasAnchor">
 <h4>Similarities between {dplyr} and {srvyr} functions<a href="c06.html#similarities-between-dplyr-and-srvyr-functions" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package. We can use pipes to specify a <code>tbl_svy</code> object, apply a function, and then take that output and feed it into the first argument of the next function. Functions follow the ‘tidy’ convention of snake_case functions names.</p>
-<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="c06.html#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example data manipulation using {srvyr} and pipes</span></span>
-<span id="cb85-2"><a href="c06.html#cb85-2" aria-hidden="true" tabindex="-1"></a>dstrata <span class="sc">%&gt;%</span> <span class="co"># A `tbl_svy` object</span></span>
-<span id="cb85-3"><a href="c06.html#cb85-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">api99_var =</span> <span class="fu">survey_var</span>(api00),</span>
-<span id="cb85-4"><a href="c06.html#cb85-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">api99_sd =</span> <span class="fu">survey_sd</span>(api00))</span></code></pre></div>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="c06.html#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example data manipulation using {srvyr} and pipes</span></span>
+<span id="cb83-2"><a href="c06.html#cb83-2" aria-hidden="true" tabindex="-1"></a>dstrata <span class="sc">%&gt;%</span> <span class="co"># A `tbl_svy` object</span></span>
+<span id="cb83-3"><a href="c06.html#cb83-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">api99_var =</span> <span class="fu">survey_var</span>(api00),</span>
+<span id="cb83-4"><a href="c06.html#cb83-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">api99_sd =</span> <span class="fu">survey_sd</span>(api00))</span></code></pre></div>
 <p>The functions in {srvyr} also play nicely with other tidyverse functions. If we wanted to create our survey object by selecting specific columns, we could use <code>dplyr::select()</code>’s special selection functions (such as <code>starts_with()</code>, <code>one_of()</code>, etc.).</p>
-<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="c06.html#cb86-1" aria-hidden="true" tabindex="-1"></a>dstrata <span class="ot">&lt;-</span> dstrata <span class="sc">%&gt;%</span></span>
-<span id="cb86-2"><a href="c06.html#cb86-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
-<span id="cb86-3"><a href="c06.html#cb86-3" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>,</span>
-<span id="cb86-4"><a href="c06.html#cb86-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata =</span> stype,</span>
-<span id="cb86-5"><a href="c06.html#cb86-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">fpc =</span> fpc,</span>
-<span id="cb86-6"><a href="c06.html#cb86-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">weight =</span> pw,</span>
-<span id="cb86-7"><a href="c06.html#cb86-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">variables =</span> <span class="fu">c</span>(stype, <span class="fu">starts_with</span>(<span class="st">&quot;api&quot;</span>))</span>
-<span id="cb86-8"><a href="c06.html#cb86-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb84"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb84-1"><a href="c06.html#cb84-1" aria-hidden="true" tabindex="-1"></a>dstrata <span class="ot">&lt;-</span> dstrata <span class="sc">%&gt;%</span></span>
+<span id="cb84-2"><a href="c06.html#cb84-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
+<span id="cb84-3"><a href="c06.html#cb84-3" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>,</span>
+<span id="cb84-4"><a href="c06.html#cb84-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata =</span> stype,</span>
+<span id="cb84-5"><a href="c06.html#cb84-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">fpc =</span> fpc,</span>
+<span id="cb84-6"><a href="c06.html#cb84-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">weight =</span> pw,</span>
+<span id="cb84-7"><a href="c06.html#cb84-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">variables =</span> <span class="fu">c</span>(stype, <span class="fu">starts_with</span>(<span class="st">&quot;api&quot;</span>))</span>
+<span id="cb84-8"><a href="c06.html#cb84-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 <p>We can use {dplyr} verbs such as <code>mutate()</code>, <code>filter()</code>, etc. on our survey object.</p>
-<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="c06.html#cb87-1" aria-hidden="true" tabindex="-1"></a>dstrata <span class="ot">&lt;-</span> dstrata <span class="sc">%&gt;%</span></span>
-<span id="cb87-2"><a href="c06.html#cb87-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">api_diff =</span> api00 <span class="sc">-</span> api99) <span class="sc">%&gt;%</span></span>
-<span id="cb87-3"><a href="c06.html#cb87-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">api_students =</span> api.stu)</span></code></pre></div>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="c06.html#cb85-1" aria-hidden="true" tabindex="-1"></a>dstrata <span class="ot">&lt;-</span> dstrata <span class="sc">%&gt;%</span></span>
+<span id="cb85-2"><a href="c06.html#cb85-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">api_diff =</span> api00 <span class="sc">-</span> api99) <span class="sc">%&gt;%</span></span>
+<span id="cb85-3"><a href="c06.html#cb85-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">api_students =</span> api.stu)</span></code></pre></div>
 <p>Instead of data frames or tibbles, {srvyr} functions are meant for <code>tbl_svy</code> objects. Attempting to run data manipulation on non-<code>tbl_svy</code> objects will result in an error:</p>
-<div class="sourceCode" id="cb88"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb88-1"><a href="c06.html#cb88-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> <span class="co"># An object of the type &#39;list&#39;</span></span>
-<span id="cb88-2"><a href="c06.html#cb88-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">survey_total</span>())</span></code></pre></div>
+<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="c06.html#cb86-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> <span class="co"># An object of the type &#39;list&#39;</span></span>
+<span id="cb86-2"><a href="c06.html#cb86-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">survey_total</span>())</span></code></pre></div>
 <pre><code>## Error in `summarize()`:
 ## ℹ In argument: `survey_total()`.
 ## Caused by error in `cur_svy()`:
 ## ! Survey context not set</code></pre>
 <p>A few functions in {srvyr} parallel functions available in {dplyr}, such as <code>srvyr::summarize()</code> and <code>srvyr::group_by()</code>. Unlike {srvyr}-specific verbs, the package recognizes if you attempt to run these parallel functions on a non-survey object. It will not error and instead give you the equivalent output from {dplyr}:</p>
-<div class="sourceCode" id="cb90"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb90-1"><a href="c06.html#cb90-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
-<span id="cb90-2"><a href="c06.html#cb90-2" aria-hidden="true" tabindex="-1"></a>  srvyr<span class="sc">::</span><span class="fu">summarize</span>(<span class="at">mean_hp =</span> <span class="fu">mean</span>(hp))</span></code></pre></div>
+<div class="sourceCode" id="cb88"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb88-1"><a href="c06.html#cb88-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
+<span id="cb88-2"><a href="c06.html#cb88-2" aria-hidden="true" tabindex="-1"></a>  srvyr<span class="sc">::</span><span class="fu">summarize</span>(<span class="at">mean_hp =</span> <span class="fu">mean</span>(hp))</span></code></pre></div>
 <pre><code>##   mean_hp
 ## 1   146.7</code></pre>
 <p>Because this book focuses on survey analysis, most of our pipes will stem from a survey object. We will not be including the namespace for each function (e.g., <code>srvyr::summarize()</code>).</p>
 <p>Several functions in {srvyr} must be called within <code>srvyr::summarize()</code>. Recall that <code>dplyr::summarize()</code> collapses many values down to a single summary:</p>
-<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="c06.html#cb92-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
-<span id="cb92-2"><a href="c06.html#cb92-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarize</span>(<span class="at">mean_hp =</span> <span class="fu">mean</span>(hp))</span></code></pre></div>
+<div class="sourceCode" id="cb90"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb90-1"><a href="c06.html#cb90-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
+<span id="cb90-2"><a href="c06.html#cb90-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarize</span>(<span class="at">mean_hp =</span> <span class="fu">mean</span>(hp))</span></code></pre></div>
 <pre><code>##   mean_hp
 ## 1   146.7</code></pre>
 <p>These verbs can be used in conjunction with <code>group_by()</code> or <code>by/.by</code>, applying the functions on a group-by-group basis to create grouped summaries.</p>
-<div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb94-1"><a href="c06.html#cb94-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span></span>
-<span id="cb94-2"><a href="c06.html#cb94-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(cyl) <span class="sc">%&gt;%</span></span>
-<span id="cb94-3"><a href="c06.html#cb94-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarize</span>(<span class="at">mean_hp =</span> <span class="fu">mean</span>(hp),</span>
-<span id="cb94-4"><a href="c06.html#cb94-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="c06.html#cb92-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span></span>
+<span id="cb92-2"><a href="c06.html#cb92-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(cyl) <span class="sc">%&gt;%</span></span>
+<span id="cb92-3"><a href="c06.html#cb92-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarize</span>(<span class="at">mean_hp =</span> <span class="fu">mean</span>(hp),</span>
+<span id="cb92-4"><a href="c06.html#cb92-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 2
 ##     cyl mean_hp
 ##   &lt;dbl&gt;   &lt;dbl&gt;
@@ -377,10 +381,10 @@ div.csl-indent {
 ## 2     6   122. 
 ## 3     8   209.</code></pre>
 <p>We use a similar setup to summarize data in {srvyr}.</p>
-<div class="sourceCode" id="cb96"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb96-1"><a href="c06.html#cb96-1" aria-hidden="true" tabindex="-1"></a>dstrata <span class="sc">%&gt;%</span></span>
-<span id="cb96-2"><a href="c06.html#cb96-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(stype) <span class="sc">%&gt;%</span></span>
-<span id="cb96-3"><a href="c06.html#cb96-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">api00_mean =</span> <span class="fu">survey_mean</span>(api00),</span>
-<span id="cb96-4"><a href="c06.html#cb96-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">api00_median =</span> <span class="fu">survey_median</span>(api00))</span></code></pre></div>
+<div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb94-1"><a href="c06.html#cb94-1" aria-hidden="true" tabindex="-1"></a>dstrata <span class="sc">%&gt;%</span></span>
+<span id="cb94-2"><a href="c06.html#cb94-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(stype) <span class="sc">%&gt;%</span></span>
+<span id="cb94-3"><a href="c06.html#cb94-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">api00_mean =</span> <span class="fu">survey_mean</span>(api00),</span>
+<span id="cb94-4"><a href="c06.html#cb94-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">api00_median =</span> <span class="fu">survey_median</span>(api00))</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 5
 ##   stype api00_mean api00_mean_se api00_median api00_median_se
 ##   &lt;fct&gt;      &lt;dbl&gt;         &lt;dbl&gt;        &lt;dbl&gt;           &lt;dbl&gt;
@@ -469,35 +473,36 @@ div.csl-indent {
 <p>The Residential Energy Consumption Survey (RECS) provides data on energy consumption and expenditures. It is funded by Energy Information Administration and collects information through energy suppliers through in-person, phone, and web interviews. It has been fielded 14 times between 1950 and 2020. Topics include appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.</p>
 <p>The survey targets primary occupied housing units in the US. RECS uses Balanced Repeated Replication (BRR) to estimate the variances. The full sample information is available on the <a href="https://www.eia.gov/consumption/residential/index.php">EIA website</a>.</p>
 <p>To begin analyzing RECS, we create a <code>tbl_svy</code> object using <code>srvyr::as_survey_design()</code>:</p>
-<div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb98-1"><a href="c06.html#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey) <span class="co"># for survey analysis</span></span>
-<span id="cb98-2"><a href="c06.html#cb98-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr) <span class="co"># for tidy survey analysis</span></span>
-<span id="cb98-3"><a href="c06.html#cb98-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
-<span id="cb98-4"><a href="c06.html#cb98-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
-<span id="cb98-5"><a href="c06.html#cb98-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb98-6"><a href="c06.html#cb98-6" aria-hidden="true" tabindex="-1"></a>recs <span class="ot">&lt;-</span></span>
-<span id="cb98-7"><a href="c06.html#cb98-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_rds</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;AnalysisData&quot;</span>, <span class="st">&quot;recs_2015.rds&quot;</span>))</span>
-<span id="cb98-8"><a href="c06.html#cb98-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb98-9"><a href="c06.html#cb98-9" aria-hidden="true" tabindex="-1"></a>recs_des <span class="ot">&lt;-</span> recs <span class="sc">%&gt;%</span></span>
-<span id="cb98-10"><a href="c06.html#cb98-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb98-11"><a href="c06.html#cb98-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
-<span id="cb98-12"><a href="c06.html#cb98-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;BRRWT&quot;</span>),</span>
-<span id="cb98-13"><a href="c06.html#cb98-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;Fay&quot;</span>,</span>
-<span id="cb98-14"><a href="c06.html#cb98-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">rho =</span> <span class="fl">0.5</span>,</span>
-<span id="cb98-15"><a href="c06.html#cb98-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
-<span id="cb98-16"><a href="c06.html#cb98-16" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb96"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb96-1"><a href="c06.html#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey) <span class="co"># for survey analysis</span></span>
+<span id="cb96-2"><a href="c06.html#cb96-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr) <span class="co"># for tidy survey analysis</span></span>
+<span id="cb96-3"><a href="c06.html#cb96-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb96-4"><a href="c06.html#cb96-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osfr)</span>
+<span id="cb96-5"><a href="c06.html#cb96-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;helper-fun/helper-functions.R&quot;</span>)</span>
+<span id="cb96-6"><a href="c06.html#cb96-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-7"><a href="c06.html#cb96-7" aria-hidden="true" tabindex="-1"></a>recs <span class="ot">&lt;-</span></span>
+<span id="cb96-8"><a href="c06.html#cb96-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_rds_tsr</span>(<span class="st">&quot;recs_2015.rds&quot;</span>)</span>
+<span id="cb96-9"><a href="c06.html#cb96-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-10"><a href="c06.html#cb96-10" aria-hidden="true" tabindex="-1"></a>recs_des <span class="ot">&lt;-</span> recs <span class="sc">%&gt;%</span></span>
+<span id="cb96-11"><a href="c06.html#cb96-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
+<span id="cb96-12"><a href="c06.html#cb96-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
+<span id="cb96-13"><a href="c06.html#cb96-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;BRRWT&quot;</span>),</span>
+<span id="cb96-14"><a href="c06.html#cb96-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;Fay&quot;</span>,</span>
+<span id="cb96-15"><a href="c06.html#cb96-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">rho =</span> <span class="fl">0.5</span>,</span>
+<span id="cb96-16"><a href="c06.html#cb96-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
+<span id="cb96-17"><a href="c06.html#cb96-17" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 </div>
 <div id="count-observations-using-survey-methods-with-survey_count" class="section level3 hasAnchor" number="6.3.2">
 <h3><span class="header-section-number">6.3.2</span> Count observations using survey methods with <code>survey_count()</code><a href="c06.html#count-observations-using-survey-methods-with-survey_count" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>With <code>srvyr::survey_count()</code>, we can calculate the number of observations or cases for a given variable or combination of variables. The syntax is very similar to the <code>dplyr::count()</code> syntax; however, as noted above, it can only be called on <code>tbl_srvy()</code> objects. Let’s explore the syntax:</p>
-<div class="sourceCode" id="cb99"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb99-1"><a href="c06.html#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="fu">survey_count</span>(</span>
-<span id="cb99-2"><a href="c06.html#cb99-2" aria-hidden="true" tabindex="-1"></a>  x,</span>
-<span id="cb99-3"><a href="c06.html#cb99-3" aria-hidden="true" tabindex="-1"></a>  ...,</span>
-<span id="cb99-4"><a href="c06.html#cb99-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">wt =</span> <span class="cn">NULL</span>,</span>
-<span id="cb99-5"><a href="c06.html#cb99-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">sort =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb99-6"><a href="c06.html#cb99-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">&quot;n&quot;</span>,</span>
-<span id="cb99-7"><a href="c06.html#cb99-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">.drop =</span> dplyr<span class="sc">::</span><span class="fu">group_by_drop_default</span>(x),</span>
-<span id="cb99-8"><a href="c06.html#cb99-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>, <span class="st">&quot;var&quot;</span>, <span class="st">&quot;cv&quot;</span>)</span>
-<span id="cb99-9"><a href="c06.html#cb99-9" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb97-1"><a href="c06.html#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="fu">survey_count</span>(</span>
+<span id="cb97-2"><a href="c06.html#cb97-2" aria-hidden="true" tabindex="-1"></a>  x,</span>
+<span id="cb97-3"><a href="c06.html#cb97-3" aria-hidden="true" tabindex="-1"></a>  ...,</span>
+<span id="cb97-4"><a href="c06.html#cb97-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">wt =</span> <span class="cn">NULL</span>,</span>
+<span id="cb97-5"><a href="c06.html#cb97-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">sort =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb97-6"><a href="c06.html#cb97-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">&quot;n&quot;</span>,</span>
+<span id="cb97-7"><a href="c06.html#cb97-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">.drop =</span> dplyr<span class="sc">::</span><span class="fu">group_by_drop_default</span>(x),</span>
+<span id="cb97-8"><a href="c06.html#cb97-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>, <span class="st">&quot;var&quot;</span>, <span class="st">&quot;cv&quot;</span>)</span>
+<span id="cb97-9"><a href="c06.html#cb97-9" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 <p>The arguments are:</p>
 <ul>
 <li><code>x</code>: a <code>tbl_svy</code> object created by <code>as_survey</code></li>
@@ -515,17 +520,17 @@ div.csl-indent {
 <li>Run <code>survey_count()</code>, specifying the required arguments within the function</li>
 </ul>
 <p>Let’s see the weighted count of responses in RECS:</p>
-<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb100-1"><a href="c06.html#cb100-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span> <span class="co">#  Specify the sample design</span></span>
-<span id="cb100-2"><a href="c06.html#cb100-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survey_count</span>() <span class="co"># Run `survey_count()`</span></span></code></pre></div>
+<div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb98-1"><a href="c06.html#cb98-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span> <span class="co">#  Specify the sample design</span></span>
+<span id="cb98-2"><a href="c06.html#cb98-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survey_count</span>() <span class="co"># Run `survey_count()`</span></span></code></pre></div>
 <pre><code>## # A tibble: 1 × 2
 ##            n   n_se
 ##        &lt;dbl&gt;  &lt;dbl&gt;
 ## 1 118208250. 0.0320</code></pre>
 <p>There are 118,208,250 observations in the survey.</p>
 <p><code>srvyr::count()</code> can take one or many variables. To calculate the number of observations for a combination of variables, such as Region and Division, we run the below:</p>
-<div class="sourceCode" id="cb102"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb102-1"><a href="c06.html#cb102-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb102-2"><a href="c06.html#cb102-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Specify the required arguments within the function</span></span>
-<span id="cb102-3"><a href="c06.html#cb102-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survey_count</span>(Region, Division, <span class="at">name =</span> <span class="st">&quot;N&quot;</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb100-1"><a href="c06.html#cb100-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb100-2"><a href="c06.html#cb100-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Specify the required arguments within the function</span></span>
+<span id="cb100-3"><a href="c06.html#cb100-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survey_count</span>(Region, Division, <span class="at">name =</span> <span class="st">&quot;N&quot;</span>) </span></code></pre></div>
 <pre><code>## # A tibble: 10 × 4
 ##    Region    Division                   N     N_se
 ##    &lt;fct&gt;     &lt;fct&gt;                  &lt;dbl&gt;    &lt;dbl&gt;
@@ -544,15 +549,15 @@ div.csl-indent {
 <div id="calculate-total-sums-using-survey-methods-using-survey_total" class="section level3 hasAnchor" number="6.3.3">
 <h3><span class="header-section-number">6.3.3</span> Calculate total sums using survey methods using <code>survey_total()</code><a href="c06.html#calculate-total-sums-using-survey-methods-using-survey_total" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>With <code>srvyr::survey_total()</code>, we can calculate the sum of numeric variable values. Let’s explore the syntax:</p>
-<div class="sourceCode" id="cb104"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb104-1"><a href="c06.html#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="fu">survey_total</span>(</span>
-<span id="cb104-2"><a href="c06.html#cb104-2" aria-hidden="true" tabindex="-1"></a>  x,</span>
-<span id="cb104-3"><a href="c06.html#cb104-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb104-4"><a href="c06.html#cb104-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>, <span class="st">&quot;var&quot;</span>, <span class="st">&quot;cv&quot;</span>),</span>
-<span id="cb104-5"><a href="c06.html#cb104-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">level =</span> <span class="fl">0.95</span>,</span>
-<span id="cb104-6"><a href="c06.html#cb104-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">deff =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb104-7"><a href="c06.html#cb104-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">df =</span> <span class="cn">NULL</span>,</span>
-<span id="cb104-8"><a href="c06.html#cb104-8" aria-hidden="true" tabindex="-1"></a>  ...</span>
-<span id="cb104-9"><a href="c06.html#cb104-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb102"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb102-1"><a href="c06.html#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="fu">survey_total</span>(</span>
+<span id="cb102-2"><a href="c06.html#cb102-2" aria-hidden="true" tabindex="-1"></a>  x,</span>
+<span id="cb102-3"><a href="c06.html#cb102-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb102-4"><a href="c06.html#cb102-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>, <span class="st">&quot;var&quot;</span>, <span class="st">&quot;cv&quot;</span>),</span>
+<span id="cb102-5"><a href="c06.html#cb102-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">level =</span> <span class="fl">0.95</span>,</span>
+<span id="cb102-6"><a href="c06.html#cb102-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">deff =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb102-7"><a href="c06.html#cb102-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">df =</span> <span class="cn">NULL</span>,</span>
+<span id="cb102-8"><a href="c06.html#cb102-8" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb102-9"><a href="c06.html#cb102-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <ul>
 <li><code>x</code>: a variable, expression, or empty</li>
 <li><code>na.rm</code>: an indicator of whether missing values should be dropped, defaults to <code>FALSE</code></li>
@@ -571,30 +576,30 @@ div.csl-indent {
 <li>Within <code>summarize</code>, run <code>survey_total()</code>, specifying the required arguments within the function</li>
 </ul>
 <p>To calculate a population count estimate with <code>survey_total()</code>, we can run the below:</p>
-<div class="sourceCode" id="cb105"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="c06.html#cb105-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb105-2"><a href="c06.html#cb105-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">survey_total</span>(),</span>
-<span id="cb105-3"><a href="c06.html#cb105-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb103"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb103-1"><a href="c06.html#cb103-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb103-2"><a href="c06.html#cb103-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">survey_total</span>(),</span>
+<span id="cb103-3"><a href="c06.html#cb103-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 2
 ##         coef  `_se`
 ##        &lt;dbl&gt;  &lt;dbl&gt;
 ## 1 118208250. 0.0320</code></pre>
 <p>Note that the result from <code>recs_des %&gt;% summarize(survey_total(), .groups = "drop")</code> is equivalent to the <code>survey_count()</code> call. However, the <code>survey_total()</code> function is called within <code>summarize</code>, where as <code>survey_count()</code>, like <code>dplyr::count()</code>, is not.</p>
 <p>The differences between <code>survey_total()</code> and <code>survey_count()</code> is more evident when specifying numeric variables to sum. Let’s sum the total cost of electricity in whole dollars from variable <code>DOLLAREL</code>. We also calculate an unweighted estimate using <code>unweighted</code>.</p>
-<div class="sourceCode" id="cb107"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb107-1"><a href="c06.html#cb107-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb107-2"><a href="c06.html#cb107-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb107-3"><a href="c06.html#cb107-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">elec_bill =</span> <span class="fu">survey_total</span>(DOLLAREL),</span>
-<span id="cb107-4"><a href="c06.html#cb107-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">elec_unweight =</span> <span class="fu">unweighted</span>(<span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(DOLLAREL))),</span>
-<span id="cb107-5"><a href="c06.html#cb107-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb107-6"><a href="c06.html#cb107-6" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb105"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="c06.html#cb105-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb105-2"><a href="c06.html#cb105-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb105-3"><a href="c06.html#cb105-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">elec_bill =</span> <span class="fu">survey_total</span>(DOLLAREL),</span>
+<span id="cb105-4"><a href="c06.html#cb105-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">elec_unweight =</span> <span class="fu">unweighted</span>(<span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(DOLLAREL))),</span>
+<span id="cb105-5"><a href="c06.html#cb105-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb105-6"><a href="c06.html#cb105-6" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 3
 ##       elec_bill elec_bill_se elec_unweight
 ##           &lt;dbl&gt;        &lt;dbl&gt;         &lt;int&gt;
 ## 1 162495237023.  1666895091.          5686</code></pre>
 <p>$162,495,237,023 was spent on electricity. The unweighted sum is $5686.</p>
 <p>Since we are using the {srvyr} package, we can use <code>group_by()</code> to calculate the cost of electricity by different groups. Let’s see how much the cost of electricity in whole dollars differed between regions:</p>
-<div class="sourceCode" id="cb109"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb109-1"><a href="c06.html#cb109-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb109-2"><a href="c06.html#cb109-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
-<span id="cb109-3"><a href="c06.html#cb109-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cascade</span>(<span class="at">elec_bill =</span> <span class="fu">survey_total</span>(<span class="sc">!</span><span class="fu">is.na</span>(DOLLAREL)))</span></code></pre></div>
+<div class="sourceCode" id="cb107"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb107-1"><a href="c06.html#cb107-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb107-2"><a href="c06.html#cb107-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
+<span id="cb107-3"><a href="c06.html#cb107-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cascade</span>(<span class="at">elec_bill =</span> <span class="fu">survey_total</span>(<span class="sc">!</span><span class="fu">is.na</span>(DOLLAREL)))</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 3
 ##   Region     elec_bill elec_bill_se
 ##   &lt;fct&gt;          &lt;dbl&gt;        &lt;dbl&gt;
@@ -608,27 +613,27 @@ div.csl-indent {
 <div id="calculate-meanproportion-using-survey-methods-with-survey_mean-and-survey_prop" class="section level3 hasAnchor" number="6.3.4">
 <h3><span class="header-section-number">6.3.4</span> Calculate mean/proportion using survey methods with <code>survey_mean()</code> and <code>survey_prop()</code><a href="c06.html#calculate-meanproportion-using-survey-methods-with-survey_mean-and-survey_prop" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The <code>srvyr::survey_mean()</code> and <code>survey_prop()</code> functions calculate the means (of continuous variables) and proportions (of categorical variables) of survey data while accounting for complex survey design. Like <code>survey_total()</code>, they are called within <code>summarize()</code>. Let’s explore the syntax:</p>
-<div class="sourceCode" id="cb111"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb111-1"><a href="c06.html#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="fu">survey_mean</span>(</span>
-<span id="cb111-2"><a href="c06.html#cb111-2" aria-hidden="true" tabindex="-1"></a>  x,</span>
-<span id="cb111-3"><a href="c06.html#cb111-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb111-4"><a href="c06.html#cb111-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>, <span class="st">&quot;var&quot;</span>, <span class="st">&quot;cv&quot;</span>),</span>
-<span id="cb111-5"><a href="c06.html#cb111-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">level =</span> <span class="fl">0.95</span>,</span>
-<span id="cb111-6"><a href="c06.html#cb111-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">proportion =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb111-7"><a href="c06.html#cb111-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">prop_method =</span> <span class="fu">c</span>(<span class="st">&quot;logit&quot;</span>, <span class="st">&quot;likelihood&quot;</span>, <span class="st">&quot;asin&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;mean&quot;</span>),</span>
-<span id="cb111-8"><a href="c06.html#cb111-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">deff =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb111-9"><a href="c06.html#cb111-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">df =</span> <span class="cn">NULL</span>,</span>
-<span id="cb111-10"><a href="c06.html#cb111-10" aria-hidden="true" tabindex="-1"></a>  ...</span>
-<span id="cb111-11"><a href="c06.html#cb111-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb111-12"><a href="c06.html#cb111-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb111-13"><a href="c06.html#cb111-13" aria-hidden="true" tabindex="-1"></a><span class="fu">survey_prop</span>(</span>
-<span id="cb111-14"><a href="c06.html#cb111-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>, <span class="st">&quot;var&quot;</span>, <span class="st">&quot;cv&quot;</span>),</span>
-<span id="cb111-15"><a href="c06.html#cb111-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">level =</span> <span class="fl">0.95</span>,</span>
-<span id="cb111-16"><a href="c06.html#cb111-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">proportion =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb111-17"><a href="c06.html#cb111-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">prop_method =</span> <span class="fu">c</span>(<span class="st">&quot;logit&quot;</span>, <span class="st">&quot;likelihood&quot;</span>, <span class="st">&quot;asin&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;mean&quot;</span>),</span>
-<span id="cb111-18"><a href="c06.html#cb111-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">deff =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb111-19"><a href="c06.html#cb111-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">df =</span> <span class="cn">NULL</span>,</span>
-<span id="cb111-20"><a href="c06.html#cb111-20" aria-hidden="true" tabindex="-1"></a>  ...</span>
-<span id="cb111-21"><a href="c06.html#cb111-21" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb109"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb109-1"><a href="c06.html#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="fu">survey_mean</span>(</span>
+<span id="cb109-2"><a href="c06.html#cb109-2" aria-hidden="true" tabindex="-1"></a>  x,</span>
+<span id="cb109-3"><a href="c06.html#cb109-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb109-4"><a href="c06.html#cb109-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>, <span class="st">&quot;var&quot;</span>, <span class="st">&quot;cv&quot;</span>),</span>
+<span id="cb109-5"><a href="c06.html#cb109-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">level =</span> <span class="fl">0.95</span>,</span>
+<span id="cb109-6"><a href="c06.html#cb109-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">proportion =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb109-7"><a href="c06.html#cb109-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">prop_method =</span> <span class="fu">c</span>(<span class="st">&quot;logit&quot;</span>, <span class="st">&quot;likelihood&quot;</span>, <span class="st">&quot;asin&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;mean&quot;</span>),</span>
+<span id="cb109-8"><a href="c06.html#cb109-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">deff =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb109-9"><a href="c06.html#cb109-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">df =</span> <span class="cn">NULL</span>,</span>
+<span id="cb109-10"><a href="c06.html#cb109-10" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb109-11"><a href="c06.html#cb109-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb109-12"><a href="c06.html#cb109-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb109-13"><a href="c06.html#cb109-13" aria-hidden="true" tabindex="-1"></a><span class="fu">survey_prop</span>(</span>
+<span id="cb109-14"><a href="c06.html#cb109-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>, <span class="st">&quot;var&quot;</span>, <span class="st">&quot;cv&quot;</span>),</span>
+<span id="cb109-15"><a href="c06.html#cb109-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">level =</span> <span class="fl">0.95</span>,</span>
+<span id="cb109-16"><a href="c06.html#cb109-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">proportion =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb109-17"><a href="c06.html#cb109-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">prop_method =</span> <span class="fu">c</span>(<span class="st">&quot;logit&quot;</span>, <span class="st">&quot;likelihood&quot;</span>, <span class="st">&quot;asin&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;mean&quot;</span>),</span>
+<span id="cb109-18"><a href="c06.html#cb109-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">deff =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb109-19"><a href="c06.html#cb109-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">df =</span> <span class="cn">NULL</span>,</span>
+<span id="cb109-20"><a href="c06.html#cb109-20" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb109-21"><a href="c06.html#cb109-21" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <p>The steps involved are:</p>
 <ul>
 <li>Specify the sample design,</li>
@@ -636,10 +641,10 @@ div.csl-indent {
 <li>Run <code>survey_mean()</code> or <code>survey_prop()</code> within <code>summarize()</code></li>
 </ul>
 <p>We can calculate the weighted average cost of electricity for each region in the U.S.:</p>
-<div class="sourceCode" id="cb112"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb112-1"><a href="c06.html#cb112-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb112-2"><a href="c06.html#cb112-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
-<span id="cb112-3"><a href="c06.html#cb112-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">elec_bill =</span> <span class="fu">survey_mean</span>(DOLLAREL),</span>
-<span id="cb112-4"><a href="c06.html#cb112-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb110"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb110-1"><a href="c06.html#cb110-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb110-2"><a href="c06.html#cb110-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
+<span id="cb110-3"><a href="c06.html#cb110-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">elec_bill =</span> <span class="fu">survey_mean</span>(DOLLAREL),</span>
+<span id="cb110-4"><a href="c06.html#cb110-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 3
 ##   Region    elec_bill elec_bill_se
 ##   &lt;fct&gt;         &lt;dbl&gt;        &lt;dbl&gt;
@@ -649,10 +654,10 @@ div.csl-indent {
 ## 4 West          1146.         32.3</code></pre>
 <p>On average, respondents from the Northeast spent $1346 on electricity. In the Midwest, they spent $1196, in the South they spent $1631, and finally, $1146 in the West.</p>
 <p>We use <code>srvyr::survey_prop()</code> to estimate the proportion of categorical variables in a survey.</p>
-<div class="sourceCode" id="cb114"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb114-1"><a href="c06.html#cb114-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb114-2"><a href="c06.html#cb114-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
-<span id="cb114-3"><a href="c06.html#cb114-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">survey_prop</span>(),</span>
-<span id="cb114-4"><a href="c06.html#cb114-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb112"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb112-1"><a href="c06.html#cb112-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb112-2"><a href="c06.html#cb112-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
+<span id="cb112-3"><a href="c06.html#cb112-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">survey_prop</span>(),</span>
+<span id="cb112-4"><a href="c06.html#cb112-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
 <pre><code>## When `proportion` is unspecified, `survey_prop()` now defaults to `proportion = TRUE`.
 ## ℹ This should improve confidence interval coverage.
 ## This message is displayed once per session.</code></pre>
@@ -665,10 +670,10 @@ div.csl-indent {
 ## 4 West      0.223 1.37e-10</code></pre>
 <p>17.8% of the observations are in the Northeast, 22.3% in the Midwest, and so on.</p>
 <p><code>survey_prop()</code> is essentially the same as using <code>survey_mean()</code> with a categorical variable and without specifying a numeric variable in the <code>x</code> argument. The following code will give us the same results as above:</p>
-<div class="sourceCode" id="cb117"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb117-1"><a href="c06.html#cb117-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb117-2"><a href="c06.html#cb117-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
-<span id="cb117-3"><a href="c06.html#cb117-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">survey_mean</span>(),</span>
-<span id="cb117-4"><a href="c06.html#cb117-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb115"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb115-1"><a href="c06.html#cb115-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb115-2"><a href="c06.html#cb115-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
+<span id="cb115-3"><a href="c06.html#cb115-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">survey_mean</span>(),</span>
+<span id="cb115-4"><a href="c06.html#cb115-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 3
 ##   Region     coef    `_se`
 ##   &lt;fct&gt;     &lt;dbl&gt;    &lt;dbl&gt;
@@ -687,10 +692,10 @@ div.csl-indent {
 <div id="print-total-overall-numbers-in-our-output" class="section level3 hasAnchor" number="6.3.6">
 <h3><span class="header-section-number">6.3.6</span> Print total overall numbers in our output<a href="c06.html#print-total-overall-numbers-in-our-output" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>If we want to see the total overall numbers from our <code>survey_mean()</code> function, we can use <code>cascade</code>. <code>cascade</code> is similar to <code>summarize</code> but calculates summary statistics for the total of a group in addition to each group.</p>
-<div class="sourceCode" id="cb120"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb120-1"><a href="c06.html#cb120-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb120-2"><a href="c06.html#cb120-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ACUsed) <span class="sc">%&gt;%</span></span>
-<span id="cb120-3"><a href="c06.html#cb120-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cascade</span>(<span class="at">ElBill =</span> <span class="fu">survey_mean</span>(DOLLAREL,</span>
-<span id="cb120-4"><a href="c06.html#cb120-4" aria-hidden="true" tabindex="-1"></a>                               <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb118"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb118-1"><a href="c06.html#cb118-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb118-2"><a href="c06.html#cb118-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ACUsed) <span class="sc">%&gt;%</span></span>
+<span id="cb118-3"><a href="c06.html#cb118-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cascade</span>(<span class="at">ElBill =</span> <span class="fu">survey_mean</span>(DOLLAREL,</span>
+<span id="cb118-4"><a href="c06.html#cb118-4" aria-hidden="true" tabindex="-1"></a>                               <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 3
 ##   ACUsed ElBill ElBill_se
 ##   &lt;lgl&gt;   &lt;dbl&gt;     &lt;dbl&gt;
@@ -702,16 +707,16 @@ div.csl-indent {
 <div id="removing-na-for-calculating-results" class="section level3 hasAnchor" number="6.3.7">
 <h3><span class="header-section-number">6.3.7</span> Removing <code>NA</code> for calculating results<a href="c06.html#removing-na-for-calculating-results" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>If we run the example below, we get an error:</p>
-<div class="sourceCode" id="cb122"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb122-1"><a href="c06.html#cb122-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb122-2"><a href="c06.html#cb122-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">TD_mean =</span> <span class="fu">survey_mean</span>(<span class="at">x =</span> SummerTempDay))</span></code></pre></div>
+<div class="sourceCode" id="cb120"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb120-1"><a href="c06.html#cb120-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb120-2"><a href="c06.html#cb120-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">TD_mean =</span> <span class="fu">survey_mean</span>(<span class="at">x =</span> SummerTempDay))</span></code></pre></div>
 <pre><code>## Error in `dplyr::summarise()`:
 ## ℹ In argument: `TD_mean = survey_mean(x = SummerTempDay)`.
 ## Caused by error in `svrVar()`:
 ## ! All replicates contained NAs</code></pre>
 <p>Because of the <code>NA</code> in <code>SummerTempDay</code>, <code>survey_mean()</code> cannot calculate the average temperature. We can fix this with the argument <code>na.rm = TRUE</code>:</p>
-<div class="sourceCode" id="cb124"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb124-1"><a href="c06.html#cb124-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb124-2"><a href="c06.html#cb124-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">TD_mean =</span> <span class="fu">survey_mean</span>(<span class="at">x =</span> SummerTempDay,</span>
-<span id="cb124-3"><a href="c06.html#cb124-3" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb122"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb122-1"><a href="c06.html#cb122-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb122-2"><a href="c06.html#cb122-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">TD_mean =</span> <span class="fu">survey_mean</span>(<span class="at">x =</span> SummerTempDay,</span>
+<span id="cb122-3"><a href="c06.html#cb122-3" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 2
 ##   TD_mean TD_mean_se
 ##     &lt;dbl&gt;      &lt;dbl&gt;
@@ -721,10 +726,10 @@ div.csl-indent {
 <div id="calculate-proportions-with-confidence-intervals" class="section level3 hasAnchor" number="6.3.8">
 <h3><span class="header-section-number">6.3.8</span> Calculate proportions with confidence intervals<a href="c06.html#calculate-proportions-with-confidence-intervals" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>We calculate confidence intervals by setting the <code>vartype</code> to <code>ci</code> within <code>summarize</code> when using <code>survey_mean()</code> or <code>survey_mean()</code>. The confidence intervals provide us with an upper and lower column for each method.</p>
-<div class="sourceCode" id="cb126"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb126-1"><a href="c06.html#cb126-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb126-2"><a href="c06.html#cb126-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Urbanicity) <span class="sc">%&gt;%</span></span>
-<span id="cb126-3"><a href="c06.html#cb126-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">pd =</span> <span class="fu">survey_prop</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb126-4"><a href="c06.html#cb126-4" aria-hidden="true" tabindex="-1"></a>              <span class="fu">round</span>(<span class="dv">4</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb124"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb124-1"><a href="c06.html#cb124-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb124-2"><a href="c06.html#cb124-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Urbanicity) <span class="sc">%&gt;%</span></span>
+<span id="cb124-3"><a href="c06.html#cb124-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">pd =</span> <span class="fu">survey_prop</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb124-4"><a href="c06.html#cb124-4" aria-hidden="true" tabindex="-1"></a>              <span class="fu">round</span>(<span class="dv">4</span>))</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 4
 ##   Urbanicity       pd pd_low pd_upp
 ##   &lt;fct&gt;         &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
@@ -734,13 +739,13 @@ div.csl-indent {
 <p>69.6% of the responses are from people in urban areas, with a lower confidence interval bound of 65.2% and a upper confidence interval bound of 73.62%.</p>
 <p>We can change the proportion method by adding <code>prop_method</code>. The available options are <code>"logit"</code>, <code>"likelihood"</code>, <code>"asin"</code>, <code>"beta"</code>, and <code>"mean"</code>.</p>
 <p>As noted above, <code>svy_prop()</code> defaults to <code>proportion = TRUE</code>. Here, we rerun the previous function using the logit proportion method and with <code>proportion = FALSE</code>.</p>
-<div class="sourceCode" id="cb128"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb128-1"><a href="c06.html#cb128-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb128-2"><a href="c06.html#cb128-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Urbanicity) <span class="sc">%&gt;%</span></span>
-<span id="cb128-3"><a href="c06.html#cb128-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">pl =</span> <span class="fu">survey_prop</span>(</span>
-<span id="cb128-4"><a href="c06.html#cb128-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">proportion =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb128-5"><a href="c06.html#cb128-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">prop_method =</span> <span class="st">&quot;xlogit&quot;</span>,</span>
-<span id="cb128-6"><a href="c06.html#cb128-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span></span>
-<span id="cb128-7"><a href="c06.html#cb128-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> <span class="fu">round</span>(<span class="dv">4</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb126"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb126-1"><a href="c06.html#cb126-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb126-2"><a href="c06.html#cb126-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Urbanicity) <span class="sc">%&gt;%</span></span>
+<span id="cb126-3"><a href="c06.html#cb126-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">pl =</span> <span class="fu">survey_prop</span>(</span>
+<span id="cb126-4"><a href="c06.html#cb126-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">proportion =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb126-5"><a href="c06.html#cb126-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">prop_method =</span> <span class="st">&quot;xlogit&quot;</span>,</span>
+<span id="cb126-6"><a href="c06.html#cb126-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span></span>
+<span id="cb126-7"><a href="c06.html#cb126-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> <span class="fu">round</span>(<span class="dv">4</span>))</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 4
 ##   Urbanicity       pl pl_low pl_upp
 ##   &lt;fct&gt;         &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
@@ -764,14 +769,14 @@ div.csl-indent {
 <div id="calculate-conditional-proportions-with-more-than-one-group" class="section level3 hasAnchor" number="6.3.10">
 <h3><span class="header-section-number">6.3.10</span> Calculate conditional proportions with more than one group<a href="c06.html#calculate-conditional-proportions-with-more-than-one-group" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Specifying more than one group calculates conditional proportions. Say we wanted to know the proportion of respondents who live in rural regions in the Northeast. After the <code>tbl_svy</code> object, we specify the two variables we want to calculate proportions for:</p>
-<div class="sourceCode" id="cb130"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb130-1"><a href="c06.html#cb130-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb130-2"><a href="c06.html#cb130-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region, Urbanicity) <span class="sc">%&gt;%</span></span>
-<span id="cb130-3"><a href="c06.html#cb130-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb130-4"><a href="c06.html#cb130-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">p =</span> <span class="fu">survey_mean</span>(),</span>
-<span id="cb130-5"><a href="c06.html#cb130-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">N =</span> <span class="fu">survey_total</span>(),</span>
-<span id="cb130-6"><a href="c06.html#cb130-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">unweighted</span>(<span class="fu">n</span>()),</span>
-<span id="cb130-7"><a href="c06.html#cb130-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb130-8"><a href="c06.html#cb130-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb128"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb128-1"><a href="c06.html#cb128-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb128-2"><a href="c06.html#cb128-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region, Urbanicity) <span class="sc">%&gt;%</span></span>
+<span id="cb128-3"><a href="c06.html#cb128-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb128-4"><a href="c06.html#cb128-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">p =</span> <span class="fu">survey_mean</span>(),</span>
+<span id="cb128-5"><a href="c06.html#cb128-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">N =</span> <span class="fu">survey_total</span>(),</span>
+<span id="cb128-6"><a href="c06.html#cb128-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">unweighted</span>(<span class="fu">n</span>()),</span>
+<span id="cb128-7"><a href="c06.html#cb128-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb128-8"><a href="c06.html#cb128-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 12 × 7
 ##    Region    Urbanicity         p   p_se         N     N_se     n
 ##    &lt;fct&gt;     &lt;fct&gt;          &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;
@@ -794,11 +799,11 @@ div.csl-indent {
 <p>When we want to calculate proportions for multiple variables together as if they were a single variable, we use {srvyr}’s <code>interact</code>. We use <code>interact</code> within <code>group_by()</code> to calculate the joint proportions of two or more variables.</p>
 <p>For example, if we have a survey dataset with variables such as age, gender, and income, we could use <code>interact</code> to create summary statistics for each combination of age and gender, or for each combination of income and gender. We can examine how these variables are related to each other, and whether there are any differences or similarities between different groups.</p>
 <p>In the example below, we calculate Region and Urbanicity together:</p>
-<div class="sourceCode" id="cb132"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb132-1"><a href="c06.html#cb132-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb132-2"><a href="c06.html#cb132-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="fu">interact</span>(Region, Urbanicity)) <span class="sc">%&gt;%</span></span>
-<span id="cb132-3"><a href="c06.html#cb132-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>(),</span>
-<span id="cb132-4"><a href="c06.html#cb132-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">N =</span> <span class="fu">survey_total</span>(),</span>
-<span id="cb132-5"><a href="c06.html#cb132-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb130"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb130-1"><a href="c06.html#cb130-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb130-2"><a href="c06.html#cb130-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="fu">interact</span>(Region, Urbanicity)) <span class="sc">%&gt;%</span></span>
+<span id="cb130-3"><a href="c06.html#cb130-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>(),</span>
+<span id="cb130-4"><a href="c06.html#cb130-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">N =</span> <span class="fu">survey_total</span>(),</span>
+<span id="cb130-5"><a href="c06.html#cb130-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 12 × 6
 ##    Region    Urbanicity         p    p_se         N     N_se
 ##    &lt;fct&gt;     &lt;fct&gt;          &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
@@ -816,12 +821,12 @@ div.csl-indent {
 ## 12 West      Rural         0.0300 0.00589  3550944.  696556.</code></pre>
 <p>Running <code>survey_mean()</code> with <code>interact</code>, we see that 13.2% of the dataset is from the Northeast Urban Area, wherewas 0.182% is from the Northeast Urban Cluster.</p>
 <p>Since <code>interact</code> groups by multiple variables as if they were a single variable, the proportions in column <code>p</code> sum to 100% across more than a single grouping variable.</p>
-<div class="sourceCode" id="cb134"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb134-1"><a href="c06.html#cb134-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb134-2"><a href="c06.html#cb134-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="fu">interact</span>(Region, Urbanicity)) <span class="sc">%&gt;%</span></span>
-<span id="cb134-3"><a href="c06.html#cb134-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>(),</span>
-<span id="cb134-4"><a href="c06.html#cb134-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">N =</span> <span class="fu">survey_total</span>(),</span>
-<span id="cb134-5"><a href="c06.html#cb134-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb134-6"><a href="c06.html#cb134-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p_sum =</span> <span class="fu">sum</span>(p))</span></code></pre></div>
+<div class="sourceCode" id="cb132"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb132-1"><a href="c06.html#cb132-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb132-2"><a href="c06.html#cb132-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="fu">interact</span>(Region, Urbanicity)) <span class="sc">%&gt;%</span></span>
+<span id="cb132-3"><a href="c06.html#cb132-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>(),</span>
+<span id="cb132-4"><a href="c06.html#cb132-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">N =</span> <span class="fu">survey_total</span>(),</span>
+<span id="cb132-5"><a href="c06.html#cb132-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb132-6"><a href="c06.html#cb132-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p_sum =</span> <span class="fu">sum</span>(p))</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 1
 ##   p_sum
 ##   &lt;dbl&gt;
@@ -833,11 +838,11 @@ div.csl-indent {
 <p>Calculating proportions with design effects is important when analyzing survey data that has been collected using a complex sampling design. Since a complex sampling design means that the probability of selecting each individual in the sample is different, this can lead to the observations in the sample being correlated with each other.</p>
 <p>Design effects account for this correlation and adjust the standard errors of estimates, which in turn can affect the significance of test statistics and the accuracy of confidence intervals. Calculating proportions with design effects is important because it helps to produce accurate estimates of population proportions that account for the complex nature of the survey data.</p>
 <p>Deff compares the variance of the current samplng, including its design elements, to the variance of a hypothetical simple random sample (SRS) of the same size. A Deff value less than 1 indicates that the sample design is more efficient than an SRS of the same size.</p>
-<div class="sourceCode" id="cb136"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb136-1"><a href="c06.html#cb136-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb136-2"><a href="c06.html#cb136-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="fu">interact</span>(Region, Urbanicity)) <span class="sc">%&gt;%</span></span>
-<span id="cb136-3"><a href="c06.html#cb136-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>(<span class="at">deff =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb136-4"><a href="c06.html#cb136-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">N =</span> <span class="fu">survey_total</span>(),</span>
-<span id="cb136-5"><a href="c06.html#cb136-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb134"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb134-1"><a href="c06.html#cb134-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb134-2"><a href="c06.html#cb134-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="fu">interact</span>(Region, Urbanicity)) <span class="sc">%&gt;%</span></span>
+<span id="cb134-3"><a href="c06.html#cb134-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>(<span class="at">deff =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb134-4"><a href="c06.html#cb134-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">N =</span> <span class="fu">survey_total</span>(),</span>
+<span id="cb134-5"><a href="c06.html#cb134-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 12 × 7
 ##    Region    Urbanicity         p    p_se p_deff         N     N_se
 ##    &lt;fct&gt;     &lt;fct&gt;          &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
