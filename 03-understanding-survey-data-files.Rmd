@@ -221,16 +221,17 @@ targetpop <- cps_state %>%
 targetpop
 ```
 
-The target population in 2020 is `r scales::comma(targetpop)`. This information gives us what we need to create the post-election survey object with {srvyr}:
+The target population in 2020 is `r scales::comma(targetpop)`. This information gives us what we need to create the post-election survey object with {srvyr}. To read in any data in the book, use the function `read_rds_tsr()` which reads the data file from a directory on OSF where all book data has been placed for sharing
 
 ```{r}
 #| eval: FALSE
 library(tidyverse)
-library(here)
 library(srvyr)
+library(osfr)
+source("helper-fun/helper-functions.R")
 
-anes <- read_rds(here("AnalysisData", "anes_2020.rds")) %>%
-  mutate(Weight = V200010b / sum(V200010b) * 231592693)
+anes <- read_rds_tsr("anes_2020.rds") %>%
+  mutate(Weight = V200010b / sum(V200010b) * targetpop)
 
 anes_des <- anes %>%
   as_survey_design(
