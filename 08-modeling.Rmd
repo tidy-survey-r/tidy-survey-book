@@ -61,7 +61,7 @@ source("helper-fun/helper-functions.R")
 
 Second, we need to read in the data and create the design objects.
 
-Here is how you create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information) as well as Chapter "understanding survey documentation" (TODO: add link).
+Here is how you create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information) as well as Chapter \@ref(understanding-survey-data-documentation).
 ```{r}
 #| label: model-anes-des-c07
 anes <- read_rds_tsr("anes_2020.rds") %>%
@@ -73,7 +73,7 @@ anes_des <- anes %>%
                     nest = TRUE)
 ```
 
-Here is how you create the design object for the RECS data. More details for this are included in the RECS documentation and Chapter "understanding survey documentation" (TODO: add link)
+Here is how you create the design object for the RECS data. More details for this are included in the RECS documentation and Chapter \@ref(c05).
 
 ```{r}
 #| label: model-recs-des-c07
@@ -181,7 +181,7 @@ recs %>%
   ggplot(aes(x=TOTSQFT_EN, y=DOLLAREL, weight=NWEIGHT/1000000)) +
   geom_hex() + 
   scale_fill_gradientn(guide="colourbar",name="Housing Units\n(Millions)", labels=scales::comma, 
-                       colours=c("#0B3954", "#087E8B", "#BFD7EA", "#FF8484", "#8D6B94")) +
+                       colours=rev(c("#0B3954", "#087E8B", "#BFD7EA"))) +
   xlab("Total square footage") + ylab("Amount spent on electricity") +
   scale_y_continuous(labels=scales::dollar_format()) +
   scale_x_continuous(labels=scales::comma_format()) + 
@@ -232,7 +232,7 @@ These results can then be used in a variety of ways including examining residual
 
 ```{r}
 #| label: model-aug-examp
-#| fig.cap: "Residual plot"
+#| fig.cap: "Residual plot of electric cost model with covariates Region, Urbanicity, TOTSQFT_EN, and ACUsed"
 
 fitstats <-
   augment(m_electric_multi) %>%
@@ -247,7 +247,9 @@ fitstats %>%
   ggplot(aes(x=.fitted, .resid)) +
   geom_point() +
   geom_hline(yintercept =0, colour="red") +
-  theme_bw()
+  theme_bw() +
+  xlab("Fitted value of electricity cost") +
+  ylab("Residual of model")
 
 ```
 
@@ -318,17 +320,31 @@ temps_sqft_exp_fit <- temps_sqft_exp %>%
     .se.fit=sqrt(attr(.fitted, "var")), # extract the variance of the fitted value
     .fitted=as.numeric(.fitted) 
   ) 
+```
+
+```{r}
+#| label: model-lin-sol-3-p1
+#| fig.cap: "Actual and predicted electricity expenditures"
 
 temps_sqft_exp_fit %>%
   ggplot(aes(x=DOLLAREL, y=.fitted)) + 
   geom_point() +
-  geom_abline(intercept=0, slope=1, colour="red")
+  geom_abline(intercept=0, slope=1, colour="red") + 
+  xlab("Actual expenditures") +
+  ylab("Predicted expenditures")
+```
+
+```{r}
+#| label: model-lin-sol-3-p2
+#| fig.cap: "Residual plot of electric cost model with covariates TOTSQFT_EN, CDD65, and HDD65"
 
 temps_sqft_exp_fit %>%
   ggplot(aes(x=.fitted, y=.resid)) + 
   geom_point() +
   geom_hline(yintercept =0, colour="red") +
-  theme_bw()
+  theme_bw() +
+  xlab("Predicted expenditure") +
+  ylab("Residual value of expenditure")
 ```
 
 
@@ -389,12 +405,14 @@ anes_des_der %>%
     .groups="drop"
   ) %>%
   filter(complete.cases(.)) %>%
-  ggplot(aes(x=VotedPres2020_selection  , y=pct_trust)) +
+  ggplot(aes(x=VotedPres2020_selection, y=pct_trust, fill=VotedPres2020_selection)) +
   geom_bar(stat="identity") +
   geom_errorbar(aes(ymin=pct_trust_low, ymax=pct_trust_upp), width=.2) +
+  scale_fill_manual(values=c("#0b3954", "#bfd7ea", "#8d6b94")) +
   xlab("Election choice (2022)") +
   ylab("Usually trust the government")+
-  scale_y_continuous(labels=scales::percent)
+  scale_y_continuous(labels=scales::percent) +
+  guides(fill="none")
 ```
 
 
