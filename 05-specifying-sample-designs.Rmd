@@ -83,7 +83,7 @@ where `wtvar` is the variable for the weight on the data. Again, the fpc can be 
 The {survey} package in R provides some example datasets to use and those will be used throughout this chapter. Reading the documentation about these datasets provide detail on the variables. One of the example datasets we will use is from the Academic Performance Index (API).  The API was a program administered by the California Department of Education and the {survey} package includes a population file (frame) of all schools with at least 100 students and several different samples pulled from that data using different sampling methods. For this first example, we will use the `apisrs` dataset, which contains a SRS of 200 schools.  For printing purposes, we create a new dataset called `apisrs_slim`, which sorts the data by school district and school ID and subsets the data to only a few columns. The SRS sample data is illustrated below:
 
 ```{r}
-#| label: apisrs_display
+#| label: samp-des-apisrs-display
 options(tidyverse.quiet = TRUE)
 library(tidyverse)
 library(survey)
@@ -103,7 +103,7 @@ apisrs_slim
 School districts have identifiers `dnum` within counties and schools have identifiers of `snum` within districts along with their names, `dname` and `sname`. The unique identifier for a school is `cds` which is unique within the state. Additionally, the `fpc` is included as `fpc` and the weight as `pw`. To create the `tbl_survey` object for this SRS data, the design should be specified as:
 
 ```{r}
-#| label: apisrs_des
+#| label: samp-des-apisrs-des
 des_apisrs <- apisrs_slim %>%
   as_survey_design(weights = pw, fpc = fpc)
 
@@ -165,7 +165,7 @@ where `wtvar` is the variable for the weight on the data.
 The {survey} package does not include an example of SRSWR so we create an example from the population data provided. We call this new dataset `apisrswr`.
 
 ```{r}
-#| label: apisrs_wr_display
+#| label: samp-des-apisrs-wr-display
 set.seed(409963)
 
 apisrswr <- apipop %>%
@@ -183,7 +183,7 @@ head(apisrswr)
 Because this is a SRS design *with replacement* there will be duplicates in the data.  It is important to keep the duplicates in the data for proper estimation, but for reference here are the duplicates in the example we just created.
 
 ```{r}
-#| label: apisrs_wr_duplicates
+#| label: samp-des-apisrs-wr-duplicates
 
 apisrswr %>%
   group_by(cds) %>%
@@ -195,7 +195,7 @@ apisrswr %>%
 A weight variable was added which is the inverse of the probability of selection. To specify the sampling design for `apisrswr`, the following syntax should be used:
 
 ```{r}
-#| label: apisrswr_des
+#| label: samp-des-apisrswr-des
 des_apisrswr <- apisrswr %>%
   as_survey_design(weights = weight)
 
@@ -256,7 +256,7 @@ des_stsrs2 <- dat %>%
 In the example API data, `apistrat` is a stratified random sample, stratified by school type (`stype`). As with the SRS example above, we sort and select specific variables for use of printing.  The data are illustrated below including a count of the number of cases per stratum:
 
 ```{r}
-#| label: apistrat_dis
+#| label: samp-des-apistrat-dis
 apistrat_slim <- 
   apistrat %>%
   as_tibble() %>%
@@ -270,7 +270,7 @@ apistrat_slim %>%
 The fpc is the same within each stratum and 100 elementary schools were sampled while 50 schools were sampled from both the middle and high school levels. This design should be specified as:
 
 ```{r}
-#| label: apistrat_des
+#| label: samp-des-apistrat-des
 des_apistrat <- apistrat_slim %>%
   as_survey_design(strata = stype, weights = pw, fpc = fpc)
 
@@ -340,7 +340,7 @@ des_clus2wrb <- dat %>%
 The `survey` package includes a two-stage cluster sample data, `apiclus2`, in which school districts were sampled and then a random sample of 5 schools was selected within each district. For districts with fewer than 5 schools, all schools were sampled. School districts are identified by `dnum` and schools are identified by `snum`. The variable `fpc1` indicates how many districts there are in California (`N`) and `fpc2` indicates how many schools were in a given district with at least 100 students (`M`).  The data has a row for each school. In the data printed below, there are 757 school districts as indicated by `fpc1` and there are 9 schools in district 731, one school in district 742, 2 schools in district 768, and so on as indicated by `fpc2`. For illustration purposes, the object `apiclus2_slim` has been created from `apiclus2`, which subsets the data to only the necessary columns and sorts data.
 
 ```{r}
-#| label: api2clus_dis
+#| label: samp-des-api2clus-dis
 apiclus2_slim <- 
   apiclus2 %>%
   as_tibble() %>%
@@ -353,7 +353,7 @@ apiclus2_slim
 To specify this design in R, the following syntax should be used:
 
 ```{r}
-#| label: api2clus_des
+#| label: samp-des-api2clus-des
 des_apiclus2 <- apiclus2_slim %>%
   as_survey_design(ids = c(dnum, snum), fpc = c(fpc1, fpc2), weights=pw)
 
@@ -442,7 +442,7 @@ des_brr <- dat %>%
 The {survey} package includes a data example from Section 12.2 of @levy2013sampling. In this fictional data, two out of five ambulance stations were sampled from each of three emergency service areas (ESAs) thus BRR weights are appropriate with 2 PSUs (stations) sampled in each stratum (ESA). In the code below, BRR weights are created as was done in @levy2013sampling.
 
 ```{r}
-#| label: brr_display
+#| label: samp-des-brr-display
 data(scd)
 scdbrr <- scd %>%
   as_tibble() %>%
@@ -459,7 +459,7 @@ scdbrr
 To specify the BRR weights, the following syntax is used:
 
 ```{r}
-#| label: brr_des
+#| label: samp-des-brr-des
 des_brr_scd <- scdbrr %>%
   as_survey_rep(type = "BRR", repweights = starts_with("rep"),
                 combined_weights = FALSE, weight=wt)
@@ -498,11 +498,22 @@ The 2015 RECS uses Fay's BRR weights with the final weight as NWEIGHT and replic
 To specify this design, use the following syntax:
 
 ```{r}
-#| label: recs
-#| eval: TRUE
-recs_in <- read_csv(
-  here::here("RawData", "RECS_2015", "recs2015_public_v4.csv"))
+#| label: samp-des-read-recs
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
 
+library(osfr)
+source("helper-fun/helper-functions.R")
+
+recs_in <- read_rds_tsr("recs_2015.rds")
+```
+
+
+
+```{r}
+#| label: samp-des-recs-des
+#| eval: TRUE
 des_recs <- recs_in %>%
   as_survey_rep(
     weights = NWEIGHT,
@@ -560,7 +571,7 @@ des_jkn <- dat %>%
 The American Community Survey releases public use microdata with JK1 weights at the person and household level. This example includes data at the household level where the replicate weights are specified as WGTP1, ..., WGTP80 and the main weight is WGTP^[American Community Survey 2016-2020 5-Year PUMS File: https://www2.census.gov/programs-surveys/acs/tech_docs/pums/ACS2016_2020_PUMS_README.pdf]. Using the {tidycensus} package^[tidycensus package: https://walker-data.com/tidycensus/], data is downloaded from the Census API. This request gets data for each person in each household in two Public Use Microdata Areas (PUMAs) in Durham County, NC^[Public Use Microdata Areas in North Carolina: https://www.census.gov/geographies/reference-maps/2010/geo/2010-pumas/north-carolina.html]. The variables requested are NP (number of persons in household), BDSP (number of bedrooms),  HINCP (household income), and TYPEHUGQ (type of household). By default, several other variables will come along including SERIALNO (a unique identifier for each household), SPORDER (a unique identifier for each person within each household), PUMA, ST (state), person weight (PWGTP), and the household weights (WGTP, WGTP1, ..., WGTP80). Filtering to records where SPORDER=1 yields only one record per household and TYPEHUGQ=1 filters to only households and not group quarters.
 
 ```{r}
-#| label: acsexamp
+#| label: samp-des-acsexamp
 #| cache: TRUE
 #| results: 'hide'
 library(tidycensus)
@@ -572,7 +583,7 @@ pums_in <- get_pums(variables=c("NP", "BDSP", "HINCP"), state="37",
 ```
 
 ```{r}
-#| label: acsexampcont
+#| label: samp-des-acsexampcont
 #| cache: TRUE
 #| dependson: 'acsexamp'
 pums_in
@@ -616,7 +627,7 @@ Note that the scale is usually provided in documentation and is a constant, so i
 Returning to the api example, bootstrap weights were constructed for a one cluster design. 50 replicate weights were created on a dataset `apiclus1_slim` which has some familiar variables including cds, dnum, fpc, and pw but now additionally includes bootstrap weights pw1, ..., pw50. The scale $(\alpha)$ is $15/(14*49)=0.02186589$
 
 ```{r}
-#| label: genbs
+#| label: samp-des-genbs
 #| include: FALSE
 apiclus1_slim <- 
   apiclus1 %>%
@@ -638,7 +649,7 @@ apiclus1_slim <- bwmata %>%
 ```
 
 ```{r}
-#| label: bsexamp
+#| label: samp-des-bsexamp
 apiclus1_slim
 
 des_api1_bs <- apiclus1_slim %>% 
@@ -672,7 +683,7 @@ des_nsfg <- nsfgdata %>%
 1. The American National Election Studies (ANES) collect data before and after elections approximately every 4 years around the presidential election cycle. Each year with the data release, a user's guide is also released^[ANES 2020 User's Guide: https://electionstudies.org/wp-content/uploads/2022/02/anes_timeseries_2020_userguidecodebook_20220210.pdf]. What is the syntax for specifying the analysis of the full sample post-election data?
 
 ```{r}
-#| label: anes-ex
+#| label: samp-des-anes-ex
 #| eval: FALSE
 svy_anes <- anes_data %>%
   as_survey_design(weight)
@@ -681,7 +692,7 @@ svy_anes <- anes_data %>%
 2. The General Social Survey is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook^[2016-2020 GSS Panel Codebook Release 1a: https://gss.norc.org/Documents/codebook/2016-2020%20GSS%20Panel%20Codebook%20-%20R1a.pdf] provides examples of setting up syntax in SAS and Stata but not R. How would you specify the design in R?
 
 ```{r}
-#| label: gss-ex
+#| label: samp-des-gss-ex
 #| eval: FALSE
 svy_gss <- gss_data %>%
   as_survey_design(ids = VPSU_2, strata = VSTRAT_2, weights = WTSSNR_2)

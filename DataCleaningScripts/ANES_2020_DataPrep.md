@@ -19,12 +19,19 @@ library(here) # easy relative paths
 library(tidyverse) # data manipulation
 library(haven) # data import
 library(tidylog) # informative logging messages
+library(osfr)
 ```
 
 ## Import data and create derived variables
 
 ``` r
-anes_in_2020 <- read_sav(here("RawData", "ANES_2020", "anes_timeseries_2020_spss_20220210.sav"))
+anes_file_osf_det <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
+  osf_ls_files(path="ANES_2020", pattern="sav") %>%
+  osf_download(conflicts="overwrite", path=here("osf_dl"))
+
+anes_in_2020 <- read_sav(pull(anes_file_osf_det, local_path))
+
+unlink(pull(anes_file_osf_det, local_path))
 
 # weight validity for post-election survey
 anes_in_2020 %>%
@@ -84,7 +91,7 @@ anes_in_2020 %>%
     ##  8       47        2 3 [3. pre and post-election interviews (both) complete]    69 0.852
     ##  9       50        2 3 [3. pre and post-election interviews (both) complete]    69 0.852
     ## 10        4        1 3 [3. pre and post-election interviews (both) complete]    76 0.854
-    ## # … with 91 more rows
+    ## # ℹ 91 more rows
 
 ``` r
 anes_2020 <- anes_in_2020 %>%
@@ -329,53 +336,69 @@ anes_2020 <- anes_in_2020 %>%
 summary(anes_2020)
 ```
 
-    ##     V200010b           V200010d        V200010c        V200002         V201006          V201102           V201101            V201103      
-    ##  Min.   :0.008262   Min.   : 1.00   Min.   :1.000   Min.   :1.000   Min.   :-9.000   Min.   :-9.0000   Min.   :-9.00000   Min.   :-9.000  
-    ##  1st Qu.:0.386263   1st Qu.:12.00   1st Qu.:1.000   1st Qu.:3.000   1st Qu.: 1.000   1st Qu.:-1.0000   1st Qu.:-1.00000   1st Qu.: 1.000  
-    ##  Median :0.686301   Median :24.00   Median :2.000   Median :3.000   Median : 1.000   Median : 1.0000   Median :-1.00000   Median : 1.000  
-    ##  Mean   :1.000000   Mean   :24.63   Mean   :1.507   Mean   :2.911   Mean   : 1.596   Mean   : 0.1048   Mean   : 0.08493   Mean   : 1.042  
-    ##  3rd Qu.:1.211032   3rd Qu.:37.00   3rd Qu.:2.000   3rd Qu.:3.000   3rd Qu.: 2.000   3rd Qu.: 1.0000   3rd Qu.: 1.00000   3rd Qu.: 2.000  
-    ##  Max.   :6.650665   Max.   :50.00   Max.   :3.000   Max.   :3.000   Max.   : 3.000   Max.   : 2.0000   Max.   : 2.00000   Max.   : 5.000  
-    ##                                                                                                                                           
-    ##     V201025x         V201231x         V201233          V201237         V201507x        V201510          V201549x         V201600      
-    ##  Min.   :-4.000   Min.   :-9.000   Min.   :-9.000   Min.   :-9.00   Min.   :-9.00   Min.   :-9.000   Min.   :-9.000   Min.   :-9.000  
-    ##  1st Qu.: 3.000   1st Qu.: 2.000   1st Qu.: 3.000   1st Qu.: 2.00   1st Qu.:35.00   1st Qu.: 3.000   1st Qu.: 1.000   1st Qu.: 1.000  
-    ##  Median : 3.000   Median : 4.000   Median : 4.000   Median : 3.00   Median :51.00   Median : 5.000   Median : 1.000   Median : 2.000  
-    ##  Mean   : 2.919   Mean   : 3.834   Mean   : 3.429   Mean   : 2.78   Mean   :49.43   Mean   : 5.621   Mean   : 1.499   Mean   : 1.472  
-    ##  3rd Qu.: 3.000   3rd Qu.: 6.000   3rd Qu.: 4.000   3rd Qu.: 3.00   3rd Qu.:66.00   3rd Qu.: 6.000   3rd Qu.: 2.000   3rd Qu.: 2.000  
-    ##  Max.   : 4.000   Max.   : 7.000   Max.   : 5.000   Max.   : 5.00   Max.   :80.00   Max.   :95.000   Max.   : 6.000   Max.   : 2.000  
-    ##                                                                                                                                       
-    ##     V201617x        V202066          V202109x          V202072           V202073           V202110x         InterviewMode      Weight        
-    ##  Min.   :-9.00   Min.   :-9.000   Min.   :-2.0000   Min.   :-9.0000   Min.   :-9.0000   Min.   :-9.0000   Video    : 274   Min.   :0.008262  
-    ##  1st Qu.: 4.00   1st Qu.: 4.000   1st Qu.: 1.0000   1st Qu.: 1.0000   1st Qu.: 1.0000   1st Qu.: 1.0000   Telephone: 115   1st Qu.:0.386263  
-    ##  Median :11.00   Median : 4.000   Median : 1.0000   Median : 1.0000   Median : 1.0000   Median : 1.0000   Web      :7064   Median :0.686301  
-    ##  Mean   :10.36   Mean   : 3.402   Mean   : 0.8578   Mean   : 0.6234   Mean   : 0.9415   Mean   : 0.9902                    Mean   :1.000000  
-    ##  3rd Qu.:17.00   3rd Qu.: 4.000   3rd Qu.: 1.0000   3rd Qu.: 1.0000   3rd Qu.: 2.0000   3rd Qu.: 2.0000                    3rd Qu.:1.211032  
-    ##  Max.   :22.00   Max.   : 4.000   Max.   : 1.0000   Max.   : 2.0000   Max.   :12.0000   Max.   : 5.0000                    Max.   :6.650665  
-    ##                                                                                                                                              
-    ##     Stratum     VarUnit       Age               AgeGroup       Gender                    RaceEth                         PartyID    
-    ##  12     : 179   1:3689   Min.   :18.00   18-29      : 871   Male  :3375   White              :5420   Strong democrat         :1796  
-    ##  6      : 172   2:3750   1st Qu.:37.00   30-39      :1241   Female:4027   Black              : 650   Strong republican       :1545  
-    ##  27     : 172   3:  14   Median :53.00   40-49      :1081   NA's  :  51   Hispanic           : 662   Independent-democrat    : 881  
-    ##  21     : 170            Mean   :51.83   50-59      :1200                 Asian, NH/PI       : 248   Independent             : 876  
-    ##  25     : 169            3rd Qu.:66.00   60-69      :1436                 AI/AN              : 155   Not very strong democrat: 790  
-    ##  1      : 167            Max.   :80.00   70 or older:1330                 Other/multiple race: 237   (Other)                 :1540  
-    ##  (Other):6424            NA's   :294     NA's       : 294                 NA's               :  81   NA's                    :  25  
-    ##         Education                 Income              Income7                 CampaignInterest            TrustGovernment
-    ##  Less than HS: 312   Under $9,999    : 647   $125k or more:1468   Very much interested:3940    Always             :  80  
-    ##  High school :1160   $50,000-59,999  : 485   Under $20k   :1076   Somewhat interested :2569    Most of the time   :1016  
-    ##  Post HS     :2514   $100,000-109,999: 451   $20-40k      :1051   Not much interested : 943    About half the time:2313  
-    ##  Bachelor's  :1877   $250,000 or more: 405   $40-60k      : 984   NA's                :   1    Some of the time   :3313  
-    ##  Graduate    :1474   $80,000-89,999  : 383   $60-80k      : 920                                Never              : 702  
-    ##  NA's        : 116   (Other)         :4565   (Other)      :1437                                NA's               :  29  
-    ##                      NA's            : 517   NA's         : 517                                                          
-    ##               TrustPeople   VotedPres2016 VotedPres2016_selection VotedPres2020 VotedPres2020_selection EarlyVote2020
-    ##  Always             :  48   Yes :5810     Clinton:2911            Yes :6407     Biden:3267              Yes : 371    
-    ##  Most of the time   :3511   No  :1622     Trump  :2466            No  :1039     Trump:2462              No  :6035    
-    ##  About half the time:2020   NA's:  21     Other  : 390            NA's:   7     Other: 152              NA's:1047    
-    ##  Some of the time   :1597                 NA's   :1686                          NA's :1572                           
-    ##  Never              : 264                                                                                            
-    ##  NA's               :  13                                                                                            
+    ##     V200010b           V200010d        V200010c        V200002         V201006          V201102       
+    ##  Min.   :0.008262   Min.   : 1.00   Min.   :1.000   Min.   :1.000   Min.   :-9.000   Min.   :-9.0000  
+    ##  1st Qu.:0.386263   1st Qu.:12.00   1st Qu.:1.000   1st Qu.:3.000   1st Qu.: 1.000   1st Qu.:-1.0000  
+    ##  Median :0.686301   Median :24.00   Median :2.000   Median :3.000   Median : 1.000   Median : 1.0000  
+    ##  Mean   :1.000000   Mean   :24.63   Mean   :1.507   Mean   :2.911   Mean   : 1.596   Mean   : 0.1048  
+    ##  3rd Qu.:1.211032   3rd Qu.:37.00   3rd Qu.:2.000   3rd Qu.:3.000   3rd Qu.: 2.000   3rd Qu.: 1.0000  
+    ##  Max.   :6.650665   Max.   :50.00   Max.   :3.000   Max.   :3.000   Max.   : 3.000   Max.   : 2.0000  
+    ##                                                                                                       
+    ##     V201101            V201103          V201025x         V201231x         V201233          V201237     
+    ##  Min.   :-9.00000   Min.   :-9.000   Min.   :-4.000   Min.   :-9.000   Min.   :-9.000   Min.   :-9.00  
+    ##  1st Qu.:-1.00000   1st Qu.: 1.000   1st Qu.: 3.000   1st Qu.: 2.000   1st Qu.: 3.000   1st Qu.: 2.00  
+    ##  Median :-1.00000   Median : 1.000   Median : 3.000   Median : 4.000   Median : 4.000   Median : 3.00  
+    ##  Mean   : 0.08493   Mean   : 1.042   Mean   : 2.919   Mean   : 3.834   Mean   : 3.429   Mean   : 2.78  
+    ##  3rd Qu.: 1.00000   3rd Qu.: 2.000   3rd Qu.: 3.000   3rd Qu.: 6.000   3rd Qu.: 4.000   3rd Qu.: 3.00  
+    ##  Max.   : 2.00000   Max.   : 5.000   Max.   : 4.000   Max.   : 7.000   Max.   : 5.000   Max.   : 5.00  
+    ##                                                                                                        
+    ##     V201507x        V201510          V201549x         V201600          V201617x        V202066      
+    ##  Min.   :-9.00   Min.   :-9.000   Min.   :-9.000   Min.   :-9.000   Min.   :-9.00   Min.   :-9.000  
+    ##  1st Qu.:35.00   1st Qu.: 3.000   1st Qu.: 1.000   1st Qu.: 1.000   1st Qu.: 4.00   1st Qu.: 4.000  
+    ##  Median :51.00   Median : 5.000   Median : 1.000   Median : 2.000   Median :11.00   Median : 4.000  
+    ##  Mean   :49.43   Mean   : 5.621   Mean   : 1.499   Mean   : 1.472   Mean   :10.36   Mean   : 3.402  
+    ##  3rd Qu.:66.00   3rd Qu.: 6.000   3rd Qu.: 2.000   3rd Qu.: 2.000   3rd Qu.:17.00   3rd Qu.: 4.000  
+    ##  Max.   :80.00   Max.   :95.000   Max.   : 6.000   Max.   : 2.000   Max.   :22.00   Max.   : 4.000  
+    ##                                                                                                     
+    ##     V202109x          V202072           V202073           V202110x         InterviewMode      Weight        
+    ##  Min.   :-2.0000   Min.   :-9.0000   Min.   :-9.0000   Min.   :-9.0000   Video    : 274   Min.   :0.008262  
+    ##  1st Qu.: 1.0000   1st Qu.: 1.0000   1st Qu.: 1.0000   1st Qu.: 1.0000   Telephone: 115   1st Qu.:0.386263  
+    ##  Median : 1.0000   Median : 1.0000   Median : 1.0000   Median : 1.0000   Web      :7064   Median :0.686301  
+    ##  Mean   : 0.8578   Mean   : 0.6234   Mean   : 0.9415   Mean   : 0.9902                    Mean   :1.000000  
+    ##  3rd Qu.: 1.0000   3rd Qu.: 1.0000   3rd Qu.: 2.0000   3rd Qu.: 2.0000                    3rd Qu.:1.211032  
+    ##  Max.   : 1.0000   Max.   : 2.0000   Max.   :12.0000   Max.   : 5.0000                    Max.   :6.650665  
+    ##                                                                                                             
+    ##     Stratum     VarUnit       Age               AgeGroup       Gender                    RaceEth    
+    ##  12     : 179   1:3689   Min.   :18.00   18-29      : 871   Male  :3375   White              :5420  
+    ##  6      : 172   2:3750   1st Qu.:37.00   30-39      :1241   Female:4027   Black              : 650  
+    ##  27     : 172   3:  14   Median :53.00   40-49      :1081   NA's  :  51   Hispanic           : 662  
+    ##  21     : 170            Mean   :51.83   50-59      :1200                 Asian, NH/PI       : 248  
+    ##  25     : 169            3rd Qu.:66.00   60-69      :1436                 AI/AN              : 155  
+    ##  1      : 167            Max.   :80.00   70 or older:1330                 Other/multiple race: 237  
+    ##  (Other):6424            NA's   :294     NA's       : 294                 NA's               :  81  
+    ##                      PartyID            Education                 Income              Income7    
+    ##  Strong democrat         :1796   Less than HS: 312   Under $9,999    : 647   $125k or more:1468  
+    ##  Strong republican       :1545   High school :1160   $50,000-59,999  : 485   Under $20k   :1076  
+    ##  Independent-democrat    : 881   Post HS     :2514   $100,000-109,999: 451   $20-40k      :1051  
+    ##  Independent             : 876   Bachelor's  :1877   $250,000 or more: 405   $40-60k      : 984  
+    ##  Not very strong democrat: 790   Graduate    :1474   $80,000-89,999  : 383   $60-80k      : 920  
+    ##  (Other)                 :1540   NA's        : 116   (Other)         :4565   (Other)      :1437  
+    ##  NA's                    :  25                       NA's            : 517   NA's         : 517  
+    ##              CampaignInterest            TrustGovernment              TrustPeople   VotedPres2016
+    ##  Very much interested:3940    Always             :  80   Always             :  48   Yes :5810    
+    ##  Somewhat interested :2569    Most of the time   :1016   Most of the time   :3511   No  :1622    
+    ##  Not much interested : 943    About half the time:2313   About half the time:2020   NA's:  21    
+    ##  NA's                :   1    Some of the time   :3313   Some of the time   :1597                
+    ##                               Never              : 702   Never              : 264                
+    ##                               NA's               :  29   NA's               :  13                
+    ##                                                                                                  
+    ##  VotedPres2016_selection VotedPres2020 VotedPres2020_selection EarlyVote2020
+    ##  Clinton:2911            Yes :6407     Biden:3267              Yes : 371    
+    ##  Trump  :2466            No  :1039     Trump:2462              No  :6035    
+    ##  Other  : 390            NA's:   7     Other: 152              NA's:1047    
+    ##  NA's   :1686                          NA's :1572                           
+    ##                                                                             
+    ##                                                                             
     ## 
 
 ## Check derived variables for correct coding
@@ -476,19 +499,19 @@ anes_2020 %>% count(Education, V201510)
     ## count: now 11 rows and 3 columns, ungrouped
 
     ## # A tibble: 11 × 3
-    ##    Education    V201510                                                                                             n
-    ##    <fct>        <dbl+lbl>                                                                                       <int>
-    ##  1 Less than HS  1 [1. Less than high school credential]                                                          312
-    ##  2 High school   2 [2.  High school graduate - High school diploma or equivalent (e.g. GED)]                     1160
-    ##  3 Post HS       3 [3. Some college but no degree]                                                               1519
-    ##  4 Post HS       4 [4. Associate degree in college - occupational/vocational]                                     550
-    ##  5 Post HS       5 [5. Associate degree in college - academic]                                                    445
-    ##  6 Bachelor's    6 [6. Bachelor's degree (e.g. BA, AB, BS)]                                                      1877
-    ##  7 Graduate      7 [7. Master's degree (e.g. MA, MS, MEng, MEd, MSW, MBA)]                                       1092
-    ##  8 Graduate      8 [8. Professional school degree (e.g. MD, DDS, DVM, LLB, JD)/Doctoral degree (e.g. PHD, EDD)]   382
-    ##  9 <NA>         -9 [-9. Refused]                                                                                   25
-    ## 10 <NA>         -8 [-8. Don't know]                                                                                 1
-    ## 11 <NA>         95 [95. Other {SPECIFY}]                                                                           90
+    ##    Education    V201510                                                                                       n
+    ##    <fct>        <dbl+lbl>                                                                                 <int>
+    ##  1 Less than HS  1 [1. Less than high school credential]                                                    312
+    ##  2 High school   2 [2.  High school graduate - High school diploma or equivalent (e.g. GED)]               1160
+    ##  3 Post HS       3 [3. Some college but no degree]                                                         1519
+    ##  4 Post HS       4 [4. Associate degree in college - occupational/vocational]                               550
+    ##  5 Post HS       5 [5. Associate degree in college - academic]                                              445
+    ##  6 Bachelor's    6 [6. Bachelor's degree (e.g. BA, AB, BS)]                                                1877
+    ##  7 Graduate      7 [7. Master's degree (e.g. MA, MS, MEng, MEd, MSW, MBA)]                                 1092
+    ##  8 Graduate      8 [8. Professional school degree (e.g. MD, DDS, DVM, LLB, JD)/Doctoral degree (e.g. PHD…   382
+    ##  9 <NA>         -9 [-9. Refused]                                                                             25
+    ## 10 <NA>         -8 [-8. Don't know]                                                                           1
+    ## 11 <NA>         95 [95. Other {SPECIFY}]                                                                     90
 
 ``` r
 anes_2020 %>%
@@ -650,19 +673,19 @@ anes_2020 %>% count(EarlyVote2020, V201025x, VotedPres2020)
     ## count: now 11 rows and 4 columns, ungrouped
 
     ## # A tibble: 11 × 4
-    ##    EarlyVote2020 V201025x                                                                         VotedPres2020     n
-    ##    <fct>         <dbl+lbl>                                                                        <fct>         <int>
-    ##  1 Yes            4 [4. Registered and voted early]                                               Yes             371
-    ##  2 No             1 [1. Not registered (or DK/RF), does not intend to register (or DK/RF intent)] Yes              35
-    ##  3 No             2 [2. Not registered (or DK/RF), intends to register]                           Yes             109
-    ##  4 No             3 [3. Registered but did not vote early (or DK/RF)]                             Yes            5891
-    ##  5 <NA>          -4 [-4. Technical error]                                                         Yes               1
-    ##  6 <NA>           1 [1. Not registered (or DK/RF), does not intend to register (or DK/RF intent)] No              301
-    ##  7 <NA>           1 [1. Not registered (or DK/RF), does not intend to register (or DK/RF intent)] <NA>              3
-    ##  8 <NA>           2 [2. Not registered (or DK/RF), intends to register]                           No              180
-    ##  9 <NA>           2 [2. Not registered (or DK/RF), intends to register]                           <NA>              1
-    ## 10 <NA>           3 [3. Registered but did not vote early (or DK/RF)]                             No              558
-    ## 11 <NA>           3 [3. Registered but did not vote early (or DK/RF)]                             <NA>              3
+    ##    EarlyVote2020 V201025x                                                                   VotedPres2020     n
+    ##    <fct>         <dbl+lbl>                                                                  <fct>         <int>
+    ##  1 Yes            4 [4. Registered and voted early]                                         Yes             371
+    ##  2 No             1 [1. Not registered (or DK/RF), does not intend to register (or DK/RF i… Yes              35
+    ##  3 No             2 [2. Not registered (or DK/RF), intends to register]                     Yes             109
+    ##  4 No             3 [3. Registered but did not vote early (or DK/RF)]                       Yes            5891
+    ##  5 <NA>          -4 [-4. Technical error]                                                   Yes               1
+    ##  6 <NA>           1 [1. Not registered (or DK/RF), does not intend to register (or DK/RF i… No              301
+    ##  7 <NA>           1 [1. Not registered (or DK/RF), does not intend to register (or DK/RF i… <NA>              3
+    ##  8 <NA>           2 [2. Not registered (or DK/RF), intends to register]                     No              180
+    ##  9 <NA>           2 [2. Not registered (or DK/RF), intends to register]                     <NA>              1
+    ## 10 <NA>           3 [3. Registered but did not vote early (or DK/RF)]                       No              558
+    ## 11 <NA>           3 [3. Registered but did not vote early (or DK/RF)]                       <NA>              3
 
 ``` r
 anes_2020 %>%
@@ -677,5 +700,86 @@ anes_2020 %>%
 ## Save data
 
 ``` r
-write_rds(anes_2020, here("AnalysisData", "anes_2020.rds"))
+summary(anes_2020)
+```
+
+    ##     V200010b           V200010d        V200010c        V200002         V201006          V201102       
+    ##  Min.   :0.008262   Min.   : 1.00   Min.   :1.000   Min.   :1.000   Min.   :-9.000   Min.   :-9.0000  
+    ##  1st Qu.:0.386263   1st Qu.:12.00   1st Qu.:1.000   1st Qu.:3.000   1st Qu.: 1.000   1st Qu.:-1.0000  
+    ##  Median :0.686301   Median :24.00   Median :2.000   Median :3.000   Median : 1.000   Median : 1.0000  
+    ##  Mean   :1.000000   Mean   :24.63   Mean   :1.507   Mean   :2.911   Mean   : 1.596   Mean   : 0.1048  
+    ##  3rd Qu.:1.211032   3rd Qu.:37.00   3rd Qu.:2.000   3rd Qu.:3.000   3rd Qu.: 2.000   3rd Qu.: 1.0000  
+    ##  Max.   :6.650665   Max.   :50.00   Max.   :3.000   Max.   :3.000   Max.   : 3.000   Max.   : 2.0000  
+    ##                                                                                                       
+    ##     V201101            V201103          V201025x         V201231x         V201233          V201237     
+    ##  Min.   :-9.00000   Min.   :-9.000   Min.   :-4.000   Min.   :-9.000   Min.   :-9.000   Min.   :-9.00  
+    ##  1st Qu.:-1.00000   1st Qu.: 1.000   1st Qu.: 3.000   1st Qu.: 2.000   1st Qu.: 3.000   1st Qu.: 2.00  
+    ##  Median :-1.00000   Median : 1.000   Median : 3.000   Median : 4.000   Median : 4.000   Median : 3.00  
+    ##  Mean   : 0.08493   Mean   : 1.042   Mean   : 2.919   Mean   : 3.834   Mean   : 3.429   Mean   : 2.78  
+    ##  3rd Qu.: 1.00000   3rd Qu.: 2.000   3rd Qu.: 3.000   3rd Qu.: 6.000   3rd Qu.: 4.000   3rd Qu.: 3.00  
+    ##  Max.   : 2.00000   Max.   : 5.000   Max.   : 4.000   Max.   : 7.000   Max.   : 5.000   Max.   : 5.00  
+    ##                                                                                                        
+    ##     V201507x        V201510          V201549x         V201600          V201617x        V202066      
+    ##  Min.   :-9.00   Min.   :-9.000   Min.   :-9.000   Min.   :-9.000   Min.   :-9.00   Min.   :-9.000  
+    ##  1st Qu.:35.00   1st Qu.: 3.000   1st Qu.: 1.000   1st Qu.: 1.000   1st Qu.: 4.00   1st Qu.: 4.000  
+    ##  Median :51.00   Median : 5.000   Median : 1.000   Median : 2.000   Median :11.00   Median : 4.000  
+    ##  Mean   :49.43   Mean   : 5.621   Mean   : 1.499   Mean   : 1.472   Mean   :10.36   Mean   : 3.402  
+    ##  3rd Qu.:66.00   3rd Qu.: 6.000   3rd Qu.: 2.000   3rd Qu.: 2.000   3rd Qu.:17.00   3rd Qu.: 4.000  
+    ##  Max.   :80.00   Max.   :95.000   Max.   : 6.000   Max.   : 2.000   Max.   :22.00   Max.   : 4.000  
+    ##                                                                                                     
+    ##     V202109x          V202072           V202073           V202110x         InterviewMode      Weight        
+    ##  Min.   :-2.0000   Min.   :-9.0000   Min.   :-9.0000   Min.   :-9.0000   Video    : 274   Min.   :0.008262  
+    ##  1st Qu.: 1.0000   1st Qu.: 1.0000   1st Qu.: 1.0000   1st Qu.: 1.0000   Telephone: 115   1st Qu.:0.386263  
+    ##  Median : 1.0000   Median : 1.0000   Median : 1.0000   Median : 1.0000   Web      :7064   Median :0.686301  
+    ##  Mean   : 0.8578   Mean   : 0.6234   Mean   : 0.9415   Mean   : 0.9902                    Mean   :1.000000  
+    ##  3rd Qu.: 1.0000   3rd Qu.: 1.0000   3rd Qu.: 2.0000   3rd Qu.: 2.0000                    3rd Qu.:1.211032  
+    ##  Max.   : 1.0000   Max.   : 2.0000   Max.   :12.0000   Max.   : 5.0000                    Max.   :6.650665  
+    ##                                                                                                             
+    ##     Stratum     VarUnit       Age               AgeGroup       Gender                    RaceEth    
+    ##  12     : 179   1:3689   Min.   :18.00   18-29      : 871   Male  :3375   White              :5420  
+    ##  6      : 172   2:3750   1st Qu.:37.00   30-39      :1241   Female:4027   Black              : 650  
+    ##  27     : 172   3:  14   Median :53.00   40-49      :1081   NA's  :  51   Hispanic           : 662  
+    ##  21     : 170            Mean   :51.83   50-59      :1200                 Asian, NH/PI       : 248  
+    ##  25     : 169            3rd Qu.:66.00   60-69      :1436                 AI/AN              : 155  
+    ##  1      : 167            Max.   :80.00   70 or older:1330                 Other/multiple race: 237  
+    ##  (Other):6424            NA's   :294     NA's       : 294                 NA's               :  81  
+    ##                      PartyID            Education                 Income              Income7    
+    ##  Strong democrat         :1796   Less than HS: 312   Under $9,999    : 647   $125k or more:1468  
+    ##  Strong republican       :1545   High school :1160   $50,000-59,999  : 485   Under $20k   :1076  
+    ##  Independent-democrat    : 881   Post HS     :2514   $100,000-109,999: 451   $20-40k      :1051  
+    ##  Independent             : 876   Bachelor's  :1877   $250,000 or more: 405   $40-60k      : 984  
+    ##  Not very strong democrat: 790   Graduate    :1474   $80,000-89,999  : 383   $60-80k      : 920  
+    ##  (Other)                 :1540   NA's        : 116   (Other)         :4565   (Other)      :1437  
+    ##  NA's                    :  25                       NA's            : 517   NA's         : 517  
+    ##              CampaignInterest            TrustGovernment              TrustPeople   VotedPres2016
+    ##  Very much interested:3940    Always             :  80   Always             :  48   Yes :5810    
+    ##  Somewhat interested :2569    Most of the time   :1016   Most of the time   :3511   No  :1622    
+    ##  Not much interested : 943    About half the time:2313   About half the time:2020   NA's:  21    
+    ##  NA's                :   1    Some of the time   :3313   Some of the time   :1597                
+    ##                               Never              : 702   Never              : 264                
+    ##                               NA's               :  29   NA's               :  13                
+    ##                                                                                                  
+    ##  VotedPres2016_selection VotedPres2020 VotedPres2020_selection EarlyVote2020
+    ##  Clinton:2911            Yes :6407     Biden:3267              Yes : 371    
+    ##  Trump  :2466            No  :1039     Trump:2462              No  :6035    
+    ##  Other  : 390            NA's:   7     Other: 152              NA's:1047    
+    ##  NA's   :1686                          NA's :1572                           
+    ##                                                                             
+    ##                                                                             
+    ## 
+
+``` r
+anes_der_tmp_loc <- here("osf_dl", "anes_2020.rds")
+write_rds(anes_2020, anes_der_tmp_loc)
+target_dir <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") 
+osf_upload(target_dir, path=anes_der_tmp_loc, conflicts="overwrite")
+```
+
+    ## # A tibble: 1 × 3
+    ##   name          id                       meta            
+    ##   <chr>         <chr>                    <list>          
+    ## 1 anes_2020.rds 647d2affa8dbe909c6cb5482 <named list [3]>
+
+``` r
+unlink(anes_der_tmp_loc)
 ```
