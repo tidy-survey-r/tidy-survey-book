@@ -124,26 +124,136 @@ Using the different functions of {gt}, you can continue to add elements and diff
 
 <!-- If we have time, add in a final table here with more formatting like the font/colors of our book? --> 
 
-### Data Visualization
+### Charts and Plots
 
-Survey analysis can result in an abundance of printed summary statistics and modeling analysis Even with the best analysis, the results can be overwhelming and difficult to comprehend. This is where data visualization plays a key role in our work. By transforming complex data into visual representation, we can recognize patterns, relationships, and trends with greater ease.
+Survey analysis can result in an abundance of printed summary statistics and models. Even with the best analysis, the results can be overwhelming and difficult to comprehend. This is where charts and plots play a key role in our work. By transforming complex data into visual representation, we can recognize patterns, relationships, and trends with greater ease.
 
-R has many packages for creating compelling and insightful data visualization. We will focus on {ggplot2}, a member of the {tidyverse}. This package is a powerful, flexible tool for creating a wide range of data visualization.
+R has many packages for creating compelling and insightful charts. We will focus on {ggplot2}, a member of the {tidyverse}. This package is a powerful, flexible tool for creating a wide range of data visualization.
 
 {ggplot2} follows the "grammar of graphics," a framework that incrementally adds layers of chart components. We can customize visual elements such as scales, colors, labels, and annotations to enhance the understanding of data.
 
-```{r}
-library(osfr)
-source("helper-fun/helper-functions.R")
+Let's walk through an example using the ANES 2020 data. As usual, we begin by setting up our survey object:
 
-anes_in <- 
-  osfr::read_rds_tsr("anes_2020.rds")
+```{r}
+#| include: false
+#| message: false
+library(censusapi)
+library(tidyverse)
+
+# Note that we need a Census key to access the Census API
+cps_state_in <- getCensus(
+  name = "cps/basic/nov",
+  vintage = 2020,
+  region = "state",
+  vars = c("HRHHID", "HRMONTH", "HRYEAR4", "PRTAGE", "PRCITSHP", "PWSSWGT"),
+  key = Sys.getenv("CENSUS_KEY")
+)
+
+cps_state <- cps_state_in %>%
+  as_tibble() %>%
+  mutate(across(.cols = everything(),
+                .fns = as.numeric))
+
+# Voting age citizen population
+targetpop <- cps_state %>%
+  as_tibble() %>%
+  filter(PRTAGE >= 18,
+         PRCITSHP %in% (1:4)) %>%
+  pull(PWSSWGT) %>%
+  sum()
 ```
 
+```{r}
+library(osfr)
+library(srvyr)
+library(dplyr)
+source("helper-fun/helper-functions.R")
 
+anes_in <-
+  read_rds_tsr("anes_2020.rds") %>%
+  mutate(Weight = Weight / sum(Weight) * targetpop)
 
+anes_des <- anes_in %>%
+  as_survey_design(
+    weights = Weight,
+    strata = Stratum,
+    ids = VarUnit,
+    nest = TRUE
+  )
+```
 
+Next, we clean up and subset to our desired data points.
 
+```{r}
+anes_des_der <- anes_des %>%
+  mutate(TrustGovernmentUsually = case_when(
+    is.na(TrustGovernment) ~ NA,
+    TRUE ~ TrustGovernment %in% c("Always", "Most of the time")
+  )) %>%
+  group_by(VotedPres2020_selection) %>%
+  summarise(
+    pct_trust = survey_mean(
+      TrustGovernmentUsually,
+      na.rm = TRUE,
+      proportion = TRUE,
+      vartype = "ci"
+    ),
+    .groups = "drop"
+  ) %>%
+  filter(complete.cases(.))
+```
+
+Now, we can begin creating our chart with {ggplot2}. First, we set up our plot with `ggplot()`. Next, we state the data points we want to show with `aes`. Finally, we specify the type of plot with `geom_*()`, in this case, `geom_bar()`.
+
+```{r}
+library(ggplot2)
+
+anes_des_der %>%
+  ggplot(aes(x = VotedPres2020_selection, 
+           y = pct_trust)) +
+  geom_bar(stat = "identity")
+```
+
+This is a great starting-off point: we can see that the percentage of people saying they always usually trust the government is higher for those who voted for Trump than Biden or other. What if we wanted to add color to better differentiate the three groups? We can add `fill` under `aesthetics`, denoting to use those datapoints to fill in the bars.
+
+```{r}
+anes_des_der %>%
+  ggplot(aes(x = VotedPres2020_selection, 
+           y = pct_trust,
+           fill = VotedPres2020_selection)) +
+  geom_bar(stat = "identity")
+```
+
+Now, let's say we wanted to follow good statistical analysis practice and include our ranges on our plot. We can add another geom, `geom_errorbar()`, on top of our `geom_bar` layer using a plus sign `+`. 
+
+```{r}
+anes_des_der %>%
+  ggplot(aes(x = VotedPres2020_selection,
+             y = pct_trust,
+             fill = VotedPres2020_selection)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = pct_trust_low, 
+                    ymax = pct_trust_upp), 
+                width = .2)
+```
+
+We can continue adding to our plot until we achieve the visualization we'd like to present.
+
+```{r}
+anes_des_der %>%
+  ggplot(aes(x = VotedPres2020_selection,
+             y = pct_trust,
+             fill = VotedPres2020_selection)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = pct_trust_low,
+                    ymax = pct_trust_upp),
+                width = .2) +
+  scale_fill_manual(values = c("#0b3954", "#bfd7ea", "#8d6b94")) +
+  xlab("Election choice (2022)") +
+  ylab("Usually trust the government") +
+  scale_y_continuous(labels = scales::percent) +
+  guides(fill = "none")
+```
 
 ## Reproducibility
 
