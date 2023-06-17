@@ -1,6 +1,6 @@
-# Statistical testing {#c07}
+# Statistical testing {#c06-statistical-testing}
 
-When analyzing results from a survey, the point estimates described in Chapter \@ref(c06) are helpful for understanding the data at a high level, but researchers and the public often want to make comparisons between different groups. These comparisons are calculated through statistical testing where we compare the point estimates and the variance estimates of each statistic to see if there are statistically significant differences. The general idea of statistical testing is the same for data obtained through surveys and data obtained through other methods, but the importance lies in ensuring the variance is calculated correctly. Functions in the {survey} packages allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and functions:
+When analyzing results from a survey, the point estimates described in Chapter \@ref(c05-descriptive-analysis) are helpful for understanding the data at a high level, but researchers and the public often want to make comparisons between different groups. These comparisons are calculated through statistical testing where we compare the point estimates and the variance estimates of each statistic to see if there are statistically significant differences. The general idea of statistical testing is the same for data obtained through surveys and data obtained through other methods, but the importance lies in ensuring the variance is calculated correctly. Functions in the {survey} packages allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and functions:
 
 -  Comparison of proportions `svyttest()`
 -  Comparison of means `svyttest()`
@@ -35,7 +35,7 @@ svydata_des %>%
 ```
 ## Chapter Set-Up {#stattest-setup}
 
-For this chapter, we will be using the same data as we did in \@ref(c06): ANES and RECS. As a reminder, we will need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.
+For this chapter, we will be using the same data as we did in \@ref(c05-descriptive-analysis): ANES and RECS. As a reminder, we will need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.
 
 First, make sure install and load the following packages:
 ```{r stattest-pkgs}
@@ -56,10 +56,11 @@ Second, we need to read in the data and create the design objects.
 
 Here is how to create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information).
 ```{r stattest-anesdes}
-anes <- read_rds_tsr("anes_2020.rds") %>%
+#| eval: FALSE
+anes_in <- read_rds_tsr("anes_2020.rds") %>%
   mutate(Weight=Weight/sum(Weight)*targetpop) 
 
-anes_des <- anes %>%
+anes_des <- anes_in %>%
   as_survey_design(weights = Weight,
           strata = Stratum,
           ids = VarUnit,
@@ -68,9 +69,10 @@ anes_des <- anes %>%
 
 Here is how to create the design object for the RECS data:
 ```{r stattest-recsdes}
-recs <-read_rds_tsr("recs_2015.rds")
+#| eval: FALSE
+recs_in <-read_rds_tsr("recs_2015.rds")
 
-recs_des <- recs %>%
+recs_des <- recs_in %>%
  as_survey_rep(weights = NWEIGHT,
         repweights = starts_with("BRRWT"),
         type = "Fay",
@@ -92,7 +94,7 @@ For comparing two estimates, this is called a *two sample t-test* and we can set
 
 Two sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., males vs females), then the t-test run will be an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data taken from the same population in two different time periods (e.g., before and after an intervention). 
 
-The difference between using t-tests with non-survey data and with survey data is based on the underlying variance estimation difference. Chapter \@ref(c05) provides the detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances provided the design object is correctly defined.  
+The difference between using t-tests with non-survey data and with survey data is based on the underlying variance estimation difference. Chapter \@ref(c03-specifying-sample-designs) provides the detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances provided the design object is correctly defined.  
 
 ### Syntax {#stattest-ttest-syntax}
 
@@ -124,7 +126,7 @@ The `formula` argument can take on a couple of different forms depending on what
         - **3+ level grouping variable:** `var ~ I(groupVar == level)`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. Again we need to use the `I()` function to tell the program to isolate the category before doing the comparison across groups.  For example, we could test if the test scores in one classroom differed from all other classrooms.
     b. **Paired:** `I(var_1 - var_2) ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. We again will have to use the `I()` function to have the program calculate the difference between the two variables before comparing it against `0`.  For example, we could test if test scores on a subject differed between the start and the end of a course.
 
-Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing the t-test will not compute. Throughout this chapter we will always set `na.rm=TRUE`, but before analyzing the survey data, make sure to review the notes provided in Chapter \@ref(understanding-survey-data-documentation) to better understand how to handle missing data.  Finally, the `level` argument is $1-\alpha$, or the amount of type 1 error.  The default is $0.95$.
+Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing the t-test will not compute. Throughout this chapter we will always set `na.rm=TRUE`, but before analyzing the survey data, make sure to review the notes provided in Chapter \@ref(c04-understanding-survey-data-documentation) to better understand how to handle missing data.  Finally, the `level` argument is $1-\alpha$, or the amount of type 1 error.  The default is $0.95$.
 
 ### Examples {#stattest-ttest-examples}
 Let's walk through a few examples using the ANES and RECS data.  See Section \@ref(stattest-setup) above to set up the design objects.
@@ -132,7 +134,7 @@ Let's walk through a few examples using the ANES and RECS data.  See Section \@r
 #### Example 1: One-sample t-test {.unnumbered #stattest-ttest-ex1}
 <!--Would love to do a comparison to 0 for this example, but have changed it for now.  Thoughts?-->
 
-ANES asked respondents if they voted for president in the 2020 election.  In our data, we've called this variable `VotedPres2020`. Let's look at the proportion of the U.S. voting eligible population that voted for president in 2020 using the `survey_prop()` function we learned in Chapter \@ref(c06). 
+ANES asked respondents if they voted for president in the 2020 election.  In our data, we've called this variable `VotedPres2020`. Let's look at the proportion of the U.S. voting eligible population that voted for president in 2020 using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis). 
 
 ```{r}
 #| label: stattest-ttest-voteprop
@@ -306,7 +308,7 @@ Third, **tests of homogeneity** are used to compare two distributions to see if 
 - $H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}$ where $p_{ia}$ is the observed proportion of category $i$ for subgroup $a$, $p_{ib}$ is the observed proportion of category $i$ for subgroup $a$, and $k$ is the number of categories
 - $H_A:$ at least one category of $p_{ia}$ does not match $p_{ib}$
 
-The difference between using $\chi^2$ tests with non-survey data and with survey data is based on the underlying variance estimation difference. The functions in the {survey} package will account for these nuances provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c05). 
+The difference between using $\chi^2$ tests with non-survey data and with survey data is based on the underlying variance estimation difference. The functions in the {survey} package will account for these nuances provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c03-specifying-sample-designs). 
 
 ### Syntax {#stattest-chi-syntax}
 
@@ -343,7 +345,7 @@ There are 6 statistics that are accepted in this formula.  For tests of homogene
 
 The formula argument will always be one sided unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula=~VAR1+VAR2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
 
-Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument.  This argument defaults to `FALSE`, however, unlike the t-test function if any data is missing the $\chi^2$ tests will assume that `NA` is a category and will include it in the calculation. Throughout this chapter we will always set `na.rm=TRUE`, but before analyzing the survey data, make sure to review the notes provided in Chapter \@ref(understanding-survey-data-documentation) to better understand how to handle missing data.
+Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument.  This argument defaults to `FALSE`, however, unlike the t-test function if any data is missing the $\chi^2$ tests will assume that `NA` is a category and will include it in the calculation. Throughout this chapter we will always set `na.rm=TRUE`, but before analyzing the survey data, make sure to review the notes provided in Chapter \@ref(c04-understanding-survey-data-documentation) to better understand how to handle missing data.
 
 
 ### Examples {#stattest-chi-examples}
@@ -363,7 +365,7 @@ If we want to see if the weighted distribution from the ANES 2020 data matches t
 - $H_0: p_1 = 0.11, ~ p_2 = 0.27, ~ p_3 = 0.29, ~ p_4 = 0.33$
 - $H_A:$ at least one of the education levels does not match between the ANES and the ACS
 
-To conduct this in R, let's first take a look at the education variable (`Education`) we have on the ANES data.  Using the `survey_mean()` function discussed in Chapter \@ref(c06), we can see the different levels of education we have and estimated proportion.
+To conduct this in R, let's first take a look at the education variable (`Education`) we have on the ANES data.  Using the `survey_mean()` function discussed in Chapter \@ref(c05-descriptive-analysis), we can see the different levels of education we have and estimated proportion.
 
 ```{r}
 #| label: stattest-chi-ex1-educmean
