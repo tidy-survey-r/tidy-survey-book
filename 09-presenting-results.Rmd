@@ -53,7 +53,7 @@ Tables are a great way to provide a large amount of data when you want the indiv
 
 Let's start by using some of the data we calculated earlier in this book.  In Chapter \@ref(c06), we looked at the total electric bill by Census region using the `recs` data:
 ```{r}
-#| label: results-svytot-billregion
+#| label: results-table-raw
 
 bill_region<-recs_des %>% 
   group_by(Region) %>% 
@@ -63,7 +63,66 @@ bill_region
 
 ```
 
-The native output that R produces is fine when viewing inside RStudio using an rMarkdown or Quarto.
+The native output that R produces may work for initial viewing inside RStudio or when creating basic output with an rMarkdown or Quarto document.  However, when viewing these results in other publications such as the print version of this book or for more official dissemination, adjusting the display can make it easier for users to follow. 
+
+There are multiple table styling packages available (e.g., {kable}, {gt}, {formattable}).  For this book we will walk through an examples using {gt}.
+
+Looking at the output from `bill_region`, there are a couple of items that are probably obvious to fix: (1) the "NA" in Region and (2) the variable names as the column headers.  To fix these we can add `.fill` to the cascade function and adjust the column lables with {gt}:
+
+```{r}
+#| label: results-table-fix1
+
+bill_region_gt<-recs_des %>% 
+  group_by(Region) %>% 
+  cascade(elec_bill = survey_total(!is.na(DOLLAREL)),
+          .fill="Total") %>% 
+  gt() %>% 
+  tab_spanner(
+    label="Electric Bill (In Dollars)",
+    columns = -Region) %>% 
+  cols_label(
+    elec_bill = "Estimate",
+    elec_bill_se = "(s.e.)"
+  )
+
+bill_region_gt
+
+```
+
+We could also make the data more readable in this table by formatting the columns as currency and adding a double line above the total row:
+```{r}
+#| label: results-table-fix2
+
+bill_region_gt2<-bill_region_gt %>% 
+  fmt_currency(
+    columns = elec_bill,
+    decimals = 0,
+    currency = "USD"
+  ) %>% 
+  fmt_currency(
+    columns = elec_bill_se,
+    decimals = 4,
+    currency = "USD"
+  ) %>% 
+  tab_style(
+    style = cell_borders(
+      sides = c("top"),
+      style = "double"
+    ),
+    locations = cells_body(
+      columns = everything(),
+      rows = Region == "Total"
+    )
+  ) 
+  
+
+bill_region_gt2
+
+```
+
+Using the different functions of {gt}, you can continue to add elements and different styles to your table until you have a table style that works well and clearly communicates the information.  These functions can be used with both survey and non-survey data, but it is crucial that you retain error information when presenting survey results.  In this example, we used `tab_spanner()` to indicate that the estimate and the standard error were connected. 
+
+<!-- If we have time, add in a final table here with more formatting like the font/colors of our book? --> 
 
 ### Plots and Graphs
 
