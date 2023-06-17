@@ -5,7 +5,7 @@ Residential Energy Consumption Survey (RECS) 2020 Data Prep
 
 All data and resources were downloaded from
 <https://www.eia.gov/consumption/residential/data/2020/index.php?view=microdata>
-on March 5, 2023.
+on June 17, 2023.
 
 ``` r
 library(here) #easy relative paths
@@ -28,11 +28,11 @@ recs_file_osf_det <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
 recs_in <- read_csv(pull(recs_file_osf_det, local_path))
 ```
 
-    ## Rows: 18496 Columns: 601
-    ## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────
+    ## Rows: 18496 Columns: 786
+    ## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────
     ## Delimiter: ","
     ## chr   (8): REGIONC, DIVISION, STATE_FIPS, state_postal, state_name, BA_climate, IECC_climate_code, UATYP10
-    ## dbl (593): DOEID, HDD65, CDD65, HDD30YR_pub, CDD30YR_pub, TYPEHUQ, CELLAR, CRAWL, CONCRETE, BASEOTH, BASEFI...
+    ## dbl (778): DOEID, HDD65, CDD65, HDD30YR_PUB, CDD30YR_PUB, TYPEHUQ, CELLAR, CRAWL, CONCRETE, BASEOTH, BASEFIN, ATTIC, ATTIC...
     ## 
     ## ℹ Use `spec()` to retrieve the full column specification for this data.
     ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
@@ -40,10 +40,21 @@ recs_in <- read_csv(pull(recs_file_osf_det, local_path))
 ``` r
 unlink(pull(recs_file_osf_det, local_path))
 
-#TOTCSQFT, TOTHSQFT, TOTSQFT_EN, TOTUCSQFT, TOTUSQFT, CDD50, HDD50, GNDHDD65, BTUEL, DOLLAREL, , BTUNG, DOLLARNG, BTULP, DOLLARLP, BTUFO, DOLLARFO, TOTALBTU, TOTALDOL, BTUWOOD=WOODBTU, BTUPELLET=PELLETBTU 
+
+# 2015 to 2020 differences
+# Added states!
+# Variables gone: METROMICRO, TOTUCSQFT (uncooled sq ft), TOTUSQFT (unheated sq ft), CDD80, HDD50, GNDHDD65, PELLETBTU
+# HEATCNTL replaces EQUIPMUSE
+# COOLCNTL replaces USECENAC
+# CDD30YR_PUB replaces CDD30YR
+# BA_climate replaces CLIMATE_REGION_PUB 
+# IECC_climate_code replaces IECC_CLIMATE_PUB
+# HDD30YR_PUB replaces HDD30YR
+# BTUWD replaces WOODBTU
+# BRR weights are NWEIGHT
 
 recs <- recs_in %>%
-  select(DOEID, REGIONC, DIVISION, STATE_FIPS, state_postal, state_name, UATYP10, TYPEHUQ, YEARMADERANGE, HEATHOME, HEATCNTL, TEMPHOME, TEMPGONE, TEMPNITE, AIRCOND, COOLCNTL, TEMPHOMEAC, TEMPGONEAC, TEMPNITEAC, NWEIGHT, starts_with("BRRWT"), CDD30YR_pub, CDD65, BA_climate, IECC_climate_code, HDD30YR_pub, HDD65) %>%
+   select(DOEID, REGIONC, DIVISION, STATE_FIPS, state_postal, state_name, UATYP10, TYPEHUQ, YEARMADERANGE, HEATHOME, HEATCNTL, TEMPHOME, TEMPGONE, TEMPNITE, AIRCOND, COOLCNTL, TEMPHOMEAC, TEMPGONEAC, TEMPNITEAC, TOTCSQFT, TOTHSQFT, TOTSQFT_EN, NWEIGHT, starts_with("NWEIGHT"), CDD30YR=CDD30YR_PUB, CDD65, BA_climate, IECC_climate_code, HDD30YR=HDD30YR_PUB, HDD65, BTUEL, DOLLAREL, BTUNG, DOLLARNG, BTULP, DOLLARLP, BTUFO, DOLLARFO, TOTALBTU, TOTALDOL, BTUWOOD=BTUWD) %>%
   mutate(
     Region=parse_factor(
       str_to_title(REGIONC),
@@ -86,12 +97,12 @@ recs <- recs_in %>%
       case_when(
         HEATCNTL==1~"Set one temp and leave it",
         HEATCNTL==2~"Manually adjust at night/no one home",
-        HEATCNTL==3~"Program thermostat to change at certain times",
+        HEATCNTL==3~"Programmable or smart thermostat automatically adjusts the temperature",
         HEATCNTL==4~"Turn on or off as needed",
         HEATCNTL==5~"No control",
         HEATCNTL==99~"Other",
         HEATCNTL==-2~NA_character_),
-      levels=c("Set one temp and leave it", "Manually adjust at night/no one home", "Program thermostat to change at certain times", "Turn on or off as needed", "No control", "Other")
+      levels=c("Set one temp and leave it", "Manually adjust at night/no one home", "Programmable or smart thermostat automatically adjusts the temperature", "Turn on or off as needed", "No control", "Other")
     ),
     WinterTempDay=if_else(TEMPHOME>0, TEMPHOME, NA_real_),
     WinterTempAway=if_else(TEMPGONE>0, TEMPGONE, NA_real_),
@@ -101,50 +112,33 @@ recs <- recs_in %>%
       case_when(
         COOLCNTL==1~"Set one temp and leave it",
         COOLCNTL==2~"Manually adjust at night/no one home",
-        COOLCNTL==3~"Program thermostat to change at certain times",
+        COOLCNTL==3~"Programmable or smart thermostat automatically adjusts the temperature",
         COOLCNTL==4~"Turn on or off as needed",
         COOLCNTL==5~"No control",
         COOLCNTL==99~"Other",
         COOLCNTL==-2~NA_character_),
-      levels=c("Set one temp and leave it", "Manually adjust at night/no one home", "Program thermostat to change at certain times", "Turn on or off as needed", "No control", "Other")
+      levels=c("Set one temp and leave it", "Manually adjust at night/no one home", "Programmable or smart thermostat automatically adjusts the temperature", "Turn on or off as needed", "No control", "Other")
     ),
     SummerTempDay=if_else(TEMPHOMEAC>0, TEMPHOMEAC, NA_real_),
     SummerTempAway=if_else(TEMPGONEAC>0, TEMPGONEAC, NA_real_),
     SummerTempNight=if_else(TEMPNITEAC>0, TEMPNITEAC, NA_real_),
     ClimateRegion_BA=parse_factor(BA_climate),
-    IECC_climate_code_num=as.numeric(str_sub(IECC_climate_code, 1, 1)),
-    IECC_climate_code_ch=match(str_sub(IECC_climate_code, 2, 2), LETTERS),
-    ClimateRegion_IECC=factor(case_when(
-      IECC_climate_code=="1A"~ "1A: Very Hot Humid",
-      IECC_climate_code=="2A"~ "2A: Hot Humid",
-      IECC_climate_code=="2B"~ "2B: Hot Dry",
-      IECC_climate_code=="3A"~ "3A: Warm Humid",
-      IECC_climate_code=="3B"~ "3B: Warm Dry",
-      IECC_climate_code=="3C"~ "3C: Warm Marine",
-      IECC_climate_code=="4A"~ "4A: Mixed Humid",
-      IECC_climate_code=="4B"~ "4B: Mixed Dry",
-      IECC_climate_code=="4C"~ "4C: Mixed Marine",
-      IECC_climate_code=="5A"~ "5A: Cool Humid",
-      IECC_climate_code=="5B"~ "5B: Cool Marine",
-      IECC_climate_code=="5C"~ "5C: Cool Marine",
-      IECC_climate_code=="6A"~ "6A: Cold Humid",
-      IECC_climate_code=="6B"~ "6B: Cold Dry",
-      IECC_climate_code %in% c("7A", "7AK", "7B")~ "7: Very Cold",
-      IECC_climate_code=="8AK"~"8: Subarctic/Arctic"
-    )),
-    ClimateRegion_IECC=fct_reorder(ClimateRegion_IECC, IECC_climate_code_num+IECC_climate_code_ch/10)
-  )
+    state_name=factor(state_name),
+    state_postal=fct_reorder(state_postal, as.numeric(state_name))
+    )
 ```
 
-    ## select: dropped 575 variables (CELLAR, CRAWL, CONCRETE, BASEOTH, BASEFIN, …)
-    ## mutate: new variable 'Region' (factor) with 4 unique values and 0% NA
+    ## select: renamed 3 variables (CDD30YR, HDD30YR, BTUWOOD) and dropped 686 variables
+    ## mutate: converted 'state_postal' from character to factor (0 new NA)
+    ##         converted 'state_name' from character to factor (0 new NA)
+    ##         new variable 'Region' (factor) with 4 unique values and 0% NA
     ##         new variable 'Division' (factor) with 10 unique values and 0% NA
     ##         new variable 'Urbanicity' (factor) with 3 unique values and 0% NA
     ##         new variable 'HousingUnitType' (factor) with 5 unique values and 0% NA
     ##         new variable 'YearMade' (ordered factor) with 9 unique values and 0% NA
     ##         new variable 'SpaceHeatingUsed' (logical) with 2 unique values and 0% NA
     ##         new variable 'HeatingBehavior' (factor) with 7 unique values and 0% NA
-    ##         new variable 'WinterTempDay' (double) with 37 unique values and 4% NA
+    ##         new variable 'WinterTempDay' (double) with 38 unique values and 4% NA
     ##         new variable 'WinterTempAway' (double) with 40 unique values and 4% NA
     ##         new variable 'WinterTempNight' (double) with 42 unique values and 4% NA
     ##         new variable 'ACUsed' (logical) with 2 unique values and 0% NA
@@ -153,9 +147,6 @@ recs <- recs_in %>%
     ##         new variable 'SummerTempAway' (double) with 41 unique values and 13% NA
     ##         new variable 'SummerTempNight' (double) with 40 unique values and 13% NA
     ##         new variable 'ClimateRegion_BA' (factor) with 8 unique values and 0% NA
-    ##         new variable 'IECC_climate_code_num' (double) with 8 unique values and 0% NA
-    ##         new variable 'IECC_climate_code_ch' (integer) with 3 unique values and 0% NA
-    ##         new variable 'ClimateRegion_IECC' (factor) with 16 unique values and 0% NA
 
 ## Check derived variables for correct coding
 
@@ -249,8 +240,8 @@ recs %>% count(SpaceHeatingUsed, HEATHOME)
     ## # A tibble: 2 × 3
     ##   SpaceHeatingUsed HEATHOME     n
     ##   <lgl>               <dbl> <int>
-    ## 1 FALSE                   0   791
-    ## 2 TRUE                    1 17705
+    ## 1 FALSE                   0   751
+    ## 2 TRUE                    1 17745
 
 ``` r
 recs %>% count(HeatingBehavior, HEATCNTL)
@@ -259,15 +250,15 @@ recs %>% count(HeatingBehavior, HEATCNTL)
     ## count: now 7 rows and 3 columns, ungrouped
 
     ## # A tibble: 7 × 3
-    ##   HeatingBehavior                               HEATCNTL     n
-    ##   <fct>                                            <dbl> <int>
-    ## 1 Set one temp and leave it                            1  7776
-    ## 2 Manually adjust at night/no one home                 2  4644
-    ## 3 Program thermostat to change at certain times        3  3310
-    ## 4 Turn on or off as needed                             4  1491
-    ## 5 No control                                           5   438
-    ## 6 Other                                               99    46
-    ## 7 <NA>                                                -2   791
+    ##   HeatingBehavior                                                        HEATCNTL     n
+    ##   <fct>                                                                     <dbl> <int>
+    ## 1 Set one temp and leave it                                                     1  7806
+    ## 2 Manually adjust at night/no one home                                          2  4654
+    ## 3 Programmable or smart thermostat automatically adjusts the temperature        3  3310
+    ## 4 Turn on or off as needed                                                      4  1491
+    ## 5 No control                                                                    5   438
+    ## 6 Other                                                                        99    46
+    ## 7 <NA>                                                                         -2   751
 
 ``` r
 recs %>% count(ACUsed, AIRCOND)
@@ -278,8 +269,8 @@ recs %>% count(ACUsed, AIRCOND)
     ## # A tibble: 2 × 3
     ##   ACUsed AIRCOND     n
     ##   <lgl>    <dbl> <int>
-    ## 1 FALSE        0  2396
-    ## 2 TRUE         1 16100
+    ## 1 FALSE        0  2325
+    ## 2 TRUE         1 16171
 
 ``` r
 recs %>% count(ACBehavior, COOLCNTL)
@@ -288,15 +279,15 @@ recs %>% count(ACBehavior, COOLCNTL)
     ## count: now 7 rows and 3 columns, ungrouped
 
     ## # A tibble: 7 × 3
-    ##   ACBehavior                                    COOLCNTL     n
-    ##   <fct>                                            <dbl> <int>
-    ## 1 Set one temp and leave it                            1  6687
-    ## 2 Manually adjust at night/no one home                 2  3637
-    ## 3 Program thermostat to change at certain times        3  2637
-    ## 4 Turn on or off as needed                             4  2727
-    ## 5 No control                                           5   409
-    ## 6 Other                                               99     3
-    ## 7 <NA>                                                -2  2396
+    ##   ACBehavior                                                             COOLCNTL     n
+    ##   <fct>                                                                     <dbl> <int>
+    ## 1 Set one temp and leave it                                                     1  6738
+    ## 2 Manually adjust at night/no one home                                          2  3637
+    ## 3 Programmable or smart thermostat automatically adjusts the temperature        3  2638
+    ## 4 Turn on or off as needed                                                      4  2746
+    ## 5 No control                                                                    5   409
+    ## 6 Other                                                                        99     3
+    ## 7 <NA>                                                                         -2  2325
 
 ``` r
 recs %>% count(ClimateRegion_BA, BA_climate)
@@ -317,94 +308,264 @@ recs %>% count(ClimateRegion_BA, BA_climate)
     ## 8 Subarctic        Subarctic      54
 
 ``` r
-recs %>% count(ClimateRegion_IECC, IECC_climate_code)
+recs %>% count(state_postal, state_name, STATE_FIPS) %>% print(n=51)
 ```
 
-    ## count: now 18 rows and 3 columns, ungrouped
+    ## count: now 51 rows and 4 columns, ungrouped
 
-    ## # A tibble: 18 × 3
-    ##    ClimateRegion_IECC  IECC_climate_code     n
-    ##    <fct>               <chr>             <int>
-    ##  1 1A: Very Hot Humid  1A                  400
-    ##  2 2A: Hot Humid       2A                 1459
-    ##  3 2B: Hot Dry         2B                  443
-    ##  4 3A: Warm Humid      3A                 2160
-    ##  5 3B: Warm Dry        3B                 1144
-    ##  6 3C: Warm Marine     3C                  289
-    ##  7 4A: Mixed Humid     4A                 4095
-    ##  8 4B: Mixed Dry       4B                  143
-    ##  9 4C: Mixed Marine    4C                  633
-    ## 10 5A: Cool Humid      5A                 4014
-    ## 11 5B: Cool Marine     5B                  975
-    ## 12 5C: Cool Marine     5C                   12
-    ## 13 6A: Cold Humid      6A                 1654
-    ## 14 6B: Cold Dry        6B                  449
-    ## 15 7: Very Cold        7A                  308
-    ## 16 7: Very Cold        7AK                 257
-    ## 17 7: Very Cold        7B                    7
-    ## 18 8: Subarctic/Arctic 8AK                  54
+    ## # A tibble: 51 × 4
+    ##    state_postal state_name           STATE_FIPS     n
+    ##    <fct>        <fct>                <chr>      <int>
+    ##  1 AL           Alabama              01           242
+    ##  2 AK           Alaska               02           311
+    ##  3 AZ           Arizona              04           495
+    ##  4 AR           Arkansas             05           268
+    ##  5 CA           California           06          1152
+    ##  6 CO           Colorado             08           360
+    ##  7 CT           Connecticut          09           294
+    ##  8 DE           Delaware             10           143
+    ##  9 DC           District of Columbia 11           221
+    ## 10 FL           Florida              12           655
+    ## 11 GA           Georgia              13           417
+    ## 12 HI           Hawaii               15           282
+    ## 13 ID           Idaho                16           270
+    ## 14 IL           Illinois             17           530
+    ## 15 IN           Indiana              18           400
+    ## 16 IA           Iowa                 19           286
+    ## 17 KS           Kansas               20           208
+    ## 18 KY           Kentucky             21           428
+    ## 19 LA           Louisiana            22           311
+    ## 20 ME           Maine                23           223
+    ## 21 MD           Maryland             24           359
+    ## 22 MA           Massachusetts        25           552
+    ## 23 MI           Michigan             26           388
+    ## 24 MN           Minnesota            27           325
+    ## 25 MS           Mississippi          28           168
+    ## 26 MO           Missouri             29           296
+    ## 27 MT           Montana              30           172
+    ## 28 NE           Nebraska             31           189
+    ## 29 NV           Nevada               32           231
+    ## 30 NH           New Hampshire        33           175
+    ## 31 NJ           New Jersey           34           456
+    ## 32 NM           New Mexico           35           178
+    ## 33 NY           New York             36           904
+    ## 34 NC           North Carolina       37           479
+    ## 35 ND           North Dakota         38           331
+    ## 36 OH           Ohio                 39           339
+    ## 37 OK           Oklahoma             40           232
+    ## 38 OR           Oregon               41           313
+    ## 39 PA           Pennsylvania         42           617
+    ## 40 RI           Rhode Island         44           191
+    ## 41 SC           South Carolina       45           334
+    ## 42 SD           South Dakota         46           183
+    ## 43 TN           Tennessee            47           505
+    ## 44 TX           Texas                48          1016
+    ## 45 UT           Utah                 49           188
+    ## 46 VT           Vermont              50           245
+    ## 47 VA           Virginia             51           451
+    ## 48 WA           Washington           53           439
+    ## 49 WV           West Virginia        54           197
+    ## 50 WI           Wisconsin            55           357
+    ## 51 WY           Wyoming              56           190
 
 ## Save data
 
 ``` r
 recs_out <- recs %>%
-   select(DOEID, starts_with("state"), Region, Division, Urbanicity, HousingUnitType, YearMade, SpaceHeatingUsed, HeatingBehavior, WinterTempDay, WinterTempAway, WinterTempNight, ACUsed, ACBehavior, SummerTempDay, SummerTempAway, SummerTempNight, NWEIGHT, starts_with("BRRWT"), CDD30YR=CDD30YR_pub, CDD65, ClimateRegion_BA, ClimateRegion_IECC, HDD30YR=HDD30YR_pub, HDD65)
+  select(DOEID, REGIONC, Region, Division, starts_with("state"), Urbanicity, 
+         HousingUnitType, YearMade, SpaceHeatingUsed, HeatingBehavior, 
+         WinterTempDay, WinterTempAway, WinterTempNight, ACUsed, 
+         ACBehavior, SummerTempDay, SummerTempAway, SummerTempNight, 
+         TOTCSQFT, TOTHSQFT, TOTSQFT_EN, NWEIGHT, 
+         starts_with("NWEIGHT"), CDD30YR, CDD65, ClimateRegion_BA, 
+         HDD30YR, HDD65, BTUEL, 
+         DOLLAREL, BTUNG, DOLLARNG, BTULP, DOLLARLP, BTUFO, DOLLARFO, 
+         TOTALBTU, TOTALDOL, BTUWOOD)
 ```
 
-    ## select: renamed 2 variables (CDD30YR, HDD30YR) and dropped 19 variables
+    ## select: dropped 16 variables (DIVISION, UATYP10, TYPEHUQ, YEARMADERANGE, HEATHOME, …)
+
+``` r
+source(here::here("helper-fun", "helper-functions.R"))
+
+recs_2015 <- read_rds_tsr("recs_2015.rds")
+
+setdiff(names(recs_out), names(recs_2015)) #variables in 2020 and not 2015
+```
+
+    ##  [1] "STATE_FIPS"   "state_postal" "state_name"   "NWEIGHT1"     "NWEIGHT2"     "NWEIGHT3"     "NWEIGHT4"     "NWEIGHT5"    
+    ##  [9] "NWEIGHT6"     "NWEIGHT7"     "NWEIGHT8"     "NWEIGHT9"     "NWEIGHT10"    "NWEIGHT11"    "NWEIGHT12"    "NWEIGHT13"   
+    ## [17] "NWEIGHT14"    "NWEIGHT15"    "NWEIGHT16"    "NWEIGHT17"    "NWEIGHT18"    "NWEIGHT19"    "NWEIGHT20"    "NWEIGHT21"   
+    ## [25] "NWEIGHT22"    "NWEIGHT23"    "NWEIGHT24"    "NWEIGHT25"    "NWEIGHT26"    "NWEIGHT27"    "NWEIGHT28"    "NWEIGHT29"   
+    ## [33] "NWEIGHT30"    "NWEIGHT31"    "NWEIGHT32"    "NWEIGHT33"    "NWEIGHT34"    "NWEIGHT35"    "NWEIGHT36"    "NWEIGHT37"   
+    ## [41] "NWEIGHT38"    "NWEIGHT39"    "NWEIGHT40"    "NWEIGHT41"    "NWEIGHT42"    "NWEIGHT43"    "NWEIGHT44"    "NWEIGHT45"   
+    ## [49] "NWEIGHT46"    "NWEIGHT47"    "NWEIGHT48"    "NWEIGHT49"    "NWEIGHT50"    "NWEIGHT51"    "NWEIGHT52"    "NWEIGHT53"   
+    ## [57] "NWEIGHT54"    "NWEIGHT55"    "NWEIGHT56"    "NWEIGHT57"    "NWEIGHT58"    "NWEIGHT59"    "NWEIGHT60"
+
+``` r
+setdiff(names(recs_2015), names(recs_out)) #variables in 2015 and not 2020
+```
+
+    ##   [1] "MSAStatus"          "TOTUCSQFT"          "TOTUSQFT"           "BRRWT1"             "BRRWT2"            
+    ##   [6] "BRRWT3"             "BRRWT4"             "BRRWT5"             "BRRWT6"             "BRRWT7"            
+    ##  [11] "BRRWT8"             "BRRWT9"             "BRRWT10"            "BRRWT11"            "BRRWT12"           
+    ##  [16] "BRRWT13"            "BRRWT14"            "BRRWT15"            "BRRWT16"            "BRRWT17"           
+    ##  [21] "BRRWT18"            "BRRWT19"            "BRRWT20"            "BRRWT21"            "BRRWT22"           
+    ##  [26] "BRRWT23"            "BRRWT24"            "BRRWT25"            "BRRWT26"            "BRRWT27"           
+    ##  [31] "BRRWT28"            "BRRWT29"            "BRRWT30"            "BRRWT31"            "BRRWT32"           
+    ##  [36] "BRRWT33"            "BRRWT34"            "BRRWT35"            "BRRWT36"            "BRRWT37"           
+    ##  [41] "BRRWT38"            "BRRWT39"            "BRRWT40"            "BRRWT41"            "BRRWT42"           
+    ##  [46] "BRRWT43"            "BRRWT44"            "BRRWT45"            "BRRWT46"            "BRRWT47"           
+    ##  [51] "BRRWT48"            "BRRWT49"            "BRRWT50"            "BRRWT51"            "BRRWT52"           
+    ##  [56] "BRRWT53"            "BRRWT54"            "BRRWT55"            "BRRWT56"            "BRRWT57"           
+    ##  [61] "BRRWT58"            "BRRWT59"            "BRRWT60"            "BRRWT61"            "BRRWT62"           
+    ##  [66] "BRRWT63"            "BRRWT64"            "BRRWT65"            "BRRWT66"            "BRRWT67"           
+    ##  [71] "BRRWT68"            "BRRWT69"            "BRRWT70"            "BRRWT71"            "BRRWT72"           
+    ##  [76] "BRRWT73"            "BRRWT74"            "BRRWT75"            "BRRWT76"            "BRRWT77"           
+    ##  [81] "BRRWT78"            "BRRWT79"            "BRRWT80"            "BRRWT81"            "BRRWT82"           
+    ##  [86] "BRRWT83"            "BRRWT84"            "BRRWT85"            "BRRWT86"            "BRRWT87"           
+    ##  [91] "BRRWT88"            "BRRWT89"            "BRRWT90"            "BRRWT91"            "BRRWT92"           
+    ##  [96] "BRRWT93"            "BRRWT94"            "BRRWT95"            "BRRWT96"            "CDD80"             
+    ## [101] "ClimateRegion_IECC" "HDD50"              "GNDHDD65"           "BTUPELLET"
 
 ``` r
 summary(recs_out)
 ```
 
-    ##      DOEID         STATE_FIPS        state_postal        state_name              Region    
-    ##  Min.   :100001   Length:18496       Length:18496       Length:18496       Northeast:3657  
-    ##  1st Qu.:104625   Class :character   Class :character   Class :character   Midwest  :3832  
-    ##  Median :109249   Mode  :character   Mode  :character   Mode  :character   South    :6426  
-    ##  Mean   :109249                                                            West     :4581  
-    ##  3rd Qu.:113872                                                                            
-    ##  Max.   :118496                                                                            
-    ##                                                                                            
-    ##                Division            Urbanicity                      HousingUnitType         YearMade   
-    ##  South Atlantic    :3256   Urban Area   :12395   Mobile home               :  974   1970-1979  :2817  
-    ##  Pacific           :2497   Urban Cluster: 2020   Single-family detached    :12319   2000-2009  :2748  
-    ##  East North Central:2014   Rural        : 4081   Single-family attached    : 1751   Before 1950:2721  
-    ##  Middle Atlantic   :1977                         Apartment: 2-4 Units      : 1013   1990-1999  :2451  
-    ##  West South Central:1827                         Apartment: 5 or more units: 2439   1980-1989  :2435  
-    ##  West North Central:1818                                                            1960-1969  :1867  
-    ##  (Other)           :5107                                                            (Other)    :3457  
-    ##  SpaceHeatingUsed                                      HeatingBehavior WinterTempDay   WinterTempAway 
-    ##  Mode :logical    Set one temp and leave it                    :7776   Min.   :50.00   Min.   :50.00  
-    ##  FALSE:791        Manually adjust at night/no one home         :4644   1st Qu.:68.00   1st Qu.:65.00  
-    ##  TRUE :17705      Program thermostat to change at certain times:3310   Median :70.00   Median :68.00  
-    ##                   Turn on or off as needed                     :1491   Mean   :69.77   Mean   :67.46  
-    ##                   No control                                   : 438   3rd Qu.:72.00   3rd Qu.:70.00  
-    ##                   Other                                        :  46   Max.   :90.00   Max.   :90.00  
-    ##                   NA                                           : 791   NA's   :791     NA's   :791    
-    ##  WinterTempNight   ACUsed                                                ACBehavior   SummerTempDay  
-    ##  Min.   :50.00   Mode :logical   Set one temp and leave it                    :6687   Min.   :50.00  
-    ##  1st Qu.:65.00   FALSE:2396      Manually adjust at night/no one home         :3637   1st Qu.:70.00  
-    ##  Median :68.00   TRUE :16100     Program thermostat to change at certain times:2637   Median :72.00  
-    ##  Mean   :68.02                   Turn on or off as needed                     :2727   Mean   :72.01  
-    ##  3rd Qu.:70.00                   No control                                   : 409   3rd Qu.:75.00  
-    ##  Max.   :90.00                   Other                                        :   3   Max.   :90.00  
-    ##  NA's   :791                     NA                                           :2396   NA's   :2396   
-    ##  SummerTempAway  SummerTempNight    NWEIGHT           CDD30YR         CDD65         ClimateRegion_BA
-    ##  Min.   :50.00   Min.   :50.00   Min.   :  437.9   Min.   :   0   Min.   :   0   Cold       :7116   
-    ##  1st Qu.:70.00   1st Qu.:68.00   1st Qu.: 4018.7   1st Qu.: 601   1st Qu.: 814   Mixed-Humid:5579   
-    ##  Median :74.00   Median :72.00   Median : 6119.4   Median :1020   Median :1179   Hot-Humid  :2545   
-    ##  Mean   :73.45   Mean   :71.22   Mean   : 6678.7   Mean   :1310   Mean   :1526   Hot-Dry    :1577   
-    ##  3rd Qu.:78.00   3rd Qu.:74.00   3rd Qu.: 8890.0   3rd Qu.:1703   3rd Qu.:1805   Marine     : 911   
-    ##  Max.   :90.00   Max.   :90.00   Max.   :29279.1   Max.   :4905   Max.   :5534   Very-Cold  : 572   
-    ##  NA's   :2396    NA's   :2396                                                    (Other)    : 196   
-    ##        ClimateRegion_IECC    HDD30YR          HDD65      
-    ##  4A: Mixed Humid:4095     Min.   :    0   Min.   :    0  
-    ##  5A: Cool Humid :4014     1st Qu.: 2898   1st Qu.: 2434  
-    ##  3A: Warm Humid :2160     Median : 4825   Median : 4396  
-    ##  6A: Cold Humid :1654     Mean   : 4679   Mean   : 4272  
-    ##  2A: Hot Humid  :1459     3rd Qu.: 6290   3rd Qu.: 5810  
-    ##  3B: Warm Dry   :1144     Max.   :16071   Max.   :17383  
-    ##  (Other)        :3970
+    ##      DOEID          REGIONC                Region                   Division     STATE_FIPS         state_postal  
+    ##  Min.   :100001   Length:18496       Northeast:3657   South Atlantic    :3256   Length:18496       CA     : 1152  
+    ##  1st Qu.:104625   Class :character   Midwest  :3832   Pacific           :2497   Class :character   TX     : 1016  
+    ##  Median :109249   Mode  :character   South    :6426   East North Central:2014   Mode  :character   NY     :  904  
+    ##  Mean   :109249                      West     :4581   Middle Atlantic   :1977                      FL     :  655  
+    ##  3rd Qu.:113872                                       West South Central:1827                      PA     :  617  
+    ##  Max.   :118496                                       West North Central:1818                      MA     :  552  
+    ##                                                       (Other)           :5107                      (Other):13600  
+    ##          state_name            Urbanicity                      HousingUnitType         YearMade    SpaceHeatingUsed
+    ##  California   : 1152   Urban Area   :12395   Mobile home               :  974   1970-1979  :2817   Mode :logical   
+    ##  Texas        : 1016   Urban Cluster: 2020   Single-family detached    :12319   2000-2009  :2748   FALSE:751       
+    ##  New York     :  904   Rural        : 4081   Single-family attached    : 1751   Before 1950:2721   TRUE :17745     
+    ##  Florida      :  655                         Apartment: 2-4 Units      : 1013   1990-1999  :2451                   
+    ##  Pennsylvania :  617                         Apartment: 5 or more units: 2439   1980-1989  :2435                   
+    ##  Massachusetts:  552                                                            1960-1969  :1867                   
+    ##  (Other)      :13600                                                            (Other)    :3457                   
+    ##                                                                HeatingBehavior WinterTempDay   WinterTempAway 
+    ##  Set one temp and leave it                                             :7806   Min.   :50.00   Min.   :50.00  
+    ##  Manually adjust at night/no one home                                  :4654   1st Qu.:68.00   1st Qu.:65.00  
+    ##  Programmable or smart thermostat automatically adjusts the temperature:3310   Median :70.00   Median :68.00  
+    ##  Turn on or off as needed                                              :1491   Mean   :69.77   Mean   :67.45  
+    ##  No control                                                            : 438   3rd Qu.:72.00   3rd Qu.:70.00  
+    ##  Other                                                                 :  46   Max.   :90.00   Max.   :90.00  
+    ##  NA                                                                    : 751   NA's   :751     NA's   :751    
+    ##  WinterTempNight   ACUsed                                                                         ACBehavior  
+    ##  Min.   :50.00   Mode :logical   Set one temp and leave it                                             :6738  
+    ##  1st Qu.:65.00   FALSE:2325      Manually adjust at night/no one home                                  :3637  
+    ##  Median :68.00   TRUE :16171     Programmable or smart thermostat automatically adjusts the temperature:2638  
+    ##  Mean   :68.01                   Turn on or off as needed                                              :2746  
+    ##  3rd Qu.:70.00                   No control                                                            : 409  
+    ##  Max.   :90.00                   Other                                                                 :   3  
+    ##  NA's   :751                     NA                                                                    :2325  
+    ##  SummerTempDay   SummerTempAway  SummerTempNight    TOTCSQFT        TOTHSQFT       TOTSQFT_EN       NWEIGHT       
+    ##  Min.   :50.00   Min.   :50.00   Min.   :50.00   Min.   :    0   Min.   :    0   Min.   :  200   Min.   :  437.9  
+    ##  1st Qu.:70.00   1st Qu.:70.00   1st Qu.:68.00   1st Qu.:  460   1st Qu.: 1000   1st Qu.: 1100   1st Qu.: 4018.7  
+    ##  Median :72.00   Median :74.00   Median :72.00   Median : 1200   Median : 1520   Median : 1700   Median : 6119.4  
+    ##  Mean   :72.01   Mean   :73.45   Mean   :71.22   Mean   : 1394   Mean   : 1744   Mean   : 1960   Mean   : 6678.7  
+    ##  3rd Qu.:75.00   3rd Qu.:78.00   3rd Qu.:74.00   3rd Qu.: 2000   3rd Qu.: 2300   3rd Qu.: 2510   3rd Qu.: 8890.0  
+    ##  Max.   :90.00   Max.   :90.00   Max.   :90.00   Max.   :14600   Max.   :15000   Max.   :15000   Max.   :29279.1  
+    ##  NA's   :2325    NA's   :2325    NA's   :2325                                                                     
+    ##     NWEIGHT1        NWEIGHT2        NWEIGHT3        NWEIGHT4        NWEIGHT5        NWEIGHT6        NWEIGHT7    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3950   1st Qu.: 3951   1st Qu.: 3954   1st Qu.: 3953   1st Qu.: 3957   1st Qu.: 3966   1st Qu.: 3944  
+    ##  Median : 6136   Median : 6151   Median : 6151   Median : 6153   Median : 6134   Median : 6147   Median : 6135  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8976   3rd Qu.: 8979   3rd Qu.: 8994   3rd Qu.: 8998   3rd Qu.: 8987   3rd Qu.: 8984   3rd Qu.: 8998  
+    ##  Max.   :30015   Max.   :29422   Max.   :29431   Max.   :29494   Max.   :30039   Max.   :29419   Max.   :29586  
+    ##                                                                                                                 
+    ##     NWEIGHT8        NWEIGHT9       NWEIGHT10       NWEIGHT11       NWEIGHT12       NWEIGHT13       NWEIGHT14    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3956   1st Qu.: 3947   1st Qu.: 3961   1st Qu.: 3950   1st Qu.: 3947   1st Qu.: 3967   1st Qu.: 3962  
+    ##  Median : 6151   Median : 6139   Median : 6163   Median : 6140   Median : 6160   Median : 6142   Median : 6154  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8988   3rd Qu.: 8974   3rd Qu.: 8994   3rd Qu.: 8991   3rd Qu.: 8988   3rd Qu.: 8977   3rd Qu.: 8981  
+    ##  Max.   :29499   Max.   :29845   Max.   :29635   Max.   :29681   Max.   :29849   Max.   :29843   Max.   :30184  
+    ##                                                                                                                 
+    ##    NWEIGHT15       NWEIGHT16       NWEIGHT17       NWEIGHT18       NWEIGHT19       NWEIGHT20       NWEIGHT21    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3958   1st Qu.: 3958   1st Qu.: 3958   1st Qu.: 3937   1st Qu.: 3947   1st Qu.: 3943   1st Qu.: 3960  
+    ##  Median : 6145   Median : 6133   Median : 6126   Median : 6155   Median : 6153   Median : 6139   Median : 6135  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8997   3rd Qu.: 8979   3rd Qu.: 8977   3rd Qu.: 8993   3rd Qu.: 8979   3rd Qu.: 8992   3rd Qu.: 8956  
+    ##  Max.   :29970   Max.   :29825   Max.   :30606   Max.   :29689   Max.   :29336   Max.   :30274   Max.   :29766  
+    ##                                                                                                                 
+    ##    NWEIGHT22       NWEIGHT23       NWEIGHT24       NWEIGHT25       NWEIGHT26       NWEIGHT27       NWEIGHT28    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3964   1st Qu.: 3943   1st Qu.: 3946   1st Qu.: 3952   1st Qu.: 3966   1st Qu.: 3942   1st Qu.: 3956  
+    ##  Median : 6149   Median : 6148   Median : 6136   Median : 6150   Median : 6136   Median : 6125   Median : 6149  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8988   3rd Qu.: 8980   3rd Qu.: 8978   3rd Qu.: 8972   3rd Qu.: 8980   3rd Qu.: 8996   3rd Qu.: 8989  
+    ##  Max.   :29791   Max.   :30126   Max.   :29946   Max.   :30445   Max.   :29893   Max.   :30030   Max.   :29599  
+    ##                                                                                                                 
+    ##    NWEIGHT29       NWEIGHT30       NWEIGHT31       NWEIGHT32       NWEIGHT33       NWEIGHT34       NWEIGHT35    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3970   1st Qu.: 3956   1st Qu.: 3944   1st Qu.: 3954   1st Qu.: 3964   1st Qu.: 3950   1st Qu.: 3967  
+    ##  Median : 6146   Median : 6149   Median : 6144   Median : 6159   Median : 6148   Median : 6139   Median : 6141  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8979   3rd Qu.: 8991   3rd Qu.: 8994   3rd Qu.: 8982   3rd Qu.: 8993   3rd Qu.: 8985   3rd Qu.: 8990  
+    ##  Max.   :30136   Max.   :29895   Max.   :29604   Max.   :29310   Max.   :29408   Max.   :29564   Max.   :30437  
+    ##                                                                                                                 
+    ##    NWEIGHT36       NWEIGHT37       NWEIGHT38       NWEIGHT39       NWEIGHT40       NWEIGHT41       NWEIGHT42    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3948   1st Qu.: 3955   1st Qu.: 3954   1st Qu.: 3940   1st Qu.: 3959   1st Qu.: 3975   1st Qu.: 3949  
+    ##  Median : 6149   Median : 6133   Median : 6139   Median : 6147   Median : 6144   Median : 6153   Median : 6137  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8979   3rd Qu.: 8975   3rd Qu.: 8974   3rd Qu.: 8991   3rd Qu.: 8980   3rd Qu.: 8982   3rd Qu.: 8988  
+    ##  Max.   :27896   Max.   :30596   Max.   :30130   Max.   :29262   Max.   :30344   Max.   :29594   Max.   :29938  
+    ##                                                                                                                 
+    ##    NWEIGHT43       NWEIGHT44       NWEIGHT45       NWEIGHT46       NWEIGHT47       NWEIGHT48       NWEIGHT49    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3947   1st Qu.: 3956   1st Qu.: 3952   1st Qu.: 3966   1st Qu.: 3938   1st Qu.: 3953   1st Qu.: 3947  
+    ##  Median : 6157   Median : 6148   Median : 6149   Median : 6152   Median : 6150   Median : 6139   Median : 6146  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 9005   3rd Qu.: 8986   3rd Qu.: 8992   3rd Qu.: 8959   3rd Qu.: 8991   3rd Qu.: 8991   3rd Qu.: 8990  
+    ##  Max.   :29878   Max.   :29896   Max.   :29729   Max.   :29103   Max.   :30070   Max.   :29343   Max.   :29590  
+    ##                                                                                                                 
+    ##    NWEIGHT50       NWEIGHT51       NWEIGHT52       NWEIGHT53       NWEIGHT54       NWEIGHT55       NWEIGHT56    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3948   1st Qu.: 3958   1st Qu.: 3938   1st Qu.: 3959   1st Qu.: 3954   1st Qu.: 3945   1st Qu.: 3957  
+    ##  Median : 6159   Median : 6150   Median : 6154   Median : 6156   Median : 6151   Median : 6143   Median : 6153  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8995   3rd Qu.: 8992   3rd Qu.: 9012   3rd Qu.: 8979   3rd Qu.: 8973   3rd Qu.: 8977   3rd Qu.: 8995  
+    ##  Max.   :30027   Max.   :29247   Max.   :29445   Max.   :30131   Max.   :29439   Max.   :29216   Max.   :29203  
+    ##                                                                                                                 
+    ##    NWEIGHT57       NWEIGHT58       NWEIGHT59       NWEIGHT60        CDD30YR         CDD65         ClimateRegion_BA
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :   0   Min.   :   0   Cold       :7116   
+    ##  1st Qu.: 3942   1st Qu.: 3962   1st Qu.: 3965   1st Qu.: 3953   1st Qu.: 601   1st Qu.: 814   Mixed-Humid:5579   
+    ##  Median : 6138   Median : 6137   Median : 6144   Median : 6140   Median :1020   Median :1179   Hot-Humid  :2545   
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   :1310   Mean   :1526   Hot-Dry    :1577   
+    ##  3rd Qu.: 9004   3rd Qu.: 8986   3rd Qu.: 8977   3rd Qu.: 8983   3rd Qu.:1703   3rd Qu.:1805   Marine     : 911   
+    ##  Max.   :29819   Max.   :29818   Max.   :29606   Max.   :29818   Max.   :4905   Max.   :5534   Very-Cold  : 572   
+    ##                                                                                                (Other)    : 196   
+    ##     HDD30YR          HDD65           BTUEL             DOLLAREL           BTUNG            DOLLARNG          BTULP       
+    ##  Min.   :    0   Min.   :    0   Min.   :   143.3   Min.   : -889.5   Min.   :      0   Min.   :   0.0   Min.   :     0  
+    ##  1st Qu.: 2898   1st Qu.: 2434   1st Qu.: 20205.8   1st Qu.:  836.5   1st Qu.:      0   1st Qu.:   0.0   1st Qu.:     0  
+    ##  Median : 4825   Median : 4396   Median : 31890.0   Median : 1257.9   Median :  22012   Median : 313.9   Median :     0  
+    ##  Mean   : 4679   Mean   : 4272   Mean   : 37016.2   Mean   : 1424.8   Mean   :  36961   Mean   : 396.0   Mean   :  3917  
+    ##  3rd Qu.: 6290   3rd Qu.: 5810   3rd Qu.: 48298.0   3rd Qu.: 1819.0   3rd Qu.:  62714   3rd Qu.: 644.9   3rd Qu.:     0  
+    ##  Max.   :16071   Max.   :17383   Max.   :628155.5   Max.   :15680.2   Max.   :1134709   Max.   :8155.0   Max.   :364215  
+    ##                                                                                                                          
+    ##     DOLLARLP           BTUFO           DOLLARFO          TOTALBTU          TOTALDOL          BTUWOOD      
+    ##  Min.   :   0.00   Min.   :     0   Min.   :   0.00   Min.   :   1182   Min.   : -150.5   Min.   :     0  
+    ##  1st Qu.:   0.00   1st Qu.:     0   1st Qu.:   0.00   1st Qu.:  45565   1st Qu.: 1258.3   1st Qu.:     0  
+    ##  Median :   0.00   Median :     0   Median :   0.00   Median :  74180   Median : 1793.2   Median :     0  
+    ##  Mean   :  80.89   Mean   :  5109   Mean   :  88.43   Mean   :  83002   Mean   : 1990.2   Mean   :  3596  
+    ##  3rd Qu.:   0.00   3rd Qu.:     0   3rd Qu.:   0.00   3rd Qu.: 108535   3rd Qu.: 2472.0   3rd Qu.:     0  
+    ##  Max.   :6621.44   Max.   :426269   Max.   :7003.69   Max.   :1367548   Max.   :20043.4   Max.   :500000  
+    ## 
+
+``` r
+nrow(recs_out)
+```
+
+    ## [1] 18496
 
 ``` r
 recs_der_tmp_loc <- here("osf_dl", "recs_2020.rds")
