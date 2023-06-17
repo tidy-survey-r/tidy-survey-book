@@ -1,6 +1,6 @@
-# Modeling {#c08}
+# Modeling {#c07-modeling}
 
-Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey}[@lumley2010complex; @R-survey] package as was true in Chapter \@ref(c07). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression and logistic regression. For details on other types of regression including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or poisson model in Appendix E of his book.
+Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey}[@lumley2010complex; @R-survey] package as was true in Chapter \@ref(c06-statistical-testing). In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression and logistic regression. For details on other types of regression including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or poisson model in Appendix E of his book.
 
 Accounting for the survey design and weights in modeling can generalize a model to the target population. When using the survey design objects, the statistical tests account for the fact that the observations may not be independent. There is some debate as to whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg].
 
@@ -42,7 +42,7 @@ Note that the following two specifications are not the same:
 
 ## Chapter Set-Up
 
-For this chapter, we will be using the same data as we did in \@ref(c06): ANES and RECS. As a reminder, we will need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.
+For this chapter, we will be using the same data as we did in \@ref(c05-descriptive-analysis): ANES and RECS. As a reminder, we will need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.
 
 First, make sure you have installed and loaded the following packages:
 
@@ -61,24 +61,26 @@ source("helper-fun/helper-functions.R")
 
 Second, we need to read in the data and create the design objects.
 
-Here is how you create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information) as well as Chapter \@ref(understanding-survey-data-documentation).
+Here is how you create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information) as well as Chapter \@ref(c04-understanding-survey-data-documentation).
 ```{r}
 #| label: model-anes-des-c07
-anes <- read_rds_tsr("anes_2020.rds") %>%
+#| eval: FALSE
+anes_in <- read_rds_tsr("anes_2020.rds") %>%
    mutate(Weight=Weight/sum(Weight)*targetpop) 
-anes_des <- anes %>%
+anes_des <- anes_in %>%
    as_survey_design(weights = Weight,
                     strata = Stratum,
                     ids = VarUnit,
                     nest = TRUE)
 ```
 
-Here is how you create the design object for the RECS data. More details for this are included in the RECS documentation and Chapter \@ref(c05).
+Here is how you create the design object for the RECS data. More details for this are included in the RECS documentation and Chapter \@ref(c03-specifying-sample-designs).
 
 ```{r}
 #| label: model-recs-des-c07
-recs <-read_rds_tsr("recs_2015.rds")
-recs_des <- recs %>%
+#| eval: FALSE
+recs_in <-read_rds_tsr("recs_2015.rds")
+recs_des <- recs_in %>%
   as_survey_rep(weights = NWEIGHT,
                 repweights = starts_with("BRRWT"),
                 type = "Fay",
@@ -177,7 +179,7 @@ As discussed in the beginning of the chapter, the formula on the right-hand side
 #| echo: FALSE
 #| warning: FALSE
 
-recs %>%
+recs_in %>%
   ggplot(aes(x=TOTSQFT_EN, y=DOLLAREL, weight=NWEIGHT/1000000)) +
   geom_hex() + 
   scale_fill_gradientn(guide="colourbar",name="Housing Units\n(Millions)", labels=scales::comma, 
@@ -259,7 +261,7 @@ Additionally, `augment()` can be used to predict outcomes for data that was not 
 ```{r}
 #| label: model-predict-new-dat
 
-add_data <- recs %>% select(DOEID, Region, Urbanicity, TOTSQFT_EN, ACUsed, DOLLAREL) %>%
+add_data <- recs_in %>% select(DOEID, Region, Urbanicity, TOTSQFT_EN, ACUsed, DOLLAREL) %>%
   rbind(tibble(DOEID=NA, Region="South", Urbanicity="Urban Area", TOTSQFT_EN=2500, ACUsed=TRUE, DOLLAREL=NA)) %>% tail(1)
 pred_data <- augment(m_electric_multi, newdata = add_data) %>%
     mutate(
@@ -476,7 +478,7 @@ tidy(earlyvote_mod) %>% arrange(p.value)
 ```{r}
 #| label: model-ex-logistic-2
 
-add_vote_dat <- anes %>%
+add_vote_dat <- anes_in %>%
   select(EarlyVote2020, Age, Education, PartyID) %>%
   rbind(
     tibble(EarlyVote2020=NA, Age=28, Education="Graduate", PartyID=c("Strong democrat", "Strong republican"))
