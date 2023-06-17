@@ -180,6 +180,7 @@ Recall the "Sample Design and Respondent Recruitment" section:
 We will use Current Population Survey (CPS) to find a number of the non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. The {censusapi} package allows us to run a reproducible analysis of this data.
 
 ```{r}
+#| label: understand-get-cps
 #| message: false
 library(censusapi)
 library(tidyverse)
@@ -221,19 +222,21 @@ targetpop <- cps_state %>%
 targetpop
 ```
 
-The target population in 2020 is `r scales::comma(targetpop)`. This information gives us what we need to create the post-election survey object with {srvyr}. To read in any data in the book, use the function `read_rds_tsr()` which reads the data file from a directory on OSF where all book data has been placed for sharing
+The target population in 2020 is `r scales::comma(targetpop)`. This information gives us what we need to create the post-election survey object with {srvyr}.
 
 ```{r}
-#| eval: FALSE
+#| label: understand-read-anes
 library(tidyverse)
 library(srvyr)
 library(osfr)
 source("helper-fun/helper-functions.R")
 
-anes <- read_rds_tsr("anes_2020.rds") %>%
+anes_in <- read_rds_tsr("anes_2020.rds") %>%
   mutate(Weight = V200010b / sum(V200010b) * targetpop)
+```
 
-anes_des <- anes %>%
+```{r}
+anes_des <- anes_in %>%
   as_survey_design(
     weights = Weight,
     strata = V200010d,

@@ -495,7 +495,7 @@ des_fay <- dat %>%
 
 The 2015 RECS uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with $\rho=0.5$^[Using the 2015 microdata file to compute estimates and standard errors (RSEs):  https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf]. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region.
 
-To specify this design, use the following syntax:
+To read in any data in the book, use the function `read_rds_tsr()` which reads the data file from a directory on OSF where all book data has been placed for sharing. 
 
 ```{r}
 #| label: samp-des-read-recs
@@ -509,12 +509,12 @@ source("helper-fun/helper-functions.R")
 recs_in <- read_rds_tsr("recs_2015.rds")
 ```
 
-
+To specify this design, use the following syntax:
 
 ```{r}
 #| label: samp-des-recs-des
 #| eval: TRUE
-des_recs <- recs_in %>%
+recs_des <- recs_in %>%
   as_survey_rep(
     weights = NWEIGHT,
     repweights = BRRWT1:BRRWT96,
@@ -524,10 +524,26 @@ des_recs <- recs_in %>%
     variables = c(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC)
   )
 
-des_recs
+recs_des
 
-summary(des_recs)
+summary(recs_des)
 ```
+
+```{r}
+#| label: samp-des-recs-des-full
+#| echo: FALSE
+# This is just for later use in book
+recs_des <- recs_in %>%
+  as_survey_rep(
+    weights = NWEIGHT,
+    repweights = BRRWT1:BRRWT96,
+    type = "Fay",
+    rho = 0.5,
+    mse = TRUE
+  )
+
+```
+
 
 In specifying the design, the `variables` option was also used to include which variables might be used in analyses. This is optional but can make your object smaller. When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Fay's variance method (rho= 0.5) with 96 replicates and MSE variances` and the variables are included. No weight or probability summary is included as was done in some other design objects.
 
@@ -685,7 +701,8 @@ des_nsfg <- nsfgdata %>%
 ```{r}
 #| label: samp-des-anes-ex
 #| eval: FALSE
-svy_anes <- anes_data %>%
+anes_in <- read_rds_tsr("anes_2020.rds")
+svy_anes <- anes_in %>%
   as_survey_design(weight)
 ```
 
