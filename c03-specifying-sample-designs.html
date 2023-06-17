@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 3 Specifying sample designs and replicate weights in srvyr | Tidy Survey Book</title>
+  <meta name="description" content="Bookdown for upcoming book on survey analysis the tidy way." />
+  <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 3 Specifying sample designs and replicate weights in srvyr | Tidy Survey Book" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Bookdown for upcoming book on survey analysis the tidy way." />
+  <meta name="github-repo" content="tidy-survey-r/tidy-survey-book" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 3 Specifying sample designs and replicate weights in srvyr | Tidy Survey Book" />
+  
+  <meta name="twitter:description" content="Bookdown for upcoming book on survey analysis the tidy way." />
+  
+
+<meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
+
+
+<meta name="date" content="2023-06-17" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="c02-overview-surveys.html"/>
+<link rel="next" href="c04-understanding-survey-data-documentation.html"/>
+<script src="libs/jquery/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections/anchor-sections.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="css/style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">A Book Example</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a></li>
+<li class="chapter" data-level="1" data-path="c01-intro.html"><a href="c01-intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html"><i class="fa fa-check"></i><b>2</b> Overview of Surveys</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#overview-design"><i class="fa fa-check"></i><b>2.1</b> Study Design</a>
+<ul>
+<li class="chapter" data-level="2.1.1" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#overview-design-sampdesign"><i class="fa fa-check"></i><b>2.1.1</b> Sampling Design</a></li>
+<li class="chapter" data-level="2.1.2" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#overview-design-dcplanning"><i class="fa fa-check"></i><b>2.1.2</b> Data Collection Planning</a></li>
+<li class="chapter" data-level="2.1.3" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#overview-design-questionnaire"><i class="fa fa-check"></i><b>2.1.3</b> Questionnaire Design</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#overview-datacollection"><i class="fa fa-check"></i><b>2.2</b> Data Collection</a></li>
+<li class="chapter" data-level="2.3" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#overview-post"><i class="fa fa-check"></i><b>2.3</b> Post Survey Processing</a>
+<ul>
+<li class="chapter" data-level="2.3.1" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#overview-post-cleaning"><i class="fa fa-check"></i><b>2.3.1</b> Data Cleaning and Imputation</a></li>
+<li class="chapter" data-level="2.3.2" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#overview-post-weighting"><i class="fa fa-check"></i><b>2.3.2</b> Weighting</a></li>
+<li class="chapter" data-level="2.3.3" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#overview-post-disclosure"><i class="fa fa-check"></i><b>2.3.3</b> Disclosure</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#this-book"><i class="fa fa-check"></i><b>2.4</b> This book</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html"><i class="fa fa-check"></i><b>3</b> Specifying sample designs and replicate weights in srvyr</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#common-sampling-designs"><i class="fa fa-check"></i><b>3.1</b> Common sampling designs</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#simple-random-sample-without-replacement"><i class="fa fa-check"></i><b>3.1.1</b> Simple random sample without replacement</a></li>
+<li class="chapter" data-level="3.1.2" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#simple-random-sample-with-replacement"><i class="fa fa-check"></i><b>3.1.2</b> Simple random sample with replacement</a></li>
+<li class="chapter" data-level="3.1.3" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#stratified-sampling"><i class="fa fa-check"></i><b>3.1.3</b> Stratified sampling</a></li>
+<li class="chapter" data-level="3.1.4" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#clustered-sampling"><i class="fa fa-check"></i><b>3.1.4</b> Clustered sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#replicate-weights"><i class="fa fa-check"></i><b>3.2</b> Replicate weights</a>
+<ul>
+<li class="chapter" data-level="3.2.1" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#brr-method"><i class="fa fa-check"></i><b>3.2.1</b> BRR method</a></li>
+<li class="chapter" data-level="3.2.2" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#fays-brr-method"><i class="fa fa-check"></i><b>3.2.2</b> Fay’s BRR Method</a></li>
+<li class="chapter" data-level="3.2.3" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#jackknife-method"><i class="fa fa-check"></i><b>3.2.3</b> Jackknife method</a></li>
+<li class="chapter" data-level="3.2.4" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#bootstrap-method"><i class="fa fa-check"></i><b>3.2.4</b> Bootstrap method</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#und-surv-doc"><i class="fa fa-check"></i><b>3.3</b> Understanding survey design documentation</a></li>
+<li class="chapter" data-level="3.4" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#exercises"><i class="fa fa-check"></i><b>3.4</b> Exercises</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html"><i class="fa fa-check"></i><b>4</b> Understanding survey data documentation</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#types-of-survey-documentation"><i class="fa fa-check"></i><b>4.1</b> Types of survey documentation</a>
+<ul>
+<li class="chapter" data-level="4.1.1" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#technical-documentation"><i class="fa fa-check"></i><b>4.1.1</b> Technical documentation</a></li>
+<li class="chapter" data-level="4.1.2" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#questionnaires"><i class="fa fa-check"></i><b>4.1.2</b> Questionnaires</a></li>
+<li class="chapter" data-level="4.1.3" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#codebooks"><i class="fa fa-check"></i><b>4.1.3</b> Codebooks</a></li>
+<li class="chapter" data-level="4.1.4" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#errata"><i class="fa fa-check"></i><b>4.1.4</b> Errata</a></li>
+<li class="chapter" data-level="4.1.5" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#additional-resources"><i class="fa fa-check"></i><b>4.1.5</b> Additional resources</a></li>
+</ul></li>
+<li class="chapter" data-level="4.2" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#working-with-missing-data"><i class="fa fa-check"></i><b>4.2</b> Working with missing data</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#accounting-for-questionnaire-skip-patterns"><i class="fa fa-check"></i><b>4.2.1</b> Accounting for questionnaire skip patterns</a></li>
+<li class="chapter" data-level="4.2.2" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#accounting-for-mcar-mar-and-mnar-missingness"><i class="fa fa-check"></i><b>4.2.2</b> Accounting for MCAR, MAR, and MNAR missingness</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#example-american-national-election-studies-anes-2020-survey-documentation"><i class="fa fa-check"></i><b>4.3</b> Example: American National Election Studies (ANES) 2020 survey documentation</a></li>
+<li class="chapter" data-level="4.4" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#searching-for-public-use-survey-data"><i class="fa fa-check"></i><b>4.4</b> Searching for public-use survey data</a></li>
+<li class="chapter" data-level="4.5" data-path="c04-understanding-survey-data-documentation.html"><a href="c04-understanding-survey-data-documentation.html#exercises-1"><i class="fa fa-check"></i><b>4.5</b> Exercises</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html"><i class="fa fa-check"></i><b>5</b> Descriptive analyses in srvyr</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#types-of-descriptive-analyses"><i class="fa fa-check"></i><b>5.1</b> Types of descriptive analyses</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#univariate-analysis"><i class="fa fa-check"></i><b>5.1.1</b> Univariate analysis</a></li>
+<li class="chapter" data-level="5.1.2" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#bivariatemultivariate-analysis"><i class="fa fa-check"></i><b>5.1.2</b> Bivariate/multivariate analysis</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#deciding-on-descriptive-analyses"><i class="fa fa-check"></i><b>5.2</b> Deciding on descriptive analyses</a></li>
+<li class="chapter" data-level="5.3" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#descriptive-analysis-using-the-srvyr-package"><i class="fa fa-check"></i><b>5.3</b> Descriptive analysis using the {srvyr} package</a>
+<ul>
+<li class="chapter" data-level="5.3.1" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#setup"><i class="fa fa-check"></i><b>5.3.1</b> Setup</a></li>
+<li class="chapter" data-level="5.3.2" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#count-observations-using-survey-methods-with-survey_count"><i class="fa fa-check"></i><b>5.3.2</b> Count observations using survey methods with <code>survey_count()</code></a></li>
+<li class="chapter" data-level="5.3.3" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#calculate-total-sums-using-survey-methods-using-survey_total"><i class="fa fa-check"></i><b>5.3.3</b> Calculate total sums using survey methods using <code>survey_total()</code></a></li>
+<li class="chapter" data-level="5.3.4" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#calculate-meanproportion-using-survey-methods-with-survey_mean-and-survey_prop"><i class="fa fa-check"></i><b>5.3.4</b> Calculate mean/proportion using survey methods with <code>survey_mean()</code> and <code>survey_prop()</code></a></li>
+<li class="chapter" data-level="5.3.5" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#the-proportion-argument"><i class="fa fa-check"></i><b>5.3.5</b> The <code>proportion</code> argument</a></li>
+<li class="chapter" data-level="5.3.6" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#print-total-overall-numbers-in-our-output"><i class="fa fa-check"></i><b>5.3.6</b> Print total overall numbers in our output</a></li>
+<li class="chapter" data-level="5.3.7" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#removing-na-for-calculating-results"><i class="fa fa-check"></i><b>5.3.7</b> Removing <code>NA</code> for calculating results</a></li>
+<li class="chapter" data-level="5.3.8" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#calculate-proportions-with-confidence-intervals"><i class="fa fa-check"></i><b>5.3.8</b> Calculate proportions with confidence intervals</a></li>
+<li class="chapter" data-level="5.3.9" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#other-functions-that-use-survey-methods"><i class="fa fa-check"></i><b>5.3.9</b> Other functions that use survey methods</a></li>
+<li class="chapter" data-level="5.3.10" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#calculate-conditional-proportions-with-more-than-one-group"><i class="fa fa-check"></i><b>5.3.10</b> Calculate conditional proportions with more than one group</a></li>
+<li class="chapter" data-level="5.3.11" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#calculate-joint-proportions-with-more-than-one-group"><i class="fa fa-check"></i><b>5.3.11</b> Calculate joint proportions with more than one group</a></li>
+<li class="chapter" data-level="5.3.12" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#calculate-proportions-with-design-effects"><i class="fa fa-check"></i><b>5.3.12</b> Calculate proportions with design effects</a></li>
+</ul></li>
+<li class="chapter" data-level="5.4" data-path="c05-descriptive-analysis.html"><a href="c05-descriptive-analysis.html#exercises-2"><i class="fa fa-check"></i><b>5.4</b> Exercises</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="c06-statistical-testing.html"><a href="c06-statistical-testing.html"><i class="fa fa-check"></i><b>6</b> Statistical testing</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="c06-statistical-testing.html"><a href="c06-statistical-testing.html#stattest-setup"><i class="fa fa-check"></i><b>6.1</b> Chapter Set-Up</a></li>
+<li class="chapter" data-level="6.2" data-path="c06-statistical-testing.html"><a href="c06-statistical-testing.html#stattest-ttest"><i class="fa fa-check"></i><b>6.2</b> Comparison of Proportions and Means</a>
+<ul>
+<li class="chapter" data-level="6.2.1" data-path="c06-statistical-testing.html"><a href="c06-statistical-testing.html#stattest-ttest-syntax"><i class="fa fa-check"></i><b>6.2.1</b> Syntax</a></li>
+<li class="chapter" data-level="6.2.2" data-path="c06-statistical-testing.html"><a href="c06-statistical-testing.html#stattest-ttest-examples"><i class="fa fa-check"></i><b>6.2.2</b> Examples</a></li>
+<li class="chapter" data-level="6.2.3" data-path="c06-statistical-testing.html"><a href="c06-statistical-testing.html#stattest-ttest-exercises"><i class="fa fa-check"></i><b>6.2.3</b> Exercises</a></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="c06-statistical-testing.html"><a href="c06-statistical-testing.html#stattest-chi"><i class="fa fa-check"></i><b>6.3</b> Chi-Square Tests</a>
+<ul>
+<li class="chapter" data-level="6.3.1" data-path="c06-statistical-testing.html"><a href="c06-statistical-testing.html#stattest-chi-syntax"><i class="fa fa-check"></i><b>6.3.1</b> Syntax</a></li>
+<li class="chapter" data-level="6.3.2" data-path="c06-statistical-testing.html"><a href="c06-statistical-testing.html#stattest-chi-examples"><i class="fa fa-check"></i><b>6.3.2</b> Examples</a></li>
+<li class="chapter" data-level="6.3.3" data-path="c06-statistical-testing.html"><a href="c06-statistical-testing.html#stattest-chi-exercises"><i class="fa fa-check"></i><b>6.3.3</b> Exercises</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="c07-modeling.html"><a href="c07-modeling.html"><i class="fa fa-check"></i><b>7</b> Modeling</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="c07-modeling.html"><a href="c07-modeling.html#chapter-set-up"><i class="fa fa-check"></i><b>7.1</b> Chapter Set-Up</a></li>
+<li class="chapter" data-level="7.2" data-path="c07-modeling.html"><a href="c07-modeling.html#linear-modeling"><i class="fa fa-check"></i><b>7.2</b> Linear modeling</a>
+<ul>
+<li class="chapter" data-level="7.2.1" data-path="c07-modeling.html"><a href="c07-modeling.html#anova"><i class="fa fa-check"></i><b>7.2.1</b> ANOVA</a></li>
+<li class="chapter" data-level="7.2.2" data-path="c07-modeling.html"><a href="c07-modeling.html#linear-regression"><i class="fa fa-check"></i><b>7.2.2</b> Linear regression</a></li>
+<li class="chapter" data-level="7.2.3" data-path="c07-modeling.html"><a href="c07-modeling.html#exercises-3"><i class="fa fa-check"></i><b>7.2.3</b> Exercises</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="c07-modeling.html"><a href="c07-modeling.html#logistic-regression"><i class="fa fa-check"></i><b>7.3</b> Logistic regression</a>
+<ul>
+<li class="chapter" data-level="7.3.1" data-path="c07-modeling.html"><a href="c07-modeling.html#exercises-4"><i class="fa fa-check"></i><b>7.3.1</b> Exercises</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html"><i class="fa fa-check"></i><b>8</b> Communicating Results</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#describing-results-through-text"><i class="fa fa-check"></i><b>8.1</b> Describing Results through Text</a>
+<ul>
+<li class="chapter" data-level="8.1.1" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#methodology"><i class="fa fa-check"></i><b>8.1.1</b> Methodology</a></li>
+<li class="chapter" data-level="8.1.2" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#analysis"><i class="fa fa-check"></i><b>8.1.2</b> Analysis</a></li>
+<li class="chapter" data-level="8.1.3" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#results"><i class="fa fa-check"></i><b>8.1.3</b> Results</a></li>
+</ul></li>
+<li class="chapter" data-level="8.2" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#visualizing-data"><i class="fa fa-check"></i><b>8.2</b> Visualizing Data</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#tables"><i class="fa fa-check"></i><b>8.2.1</b> Tables</a></li>
+<li class="chapter" data-level="8.2.2" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#charts-and-plots"><i class="fa fa-check"></i><b>8.2.2</b> Charts and Plots</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#reproducibility"><i class="fa fa-check"></i><b>8.3</b> Reproducibility</a>
+<ul>
+<li class="chapter" data-level="8.3.1" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#setting-random-number-seeds"><i class="fa fa-check"></i><b>8.3.1</b> Setting Random Number Seeds</a></li>
+<li class="chapter" data-level="8.3.2" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#git"><i class="fa fa-check"></i><b>8.3.2</b> Git</a></li>
+<li class="chapter" data-level="8.3.3" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#renv"><i class="fa fa-check"></i><b>8.3.3</b> {renv}</a></li>
+<li class="chapter" data-level="8.3.4" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#quartor-markdown"><i class="fa fa-check"></i><b>8.3.4</b> Quarto/R Markdown</a></li>
+<li class="chapter" data-level="8.3.5" data-path="c08-communicating-results.html"><a href="c08-communicating-results.html#the-targets-package"><i class="fa fa-check"></i><b>8.3.5</b> The {targets} package</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html"><i class="fa fa-check"></i><b>9</b> National Crime Victimization Survey Vignette</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#data-structure"><i class="fa fa-check"></i><b>9.1</b> Data structure</a></li>
+<li class="chapter" data-level="9.2" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#data-file-preparation"><i class="fa fa-check"></i><b>9.2</b> Data file preparation</a>
+<ul>
+<li class="chapter" data-level="9.2.1" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#preparing-files-for-estimation-of-victimization-rates"><i class="fa fa-check"></i><b>9.2.1</b> Preparing files for estimation of victimization rates</a></li>
+<li class="chapter" data-level="9.2.2" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#derived-demographic-variables"><i class="fa fa-check"></i><b>9.2.2</b> Derived demographic variables</a></li>
+</ul></li>
+<li class="chapter" data-level="9.3" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#survey-design-objects"><i class="fa fa-check"></i><b>9.3</b> Survey design objects</a></li>
+<li class="chapter" data-level="9.4" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#calculating-estimates"><i class="fa fa-check"></i><b>9.4</b> Calculating estimates</a>
+<ul>
+<li class="chapter" data-level="9.4.1" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#victimization-totals"><i class="fa fa-check"></i><b>9.4.1</b> Victimization totals</a></li>
+<li class="chapter" data-level="9.4.2" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#victimization-proportions"><i class="fa fa-check"></i><b>9.4.2</b> Victimization proportions</a></li>
+<li class="chapter" data-level="9.4.3" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#victimization-rates"><i class="fa fa-check"></i><b>9.4.3</b> Victimization rates</a></li>
+<li class="chapter" data-level="9.4.4" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#prevalence-rates"><i class="fa fa-check"></i><b>9.4.4</b> Prevalence rates</a></li>
+</ul></li>
+<li class="chapter" data-level="9.5" data-path="c09-ncvs-vignette.html"><a href="c09-ncvs-vignette.html#exercises-5"><i class="fa fa-check"></i><b>9.5</b> Exercises</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="c10-ambarom-vignette.html"><a href="c10-ambarom-vignette.html"><i class="fa fa-check"></i><b>10</b> AmericasBarometer Vignette</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="c10-ambarom-vignette.html"><a href="c10-ambarom-vignette.html#data-structure-1"><i class="fa fa-check"></i><b>10.1</b> Data Structure</a></li>
+<li class="chapter" data-level="10.2" data-path="c10-ambarom-vignette.html"><a href="c10-ambarom-vignette.html#preparing-files"><i class="fa fa-check"></i><b>10.2</b> Preparing files</a></li>
+<li class="chapter" data-level="10.3" data-path="c10-ambarom-vignette.html"><a href="c10-ambarom-vignette.html#survey-design-objects-1"><i class="fa fa-check"></i><b>10.3</b> Survey design objects</a></li>
+<li class="chapter" data-level="10.4" data-path="c10-ambarom-vignette.html"><a href="c10-ambarom-vignette.html#calculating-estimates-and-making-tables"><i class="fa fa-check"></i><b>10.4</b> Calculating estimates and making tables</a></li>
+<li class="chapter" data-level="10.5" data-path="c10-ambarom-vignette.html"><a href="c10-ambarom-vignette.html#mapping-survey-data"><i class="fa fa-check"></i><b>10.5</b> Mapping survey data</a></li>
+<li class="chapter" data-level="10.6" data-path="c10-ambarom-vignette.html"><a href="c10-ambarom-vignette.html#exercises-6"><i class="fa fa-check"></i><b>10.6</b> Exercises</a></li>
+</ul></li>
+<li class="appendix"><span><b>Appendix</b></span></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://bookdown.org" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Tidy Survey Book</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="c03-specifying-sample-designs" class="section level1 hasAnchor" number="3">
+<h1><span class="header-section-number">Chapter 3</span> Specifying sample designs and replicate weights in srvyr<a href="c03-specifying-sample-designs.html#c03-specifying-sample-designs" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>The primary reason for using packages like {survey} and {srvyr} are to incorporate the sampling design or replicate weights into estimates. By incorporating the sampling design or replicate weights, precision estimates (e.g., standard errors and confidence intervals) are appropriately calculated. In this chapter, we will introduce common sampling designs and common types of replicate weights, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design or replicate weights. While we will show the math behind the estimates, the functions in these packages will do the calculation. To deeply understand the math and the derivation, refer to <span class="citation">Särndal, Swensson, and Wretman (<a href="#ref-sarndal2003model" role="doc-biblioref">2003</a>)</span>, <span class="citation">Wolter (<a href="#ref-wolter2007introduction" role="doc-biblioref">2007</a>)</span>, or <span class="citation">Fuller (<a href="#ref-fuller2011sampling" role="doc-biblioref">2011</a>)</span>.</p>
+<p>The general process for estimation in the {srvyr} package is to:</p>
+<ol style="list-style-type: decimal">
+<li><p>Create a <code>tbl_svy</code> object (a survey object) using: <code>as_survey_design</code> or <code>as_survey_rep</code></p></li>
+<li><p>Subset data (if needed) using <code>filter</code> (subpopulations)</p></li>
+<li><p>Specify domains of analysis using <code>group_by</code></p></li>
+<li><p>Within <code>summarize</code>, specify variables to calculate including means, totals, proportions, quantiles, and more</p></li>
+</ol>
+<p>This chapter includes details on the first step - creating the survey object. The other steps are detailed in the next several chapters.</p>
+<div id="common-sampling-designs" class="section level2 hasAnchor" number="3.1">
+<h2><span class="header-section-number">3.1</span> Common sampling designs<a href="c03-specifying-sample-designs.html#common-sampling-designs" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>A sampling design is the method used to draw a sample. Both logistical and statistical elements are considered when developing a sampling design. When specifying a sampling design in R, the levels of sampling are specified along with the weights. Each record of a weight is constructed so that the particular record represents that many units in the population. For example, in a survey of 6th grade students in the United States, the weight associated with each responding student reflects how many students that record represents. Generally, the sum of the weights sum to the population total though some studies have the sum of the weights sum to the number of respondent records.</p>
+<p>Some common terminology across the designs are:</p>
+<ul>
+<li>sample size, generally denoted as <span class="math inline">\(n\)</span>, is the number of units selected</li>
+<li>population size, generally denoted as <span class="math inline">\(N\)</span>, is the number of units in the population</li>
+<li>sampling frame is the list of units from which the sample is drawn</li>
+</ul>
+<div id="simple-random-sample-without-replacement" class="section level3 hasAnchor" number="3.1.1">
+<h3><span class="header-section-number">3.1.1</span> Simple random sample without replacement<a href="c03-specifying-sample-designs.html#simple-random-sample-without-replacement" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<ul>
+<li><strong>Description</strong>: The simple random sample (SRS) without replacement is a sampling design where a fixed sample size is selected from a sampling frame, and every possible subsample has equal probability of selection.</li>
+<li><strong>Requirements</strong>: The sampling frame must include the entire population.</li>
+<li><strong>Advantages</strong>: SRS requires no information about the units apart from contact information.</li>
+<li><strong>Disadvantages</strong>: The sampling frame may not be available for entire population. This design is not generally feasible for in-person data collection.</li>
+<li><strong>Example</strong>: Randomly students in a university from a roster provided by the registrar’s office.</li>
+</ul>
+<div id="the-math" class="section level4 unnumbered hasAnchor">
+<h4>The math<a href="c03-specifying-sample-designs.html#the-math" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>The estimate for the population mean of variable <span class="math inline">\(y\)</span> is:</p>
+<p><span class="math display">\[\bar{y}=\frac{1}{n}\sum_{i=1}^n y_i\]</span></p>
+<p>and the estimate of the standard error of mean is:</p>
+<p><span class="math display">\[se(\bar{y})=\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}\]</span> where</p>
+<p><span class="math display">\[s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.\]</span></p>
+<p>This standard error estimate might look very similar to equations in other applications except for the part on the right side of the equation: <span class="math inline">\(1-\frac{n}{N}\)</span>. This is called the finite population correction factor (FPC), and if the size of the frame, <span class="math inline">\(N\)</span>, is very large, the FPC is negligible so it is often ignored.</p>
+<p>To estimate proportions, we define <span class="math inline">\(x_i\)</span> as the indicator if the outcome is observed. That is, <span class="math inline">\(x_i=1\)</span> if the outcome is observed and <span class="math inline">\(x_i=0\)</span> if the outcome is not observed. Then the estimated proportion from a SRS design is:</p>
+<p><span class="math display">\[\hat{p}=\frac{1}{n}\sum_{i=1}^n x_i \]</span>
+and the estimated standard error of the proportion is:</p>
+<p><span class="math display">\[se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} \]</span></p>
+</div>
+<div id="the-syntax" class="section level4 unnumbered hasAnchor">
+<h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>If a sample was drawn through SRS and had no nonresponse or other weighting adjustments, in R specify this design as:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="c03-specifying-sample-designs.html#cb1-1" aria-hidden="true" tabindex="-1"></a>des_srs1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb1-2"><a href="c03-specifying-sample-designs.html#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">fpc =</span> fpcvar)</span></code></pre></div>
+<p>where <code>dat</code> is a tibble or data.frame with the survey data and <code>fpcvar</code> is a variable on the tibble which indicates the size of the sampling frame. If the frame was very large, sometimes the frame size is not provided. In that case, the fpc is not needed and specify the design as:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="c03-specifying-sample-designs.html#cb2-1" aria-hidden="true" tabindex="-1"></a>des_srs2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb2-2"><a href="c03-specifying-sample-designs.html#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>()</span></code></pre></div>
+<p>If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="c03-specifying-sample-designs.html#cb3-1" aria-hidden="true" tabindex="-1"></a>des_srs3 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="c03-specifying-sample-designs.html#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, <span class="at">fpc =</span> fpcvar)</span></code></pre></div>
+<p>where <code>wtvar</code> is the variable for the weight on the data. Again, the fpc can be omitted if it is not necessary because the frame is large.</p>
+</div>
+<div id="example" class="section level4 unnumbered hasAnchor">
+<h4>Example<a href="c03-specifying-sample-designs.html#example" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>The {survey} package in R provides some example datasets to use and those will be used throughout this chapter. Reading the documentation about these datasets provide detail on the variables. One of the example datasets we will use is from the Academic Performance Index (API). The API was a program administered by the California Department of Education and the {survey} package includes a population file (frame) of all schools with at least 100 students and several different samples pulled from that data using different sampling methods. For this first example, we will use the <code>apisrs</code> dataset, which contains a SRS of 200 schools. For printing purposes, we create a new dataset called <code>apisrs_slim</code>, which sorts the data by school district and school ID and subsets the data to only a few columns. The SRS sample data is illustrated below:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="c03-specifying-sample-designs.html#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">tidyverse.quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-2"><a href="c03-specifying-sample-designs.html#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb4-3"><a href="c03-specifying-sample-designs.html#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey)</span></code></pre></div>
+<pre><code>## Loading required package: grid</code></pre>
+<pre><code>## Loading required package: Matrix</code></pre>
+<pre><code>## 
+## Attaching package: &#39;Matrix&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:tidyr&#39;:
+## 
+##     expand, pack, unpack</code></pre>
+<pre><code>## Loading required package: survival</code></pre>
+<pre><code>## 
+## Attaching package: &#39;survey&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:graphics&#39;:
+## 
+##     dotchart</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="c03-specifying-sample-designs.html#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span></code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;srvyr&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:stats&#39;:
+## 
+##     filter</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="c03-specifying-sample-designs.html#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(api)</span>
+<span id="cb15-2"><a href="c03-specifying-sample-designs.html#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="c03-specifying-sample-designs.html#cb15-3" aria-hidden="true" tabindex="-1"></a>apisrs_slim <span class="ot">&lt;-</span> </span>
+<span id="cb15-4"><a href="c03-specifying-sample-designs.html#cb15-4" aria-hidden="true" tabindex="-1"></a>  apisrs <span class="sc">%&gt;%</span></span>
+<span id="cb15-5"><a href="c03-specifying-sample-designs.html#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb15-6"><a href="c03-specifying-sample-designs.html#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(dnum, snum) <span class="sc">%&gt;%</span></span>
+<span id="cb15-7"><a href="c03-specifying-sample-designs.html#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cds, dnum, snum, dname, sname, fpc, pw)</span>
+<span id="cb15-8"><a href="c03-specifying-sample-designs.html#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="c03-specifying-sample-designs.html#cb15-9" aria-hidden="true" tabindex="-1"></a>apisrs_slim</span></code></pre></div>
+<pre><code>## # A tibble: 200 × 7
+##    cds             dnum  snum dname                   sname    fpc    pw
+##    &lt;chr&gt;          &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;                   &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt;
+##  1 19642126061220     1  1121 ABC Unified             Haske…  6194  31.0
+##  2 19642126066716     1  1124 ABC Unified             Stowe…  6194  31.0
+##  3 36675876035174     5  3895 Adelanto Elementary     Adela…  6194  31.0
+##  4 33669776031512    19  3347 Alvord Unified          Arlan…  6194  31.0
+##  5 33669776031595    19  3352 Alvord Unified          Wells…  6194  31.0
+##  6 31667876031033    39  3271 Auburn Union Elementary Cain …  6194  31.0
+##  7 19642876011407    42  1169 Baldwin Park Unified    Deanz…  6194  31.0
+##  8 19642876011464    42  1175 Baldwin Park Unified    Heath…  6194  31.0
+##  9 19642956011589    48  1187 Bassett Unified         Erwin…  6194  31.0
+## 10 41688586043392    49  4948 Bayshore Elementary     Baysh…  6194  31.0
+## # ℹ 190 more rows</code></pre>
+<p>School districts have identifiers <code>dnum</code> within counties and schools have identifiers of <code>snum</code> within districts along with their names, <code>dname</code> and <code>sname</code>. The unique identifier for a school is <code>cds</code> which is unique within the state. Additionally, the <code>fpc</code> is included as <code>fpc</code> and the weight as <code>pw</code>. To create the <code>tbl_survey</code> object for this SRS data, the design should be specified as:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="c03-specifying-sample-designs.html#cb17-1" aria-hidden="true" tabindex="-1"></a>des_apisrs <span class="ot">&lt;-</span> apisrs_slim <span class="sc">%&gt;%</span></span>
+<span id="cb17-2"><a href="c03-specifying-sample-designs.html#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> pw, <span class="at">fpc =</span> fpc)</span>
+<span id="cb17-3"><a href="c03-specifying-sample-designs.html#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="c03-specifying-sample-designs.html#cb17-4" aria-hidden="true" tabindex="-1"></a>des_apisrs</span></code></pre></div>
+<pre><code>## Independent Sampling design
+## Called via srvyr
+## Sampling variables:
+##  - ids: `1`
+##  - fpc: fpc
+##  - weights: pw
+## Data variables: cds (chr), dnum (int), snum (dbl), dname (chr), sname
+##   (chr), fpc (dbl), pw (dbl)</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="c03-specifying-sample-designs.html#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(des_apisrs)</span></code></pre></div>
+<pre><code>## Independent Sampling design
+## Called via srvyr
+## Probabilities:
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##  0.0323  0.0323  0.0323  0.0323  0.0323  0.0323 
+## Population size (PSUs): 6194 
+## Data variables:
+## [1] &quot;cds&quot;   &quot;dnum&quot;  &quot;snum&quot;  &quot;dname&quot; &quot;sname&quot; &quot;fpc&quot;   &quot;pw&quot;</code></pre>
+<p>In the printed design object above, the design is described as an “Independent Sampling design” which is another terminology for SRS. The ids are specified as <code>1</code> which means there is no clustering (a topic described later in this chapter), the fpc variable is indicated, and the weights are indicated. When looking at the summary of the design object, the population size is given as a summary of the probabilities (inverse of the weights).</p>
+</div>
+</div>
+<div id="simple-random-sample-with-replacement" class="section level3 hasAnchor" number="3.1.2">
+<h3><span class="header-section-number">3.1.2</span> Simple random sample with replacement<a href="c03-specifying-sample-designs.html#simple-random-sample-with-replacement" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<ul>
+<li><strong>Description</strong>: The simple random sample with replacement (SRSWR) is a sampling design where a sample is selected from a sampling frame with the units being replaced before drawing again, so units can be selected more than once.</li>
+<li><strong>Requirements</strong>: The sampling frame must include the entire population.</li>
+<li><strong>Advantages</strong>: SRSWR requires no information about the units apart from contact information.</li>
+<li><strong>Disadvantages</strong>: The sampling frame may not be available for entire population. This design is not generally feasible for in-person data collection. Units can be selected more than once resulting in a smaller realized sample size. For small populations, SRSWR has larger standard errors than SRS designs.</li>
+<li><strong>Example</strong>: A professor puts all students names on paper slips and selects them randomly to ask students questions but the professor replaces the paper after calling on the student so they can be selected again at any time.</li>
+</ul>
+<div id="the-math-1" class="section level4 unnumbered hasAnchor">
+<h4>The math<a href="c03-specifying-sample-designs.html#the-math-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>The estimate for the population mean of variable <span class="math inline">\(y\)</span> is:</p>
+<p><span class="math display">\[\bar{y}=\frac{1}{n}\sum_{i=1}^n y_i\]</span></p>
+<p>and the estimate of the standard error of mean is:</p>
+<p><span class="math display">\[se(\bar{y})=\sqrt{\frac{s^2}{n}}\]</span> where</p>
+<p><span class="math display">\[s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.\]</span>
+To calculate the estimated proportion, we define <span class="math inline">\(x_i\)</span> as the indicator that the outcome is observed (as we did with SRS):</p>
+<p><span class="math display">\[\hat{p}=\frac{1}{n}\sum_{i=1}^n x_i \]</span>
+and the estimated standard error of the proportion is:</p>
+<p><span class="math display">\[se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} \]</span></p>
+</div>
+<div id="the-syntax-1" class="section level4 unnumbered hasAnchor">
+<h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>If you had a sample that was drawn through SRSWR and had no nonresponse or other weighting adjustments, in R, you should specify this design as:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="c03-specifying-sample-designs.html#cb21-1" aria-hidden="true" tabindex="-1"></a>des_srswr1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="c03-specifying-sample-designs.html#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>()</span></code></pre></div>
+<p>where <code>dat</code> is a tibble or data.frame with your survey data.</p>
+<p>If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="c03-specifying-sample-designs.html#cb22-1" aria-hidden="true" tabindex="-1"></a>des_srswr2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="c03-specifying-sample-designs.html#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar)</span></code></pre></div>
+<p>where <code>wtvar</code> is the variable for the weight on the data.</p>
+</div>
+<div id="example-1" class="section level4 unnumbered hasAnchor">
+<h4>Example<a href="c03-specifying-sample-designs.html#example-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>The {survey} package does not include an example of SRSWR so we create an example from the population data provided. We call this new dataset <code>apisrswr</code>.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="c03-specifying-sample-designs.html#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">409963</span>)</span>
+<span id="cb23-2"><a href="c03-specifying-sample-designs.html#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="c03-specifying-sample-designs.html#cb23-3" aria-hidden="true" tabindex="-1"></a>apisrswr <span class="ot">&lt;-</span> apipop <span class="sc">%&gt;%</span></span>
+<span id="cb23-4"><a href="c03-specifying-sample-designs.html#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb23-5"><a href="c03-specifying-sample-designs.html#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">200</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb23-6"><a href="c03-specifying-sample-designs.html#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cds, dnum, snum, dname, sname) <span class="sc">%&gt;%</span></span>
+<span id="cb23-7"><a href="c03-specifying-sample-designs.html#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb23-8"><a href="c03-specifying-sample-designs.html#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">weight =</span> <span class="fu">nrow</span>(apipop)<span class="sc">/</span><span class="dv">200</span></span>
+<span id="cb23-9"><a href="c03-specifying-sample-designs.html#cb23-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb23-10"><a href="c03-specifying-sample-designs.html#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-11"><a href="c03-specifying-sample-designs.html#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(apisrswr)</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 6
+##   cds             dnum  snum dname                    sname       weight
+##   &lt;chr&gt;          &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;                    &lt;chr&gt;        &lt;dbl&gt;
+## 1 43696416060065   533  5348 Palo Alto Unified        Jordan (Da…   31.0
+## 2 07618046005060   650   509 San Ramon Valley Unified Alamo Elem…   31.0
+## 3 19648086085674   457  2134 Montebello Unified       La Merced …   31.0
+## 4 07617056003719   346   377 Knightsen Elementary     Knightsen …   31.0
+## 5 19650606023022   744  2351 Torrance Unified         Carr (Evel…   31.0
+## 6 01611196090120     6    13 Alameda City Unified     Paden (Wil…   31.0</code></pre>
+<p>Because this is a SRS design <em>with replacement</em> there will be duplicates in the data. It is important to keep the duplicates in the data for proper estimation, but for reference here are the duplicates in the example we just created.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="c03-specifying-sample-designs.html#cb25-1" aria-hidden="true" tabindex="-1"></a>apisrswr <span class="sc">%&gt;%</span></span>
+<span id="cb25-2"><a href="c03-specifying-sample-designs.html#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(cds) <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="c03-specifying-sample-designs.html#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">n</span>()<span class="sc">&gt;</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb25-4"><a href="c03-specifying-sample-designs.html#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(cds)</span></code></pre></div>
+<pre><code>## # A tibble: 4 × 6
+## # Groups:   cds [2]
+##   cds             dnum  snum dname                 sname          weight
+##   &lt;chr&gt;          &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;                 &lt;chr&gt;           &lt;dbl&gt;
+## 1 15633216008841    41   869 Bakersfield City Elem Chipman Junio…   31.0
+## 2 15633216008841    41   869 Bakersfield City Elem Chipman Junio…   31.0
+## 3 39686766042782   716  4880 Stockton City Unified Tyler Skills …   31.0
+## 4 39686766042782   716  4880 Stockton City Unified Tyler Skills …   31.0</code></pre>
+<p>A weight variable was added which is the inverse of the probability of selection. To specify the sampling design for <code>apisrswr</code>, the following syntax should be used:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="c03-specifying-sample-designs.html#cb27-1" aria-hidden="true" tabindex="-1"></a>des_apisrswr <span class="ot">&lt;-</span> apisrswr <span class="sc">%&gt;%</span></span>
+<span id="cb27-2"><a href="c03-specifying-sample-designs.html#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> weight)</span>
+<span id="cb27-3"><a href="c03-specifying-sample-designs.html#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="c03-specifying-sample-designs.html#cb27-4" aria-hidden="true" tabindex="-1"></a>des_apisrswr</span></code></pre></div>
+<pre><code>## Independent Sampling design (with replacement)
+## Called via srvyr
+## Sampling variables:
+##  - ids: `1`
+##  - weights: weight
+## Data variables: cds (chr), dnum (int), snum (dbl), dname (chr), sname
+##   (chr), weight (dbl)</code></pre>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="c03-specifying-sample-designs.html#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(des_apisrswr)</span></code></pre></div>
+<pre><code>## Independent Sampling design (with replacement)
+## Called via srvyr
+## Probabilities:
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##  0.0323  0.0323  0.0323  0.0323  0.0323  0.0323 
+## Data variables:
+## [1] &quot;cds&quot;    &quot;dnum&quot;   &quot;snum&quot;   &quot;dname&quot;  &quot;sname&quot;  &quot;weight&quot;</code></pre>
+<p>In the chunk above, the design object is printed and the object summary is shown. Both of these note that the sampling is done “with replacement” because no fpc was specified. In the summary, the probabilities, which are derived from the weights, are summarized.</p>
+</div>
+</div>
+<div id="stratified-sampling" class="section level3 hasAnchor" number="3.1.3">
+<h3><span class="header-section-number">3.1.3</span> Stratified sampling<a href="c03-specifying-sample-designs.html#stratified-sampling" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<ul>
+<li><strong>Description</strong>: A population is divided into mutually exclusive subpopulations (strata) and then samples are selected independently within each stratum.</li>
+<li><strong>Requirements</strong>: The sampling frame must include the information to divide the population into groups for every unit.</li>
+<li><strong>Advantages</strong>: This design ensures sample representation in all subpopulations. Often, for the same sample size as a SRS sample, the standard errors are smaller so it is a more efficient design. This is true if the strata are correlated with outcomes.</li>
+<li><strong>Disadvantages</strong>: Auxiliary data may not exist to divide sampling frame into groups or the data may be outdated.</li>
+<li>Examples:
+<ul>
+<li><strong>Example 1</strong>: A population of North Carolina residents could be separated into urban and rural areas and then a SRS of residents from both rural and urban areas is selected independently. This ensures there are rural residents in the sample.</li>
+<li><strong>Example 2</strong>: There are 3 primary general purpose law enforcement agencies in the US - local police, sheriff’s departments, and state police. In a survey of law enforcement agencies, the agency type could be used to form strata.</li>
+</ul></li>
+</ul>
+<div id="the-math-2" class="section level4 unnumbered hasAnchor">
+<h4>The math<a href="c03-specifying-sample-designs.html#the-math-2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Let <span class="math inline">\(\bar{y}_h\)</span> be the sample mean for stratum <span class="math inline">\(h\)</span>, <span class="math inline">\(N_h\)</span> be the population size of stratum <span class="math inline">\(h\)</span>, and <span class="math inline">\(n_h\)</span> be the sample size of stratum <span class="math inline">\(h\)</span>. Then the estimate for the population mean under stratified SRS sampling is:</p>
+<p><span class="math display">\[\bar{y}=\frac{1}{N}\sum_{h=1}^H N_h\bar{y}_h\]</span>
+and the estimate of the standard error of <span class="math inline">\(\bar{y}\)</span> is:</p>
+<p><span class="math display">\[se(\bar{y})=\sqrt{\frac{1}{N^2} \sum_{h=1}^H N_h^2 s_h^2\left(1-\frac{n_h}{N_h}\right)} \]</span></p>
+<p>where
+<span class="math display">\[s_h^2=\frac{1}{n_h-1}\sum_{i=1}^{n_h}\left(y_{i,h}-\bar{y}_h\right)^2.\]</span></p>
+<p>For estimates of proportions, let <span class="math inline">\(\hat{p}_h\)</span> be the estimated proportion in stratum <span class="math inline">\(h\)</span>. Then the population proportion estimate is:</p>
+<p><span class="math display">\[\hat{p}= \frac{1}{N}\sum_{h=1}^H N_h \hat{p}_h\]</span></p>
+<p>and the standard error of the proportion is:</p>
+<p><span class="math display">\[se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_h)}{n_h-1} \left(1-\frac{n_h}{N_h}\right)}\]</span></p>
+</div>
+<div id="the-syntax-2" class="section level4 unnumbered hasAnchor">
+<h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>To specify a stratified SRS design in {srvyr} where the population sizes of the strata are not too large and are known, that is you are using the fpc, specify the design as:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="c03-specifying-sample-designs.html#cb31-1" aria-hidden="true" tabindex="-1"></a>des_stsrs1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb31-2"><a href="c03-specifying-sample-designs.html#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">fpc =</span> fpcvar, <span class="at">strata =</span> stratvar)</span></code></pre></div>
+<p>where <code>fpcvar</code> is a variable on your data which indicates <span class="math inline">\(N_h\)</span> for each row and <code>stratavar</code> is a variable indicating the stratum for each row. You can omit the fpc if it is not applicable. Additionally, you can indicate the weight variable if it is present where <code>wtvar</code> is a variable on your data with a numeric weight.</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="c03-specifying-sample-designs.html#cb32-1" aria-hidden="true" tabindex="-1"></a>des_stsrs2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="c03-specifying-sample-designs.html#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, <span class="at">strata =</span> stratvar)</span></code></pre></div>
+</div>
+<div id="example-2" class="section level4 unnumbered hasAnchor">
+<h4>Example<a href="c03-specifying-sample-designs.html#example-2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>In the example API data, <code>apistrat</code> is a stratified random sample, stratified by school type (<code>stype</code>). As with the SRS example above, we sort and select specific variables for use of printing. The data are illustrated below including a count of the number of cases per stratum:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="c03-specifying-sample-designs.html#cb33-1" aria-hidden="true" tabindex="-1"></a>apistrat_slim <span class="ot">&lt;-</span> </span>
+<span id="cb33-2"><a href="c03-specifying-sample-designs.html#cb33-2" aria-hidden="true" tabindex="-1"></a>  apistrat <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="c03-specifying-sample-designs.html#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb33-4"><a href="c03-specifying-sample-designs.html#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(dnum, snum) <span class="sc">%&gt;%</span></span>
+<span id="cb33-5"><a href="c03-specifying-sample-designs.html#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cds, dnum, snum, dname, sname, stype, fpc, pw)</span>
+<span id="cb33-6"><a href="c03-specifying-sample-designs.html#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="c03-specifying-sample-designs.html#cb33-7" aria-hidden="true" tabindex="-1"></a>apistrat_slim <span class="sc">%&gt;%</span> </span>
+<span id="cb33-8"><a href="c03-specifying-sample-designs.html#cb33-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(stype, fpc)</span></code></pre></div>
+<pre><code>## # A tibble: 3 × 3
+##   stype   fpc     n
+##   &lt;fct&gt; &lt;dbl&gt; &lt;int&gt;
+## 1 E      4421   100
+## 2 H       755    50
+## 3 M      1018    50</code></pre>
+<p>The fpc is the same within each stratum and 100 elementary schools were sampled while 50 schools were sampled from both the middle and high school levels. This design should be specified as:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="c03-specifying-sample-designs.html#cb35-1" aria-hidden="true" tabindex="-1"></a>des_apistrat <span class="ot">&lt;-</span> apistrat_slim <span class="sc">%&gt;%</span></span>
+<span id="cb35-2"><a href="c03-specifying-sample-designs.html#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">strata =</span> stype, <span class="at">weights =</span> pw, <span class="at">fpc =</span> fpc)</span>
+<span id="cb35-3"><a href="c03-specifying-sample-designs.html#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-4"><a href="c03-specifying-sample-designs.html#cb35-4" aria-hidden="true" tabindex="-1"></a>des_apistrat</span></code></pre></div>
+<pre><code>## Stratified Independent Sampling design
+## Called via srvyr
+## Sampling variables:
+##  - ids: `1`
+##  - strata: stype
+##  - fpc: fpc
+##  - weights: pw
+## Data variables: cds (chr), dnum (int), snum (dbl), dname (chr), sname
+##   (chr), stype (fct), fpc (dbl), pw (dbl)</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="c03-specifying-sample-designs.html#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(des_apistrat)</span></code></pre></div>
+<pre><code>## Stratified Independent Sampling design
+## Called via srvyr
+## Probabilities:
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##  0.0226  0.0226  0.0359  0.0401  0.0534  0.0662 
+## Stratum Sizes: 
+##              E  H  M
+## obs        100 50 50
+## design.PSU 100 50 50
+## actual.PSU 100 50 50
+## Population stratum sizes (PSUs): 
+##    E    H    M 
+## 4421  755 1018 
+## Data variables:
+## [1] &quot;cds&quot;   &quot;dnum&quot;  &quot;snum&quot;  &quot;dname&quot; &quot;sname&quot; &quot;stype&quot; &quot;fpc&quot;   &quot;pw&quot;</code></pre>
+<p>When printing the object, it is specified as a “Stratified Independent Sampling design” also known as a stratified SRS and the strata variable is included. In the summary, a numeric summary of the probabilities of selection are displayed as well as the sample and population stratum sizes.</p>
+</div>
+</div>
+<div id="clustered-sampling" class="section level3 hasAnchor" number="3.1.4">
+<h3><span class="header-section-number">3.1.4</span> Clustered sampling<a href="c03-specifying-sample-designs.html#clustered-sampling" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<ul>
+<li><strong>Description</strong>: A population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs). A random selection of PSUs are sampled and then another level of sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available or data collection involves interviewers needing direct contact with respondents.</li>
+<li><strong>Requirements</strong>: There must have be a way to divide the population into clusters. Clusters are commonly structural such as institutions (e.g., schools, prisons) or geographic (e.g., states, counties).</li>
+<li><strong>Advantages</strong>: Clustered sampling is advantageous when data collection is done in person so interviewers are sent to specific sampled areas rather than completely at random across a country. With cluster sampling, a list of the entire population is not necessary. For example, if sampling students, you do not need a list of all students but only a list of all schools. Once the schools are sampled, lists of students can be obtained within the sampled schools.</li>
+<li><strong>Disadvantages</strong>: Compared to a simple random sample, for the same sample size, clustered samples generally have larger standard errors of estimates.</li>
+<li>Examples:
+<ul>
+<li><strong>Example 1</strong>: Consider a study needing a sample of 6th grade students in the United States, no list likely exists of all these students. However, it is more likely to be possible to obtain a list of schools that have 6th graders, so a study design could select a random sample of schools that have 6th graders. The selected schools can then provide a list of students to do a second stage of sampling where 6th grade students are randomly sampled within each of the sampled schools. This is a one-stage sample design and will be the type of design we will discuss in formulas below.</li>
+<li><strong>Example 2</strong>: Consider a study sending interviewers to households for a survey. This is a more complicated example that requires two levels of selection, to efficiently use interviewers in geographic clusters. First, in the U.S. counties could be selected as the PSU, then Census block groups within counties could be selected as the secondary sampling unit (SSU). Households could then randomly sampled within the block groups. This type of design is popular for in-person survey as it reduces the travel necessary for interviewers.</li>
+</ul></li>
+</ul>
+<div id="the-math-3" class="section level4 unnumbered hasAnchor">
+<h4>The math<a href="c03-specifying-sample-designs.html#the-math-3" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Consider a population where the are <span class="math inline">\(N\)</span> clusters and <span class="math inline">\(n\)</span> clusters are sampled via SRS. Units within each sampled cluster are sampled via SRS as well. Let <span class="math inline">\(M_i\)</span> be the number of units in cluster <span class="math inline">\(i\)</span> and <span class="math inline">\(\bar{y}_i\)</span> be the sample mean of cluster <span class="math inline">\(i\)</span>. Then, a ratio estimator of the population mean is:</p>
+<p><span class="math display">\[\bar{y}=\frac{\sum_{i=1}^n M_i \bar{y}_i}{ \sum_{i=1}^n M_i}\]</span>
+Note this is a consistent but biased estimator. Often the population size is not known so this is a method to estimate a mean without knowing the population size. The estimated standard error of the mean is:</p>
+<p><span class="math display">\[se(\bar{y})=\frac{1}{\hat{N}_{pop} } \sqrt{\frac{N^2 (1-\frac{n}{N})}{n}\frac{1}{n-1} \sum_{i=1}^n (M_i\bar{y}_i -\hat{t}/N)^2  + \frac{N}{n}  \sum_{i=1}^n \frac{M_i^2}{m_i}\left(1-\frac{m_i}{M_i}\right)s^2_i }\]</span>
+where <span class="math inline">\(\hat{N}_{pop}\)</span> is the estimated population size, <span class="math inline">\(\hat{t}\)</span> is the estimated total, and <span class="math inline">\(s_i^2\)</span> is the sample variance of cluster <span class="math inline">\(i\)</span>.</p>
+<p>For estimates of proportions, the estimated proportion is:</p>
+<p><span class="math display">\[\hat{p}=\frac{\sum_{i=1}^n M_i \hat{p}_i}{ \sum_{i=1}^n M_i}\]</span></p>
+<p>and the associated standard error estimate is:</p>
+<p><span class="math display">\[se(\hat{p})=\frac{1}{\hat{N}_{pop} } \sqrt{\frac{N^2 (1-\frac{n}{N})}{n}\frac{1}{n-1} \sum_{i=1}^n (M_i\hat{p}_i -\hat{t}/N)^2  + \frac{N}{n}  \sum_{i=1}^n \frac{M_i^2}{m_i}\left(1-\frac{m_i}{M_i}\right)s^2_i }\]</span></p>
+<p>where <span class="math inline">\(s^2_i\)</span> is defined as:</p>
+<p><span class="math display">\[s^2_i = \frac{m_hp_h(1-p_h)}{m_h-1}\]</span>.</p>
+</div>
+<div id="the-syntax-3" class="section level4 unnumbered hasAnchor">
+<h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-3" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>To specify a two-stage clustered design without replacement, use the following syntax:</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="c03-specifying-sample-designs.html#cb39-1" aria-hidden="true" tabindex="-1"></a>des_clus2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb39-2"><a href="c03-specifying-sample-designs.html#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, <span class="at">ids =</span> <span class="fu">c</span>(PSU, SSU), <span class="at">fpc =</span> <span class="fu">c</span>(N, M))</span></code></pre></div>
+<p>where <code>PSU</code> and <code>SSU</code> are the variables indicating the PSU and SSU identifiers and <code>N</code> and <code>M</code> are the variables indicating the population sizes for each level (i.e., <code>N</code> is the number of clusters and <code>M</code> is the number of units within each cluster). Note that <code>N</code> will be the same for all records (within a strata) and <code>M</code> will be the same for all records within the same cluster.</p>
+<p>If clusters were sampled with replacement or from a very large population, a fpc is not necessary. Additionally, only the first stage of selection is necessary regardless of whether the units were selected with replacement at any stage. The subsequent stages of selection are ignored in computation as their contribution to the variance is overpowered by the first stage, see <span class="citation">Särndal, Swensson, and Wretman (<a href="#ref-sarndal2003model" role="doc-biblioref">2003</a>)</span> or <span class="citation">Wolter (<a href="#ref-wolter2007introduction" role="doc-biblioref">2007</a>)</span> for a more in-depth discussion. The syntax below will yield the same estimates in the end:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="c03-specifying-sample-designs.html#cb40-1" aria-hidden="true" tabindex="-1"></a>des_clus2wra <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="c03-specifying-sample-designs.html#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, <span class="at">ids =</span> <span class="fu">c</span>(PSU, SSU))</span>
+<span id="cb40-3"><a href="c03-specifying-sample-designs.html#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="c03-specifying-sample-designs.html#cb40-4" aria-hidden="true" tabindex="-1"></a>des_clus2wrb <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb40-5"><a href="c03-specifying-sample-designs.html#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, <span class="at">ids =</span> PSU)</span></code></pre></div>
+</div>
+<div id="example-3" class="section level4 unnumbered hasAnchor">
+<h4>Example<a href="c03-specifying-sample-designs.html#example-3" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>The <code>survey</code> package includes a two-stage cluster sample data, <code>apiclus2</code>, in which school districts were sampled and then a random sample of 5 schools was selected within each district. For districts with fewer than 5 schools, all schools were sampled. School districts are identified by <code>dnum</code> and schools are identified by <code>snum</code>. The variable <code>fpc1</code> indicates how many districts there are in California (<code>N</code>) and <code>fpc2</code> indicates how many schools were in a given district with at least 100 students (<code>M</code>). The data has a row for each school. In the data printed below, there are 757 school districts as indicated by <code>fpc1</code> and there are 9 schools in district 731, one school in district 742, 2 schools in district 768, and so on as indicated by <code>fpc2</code>. For illustration purposes, the object <code>apiclus2_slim</code> has been created from <code>apiclus2</code>, which subsets the data to only the necessary columns and sorts data.</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="c03-specifying-sample-designs.html#cb41-1" aria-hidden="true" tabindex="-1"></a>apiclus2_slim <span class="ot">&lt;-</span> </span>
+<span id="cb41-2"><a href="c03-specifying-sample-designs.html#cb41-2" aria-hidden="true" tabindex="-1"></a>  apiclus2 <span class="sc">%&gt;%</span></span>
+<span id="cb41-3"><a href="c03-specifying-sample-designs.html#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb41-4"><a href="c03-specifying-sample-designs.html#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(dnum), snum) <span class="sc">%&gt;%</span></span>
+<span id="cb41-5"><a href="c03-specifying-sample-designs.html#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cds, dnum, snum, fpc1, fpc2, pw)</span>
+<span id="cb41-6"><a href="c03-specifying-sample-designs.html#cb41-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-7"><a href="c03-specifying-sample-designs.html#cb41-7" aria-hidden="true" tabindex="-1"></a>apiclus2_slim</span></code></pre></div>
+<pre><code>## # A tibble: 126 × 6
+##    cds             dnum  snum  fpc1      fpc2    pw
+##    &lt;chr&gt;          &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;int[1d]&gt; &lt;dbl&gt;
+##  1 47704826050942   795  5552   757         1  18.9
+##  2 07618126005169   781   530   757         6  22.7
+##  3 07618126005177   781   531   757         6  22.7
+##  4 07618126005185   781   532   757         6  22.7
+##  5 07618126005193   781   533   757         6  22.7
+##  6 07618126005243   781   535   757         6  22.7
+##  7 19650786023337   768  2371   757         2  18.9
+##  8 19650786023345   768  2372   757         2  18.9
+##  9 54722076054423   742  5898   757         1  18.9
+## 10 50712906053086   731  5781   757         9  34.1
+## # ℹ 116 more rows</code></pre>
+<p>To specify this design in R, the following syntax should be used:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="c03-specifying-sample-designs.html#cb43-1" aria-hidden="true" tabindex="-1"></a>des_apiclus2 <span class="ot">&lt;-</span> apiclus2_slim <span class="sc">%&gt;%</span></span>
+<span id="cb43-2"><a href="c03-specifying-sample-designs.html#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">ids =</span> <span class="fu">c</span>(dnum, snum), <span class="at">fpc =</span> <span class="fu">c</span>(fpc1, fpc2), <span class="at">weights=</span>pw)</span>
+<span id="cb43-3"><a href="c03-specifying-sample-designs.html#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-4"><a href="c03-specifying-sample-designs.html#cb43-4" aria-hidden="true" tabindex="-1"></a>des_apiclus2</span></code></pre></div>
+<pre><code>## 2 - level Cluster Sampling design
+## With (40, 126) clusters.
+## Called via srvyr
+## Sampling variables:
+##  - ids: `dnum + snum`
+##  - fpc: `fpc1 + fpc2`
+##  - weights: pw
+## Data variables: cds (chr), dnum (int), snum (dbl), fpc1 (dbl), fpc2
+##   (int[1d]), pw (dbl)</code></pre>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="c03-specifying-sample-designs.html#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(des_apiclus2)</span></code></pre></div>
+<pre><code>## 2 - level Cluster Sampling design
+## With (40, 126) clusters.
+## Called via srvyr
+## Probabilities:
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+## 0.00367 0.03774 0.05284 0.04239 0.05284 0.05284 
+## Population size (PSUs): 757 
+## Data variables:
+## [1] &quot;cds&quot;  &quot;dnum&quot; &quot;snum&quot; &quot;fpc1&quot; &quot;fpc2&quot; &quot;pw&quot;</code></pre>
+<p>The design objects are described as “2 - level Cluster Sampling design” and includes the ids (cluster), fpc, and weight variables. In the summary, it is noted that the sample includes 40 first-level clusters (PSUs) which are school districts and 126 second-level clusters (SSUs) which are schools. Additionally, the summary includes a numeric summary of the probabilities and the population size (number of PSUs) as 757.</p>
+</div>
+</div>
+</div>
+<div id="replicate-weights" class="section level2 hasAnchor" number="3.2">
+<h2><span class="header-section-number">3.2</span> Replicate weights<a href="c03-specifying-sample-designs.html#replicate-weights" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Replicate weights are often included on analysis files instead of, or in addition to, the design variables (strata and PSUs). Replicate weights are used as another method to estimate variability and often used specifically so that design variables are not published as a measure to limit disclosure risk. There are several types of replicate weights including balanced repeated replication (BRR), Fay’s BRR, jackknife, and bootstrap methods. An overview of the process for using replicate weights is:</p>
+<ol style="list-style-type: decimal">
+<li>Divide the sample into subsample <strong>replicates</strong> that mirror the design of the sample</li>
+<li>Calculate weights for each <strong>replicate</strong> using the same procedures for full-sample weight (i.e., nonresponse and post-stratification)</li>
+<li>Calculate estimates for each <strong>replicate</strong> using the same method as the full-sample estimate</li>
+<li>Calculate the estimated variance which will be proportional to the variance of the replicate estimates</li>
+</ol>
+<p>The different types of replicate weights largely differ in step 1 - how the sample is divided into subsamples and step 4 - which multiplication factors (scales) are used to multiply the variance.</p>
+<div id="brr-method" class="section level3 hasAnchor" number="3.2.1">
+<h3><span class="header-section-number">3.2.1</span> BRR method<a href="c03-specifying-sample-designs.html#brr-method" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by 2 but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have 1 row, 2 rows, or a multiple of 4 rows. An example of a <span class="math inline">\(4\times4\)</span> Hadamard matrix is below:</p>
+<p><span class="math display">\[ \begin{array}{rrrr} +1 &amp;+1 &amp;+1 &amp;+1\\ +1&amp;-1&amp;+1&amp;-1\\ +1&amp;+1&amp;-1&amp;-1\\ +1 &amp;-1&amp;-1&amp;+1  \end{array} \]</span>
+The columns specify the strata and the rows the replicate. In the first replicate all the values are +1, so in each stratum the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in stratum 1 and 3, while the second PSU would be used in stratum 2 and 4. In the third replicate, the first PSU would be used in stratum 1 and 2, while the second PSU would be used in stratum 3 and 4. Finally, in the fourth replicate, the first PSU would be used in stratum 1 and 4, while the second PSU would be used in stratum 2 and 3.</p>
+<div id="the-math-4" class="section level4 unnumbered hasAnchor">
+<h4>The math<a href="c03-specifying-sample-designs.html#the-math-4" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>A weighted estimate for the full sample is calculated as <span class="math inline">\(\hat{\theta}\)</span> and then a weighted estimate for each replicate is calculated as <span class="math inline">\(\hat{\theta}_r\)</span> for <span class="math inline">\(R\)</span> replicates. Then the standard error of the estimate is calculated as:</p>
+<p><span class="math display">\[se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}\]</span>
+Specifying replicate weights in R requires specifying the type of replicate weights, the main weight variable, the replicate weight variables, and some other options. One of the key options is for <code>mse</code>. If <code>mse=TRUE</code>, variances are computed around the point estimate <span class="math inline">\((\hat{\theta})\)</span>, whereas if <code>mse=FALSE</code>, variances are computed around the mean of the replicates <span class="math inline">\((\bar{\theta})\)</span> instead which looks like this:</p>
+<p><span class="math display">\[se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\bar{\theta}\right)^2}\]</span> where <span class="math display">\[\bar{\theta}=\frac{1}{R}\sum_{r=1}^R \hat{\theta}_r\]</span></p>
+<p>The default option for <code>mse</code> is to use the global option of “survey.replicates.mse” which is set to <code>FALSE</code> initially unless a user changes it. Unless documentation states otherwise, for BRR, set <code>mse</code> to <code>TRUE</code>.</p>
+</div>
+<div id="the-syntax-4" class="section level4 unnumbered hasAnchor">
+<h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-4" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Replicate weights generally come in groups and are sequentially numbered such as PWGTP1, PWGTP2, …, PWGTP80 in the American Community Survey (ACS) or BRRWT1, BRRWT2, …, BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS). The {srvyr} package relies on tidy selection<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> to choose variables. If replicate weight variables need to be specified with a character vector, use the <code>all_of</code> function to select variables from a character vector. Some other methods are also illustrated below in the examples but these apply to any type of replicate weights and not just BRR.</p>
+<p>If a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, …, WT20, use the following syntax (both are equivalent):</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="c03-specifying-sample-designs.html#cb47-1" aria-hidden="true" tabindex="-1"></a>des_brr <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb47-2"><a href="c03-specifying-sample-designs.html#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, <span class="at">repweights=</span> <span class="fu">all_of</span>(<span class="fu">str_c</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>)),</span>
+<span id="cb47-3"><a href="c03-specifying-sample-designs.html#cb47-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">type=</span><span class="st">&quot;BRR&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>)</span>
+<span id="cb47-4"><a href="c03-specifying-sample-designs.html#cb47-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-5"><a href="c03-specifying-sample-designs.html#cb47-5" aria-hidden="true" tabindex="-1"></a>des_brr <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb47-6"><a href="c03-specifying-sample-designs.html#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
+<span id="cb47-7"><a href="c03-specifying-sample-designs.html#cb47-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">type=</span><span class="st">&quot;BRR&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>If a dataset had WT for the main weight and had 20 BRR weights indicated REPWT1, REPWT2, …, REPWT20, the following syntax could be used (both are equivalent):</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="c03-specifying-sample-designs.html#cb48-1" aria-hidden="true" tabindex="-1"></a>des_brr <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="c03-specifying-sample-designs.html#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT, <span class="at">repweights=</span> <span class="fu">all_of</span>(<span class="fu">str_c</span>(<span class="st">&quot;REPWT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>)),</span>
+<span id="cb48-3"><a href="c03-specifying-sample-designs.html#cb48-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">type=</span><span class="st">&quot;BRR&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>)</span>
+<span id="cb48-4"><a href="c03-specifying-sample-designs.html#cb48-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-5"><a href="c03-specifying-sample-designs.html#cb48-5" aria-hidden="true" tabindex="-1"></a>des_brr <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb48-6"><a href="c03-specifying-sample-designs.html#cb48-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT, <span class="at">repweights=</span> <span class="fu">starts_with</span>(<span class="st">&quot;REPWT&quot;</span>),</span>
+<span id="cb48-7"><a href="c03-specifying-sample-designs.html#cb48-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">type=</span><span class="st">&quot;BRR&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>If the replicate weight variables are on the file consecutively, the following syntax can also be used:</p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="c03-specifying-sample-designs.html#cb49-1" aria-hidden="true" tabindex="-1"></a>des_brr <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb49-2"><a href="c03-specifying-sample-designs.html#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT, <span class="at">repweights=</span> REPWT1<span class="sc">:</span>REPWT20, <span class="at">type=</span><span class="st">&quot;BRR&quot;</span>,</span>
+<span id="cb49-3"><a href="c03-specifying-sample-designs.html#cb49-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Typically, the replicate weights sum to a value similar to the main weight as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. This would be indicated in the documentation and in Section <a href="c03-specifying-sample-designs.html#und-surv-doc">3.3</a>, we discuss how to understand documentation. In this case, the replicate weights are not combined and the option <code>combined_weights = FALSE</code> should be indicated, as the default value for this argument is TRUE. This specific syntax is shown below:</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="c03-specifying-sample-designs.html#cb50-1" aria-hidden="true" tabindex="-1"></a>des_brr <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="c03-specifying-sample-designs.html#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT, <span class="at">repweights=</span> <span class="fu">starts_with</span>(<span class="st">&quot;REPWT&quot;</span>), </span>
+<span id="cb50-3"><a href="c03-specifying-sample-designs.html#cb50-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">type=</span><span class="st">&quot;BRR&quot;</span>, <span class="at">combined_weights =</span> <span class="cn">FALSE</span>, <span class="at">mse=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+<div id="example-4" class="section level4 unnumbered hasAnchor">
+<h4>Example<a href="c03-specifying-sample-designs.html#example-4" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>The {survey} package includes a data example from Section 12.2 of <span class="citation">Levy and Lemeshow (<a href="#ref-levy2013sampling" role="doc-biblioref">2013</a>)</span>. In this fictional data, two out of five ambulance stations were sampled from each of three emergency service areas (ESAs) thus BRR weights are appropriate with 2 PSUs (stations) sampled in each stratum (ESA). In the code below, BRR weights are created as was done in <span class="citation">Levy and Lemeshow (<a href="#ref-levy2013sampling" role="doc-biblioref">2013</a>)</span>.</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="c03-specifying-sample-designs.html#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(scd)</span>
+<span id="cb51-2"><a href="c03-specifying-sample-designs.html#cb51-2" aria-hidden="true" tabindex="-1"></a>scdbrr <span class="ot">&lt;-</span> scd <span class="sc">%&gt;%</span></span>
+<span id="cb51-3"><a href="c03-specifying-sample-designs.html#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb51-4"><a href="c03-specifying-sample-designs.html#cb51-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb51-5"><a href="c03-specifying-sample-designs.html#cb51-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">wt=</span><span class="dv">5</span><span class="sc">/</span><span class="dv">2</span>,</span>
+<span id="cb51-6"><a href="c03-specifying-sample-designs.html#cb51-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">rep1 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb51-7"><a href="c03-specifying-sample-designs.html#cb51-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">rep2 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb51-8"><a href="c03-specifying-sample-designs.html#cb51-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">rep3 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb51-9"><a href="c03-specifying-sample-designs.html#cb51-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">rep4 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
+<span id="cb51-10"><a href="c03-specifying-sample-designs.html#cb51-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-11"><a href="c03-specifying-sample-designs.html#cb51-11" aria-hidden="true" tabindex="-1"></a>scdbrr</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 9
+##     ESA ambulance arrests alive    wt  rep1  rep2  rep3  rep4
+##   &lt;int&gt;     &lt;int&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     1         1     120    25   2.5     2     2     0     0
+## 2     1         2      78    24   2.5     0     0     2     2
+## 3     2         1     185    30   2.5     2     0     2     0
+## 4     2         2     228    49   2.5     0     2     0     2
+## 5     3         1     670    80   2.5     2     0     0     2
+## 6     3         2     530    70   2.5     0     2     2     0</code></pre>
+<p>To specify the BRR weights, the following syntax is used:</p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="c03-specifying-sample-designs.html#cb53-1" aria-hidden="true" tabindex="-1"></a>des_brr_scd <span class="ot">&lt;-</span> scdbrr <span class="sc">%&gt;%</span></span>
+<span id="cb53-2"><a href="c03-specifying-sample-designs.html#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>, <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;rep&quot;</span>),</span>
+<span id="cb53-3"><a href="c03-specifying-sample-designs.html#cb53-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">combined_weights =</span> <span class="cn">FALSE</span>, <span class="at">weight=</span>wt)</span>
+<span id="cb53-4"><a href="c03-specifying-sample-designs.html#cb53-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-5"><a href="c03-specifying-sample-designs.html#cb53-5" aria-hidden="true" tabindex="-1"></a>des_brr_scd</span></code></pre></div>
+<pre><code>## Call: Called via srvyr
+## Balanced Repeated Replicates with 4 replicates.
+## Sampling variables:
+##  - repweights: `rep1 + rep2 + rep3 + rep4`
+##  - weights: wt
+## Data variables: ESA (int), ambulance (int), arrests (dbl), alive (dbl),
+##   wt (dbl), rep1 (dbl), rep2 (dbl), rep3 (dbl), rep4 (dbl)</code></pre>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="c03-specifying-sample-designs.html#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(des_brr_scd)</span></code></pre></div>
+<pre><code>## Call: Called via srvyr
+## Balanced Repeated Replicates with 4 replicates.
+## Sampling variables:
+##  - repweights: `rep1 + rep2 + rep3 + rep4`
+##  - weights: wt
+## Data variables: ESA (int), ambulance (int), arrests (dbl), alive (dbl),
+##   wt (dbl), rep1 (dbl), rep2 (dbl), rep3 (dbl), rep4 (dbl)
+## Variables: 
+## [1] &quot;ESA&quot;       &quot;ambulance&quot; &quot;arrests&quot;   &quot;alive&quot;     &quot;wt&quot;       
+## [6] &quot;rep1&quot;      &quot;rep2&quot;      &quot;rep3&quot;      &quot;rep4&quot;</code></pre>
+<p>Note that <code>combined_weights</code> was specified as <code>FALSE</code> because these weights are simply specified as 0 and 2 and do not incorporate the overall weight. When printing the object, the type of replication is noted as Balanced Repeated Replicates, the replicate weights are specified, and the weight variable. When looking at the summary, the only additional information provided are the variables included.</p>
+</div>
+</div>
+<div id="fays-brr-method" class="section level3 hasAnchor" number="3.2.2">
+<h3><span class="header-section-number">3.2.2</span> Fay’s BRR Method<a href="c03-specifying-sample-designs.html#fays-brr-method" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Fay’s BRR method for replicate weights still uses a Hadamard matrix to construct replicate weights but rather than deleting PSUs for each replicate, half of the PSUs have a replicate weight which is the main weight multiplied by <span class="math inline">\(\rho\)</span> and the other half have the main weight multiplied by <span class="math inline">\((2-\rho)\)</span> where <span class="math inline">\(0 \le \rho &lt; 1\)</span>. Note that when <span class="math inline">\(\rho=0\)</span>, this is equivalent to the standard BRR weights and as <span class="math inline">\(\rho\)</span> becomes closer to 1, this method is more similar to jackknife discussed in the next section. To obtain the value of <span class="math inline">\(\rho\)</span>, it is necessary to read the documentation as discussed in Section <a href="c03-specifying-sample-designs.html#und-surv-doc">3.3</a>.</p>
+<div id="the-math-5" class="section level4 unnumbered hasAnchor">
+<h4>The math<a href="c03-specifying-sample-designs.html#the-math-5" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>The standard error estimate for <span class="math inline">\(\hat{\theta}\)</span> is slightly different and calculated as:</p>
+<p><span class="math display">\[se(\hat{\theta})=\sqrt{\frac{1}{R (1-\rho)^2} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}\]</span></p>
+</div>
+<div id="the-syntax-5" class="section level4 unnumbered hasAnchor">
+<h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-5" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>The syntax is very similar for BRR and Fay’s BRR. If a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, …, WT20, and Fay’s multiplier is 0.5, use the following syntax:</p>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="c03-specifying-sample-designs.html#cb57-1" aria-hidden="true" tabindex="-1"></a>des_fay <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb57-2"><a href="c03-specifying-sample-designs.html#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
+<span id="cb57-3"><a href="c03-specifying-sample-designs.html#cb57-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">type=</span><span class="st">&quot;Fay&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>, <span class="at">rho=</span><span class="fl">0.5</span>)</span></code></pre></div>
+</div>
+<div id="example-5" class="section level4 unnumbered hasAnchor">
+<h4>Example<a href="c03-specifying-sample-designs.html#example-5" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>The 2015 RECS uses Fay’s BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with <span class="math inline">\(\rho=0.5\)</span><a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a>. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region.</p>
+<p>To read in any data in the book, use the function <code>read_rds_tsr()</code> which reads the data file from a directory on OSF where all book data has been placed for sharing.</p>
+<p>To specify this design, use the following syntax:</p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="c03-specifying-sample-designs.html#cb58-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="ot">&lt;-</span> recs_in <span class="sc">%&gt;%</span></span>
+<span id="cb58-2"><a href="c03-specifying-sample-designs.html#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
+<span id="cb58-3"><a href="c03-specifying-sample-designs.html#cb58-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
+<span id="cb58-4"><a href="c03-specifying-sample-designs.html#cb58-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> BRRWT1<span class="sc">:</span>BRRWT96,</span>
+<span id="cb58-5"><a href="c03-specifying-sample-designs.html#cb58-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;Fay&quot;</span>,</span>
+<span id="cb58-6"><a href="c03-specifying-sample-designs.html#cb58-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">rho =</span> <span class="fl">0.5</span>,</span>
+<span id="cb58-7"><a href="c03-specifying-sample-designs.html#cb58-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb58-8"><a href="c03-specifying-sample-designs.html#cb58-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">variables =</span> <span class="fu">c</span>(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC)</span>
+<span id="cb58-9"><a href="c03-specifying-sample-designs.html#cb58-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb58-10"><a href="c03-specifying-sample-designs.html#cb58-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-11"><a href="c03-specifying-sample-designs.html#cb58-11" aria-hidden="true" tabindex="-1"></a>recs_des</span></code></pre></div>
+<pre><code>## Call: Called via srvyr
+## Fay&#39;s variance method (rho= 0.5 ) with 96 replicates and MSE variances.
+## Sampling variables:
+##  - repweights: `BRRWT1 + BRRWT2 + BRRWT3 + BRRWT4 + BRRWT5 + BRRWT6 + BRRWT7 + BRRWT8 + BRRWT9 + BRRWT10 + BRRWT11 + BRRWT12 + BRRWT13 + BRRWT14 + BRRWT15 + BRRWT16 + BRRWT17 + BRRWT18 + BRRWT19 + BRRWT20 + BRRWT21 + BRRWT22 + BRRWT23 + BRRWT24 + BRRWT25 + BRRWT26 + BRRWT27 + BRRWT28 + BRRWT29 + BRRWT30 + BRRWT31 + BRRWT32 + BRRWT33 + BRRWT34 + BRRWT35 + BRRWT36 + BRRWT37 + BRRWT38 + BRRWT39 + BRRWT40 + BRRWT41 + BRRWT42 + BRRWT43 + BRRWT44 + BRRWT45 + BRRWT46 + BRRWT47 + BRRWT48 + BRRWT49 + BRRWT50 + BRRWT51 + \n    BRRWT52 + BRRWT53 + BRRWT54 + BRRWT55 + BRRWT56 + BRRWT57 + BRRWT58 + BRRWT59 + BRRWT60 + BRRWT61 + BRRWT62 + BRRWT63 + BRRWT64 + BRRWT65 + BRRWT66 + BRRWT67 + BRRWT68 + BRRWT69 + BRRWT70 + BRRWT71 + BRRWT72 + BRRWT73 + BRRWT74 + BRRWT75 + BRRWT76 + BRRWT77 + BRRWT78 + BRRWT79 + BRRWT80 + BRRWT81 + BRRWT82 + BRRWT83 + BRRWT84 + BRRWT85 + BRRWT86 + BRRWT87 + BRRWT88 + BRRWT89 + BRRWT90 + BRRWT91 + BRRWT92 + BRRWT93 + BRRWT94 + BRRWT95 + BRRWT96`
+##  - weights: NWEIGHT
+## Data variables: DOEID (dbl), TOTALDOL (dbl), TOTSQFT_EN (dbl), REGIONC
+##   (dbl)</code></pre>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="c03-specifying-sample-designs.html#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(recs_des)</span></code></pre></div>
+<pre><code>## Call: Called via srvyr
+## Fay&#39;s variance method (rho= 0.5 ) with 96 replicates and MSE variances.
+## Sampling variables:
+##  - repweights: `BRRWT1 + BRRWT2 + BRRWT3 + BRRWT4 + BRRWT5 + BRRWT6 + BRRWT7 + BRRWT8 + BRRWT9 + BRRWT10 + BRRWT11 + BRRWT12 + BRRWT13 + BRRWT14 + BRRWT15 + BRRWT16 + BRRWT17 + BRRWT18 + BRRWT19 + BRRWT20 + BRRWT21 + BRRWT22 + BRRWT23 + BRRWT24 + BRRWT25 + BRRWT26 + BRRWT27 + BRRWT28 + BRRWT29 + BRRWT30 + BRRWT31 + BRRWT32 + BRRWT33 + BRRWT34 + BRRWT35 + BRRWT36 + BRRWT37 + BRRWT38 + BRRWT39 + BRRWT40 + BRRWT41 + BRRWT42 + BRRWT43 + BRRWT44 + BRRWT45 + BRRWT46 + BRRWT47 + BRRWT48 + BRRWT49 + BRRWT50 + BRRWT51 + \n    BRRWT52 + BRRWT53 + BRRWT54 + BRRWT55 + BRRWT56 + BRRWT57 + BRRWT58 + BRRWT59 + BRRWT60 + BRRWT61 + BRRWT62 + BRRWT63 + BRRWT64 + BRRWT65 + BRRWT66 + BRRWT67 + BRRWT68 + BRRWT69 + BRRWT70 + BRRWT71 + BRRWT72 + BRRWT73 + BRRWT74 + BRRWT75 + BRRWT76 + BRRWT77 + BRRWT78 + BRRWT79 + BRRWT80 + BRRWT81 + BRRWT82 + BRRWT83 + BRRWT84 + BRRWT85 + BRRWT86 + BRRWT87 + BRRWT88 + BRRWT89 + BRRWT90 + BRRWT91 + BRRWT92 + BRRWT93 + BRRWT94 + BRRWT95 + BRRWT96`
+##  - weights: NWEIGHT
+## Data variables: DOEID (dbl), TOTALDOL (dbl), TOTSQFT_EN (dbl), REGIONC
+##   (dbl)
+## Variables: 
+## [1] &quot;DOEID&quot;      &quot;TOTALDOL&quot;   &quot;TOTSQFT_EN&quot; &quot;REGIONC&quot;</code></pre>
+<p>In specifying the design, the <code>variables</code> option was also used to include which variables might be used in analyses. This is optional but can make your object smaller. When printing the design object or looking at the summary, the replicate weight type is re-iterated as <code>Fay's variance method (rho= 0.5) with 96 replicates and MSE variances</code> and the variables are included. No weight or probability summary is included as was done in some other design objects.</p>
+</div>
+</div>
+<div id="jackknife-method" class="section level3 hasAnchor" number="3.2.3">
+<h3><span class="header-section-number">3.2.3</span> Jackknife method<a href="c03-specifying-sample-designs.html#jackknife-method" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>There are three jackknife estimators implemented in {srvyr} - Jackknife 1 (JK1), Jackknife n (JKn), and Jackknife 2 (JK2). The JK1 method can be used for unstratified designs and replicates are created by removing one PSU at a time so the number of replicates is the same as the number of PSUs. If there is no clustering, then the PSU is the ultimate sampling unit (e.g., unit).</p>
+<p>The JKn method is used for stratified designs and requires 2 or more PSUs per stratum. In this case, each replicate is created by deleting one PSU from each stratum so the number of replicates is the number of total PSUs across all strata. The JK2 method is a special case of JKn when there are exactly 2 PSUs sampled per stratum. For variance estimation, scaling constants must also be specified.</p>
+<div id="the-math-6" class="section level4 unnumbered hasAnchor">
+<h4>The math<a href="c03-specifying-sample-designs.html#the-math-6" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>For the JK1 method, the standard error estimate for <span class="math inline">\(\hat{\theta}\)</span> is calculated as:</p>
+<p><span class="math display">\[se(\hat{\theta})=\sqrt{\frac{R-1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}\]</span>
+The JKn method is a bit more complex but the coefficients are generally provided with restricted and public use files. For each replicate, one stratum has a PSU removed and the weights are adjusted by <span class="math inline">\(n_h/(n_h-1)\)</span> where <span class="math inline">\(n_h\)</span> is the number of PSUs in the stratum. The coefficients in other strata are set to 1. Denote the coefficient that results from this process for replicate <span class="math inline">\(r\)</span> as <span class="math inline">\(\alpha_r\)</span> then the standard error estimate for <span class="math inline">\(\hat{\theta}\)</span> is calculated as:</p>
+<p><span class="math display">\[se(\hat{\theta})=\sqrt{\sum_{r=1}^R \left(\alpha_r \hat{\theta}_r-\hat{\theta}\right)^2}\]</span></p>
+</div>
+<div id="the-syntax-6" class="section level4 unnumbered hasAnchor">
+<h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-6" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>To specify the Jackknife method, the type would be <code>JK1</code>, <code>JKn</code>, or <code>JK2</code>. Additionally, the overall multiplier for JK1 is specified with the scale argument, whereas the replicate specific multiplier ($_r) is specified with the rscales argument.</p>
+<p>Consider a case for the JK1 method where the multiplier, <span class="math inline">\((R-1)/R=19/20=0.95\)</span> and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, …, WT20, then the syntax would be</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="c03-specifying-sample-designs.html#cb62-1" aria-hidden="true" tabindex="-1"></a>des_jk1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb62-2"><a href="c03-specifying-sample-designs.html#cb62-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
+<span id="cb62-3"><a href="c03-specifying-sample-designs.html#cb62-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">type=</span><span class="st">&quot;JK1&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>, <span class="at">scale=</span><span class="fl">0.95</span>)</span></code></pre></div>
+<p>Consider a case for the JKn method where <span class="math inline">\(\alpha_r=0.1\)</span> for all replicates and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, …, WT20, then the syntax would be:</p>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="c03-specifying-sample-designs.html#cb63-1" aria-hidden="true" tabindex="-1"></a>des_jkn <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb63-2"><a href="c03-specifying-sample-designs.html#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
+<span id="cb63-3"><a href="c03-specifying-sample-designs.html#cb63-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">type=</span><span class="st">&quot;JKN&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>, <span class="at">rscales=</span><span class="fu">rep</span>(<span class="fl">0.1</span>, <span class="dv">20</span>))</span></code></pre></div>
+</div>
+<div id="example-6" class="section level4 unnumbered hasAnchor">
+<h4>Example<a href="c03-specifying-sample-designs.html#example-6" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>The American Community Survey releases public use microdata with JK1 weights at the person and household level. This example includes data at the household level where the replicate weights are specified as WGTP1, …, WGTP80 and the main weight is WGTP<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>. Using the {tidycensus} package<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a>, data is downloaded from the Census API. This request gets data for each person in each household in two Public Use Microdata Areas (PUMAs) in Durham County, NC<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a>. The variables requested are NP (number of persons in household), BDSP (number of bedrooms), HINCP (household income), and TYPEHUGQ (type of household). By default, several other variables will come along including SERIALNO (a unique identifier for each household), SPORDER (a unique identifier for each person within each household), PUMA, ST (state), person weight (PWGTP), and the household weights (WGTP, WGTP1, …, WGTP80). Filtering to records where SPORDER=1 yields only one record per household and TYPEHUGQ=1 filters to only households and not group quarters.</p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="c03-specifying-sample-designs.html#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidycensus)</span>
+<span id="cb64-2"><a href="c03-specifying-sample-designs.html#cb64-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb64-3"><a href="c03-specifying-sample-designs.html#cb64-3" aria-hidden="true" tabindex="-1"></a>pums_in <span class="ot">&lt;-</span> <span class="fu">get_pums</span>(<span class="at">variables=</span><span class="fu">c</span>(<span class="st">&quot;NP&quot;</span>, <span class="st">&quot;BDSP&quot;</span>, <span class="st">&quot;HINCP&quot;</span>), <span class="at">state=</span><span class="st">&quot;37&quot;</span>, </span>
+<span id="cb64-4"><a href="c03-specifying-sample-designs.html#cb64-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">puma=</span><span class="fu">c</span>(<span class="st">&quot;01301&quot;</span>, <span class="st">&quot;01302&quot;</span>), <span class="at">rep_weights =</span> <span class="st">&quot;housing&quot;</span>, </span>
+<span id="cb64-5"><a href="c03-specifying-sample-designs.html#cb64-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">year=</span><span class="dv">2020</span>, <span class="at">survey=</span><span class="st">&quot;acs5&quot;</span>,</span>
+<span id="cb64-6"><a href="c03-specifying-sample-designs.html#cb64-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">variables_filter=</span><span class="fu">list</span>(<span class="at">SPORDER=</span><span class="dv">1</span>, <span class="at">TYPEHUGQ=</span><span class="dv">1</span>))</span></code></pre></div>
+<pre><code>## Getting data from the 2016-2020 5-year ACS Public Use Microdata Sample</code></pre>
+<pre><code>## Warning: • You have not set a Census API key. Users without a key are limited to 500
+## queries per day and may experience performance limitations.
+## ℹ For best results, get a Census API key at
+## http://api.census.gov/data/key_signup.html and then supply the key to the
+## `census_api_key()` function to use it throughout your tidycensus session.
+## This warning is displayed once per session.</code></pre>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="c03-specifying-sample-designs.html#cb67-1" aria-hidden="true" tabindex="-1"></a>pums_in</span></code></pre></div>
+<pre><code>## # A tibble: 4,853 × 90
+##    SERIALNO  SPORDER    NP  BDSP  HINCP PUMA  ST    TYPEHUGQ  WGTP PWGTP
+##    &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;dbl&gt;
+##  1 20160000…       1     3     4 147600 01301 37    1           24    24
+##  2 20160000…       1     1     2  53800 01301 37    1           24    25
+##  3 20160000…       1     1     2  18000 01301 37    1            8     9
+##  4 20160000…       1     7     5  61900 01301 37    1           41    41
+##  5 20160000…       1     1     4  60000 01301 37    1           62    62
+##  6 20160000…       1     2     3  44400 01302 37    1           10    10
+##  7 20160000…       1     1     3  15600 01302 37    1           19    20
+##  8 20160000…       1     4     5 143000 01301 37    1           21    21
+##  9 20160000…       1     1     3   5000 01302 37    1           29    28
+## 10 20160000…       1     3     4 583000 01301 37    1           11    11
+## # ℹ 4,843 more rows
+## # ℹ 80 more variables: WGTP1 &lt;dbl&gt;, WGTP2 &lt;dbl&gt;, WGTP3 &lt;dbl&gt;,
+## #   WGTP4 &lt;dbl&gt;, WGTP5 &lt;dbl&gt;, WGTP6 &lt;dbl&gt;, WGTP7 &lt;dbl&gt;, WGTP8 &lt;dbl&gt;,
+## #   WGTP9 &lt;dbl&gt;, WGTP10 &lt;dbl&gt;, WGTP11 &lt;dbl&gt;, WGTP12 &lt;dbl&gt;,
+## #   WGTP13 &lt;dbl&gt;, WGTP14 &lt;dbl&gt;, WGTP15 &lt;dbl&gt;, WGTP16 &lt;dbl&gt;,
+## #   WGTP17 &lt;dbl&gt;, WGTP18 &lt;dbl&gt;, WGTP19 &lt;dbl&gt;, WGTP20 &lt;dbl&gt;,
+## #   WGTP21 &lt;dbl&gt;, WGTP22 &lt;dbl&gt;, WGTP23 &lt;dbl&gt;, WGTP24 &lt;dbl&gt;, …</code></pre>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="c03-specifying-sample-designs.html#cb69-1" aria-hidden="true" tabindex="-1"></a>des_acs <span class="ot">&lt;-</span> pums_in <span class="sc">%&gt;%</span></span>
+<span id="cb69-2"><a href="c03-specifying-sample-designs.html#cb69-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WGTP, <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WGTP&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">80</span>),</span>
+<span id="cb69-3"><a href="c03-specifying-sample-designs.html#cb69-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">type=</span><span class="st">&quot;JK1&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>, <span class="at">scale=</span><span class="dv">4</span><span class="sc">/</span><span class="dv">80</span>)</span>
+<span id="cb69-4"><a href="c03-specifying-sample-designs.html#cb69-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-5"><a href="c03-specifying-sample-designs.html#cb69-5" aria-hidden="true" tabindex="-1"></a>des_acs</span></code></pre></div>
+<pre><code>## Call: Called via srvyr
+## Unstratified cluster jacknife (JK1) with 80 replicates and MSE variances.
+## Sampling variables:
+##  - repweights: `WGTP1 + WGTP2 + WGTP3 + WGTP4 + WGTP5 + WGTP6 + WGTP7 + WGTP8 + WGTP9 + WGTP10 + WGTP11 + WGTP12 + WGTP13 + WGTP14 + WGTP15 + WGTP16 + WGTP17 + WGTP18 + WGTP19 + WGTP20 + WGTP21 + WGTP22 + WGTP23 + WGTP24 + WGTP25 + WGTP26 + WGTP27 + WGTP28 + WGTP29 + WGTP30 + WGTP31 + WGTP32 + WGTP33 + WGTP34 + WGTP35 + WGTP36 + WGTP37 + WGTP38 + WGTP39 + WGTP40 + WGTP41 + WGTP42 + WGTP43 + WGTP44 + WGTP45 + WGTP46 + WGTP47 + WGTP48 + WGTP49 + WGTP50 + WGTP51 + WGTP52 + WGTP53 + WGTP54 + WGTP55 + WGTP56 + WGTP57 + \n    WGTP58 + WGTP59 + WGTP60 + WGTP61 + WGTP62 + WGTP63 + WGTP64 + WGTP65 + WGTP66 + WGTP67 + WGTP68 + WGTP69 + WGTP70 + WGTP71 + WGTP72 + WGTP73 + WGTP74 + WGTP75 + WGTP76 + WGTP77 + WGTP78 + WGTP79 + WGTP80`
+##  - weights: WGTP
+## Data variables: SERIALNO (chr), SPORDER (dbl), NP (dbl), BDSP (dbl),
+##   HINCP (dbl), PUMA (chr), ST (chr), TYPEHUGQ (chr), WGTP (dbl), PWGTP
+##   (dbl), WGTP1 (dbl), WGTP2 (dbl), WGTP3 (dbl), WGTP4 (dbl), WGTP5
+##   (dbl), WGTP6 (dbl), WGTP7 (dbl), WGTP8 (dbl), WGTP9 (dbl), WGTP10
+##   (dbl), WGTP11 (dbl), WGTP12 (dbl), WGTP13 (dbl), WGTP14 (dbl), WGTP15
+##   (dbl), WGTP16 (dbl), WGTP17 (dbl), WGTP18 (dbl), WGTP19 (dbl), WGTP20
+##   (dbl), WGTP21 (dbl), WGTP22 (dbl), WGTP23 (dbl), WGTP24 (dbl), WGTP25
+##   (dbl), WGTP26 (dbl), WGTP27 (dbl), WGTP28 (dbl), WGTP29 (dbl), WGTP30
+##   (dbl), WGTP31 (dbl), WGTP32 (dbl), WGTP33 (dbl), WGTP34 (dbl), WGTP35
+##   (dbl), WGTP36 (dbl), WGTP37 (dbl), WGTP38 (dbl), WGTP39 (dbl), WGTP40
+##   (dbl), WGTP41 (dbl), WGTP42 (dbl), WGTP43 (dbl), WGTP44 (dbl), WGTP45
+##   (dbl), WGTP46 (dbl), WGTP47 (dbl), WGTP48 (dbl), WGTP49 (dbl), WGTP50
+##   (dbl), WGTP51 (dbl), WGTP52 (dbl), WGTP53 (dbl), WGTP54 (dbl), WGTP55
+##   (dbl), WGTP56 (dbl), WGTP57 (dbl), WGTP58 (dbl), WGTP59 (dbl), WGTP60
+##   (dbl), WGTP61 (dbl), WGTP62 (dbl), WGTP63 (dbl), WGTP64 (dbl), WGTP65
+##   (dbl), WGTP66 (dbl), WGTP67 (dbl), WGTP68 (dbl), WGTP69 (dbl), WGTP70
+##   (dbl), WGTP71 (dbl), WGTP72 (dbl), WGTP73 (dbl), WGTP74 (dbl), WGTP75
+##   (dbl), WGTP76 (dbl), WGTP77 (dbl), WGTP78 (dbl), WGTP79 (dbl), WGTP80
+##   (dbl)</code></pre>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="c03-specifying-sample-designs.html#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(des_acs)</span></code></pre></div>
+<pre><code>## Call: Called via srvyr
+## Unstratified cluster jacknife (JK1) with 80 replicates and MSE variances.
+## Sampling variables:
+##  - repweights: `WGTP1 + WGTP2 + WGTP3 + WGTP4 + WGTP5 + WGTP6 + WGTP7 + WGTP8 + WGTP9 + WGTP10 + WGTP11 + WGTP12 + WGTP13 + WGTP14 + WGTP15 + WGTP16 + WGTP17 + WGTP18 + WGTP19 + WGTP20 + WGTP21 + WGTP22 + WGTP23 + WGTP24 + WGTP25 + WGTP26 + WGTP27 + WGTP28 + WGTP29 + WGTP30 + WGTP31 + WGTP32 + WGTP33 + WGTP34 + WGTP35 + WGTP36 + WGTP37 + WGTP38 + WGTP39 + WGTP40 + WGTP41 + WGTP42 + WGTP43 + WGTP44 + WGTP45 + WGTP46 + WGTP47 + WGTP48 + WGTP49 + WGTP50 + WGTP51 + WGTP52 + WGTP53 + WGTP54 + WGTP55 + WGTP56 + WGTP57 + \n    WGTP58 + WGTP59 + WGTP60 + WGTP61 + WGTP62 + WGTP63 + WGTP64 + WGTP65 + WGTP66 + WGTP67 + WGTP68 + WGTP69 + WGTP70 + WGTP71 + WGTP72 + WGTP73 + WGTP74 + WGTP75 + WGTP76 + WGTP77 + WGTP78 + WGTP79 + WGTP80`
+##  - weights: WGTP
+## Data variables: SERIALNO (chr), SPORDER (dbl), NP (dbl), BDSP (dbl),
+##   HINCP (dbl), PUMA (chr), ST (chr), TYPEHUGQ (chr), WGTP (dbl), PWGTP
+##   (dbl), WGTP1 (dbl), WGTP2 (dbl), WGTP3 (dbl), WGTP4 (dbl), WGTP5
+##   (dbl), WGTP6 (dbl), WGTP7 (dbl), WGTP8 (dbl), WGTP9 (dbl), WGTP10
+##   (dbl), WGTP11 (dbl), WGTP12 (dbl), WGTP13 (dbl), WGTP14 (dbl), WGTP15
+##   (dbl), WGTP16 (dbl), WGTP17 (dbl), WGTP18 (dbl), WGTP19 (dbl), WGTP20
+##   (dbl), WGTP21 (dbl), WGTP22 (dbl), WGTP23 (dbl), WGTP24 (dbl), WGTP25
+##   (dbl), WGTP26 (dbl), WGTP27 (dbl), WGTP28 (dbl), WGTP29 (dbl), WGTP30
+##   (dbl), WGTP31 (dbl), WGTP32 (dbl), WGTP33 (dbl), WGTP34 (dbl), WGTP35
+##   (dbl), WGTP36 (dbl), WGTP37 (dbl), WGTP38 (dbl), WGTP39 (dbl), WGTP40
+##   (dbl), WGTP41 (dbl), WGTP42 (dbl), WGTP43 (dbl), WGTP44 (dbl), WGTP45
+##   (dbl), WGTP46 (dbl), WGTP47 (dbl), WGTP48 (dbl), WGTP49 (dbl), WGTP50
+##   (dbl), WGTP51 (dbl), WGTP52 (dbl), WGTP53 (dbl), WGTP54 (dbl), WGTP55
+##   (dbl), WGTP56 (dbl), WGTP57 (dbl), WGTP58 (dbl), WGTP59 (dbl), WGTP60
+##   (dbl), WGTP61 (dbl), WGTP62 (dbl), WGTP63 (dbl), WGTP64 (dbl), WGTP65
+##   (dbl), WGTP66 (dbl), WGTP67 (dbl), WGTP68 (dbl), WGTP69 (dbl), WGTP70
+##   (dbl), WGTP71 (dbl), WGTP72 (dbl), WGTP73 (dbl), WGTP74 (dbl), WGTP75
+##   (dbl), WGTP76 (dbl), WGTP77 (dbl), WGTP78 (dbl), WGTP79 (dbl), WGTP80
+##   (dbl)
+## Variables: 
+##  [1] &quot;SERIALNO&quot; &quot;SPORDER&quot;  &quot;NP&quot;       &quot;BDSP&quot;     &quot;HINCP&quot;    &quot;PUMA&quot;    
+##  [7] &quot;ST&quot;       &quot;TYPEHUGQ&quot; &quot;WGTP&quot;     &quot;PWGTP&quot;    &quot;WGTP1&quot;    &quot;WGTP2&quot;   
+## [13] &quot;WGTP3&quot;    &quot;WGTP4&quot;    &quot;WGTP5&quot;    &quot;WGTP6&quot;    &quot;WGTP7&quot;    &quot;WGTP8&quot;   
+## [19] &quot;WGTP9&quot;    &quot;WGTP10&quot;   &quot;WGTP11&quot;   &quot;WGTP12&quot;   &quot;WGTP13&quot;   &quot;WGTP14&quot;  
+## [25] &quot;WGTP15&quot;   &quot;WGTP16&quot;   &quot;WGTP17&quot;   &quot;WGTP18&quot;   &quot;WGTP19&quot;   &quot;WGTP20&quot;  
+## [31] &quot;WGTP21&quot;   &quot;WGTP22&quot;   &quot;WGTP23&quot;   &quot;WGTP24&quot;   &quot;WGTP25&quot;   &quot;WGTP26&quot;  
+## [37] &quot;WGTP27&quot;   &quot;WGTP28&quot;   &quot;WGTP29&quot;   &quot;WGTP30&quot;   &quot;WGTP31&quot;   &quot;WGTP32&quot;  
+## [43] &quot;WGTP33&quot;   &quot;WGTP34&quot;   &quot;WGTP35&quot;   &quot;WGTP36&quot;   &quot;WGTP37&quot;   &quot;WGTP38&quot;  
+## [49] &quot;WGTP39&quot;   &quot;WGTP40&quot;   &quot;WGTP41&quot;   &quot;WGTP42&quot;   &quot;WGTP43&quot;   &quot;WGTP44&quot;  
+## [55] &quot;WGTP45&quot;   &quot;WGTP46&quot;   &quot;WGTP47&quot;   &quot;WGTP48&quot;   &quot;WGTP49&quot;   &quot;WGTP50&quot;  
+## [61] &quot;WGTP51&quot;   &quot;WGTP52&quot;   &quot;WGTP53&quot;   &quot;WGTP54&quot;   &quot;WGTP55&quot;   &quot;WGTP56&quot;  
+## [67] &quot;WGTP57&quot;   &quot;WGTP58&quot;   &quot;WGTP59&quot;   &quot;WGTP60&quot;   &quot;WGTP61&quot;   &quot;WGTP62&quot;  
+## [73] &quot;WGTP63&quot;   &quot;WGTP64&quot;   &quot;WGTP65&quot;   &quot;WGTP66&quot;   &quot;WGTP67&quot;   &quot;WGTP68&quot;  
+## [79] &quot;WGTP69&quot;   &quot;WGTP70&quot;   &quot;WGTP71&quot;   &quot;WGTP72&quot;   &quot;WGTP73&quot;   &quot;WGTP74&quot;  
+## [85] &quot;WGTP75&quot;   &quot;WGTP76&quot;   &quot;WGTP77&quot;   &quot;WGTP78&quot;   &quot;WGTP79&quot;   &quot;WGTP80&quot;</code></pre>
+<p>When printing the design object or looking at the summary, the replicate weight type is re-iterated as <code>Unstratified cluster jacknife (JK1) with 80 replicates and MSE variances</code> and the variables are included. No weight or probability summary is included as was done in some other design objects.</p>
+</div>
+</div>
+<div id="bootstrap-method" class="section level3 hasAnchor" number="3.2.4">
+<h3><span class="header-section-number">3.2.4</span> Bootstrap method<a href="c03-specifying-sample-designs.html#bootstrap-method" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>In bootstrap resampling, replicates are created by selecting random samples of the PSUs with replacement. If there are <span class="math inline">\(M\)</span> PSUs in the sample, then each replicate will be created by selecting a random sample of <span class="math inline">\(M\)</span> PSUs with replacement. Each replicate is created independently and the weights for each replicate are adjusted to reflect the population, generally using the same method as how the analysis weight was adjusted.</p>
+<div id="the-math-7" class="section level4 unnumbered hasAnchor">
+<h4>The math<a href="c03-specifying-sample-designs.html#the-math-7" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>A weighted estimate for the full sample is calculated as <span class="math inline">\(\hat{\theta}\)</span> and then a weighted estimate for each replicate is calculated as <span class="math inline">\(\hat{\theta}_r\)</span> for <span class="math inline">\(R\)</span> replicates. Then the standard error of the estimate is calculated as:</p>
+<p><span class="math display">\[se(\hat{\theta})=\sqrt{\alpha \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}\]</span></p>
+</div>
+<div id="the-syntax-7" class="section level4 unnumbered hasAnchor">
+<h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-7" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>If a dataset had WT0 for the main weight, 20 bootstrap weights indicated WT1, WT2, …, WT20, and <span class="math inline">\(\alpha=.02\)</span>, use the following syntax:</p>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="c03-specifying-sample-designs.html#cb73-1" aria-hidden="true" tabindex="-1"></a>des_bs <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb73-2"><a href="c03-specifying-sample-designs.html#cb73-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
+<span id="cb73-3"><a href="c03-specifying-sample-designs.html#cb73-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">type=</span><span class="st">&quot;bootstrap&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>, <span class="at">scale=</span>.<span class="dv">02</span>)</span></code></pre></div>
+<p>Note that the scale is usually provided in documentation and is a constant, so is not provided as a variable in the tibble.</p>
+</div>
+<div id="example-7" class="section level4 unnumbered hasAnchor">
+<h4>Example<a href="c03-specifying-sample-designs.html#example-7" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Returning to the api example, bootstrap weights were constructed for a one cluster design. 50 replicate weights were created on a dataset <code>apiclus1_slim</code> which has some familiar variables including cds, dnum, fpc, and pw but now additionally includes bootstrap weights pw1, …, pw50. The scale <span class="math inline">\((\alpha)\)</span> is <span class="math inline">\(15/(14*49)=0.02186589\)</span></p>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="c03-specifying-sample-designs.html#cb74-1" aria-hidden="true" tabindex="-1"></a>apiclus1_slim</span></code></pre></div>
+<pre><code>## # A tibble: 183 × 54
+##    cds        dnum   fpc    pw   pw1   pw2   pw3   pw4   pw5   pw6   pw7
+##    &lt;chr&gt;     &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 43693776…    61   757  33.8  33.8     0     0  33.8     0  33.8     0
+##  2 43693776…    61   757  33.8  33.8     0     0  33.8     0  33.8     0
+##  3 43693776…    61   757  33.8  33.8     0     0  33.8     0  33.8     0
+##  4 43693776…    61   757  33.8  33.8     0     0  33.8     0  33.8     0
+##  5 43693776…    61   757  33.8  33.8     0     0  33.8     0  33.8     0
+##  6 43693776…    61   757  33.8  33.8     0     0  33.8     0  33.8     0
+##  7 43693776…    61   757  33.8  33.8     0     0  33.8     0  33.8     0
+##  8 43693776…    61   757  33.8  33.8     0     0  33.8     0  33.8     0
+##  9 43693776…    61   757  33.8  33.8     0     0  33.8     0  33.8     0
+## 10 43693776…    61   757  33.8  33.8     0     0  33.8     0  33.8     0
+## # ℹ 173 more rows
+## # ℹ 43 more variables: pw8 &lt;dbl&gt;, pw9 &lt;dbl&gt;, pw10 &lt;dbl&gt;, pw11 &lt;dbl&gt;,
+## #   pw12 &lt;dbl&gt;, pw13 &lt;dbl&gt;, pw14 &lt;dbl&gt;, pw15 &lt;dbl&gt;, pw16 &lt;dbl&gt;,
+## #   pw17 &lt;dbl&gt;, pw18 &lt;dbl&gt;, pw19 &lt;dbl&gt;, pw20 &lt;dbl&gt;, pw21 &lt;dbl&gt;,
+## #   pw22 &lt;dbl&gt;, pw23 &lt;dbl&gt;, pw24 &lt;dbl&gt;, pw25 &lt;dbl&gt;, pw26 &lt;dbl&gt;,
+## #   pw27 &lt;dbl&gt;, pw28 &lt;dbl&gt;, pw29 &lt;dbl&gt;, pw30 &lt;dbl&gt;, pw31 &lt;dbl&gt;,
+## #   pw32 &lt;dbl&gt;, pw33 &lt;dbl&gt;, pw34 &lt;dbl&gt;, pw35 &lt;dbl&gt;, pw36 &lt;dbl&gt;, …</code></pre>
+<div class="sourceCode" id="cb76"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb76-1"><a href="c03-specifying-sample-designs.html#cb76-1" aria-hidden="true" tabindex="-1"></a>des_api1_bs <span class="ot">&lt;-</span> apiclus1_slim <span class="sc">%&gt;%</span> </span>
+<span id="cb76-2"><a href="c03-specifying-sample-designs.html#cb76-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights=</span>pw, <span class="at">repweights=</span>pw1<span class="sc">:</span>pw50, <span class="at">type=</span><span class="st">&quot;bootstrap&quot;</span>, </span>
+<span id="cb76-3"><a href="c03-specifying-sample-designs.html#cb76-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">scale=</span><span class="fl">0.02186589</span>, <span class="at">mse=</span><span class="cn">TRUE</span>)</span>
+<span id="cb76-4"><a href="c03-specifying-sample-designs.html#cb76-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb76-5"><a href="c03-specifying-sample-designs.html#cb76-5" aria-hidden="true" tabindex="-1"></a>des_api1_bs</span></code></pre></div>
+<pre><code>## Call: Called via srvyr
+## Survey bootstrap with 50 replicates and MSE variances.
+## Sampling variables:
+##  - repweights: `pw1 + pw2 + pw3 + pw4 + pw5 + pw6 + pw7 + pw8 + pw9 + pw10 + pw11 + pw12 + pw13 + pw14 + pw15 + pw16 + pw17 + pw18 + pw19 + pw20 + pw21 + pw22 + pw23 + pw24 + pw25 + pw26 + pw27 + pw28 + pw29 + pw30 + pw31 + pw32 + pw33 + pw34 + pw35 + pw36 + pw37 + pw38 + pw39 + pw40 + pw41 + pw42 + pw43 + pw44 + pw45 + pw46 + pw47 + pw48 + pw49 + pw50`
+##  - weights: pw
+## Data variables: cds (chr), dnum (int), fpc (dbl), pw (dbl), pw1 (dbl),
+##   pw2 (dbl), pw3 (dbl), pw4 (dbl), pw5 (dbl), pw6 (dbl), pw7 (dbl), pw8
+##   (dbl), pw9 (dbl), pw10 (dbl), pw11 (dbl), pw12 (dbl), pw13 (dbl),
+##   pw14 (dbl), pw15 (dbl), pw16 (dbl), pw17 (dbl), pw18 (dbl), pw19
+##   (dbl), pw20 (dbl), pw21 (dbl), pw22 (dbl), pw23 (dbl), pw24 (dbl),
+##   pw25 (dbl), pw26 (dbl), pw27 (dbl), pw28 (dbl), pw29 (dbl), pw30
+##   (dbl), pw31 (dbl), pw32 (dbl), pw33 (dbl), pw34 (dbl), pw35 (dbl),
+##   pw36 (dbl), pw37 (dbl), pw38 (dbl), pw39 (dbl), pw40 (dbl), pw41
+##   (dbl), pw42 (dbl), pw43 (dbl), pw44 (dbl), pw45 (dbl), pw46 (dbl),
+##   pw47 (dbl), pw48 (dbl), pw49 (dbl), pw50 (dbl)</code></pre>
+<div class="sourceCode" id="cb78"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb78-1"><a href="c03-specifying-sample-designs.html#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(des_api1_bs)</span></code></pre></div>
+<pre><code>## Call: Called via srvyr
+## Survey bootstrap with 50 replicates and MSE variances.
+## Sampling variables:
+##  - repweights: `pw1 + pw2 + pw3 + pw4 + pw5 + pw6 + pw7 + pw8 + pw9 + pw10 + pw11 + pw12 + pw13 + pw14 + pw15 + pw16 + pw17 + pw18 + pw19 + pw20 + pw21 + pw22 + pw23 + pw24 + pw25 + pw26 + pw27 + pw28 + pw29 + pw30 + pw31 + pw32 + pw33 + pw34 + pw35 + pw36 + pw37 + pw38 + pw39 + pw40 + pw41 + pw42 + pw43 + pw44 + pw45 + pw46 + pw47 + pw48 + pw49 + pw50`
+##  - weights: pw
+## Data variables: cds (chr), dnum (int), fpc (dbl), pw (dbl), pw1 (dbl),
+##   pw2 (dbl), pw3 (dbl), pw4 (dbl), pw5 (dbl), pw6 (dbl), pw7 (dbl), pw8
+##   (dbl), pw9 (dbl), pw10 (dbl), pw11 (dbl), pw12 (dbl), pw13 (dbl),
+##   pw14 (dbl), pw15 (dbl), pw16 (dbl), pw17 (dbl), pw18 (dbl), pw19
+##   (dbl), pw20 (dbl), pw21 (dbl), pw22 (dbl), pw23 (dbl), pw24 (dbl),
+##   pw25 (dbl), pw26 (dbl), pw27 (dbl), pw28 (dbl), pw29 (dbl), pw30
+##   (dbl), pw31 (dbl), pw32 (dbl), pw33 (dbl), pw34 (dbl), pw35 (dbl),
+##   pw36 (dbl), pw37 (dbl), pw38 (dbl), pw39 (dbl), pw40 (dbl), pw41
+##   (dbl), pw42 (dbl), pw43 (dbl), pw44 (dbl), pw45 (dbl), pw46 (dbl),
+##   pw47 (dbl), pw48 (dbl), pw49 (dbl), pw50 (dbl)
+## Variables: 
+##  [1] &quot;cds&quot;  &quot;dnum&quot; &quot;fpc&quot;  &quot;pw&quot;   &quot;pw1&quot;  &quot;pw2&quot;  &quot;pw3&quot;  &quot;pw4&quot;  &quot;pw5&quot; 
+## [10] &quot;pw6&quot;  &quot;pw7&quot;  &quot;pw8&quot;  &quot;pw9&quot;  &quot;pw10&quot; &quot;pw11&quot; &quot;pw12&quot; &quot;pw13&quot; &quot;pw14&quot;
+## [19] &quot;pw15&quot; &quot;pw16&quot; &quot;pw17&quot; &quot;pw18&quot; &quot;pw19&quot; &quot;pw20&quot; &quot;pw21&quot; &quot;pw22&quot; &quot;pw23&quot;
+## [28] &quot;pw24&quot; &quot;pw25&quot; &quot;pw26&quot; &quot;pw27&quot; &quot;pw28&quot; &quot;pw29&quot; &quot;pw30&quot; &quot;pw31&quot; &quot;pw32&quot;
+## [37] &quot;pw33&quot; &quot;pw34&quot; &quot;pw35&quot; &quot;pw36&quot; &quot;pw37&quot; &quot;pw38&quot; &quot;pw39&quot; &quot;pw40&quot; &quot;pw41&quot;
+## [46] &quot;pw42&quot; &quot;pw43&quot; &quot;pw44&quot; &quot;pw45&quot; &quot;pw46&quot; &quot;pw47&quot; &quot;pw48&quot; &quot;pw49&quot; &quot;pw50&quot;</code></pre>
+<p>As with other replicate design objects, when printing the object or looking at the summary, the replicate weights are provided along with the data variables.</p>
+</div>
+</div>
+</div>
+<div id="und-surv-doc" class="section level2 hasAnchor" number="3.3">
+<h2><span class="header-section-number">3.3</span> Understanding survey design documentation<a href="c03-specifying-sample-designs.html#und-surv-doc" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>SRS, stratified, and clustered designs are the backbone of sampling designs and the features are often combined in one design. Additionally, rather than using SRS for selection, other sampling mechanisms are commonly used such as probability proportional to size (PPS), systematic sampling, or selection with unequal probabilities which are briefly described here. In PPS sampling, a size measure is constructed for each unit - perhaps the population of the PSU or the number of occupied housing units, and then units with larger size measures are more likely to be sampled. Systematic sampling is commonly used to ensure representation across a population. Units are sorted by a feature and then every <span class="math inline">\(k\)</span> units are selected from a random start point so the sample is spread across the population. In addition to PPS, other unequal probabilities of selection may be used. As an example, in a study of establishments that conducts a survey every year, an establishment that recently participated (e.g., participated last year) has a reduced chance of selection in a subsequent round to reduce the burden on the establishment. To learn more about sampling designs, refer to <span class="citation">Valliant, Dever, and Kreuter (<a href="#ref-valliant2013practical" role="doc-biblioref">2013</a>)</span>, <span class="citation">Cox et al. (<a href="#ref-cox2011business" role="doc-biblioref">2011</a>)</span>, <span class="citation">Cochran (<a href="#ref-cochran1977sampling" role="doc-biblioref">1977</a>)</span>, and <span class="citation">Deming (<a href="#ref-deming1991sample" role="doc-biblioref">1991</a>)</span>.</p>
+<p>A common method of sampling is to stratify PSUs, select PSUs within stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step of survey analysis to understand the design and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User’s Guides, methodology, analysis guides, or technical documentation.</p>
+<p>For example, the 2017-2019 National Survey of Family Growth (NSFG)<a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a> had a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units which were stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected via PPS. At the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. At the third stage, housing units were selected within the sampled neighborhoods. At the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on person’s age and sex. The public use file does not include all these levels of selection and instead includes pseudo-strata and pseudo-clusters which are the variables used in R to specify the design. As specified on page 4 of the documentation, the stratum variable is <code>SEST</code>, the cluster variable is <code>SECU</code>, and the weight variable is <code>WGT2017_2019</code>. Thus, to specify this design in R, one would use the following syntax:</p>
+<div class="sourceCode" id="cb80"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb80-1"><a href="c03-specifying-sample-designs.html#cb80-1" aria-hidden="true" tabindex="-1"></a>des_nsfg <span class="ot">&lt;-</span> nsfgdata <span class="sc">%&gt;%</span></span>
+<span id="cb80-2"><a href="c03-specifying-sample-designs.html#cb80-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">ids =</span> SECU, <span class="at">strata =</span> SEST, <span class="at">weights =</span> WGT2017_2019)</span></code></pre></div>
+</div>
+<div id="exercises" class="section level2 hasAnchor" number="3.4">
+<h2><span class="header-section-number">3.4</span> Exercises<a href="c03-specifying-sample-designs.html#exercises" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<!-- For this chapter, the exercises entail reading public documentation to determine how to specify the survey design. While reading the documentation, be on the lookout for description of the weights and the survey design variables or replicate weights. -->
+<ol style="list-style-type: decimal">
+<li>The American National Election Studies (ANES) collect data before and after elections approximately every 4 years around the presidential election cycle. Each year with the data release, a user’s guide is also released<a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a>. What is the syntax for specifying the analysis of the full sample post-election data?</li>
+</ol>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="c03-specifying-sample-designs.html#cb81-1" aria-hidden="true" tabindex="-1"></a>anes_in <span class="ot">&lt;-</span> <span class="fu">read_rds_tsr</span>(<span class="st">&quot;anes_2020.rds&quot;</span>)</span>
+<span id="cb81-2"><a href="c03-specifying-sample-designs.html#cb81-2" aria-hidden="true" tabindex="-1"></a>svy_anes <span class="ot">&lt;-</span> anes_in <span class="sc">%&gt;%</span></span>
+<span id="cb81-3"><a href="c03-specifying-sample-designs.html#cb81-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(weight)</span></code></pre></div>
+<ol start="2" style="list-style-type: decimal">
+<li>The General Social Survey is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook<a href="#fn11" class="footnote-ref" id="fnref11"><sup>11</sup></a> provides examples of setting up syntax in SAS and Stata but not R. How would you specify the design in R?</li>
+</ol>
+<div class="sourceCode" id="cb82"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb82-1"><a href="c03-specifying-sample-designs.html#cb82-1" aria-hidden="true" tabindex="-1"></a>svy_gss <span class="ot">&lt;-</span> gss_data <span class="sc">%&gt;%</span></span>
+<span id="cb82-2"><a href="c03-specifying-sample-designs.html#cb82-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">ids =</span> VPSU_2, <span class="at">strata =</span> VSTRAT_2, <span class="at">weights =</span> WTSSNR_2)</span></code></pre></div>
+
+</div>
+</div>
+<h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-cochran1977sampling" class="csl-entry">
+Cochran, William G. 1977. <em>Sampling Techniques</em>. John Wiley &amp; Sons.
+</div>
+<div id="ref-cox2011business" class="csl-entry">
+Cox, Brenda G, David A Binder, B Nanjamma Chinnappa, Anders Christianson, Michael J Colledge, and Phillip S Kott. 2011. <em>Business Survey Methods</em>. John Wiley &amp; Sons.
+</div>
+<div id="ref-deming1991sample" class="csl-entry">
+Deming, W Edwards. 1991. <em>Sample Design in Business Research</em>. Vol. 23. John Wiley &amp; Sons.
+</div>
+<div id="ref-fuller2011sampling" class="csl-entry">
+Fuller, Wayne A. 2011. <em>Sampling Statistics</em>. John Wiley &amp; Sons.
+</div>
+<div id="ref-levy2013sampling" class="csl-entry">
+Levy, Paul S, and Stanley Lemeshow. 2013. <em>Sampling of Populations: Methods and Applications</em>. John Wiley &amp; Sons.
+</div>
+<div id="ref-sarndal2003model" class="csl-entry">
+Särndal, Carl-Erik, Bengt Swensson, and Jan Wretman. 2003. <em>Model Assisted Survey Sampling</em>. Springer Science &amp; Business Media.
+</div>
+<div id="ref-valliant2013practical" class="csl-entry">
+Valliant, Richard, Jill A Dever, and Frauke Kreuter. 2013. <em>Practical Tools for Designing and Weighting Survey Samples</em>. Vol. 1. Springer.
+</div>
+<div id="ref-wolter2007introduction" class="csl-entry">
+Wolter, Kirk M. 2007. <em>Introduction to Variance Estimation</em>. Vol. 53. Springer.
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="4">
+<li id="fn4"><p>dplyr documentation on tidy-select: <a href="https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html" class="uri">https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html</a><a href="c03-specifying-sample-designs.html#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>Using the 2015 microdata file to compute estimates and standard errors (RSEs): <a href="https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf" class="uri">https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf</a><a href="c03-specifying-sample-designs.html#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn6"><p>American Community Survey 2016-2020 5-Year PUMS File: <a href="https://www2.census.gov/programs-surveys/acs/tech_docs/pums/ACS2016_2020_PUMS_README.pdf" class="uri">https://www2.census.gov/programs-surveys/acs/tech_docs/pums/ACS2016_2020_PUMS_README.pdf</a><a href="c03-specifying-sample-designs.html#fnref6" class="footnote-back">↩︎</a></p></li>
+<li id="fn7"><p>tidycensus package: <a href="https://walker-data.com/tidycensus/" class="uri">https://walker-data.com/tidycensus/</a><a href="c03-specifying-sample-designs.html#fnref7" class="footnote-back">↩︎</a></p></li>
+<li id="fn8"><p>Public Use Microdata Areas in North Carolina: <a href="https://www.census.gov/geographies/reference-maps/2010/geo/2010-pumas/north-carolina.html" class="uri">https://www.census.gov/geographies/reference-maps/2010/geo/2010-pumas/north-carolina.html</a><a href="c03-specifying-sample-designs.html#fnref8" class="footnote-back">↩︎</a></p></li>
+<li id="fn9"><p>2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation - <a href="https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf" class="uri">https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf</a><a href="c03-specifying-sample-designs.html#fnref9" class="footnote-back">↩︎</a></p></li>
+<li id="fn10"><p>ANES 2020 User’s Guide: <a href="https://electionstudies.org/wp-content/uploads/2022/02/anes_timeseries_2020_userguidecodebook_20220210.pdf" class="uri">https://electionstudies.org/wp-content/uploads/2022/02/anes_timeseries_2020_userguidecodebook_20220210.pdf</a><a href="c03-specifying-sample-designs.html#fnref10" class="footnote-back">↩︎</a></p></li>
+<li id="fn11"><p>2016-2020 GSS Panel Codebook Release 1a: <a href="https://gss.norc.org/Documents/codebook/2016-2020%20GSS%20Panel%20Codebook%20-%20R1a.pdf" class="uri">https://gss.norc.org/Documents/codebook/2016-2020%20GSS%20Panel%20Codebook%20-%20R1a.pdf</a><a href="c03-specifying-sample-designs.html#fnref11" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="c02-overview-surveys.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="c04-understanding-survey-data-documentation.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook/js/app.min.js"></script>
+<script src="libs/gitbook/js/clipboard.min.js"></script>
+<script src="libs/gitbook/js/plugin-search.js"></script>
+<script src="libs/gitbook/js/plugin-sharing.js"></script>
+<script src="libs/gitbook/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook/js/jquery.highlight.js"></script>
+<script src="libs/gitbook/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": true,
+"facebook": false,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/yihui/bookdown-crc/edit/master/03-specifying-sample-designs.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["bookdown.pdf", "bookdown.epub"],
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "none"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
