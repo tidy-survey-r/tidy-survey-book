@@ -389,11 +389,11 @@ div.csl-indent {
 <h3><span class="header-section-number">8.2.1</span> Tables<a href="c08-communicating-results.html#tables" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Tables are a great way to provide a large amount of data when you want the individual data points to be read. However, it is important to present tables in a readable format. Numbers should be aligned, and rows and columns should be easy to follow. Using key visualization techniques, we can create tables that are informative and nice to look at. There are many packages that can be used to create easy to read tables (e.g., {kable} + {kableExtra}, {gt}, {gtsummary}, {DT}, {formattable}, {flextable}, {reactable}). We will focus on {gt} and {gtsummary} here, but we encourage you to read up on the others as they may have other components that are helpful for your needs.</p>
 <p>Let’s start by using some of the data we calculated earlier in this book. In Chapter <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a>, we looked at the total electric bill by Census region using the <code>recs</code> data:</p>
-<div class="sourceCode" id="cb250"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb250-1"><a href="c08-communicating-results.html#cb250-1" aria-hidden="true" tabindex="-1"></a>bill_region<span class="ot">&lt;-</span>recs_des <span class="sc">%&gt;%</span> </span>
-<span id="cb250-2"><a href="c08-communicating-results.html#cb250-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span> </span>
-<span id="cb250-3"><a href="c08-communicating-results.html#cb250-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cascade</span>(<span class="at">elec_bill =</span> <span class="fu">survey_total</span>(<span class="sc">!</span><span class="fu">is.na</span>(DOLLAREL)))</span>
-<span id="cb250-4"><a href="c08-communicating-results.html#cb250-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb250-5"><a href="c08-communicating-results.html#cb250-5" aria-hidden="true" tabindex="-1"></a>bill_region</span></code></pre></div>
+<div class="sourceCode" id="cb251"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb251-1"><a href="c08-communicating-results.html#cb251-1" aria-hidden="true" tabindex="-1"></a>bill_region<span class="ot">&lt;-</span>recs_des <span class="sc">%&gt;%</span> </span>
+<span id="cb251-2"><a href="c08-communicating-results.html#cb251-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span> </span>
+<span id="cb251-3"><a href="c08-communicating-results.html#cb251-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cascade</span>(<span class="at">elec_bill =</span> <span class="fu">survey_total</span>(<span class="sc">!</span><span class="fu">is.na</span>(DOLLAREL)))</span>
+<span id="cb251-4"><a href="c08-communicating-results.html#cb251-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb251-5"><a href="c08-communicating-results.html#cb251-5" aria-hidden="true" tabindex="-1"></a>bill_region</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 3
 ##   Region     elec_bill elec_bill_se
 ##   &lt;fct&gt;          &lt;dbl&gt;        &lt;dbl&gt;
@@ -405,22 +405,22 @@ div.csl-indent {
 <p>The native output that R produces may work for initial viewing inside RStudio or when creating basic output with an rMarkdown or Quarto document. However, when viewing these results in other publications such as the print version of this book or for more official dissemination, adjusting the display can make it easier for users to follow.</p>
 <p>There are multiple table styling packages available (e.g., {kable}, {gt}, {formattable}). For this book we will walk through an examples using {gt}.</p>
 <p>Looking at the output from <code>bill_region</code>, there are a couple of items that are probably obvious to fix: (1) the “NA” in Region and (2) the variable names as the column headers. To fix these we can add <code>.fill</code> to the cascade function and adjust the column lables with {gt}:</p>
-<div class="sourceCode" id="cb252"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb252-1"><a href="c08-communicating-results.html#cb252-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
-<span id="cb252-2"><a href="c08-communicating-results.html#cb252-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb252-3"><a href="c08-communicating-results.html#cb252-3" aria-hidden="true" tabindex="-1"></a>bill_region_gt<span class="ot">&lt;-</span>recs_des <span class="sc">%&gt;%</span> </span>
-<span id="cb252-4"><a href="c08-communicating-results.html#cb252-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span> </span>
-<span id="cb252-5"><a href="c08-communicating-results.html#cb252-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cascade</span>(<span class="at">elec_bill =</span> <span class="fu">survey_total</span>(<span class="sc">!</span><span class="fu">is.na</span>(DOLLAREL)),</span>
-<span id="cb252-6"><a href="c08-communicating-results.html#cb252-6" aria-hidden="true" tabindex="-1"></a>          <span class="at">.fill=</span><span class="st">&quot;Total&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb252-7"><a href="c08-communicating-results.html#cb252-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb252-8"><a href="c08-communicating-results.html#cb252-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb252-9"><a href="c08-communicating-results.html#cb252-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">label=</span><span class="st">&quot;Electric Bill (In Dollars)&quot;</span>,</span>
-<span id="cb252-10"><a href="c08-communicating-results.html#cb252-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> <span class="sc">-</span>Region) <span class="sc">%&gt;%</span> </span>
-<span id="cb252-11"><a href="c08-communicating-results.html#cb252-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
-<span id="cb252-12"><a href="c08-communicating-results.html#cb252-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">elec_bill =</span> <span class="st">&quot;Estimate&quot;</span>,</span>
-<span id="cb252-13"><a href="c08-communicating-results.html#cb252-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">elec_bill_se =</span> <span class="st">&quot;(s.e.)&quot;</span></span>
-<span id="cb252-14"><a href="c08-communicating-results.html#cb252-14" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb252-15"><a href="c08-communicating-results.html#cb252-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb252-16"><a href="c08-communicating-results.html#cb252-16" aria-hidden="true" tabindex="-1"></a>bill_region_gt</span></code></pre></div>
+<div class="sourceCode" id="cb253"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb253-1"><a href="c08-communicating-results.html#cb253-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb253-2"><a href="c08-communicating-results.html#cb253-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb253-3"><a href="c08-communicating-results.html#cb253-3" aria-hidden="true" tabindex="-1"></a>bill_region_gt<span class="ot">&lt;-</span>recs_des <span class="sc">%&gt;%</span> </span>
+<span id="cb253-4"><a href="c08-communicating-results.html#cb253-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span> </span>
+<span id="cb253-5"><a href="c08-communicating-results.html#cb253-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cascade</span>(<span class="at">elec_bill =</span> <span class="fu">survey_total</span>(<span class="sc">!</span><span class="fu">is.na</span>(DOLLAREL)),</span>
+<span id="cb253-6"><a href="c08-communicating-results.html#cb253-6" aria-hidden="true" tabindex="-1"></a>          <span class="at">.fill=</span><span class="st">&quot;Total&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb253-7"><a href="c08-communicating-results.html#cb253-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb253-8"><a href="c08-communicating-results.html#cb253-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb253-9"><a href="c08-communicating-results.html#cb253-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">label=</span><span class="st">&quot;Electric Bill (In Dollars)&quot;</span>,</span>
+<span id="cb253-10"><a href="c08-communicating-results.html#cb253-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> <span class="sc">-</span>Region) <span class="sc">%&gt;%</span> </span>
+<span id="cb253-11"><a href="c08-communicating-results.html#cb253-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
+<span id="cb253-12"><a href="c08-communicating-results.html#cb253-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">elec_bill =</span> <span class="st">&quot;Estimate&quot;</span>,</span>
+<span id="cb253-13"><a href="c08-communicating-results.html#cb253-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">elec_bill_se =</span> <span class="st">&quot;(s.e.)&quot;</span></span>
+<span id="cb253-14"><a href="c08-communicating-results.html#cb253-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb253-15"><a href="c08-communicating-results.html#cb253-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb253-16"><a href="c08-communicating-results.html#cb253-16" aria-hidden="true" tabindex="-1"></a>bill_region_gt</span></code></pre></div>
 <div id="ismfkpkdnv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#ismfkpkdnv table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -897,30 +897,30 @@ div.csl-indent {
 </table>
 </div>
 <p>We could also make the data more readable in this table by formatting the columns as currency and adding a double line above the total row:</p>
-<div class="sourceCode" id="cb253"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb253-1"><a href="c08-communicating-results.html#cb253-1" aria-hidden="true" tabindex="-1"></a>bill_region_gt2<span class="ot">&lt;-</span>bill_region_gt <span class="sc">%&gt;%</span> </span>
-<span id="cb253-2"><a href="c08-communicating-results.html#cb253-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_currency</span>(</span>
-<span id="cb253-3"><a href="c08-communicating-results.html#cb253-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> elec_bill,</span>
-<span id="cb253-4"><a href="c08-communicating-results.html#cb253-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">0</span>,</span>
-<span id="cb253-5"><a href="c08-communicating-results.html#cb253-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">currency =</span> <span class="st">&quot;USD&quot;</span></span>
-<span id="cb253-6"><a href="c08-communicating-results.html#cb253-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
-<span id="cb253-7"><a href="c08-communicating-results.html#cb253-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_currency</span>(</span>
-<span id="cb253-8"><a href="c08-communicating-results.html#cb253-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> elec_bill_se,</span>
-<span id="cb253-9"><a href="c08-communicating-results.html#cb253-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">4</span>,</span>
-<span id="cb253-10"><a href="c08-communicating-results.html#cb253-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">currency =</span> <span class="st">&quot;USD&quot;</span></span>
-<span id="cb253-11"><a href="c08-communicating-results.html#cb253-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
-<span id="cb253-12"><a href="c08-communicating-results.html#cb253-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(</span>
-<span id="cb253-13"><a href="c08-communicating-results.html#cb253-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">style =</span> <span class="fu">cell_borders</span>(</span>
-<span id="cb253-14"><a href="c08-communicating-results.html#cb253-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">sides =</span> <span class="fu">c</span>(<span class="st">&quot;top&quot;</span>),</span>
-<span id="cb253-15"><a href="c08-communicating-results.html#cb253-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">style =</span> <span class="st">&quot;double&quot;</span></span>
-<span id="cb253-16"><a href="c08-communicating-results.html#cb253-16" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb253-17"><a href="c08-communicating-results.html#cb253-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_body</span>(</span>
-<span id="cb253-18"><a href="c08-communicating-results.html#cb253-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
-<span id="cb253-19"><a href="c08-communicating-results.html#cb253-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">rows =</span> Region <span class="sc">==</span> <span class="st">&quot;Total&quot;</span></span>
-<span id="cb253-20"><a href="c08-communicating-results.html#cb253-20" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb253-21"><a href="c08-communicating-results.html#cb253-21" aria-hidden="true" tabindex="-1"></a>  ) </span>
-<span id="cb253-22"><a href="c08-communicating-results.html#cb253-22" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb253-23"><a href="c08-communicating-results.html#cb253-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb253-24"><a href="c08-communicating-results.html#cb253-24" aria-hidden="true" tabindex="-1"></a>bill_region_gt2</span></code></pre></div>
+<div class="sourceCode" id="cb254"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb254-1"><a href="c08-communicating-results.html#cb254-1" aria-hidden="true" tabindex="-1"></a>bill_region_gt2<span class="ot">&lt;-</span>bill_region_gt <span class="sc">%&gt;%</span> </span>
+<span id="cb254-2"><a href="c08-communicating-results.html#cb254-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_currency</span>(</span>
+<span id="cb254-3"><a href="c08-communicating-results.html#cb254-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> elec_bill,</span>
+<span id="cb254-4"><a href="c08-communicating-results.html#cb254-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">0</span>,</span>
+<span id="cb254-5"><a href="c08-communicating-results.html#cb254-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">currency =</span> <span class="st">&quot;USD&quot;</span></span>
+<span id="cb254-6"><a href="c08-communicating-results.html#cb254-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb254-7"><a href="c08-communicating-results.html#cb254-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_currency</span>(</span>
+<span id="cb254-8"><a href="c08-communicating-results.html#cb254-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> elec_bill_se,</span>
+<span id="cb254-9"><a href="c08-communicating-results.html#cb254-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">4</span>,</span>
+<span id="cb254-10"><a href="c08-communicating-results.html#cb254-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">currency =</span> <span class="st">&quot;USD&quot;</span></span>
+<span id="cb254-11"><a href="c08-communicating-results.html#cb254-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb254-12"><a href="c08-communicating-results.html#cb254-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(</span>
+<span id="cb254-13"><a href="c08-communicating-results.html#cb254-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">style =</span> <span class="fu">cell_borders</span>(</span>
+<span id="cb254-14"><a href="c08-communicating-results.html#cb254-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">sides =</span> <span class="fu">c</span>(<span class="st">&quot;top&quot;</span>),</span>
+<span id="cb254-15"><a href="c08-communicating-results.html#cb254-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">style =</span> <span class="st">&quot;double&quot;</span></span>
+<span id="cb254-16"><a href="c08-communicating-results.html#cb254-16" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb254-17"><a href="c08-communicating-results.html#cb254-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_body</span>(</span>
+<span id="cb254-18"><a href="c08-communicating-results.html#cb254-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
+<span id="cb254-19"><a href="c08-communicating-results.html#cb254-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">rows =</span> Region <span class="sc">==</span> <span class="st">&quot;Total&quot;</span></span>
+<span id="cb254-20"><a href="c08-communicating-results.html#cb254-20" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb254-21"><a href="c08-communicating-results.html#cb254-21" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb254-22"><a href="c08-communicating-results.html#cb254-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb254-23"><a href="c08-communicating-results.html#cb254-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb254-24"><a href="c08-communicating-results.html#cb254-24" aria-hidden="true" tabindex="-1"></a>bill_region_gt2</span></code></pre></div>
 <div id="zpnruhcqur" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#zpnruhcqur table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -1405,102 +1405,102 @@ div.csl-indent {
 <p>R has many packages for creating compelling and insightful charts. We will focus on {ggplot2}, a member of the {tidyverse}. This package is a powerful, flexible tool for creating a wide range of data visualization.</p>
 <p>{ggplot2} follows the “grammar of graphics,” a framework that incrementally adds layers of chart components. We can customize visual elements such as scales, colors, labels, and annotations to enhance the understanding of data.</p>
 <p>Let’s walk through an example using the ANES 2020 data. As usual, we begin by setting up our survey object:</p>
-<div class="sourceCode" id="cb254"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb254-1"><a href="c08-communicating-results.html#cb254-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(censusapi)</span>
-<span id="cb254-2"><a href="c08-communicating-results.html#cb254-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb254-3"><a href="c08-communicating-results.html#cb254-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb254-4"><a href="c08-communicating-results.html#cb254-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Note that we need a Census key to access the Census API</span></span>
-<span id="cb254-5"><a href="c08-communicating-results.html#cb254-5" aria-hidden="true" tabindex="-1"></a>cps_state_in <span class="ot">&lt;-</span> <span class="fu">getCensus</span>(</span>
-<span id="cb254-6"><a href="c08-communicating-results.html#cb254-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">&quot;cps/basic/nov&quot;</span>,</span>
-<span id="cb254-7"><a href="c08-communicating-results.html#cb254-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">vintage =</span> <span class="dv">2020</span>,</span>
-<span id="cb254-8"><a href="c08-communicating-results.html#cb254-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">region =</span> <span class="st">&quot;state&quot;</span>,</span>
-<span id="cb254-9"><a href="c08-communicating-results.html#cb254-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">vars =</span> <span class="fu">c</span>(<span class="st">&quot;HRHHID&quot;</span>, <span class="st">&quot;HRMONTH&quot;</span>, <span class="st">&quot;HRYEAR4&quot;</span>, <span class="st">&quot;PRTAGE&quot;</span>, <span class="st">&quot;PRCITSHP&quot;</span>, <span class="st">&quot;PWSSWGT&quot;</span>),</span>
-<span id="cb254-10"><a href="c08-communicating-results.html#cb254-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">key =</span> <span class="fu">Sys.getenv</span>(<span class="st">&quot;CENSUS_KEY&quot;</span>)</span>
-<span id="cb254-11"><a href="c08-communicating-results.html#cb254-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb254-12"><a href="c08-communicating-results.html#cb254-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb254-13"><a href="c08-communicating-results.html#cb254-13" aria-hidden="true" tabindex="-1"></a>cps_state <span class="ot">&lt;-</span> cps_state_in <span class="sc">%&gt;%</span></span>
-<span id="cb254-14"><a href="c08-communicating-results.html#cb254-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb254-15"><a href="c08-communicating-results.html#cb254-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="at">.cols =</span> <span class="fu">everything</span>(),</span>
-<span id="cb254-16"><a href="c08-communicating-results.html#cb254-16" aria-hidden="true" tabindex="-1"></a>                <span class="at">.fns =</span> as.numeric))</span>
-<span id="cb254-17"><a href="c08-communicating-results.html#cb254-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb254-18"><a href="c08-communicating-results.html#cb254-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Voting age citizen population</span></span>
-<span id="cb254-19"><a href="c08-communicating-results.html#cb254-19" aria-hidden="true" tabindex="-1"></a>targetpop <span class="ot">&lt;-</span> cps_state <span class="sc">%&gt;%</span></span>
-<span id="cb254-20"><a href="c08-communicating-results.html#cb254-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb254-21"><a href="c08-communicating-results.html#cb254-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(PRTAGE <span class="sc">&gt;=</span> <span class="dv">18</span>,</span>
-<span id="cb254-22"><a href="c08-communicating-results.html#cb254-22" aria-hidden="true" tabindex="-1"></a>         PRCITSHP <span class="sc">%in%</span> (<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb254-23"><a href="c08-communicating-results.html#cb254-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(PWSSWGT) <span class="sc">%&gt;%</span></span>
-<span id="cb254-24"><a href="c08-communicating-results.html#cb254-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>()</span></code></pre></div>
-<div class="sourceCode" id="cb255"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb255-1"><a href="c08-communicating-results.html#cb255-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osfr)</span>
-<span id="cb255-2"><a href="c08-communicating-results.html#cb255-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
-<span id="cb255-3"><a href="c08-communicating-results.html#cb255-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb255-4"><a href="c08-communicating-results.html#cb255-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;helper-fun/helper-functions.R&quot;</span>)</span>
-<span id="cb255-5"><a href="c08-communicating-results.html#cb255-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb255-6"><a href="c08-communicating-results.html#cb255-6" aria-hidden="true" tabindex="-1"></a>anes_in <span class="ot">&lt;-</span></span>
-<span id="cb255-7"><a href="c08-communicating-results.html#cb255-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_rds_tsr</span>(<span class="st">&quot;anes_2020.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb255-8"><a href="c08-communicating-results.html#cb255-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Weight =</span> Weight <span class="sc">/</span> <span class="fu">sum</span>(Weight) <span class="sc">*</span> targetpop)</span>
-<span id="cb255-9"><a href="c08-communicating-results.html#cb255-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb255-10"><a href="c08-communicating-results.html#cb255-10" aria-hidden="true" tabindex="-1"></a>anes_des <span class="ot">&lt;-</span> anes_in <span class="sc">%&gt;%</span></span>
-<span id="cb255-11"><a href="c08-communicating-results.html#cb255-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
-<span id="cb255-12"><a href="c08-communicating-results.html#cb255-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> Weight,</span>
-<span id="cb255-13"><a href="c08-communicating-results.html#cb255-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata =</span> Stratum,</span>
-<span id="cb255-14"><a href="c08-communicating-results.html#cb255-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">ids =</span> VarUnit,</span>
-<span id="cb255-15"><a href="c08-communicating-results.html#cb255-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">nest =</span> <span class="cn">TRUE</span></span>
-<span id="cb255-16"><a href="c08-communicating-results.html#cb255-16" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb255"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb255-1"><a href="c08-communicating-results.html#cb255-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(censusapi)</span>
+<span id="cb255-2"><a href="c08-communicating-results.html#cb255-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb255-3"><a href="c08-communicating-results.html#cb255-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb255-4"><a href="c08-communicating-results.html#cb255-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Note that we need a Census key to access the Census API</span></span>
+<span id="cb255-5"><a href="c08-communicating-results.html#cb255-5" aria-hidden="true" tabindex="-1"></a>cps_state_in <span class="ot">&lt;-</span> <span class="fu">getCensus</span>(</span>
+<span id="cb255-6"><a href="c08-communicating-results.html#cb255-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">&quot;cps/basic/nov&quot;</span>,</span>
+<span id="cb255-7"><a href="c08-communicating-results.html#cb255-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">vintage =</span> <span class="dv">2020</span>,</span>
+<span id="cb255-8"><a href="c08-communicating-results.html#cb255-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">region =</span> <span class="st">&quot;state&quot;</span>,</span>
+<span id="cb255-9"><a href="c08-communicating-results.html#cb255-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">vars =</span> <span class="fu">c</span>(<span class="st">&quot;HRHHID&quot;</span>, <span class="st">&quot;HRMONTH&quot;</span>, <span class="st">&quot;HRYEAR4&quot;</span>, <span class="st">&quot;PRTAGE&quot;</span>, <span class="st">&quot;PRCITSHP&quot;</span>, <span class="st">&quot;PWSSWGT&quot;</span>),</span>
+<span id="cb255-10"><a href="c08-communicating-results.html#cb255-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">key =</span> <span class="fu">Sys.getenv</span>(<span class="st">&quot;CENSUS_KEY&quot;</span>)</span>
+<span id="cb255-11"><a href="c08-communicating-results.html#cb255-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb255-12"><a href="c08-communicating-results.html#cb255-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb255-13"><a href="c08-communicating-results.html#cb255-13" aria-hidden="true" tabindex="-1"></a>cps_state <span class="ot">&lt;-</span> cps_state_in <span class="sc">%&gt;%</span></span>
+<span id="cb255-14"><a href="c08-communicating-results.html#cb255-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb255-15"><a href="c08-communicating-results.html#cb255-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="at">.cols =</span> <span class="fu">everything</span>(),</span>
+<span id="cb255-16"><a href="c08-communicating-results.html#cb255-16" aria-hidden="true" tabindex="-1"></a>                <span class="at">.fns =</span> as.numeric))</span>
+<span id="cb255-17"><a href="c08-communicating-results.html#cb255-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb255-18"><a href="c08-communicating-results.html#cb255-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Voting age citizen population</span></span>
+<span id="cb255-19"><a href="c08-communicating-results.html#cb255-19" aria-hidden="true" tabindex="-1"></a>targetpop <span class="ot">&lt;-</span> cps_state <span class="sc">%&gt;%</span></span>
+<span id="cb255-20"><a href="c08-communicating-results.html#cb255-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb255-21"><a href="c08-communicating-results.html#cb255-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(PRTAGE <span class="sc">&gt;=</span> <span class="dv">18</span>,</span>
+<span id="cb255-22"><a href="c08-communicating-results.html#cb255-22" aria-hidden="true" tabindex="-1"></a>         PRCITSHP <span class="sc">%in%</span> (<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb255-23"><a href="c08-communicating-results.html#cb255-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(PWSSWGT) <span class="sc">%&gt;%</span></span>
+<span id="cb255-24"><a href="c08-communicating-results.html#cb255-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb256"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb256-1"><a href="c08-communicating-results.html#cb256-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osfr)</span>
+<span id="cb256-2"><a href="c08-communicating-results.html#cb256-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
+<span id="cb256-3"><a href="c08-communicating-results.html#cb256-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb256-4"><a href="c08-communicating-results.html#cb256-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;helper-fun/helper-functions.R&quot;</span>)</span>
+<span id="cb256-5"><a href="c08-communicating-results.html#cb256-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb256-6"><a href="c08-communicating-results.html#cb256-6" aria-hidden="true" tabindex="-1"></a>anes_in <span class="ot">&lt;-</span></span>
+<span id="cb256-7"><a href="c08-communicating-results.html#cb256-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_rds_tsr</span>(<span class="st">&quot;anes_2020.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb256-8"><a href="c08-communicating-results.html#cb256-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Weight =</span> Weight <span class="sc">/</span> <span class="fu">sum</span>(Weight) <span class="sc">*</span> targetpop)</span>
+<span id="cb256-9"><a href="c08-communicating-results.html#cb256-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb256-10"><a href="c08-communicating-results.html#cb256-10" aria-hidden="true" tabindex="-1"></a>anes_des <span class="ot">&lt;-</span> anes_in <span class="sc">%&gt;%</span></span>
+<span id="cb256-11"><a href="c08-communicating-results.html#cb256-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
+<span id="cb256-12"><a href="c08-communicating-results.html#cb256-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> Weight,</span>
+<span id="cb256-13"><a href="c08-communicating-results.html#cb256-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata =</span> Stratum,</span>
+<span id="cb256-14"><a href="c08-communicating-results.html#cb256-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">ids =</span> VarUnit,</span>
+<span id="cb256-15"><a href="c08-communicating-results.html#cb256-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">nest =</span> <span class="cn">TRUE</span></span>
+<span id="cb256-16"><a href="c08-communicating-results.html#cb256-16" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 <p>Next, we clean up and subset to our desired data points.</p>
-<div class="sourceCode" id="cb256"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb256-1"><a href="c08-communicating-results.html#cb256-1" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb256-2"><a href="c08-communicating-results.html#cb256-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustGovernmentUsually =</span> <span class="fu">case_when</span>(</span>
-<span id="cb256-3"><a href="c08-communicating-results.html#cb256-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">is.na</span>(TrustGovernment) <span class="sc">~</span> <span class="cn">NA</span>,</span>
-<span id="cb256-4"><a href="c08-communicating-results.html#cb256-4" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> TrustGovernment <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Always&quot;</span>, <span class="st">&quot;Most of the time&quot;</span>)</span>
-<span id="cb256-5"><a href="c08-communicating-results.html#cb256-5" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
-<span id="cb256-6"><a href="c08-communicating-results.html#cb256-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection) <span class="sc">%&gt;%</span></span>
-<span id="cb256-7"><a href="c08-communicating-results.html#cb256-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb256-8"><a href="c08-communicating-results.html#cb256-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">pct_trust =</span> <span class="fu">survey_mean</span>(</span>
-<span id="cb256-9"><a href="c08-communicating-results.html#cb256-9" aria-hidden="true" tabindex="-1"></a>      TrustGovernmentUsually,</span>
-<span id="cb256-10"><a href="c08-communicating-results.html#cb256-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb256-11"><a href="c08-communicating-results.html#cb256-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">proportion =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb256-12"><a href="c08-communicating-results.html#cb256-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span></span>
-<span id="cb256-13"><a href="c08-communicating-results.html#cb256-13" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb256-14"><a href="c08-communicating-results.html#cb256-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb256-15"><a href="c08-communicating-results.html#cb256-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb256-16"><a href="c08-communicating-results.html#cb256-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">complete.cases</span>(.))</span></code></pre></div>
+<div class="sourceCode" id="cb257"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb257-1"><a href="c08-communicating-results.html#cb257-1" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb257-2"><a href="c08-communicating-results.html#cb257-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustGovernmentUsually =</span> <span class="fu">case_when</span>(</span>
+<span id="cb257-3"><a href="c08-communicating-results.html#cb257-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">is.na</span>(TrustGovernment) <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb257-4"><a href="c08-communicating-results.html#cb257-4" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> TrustGovernment <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Always&quot;</span>, <span class="st">&quot;Most of the time&quot;</span>)</span>
+<span id="cb257-5"><a href="c08-communicating-results.html#cb257-5" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb257-6"><a href="c08-communicating-results.html#cb257-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection) <span class="sc">%&gt;%</span></span>
+<span id="cb257-7"><a href="c08-communicating-results.html#cb257-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb257-8"><a href="c08-communicating-results.html#cb257-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">pct_trust =</span> <span class="fu">survey_mean</span>(</span>
+<span id="cb257-9"><a href="c08-communicating-results.html#cb257-9" aria-hidden="true" tabindex="-1"></a>      TrustGovernmentUsually,</span>
+<span id="cb257-10"><a href="c08-communicating-results.html#cb257-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb257-11"><a href="c08-communicating-results.html#cb257-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">proportion =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb257-12"><a href="c08-communicating-results.html#cb257-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span></span>
+<span id="cb257-13"><a href="c08-communicating-results.html#cb257-13" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb257-14"><a href="c08-communicating-results.html#cb257-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb257-15"><a href="c08-communicating-results.html#cb257-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb257-16"><a href="c08-communicating-results.html#cb257-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">complete.cases</span>(.))</span></code></pre></div>
 <p>Now, we can begin creating our chart with {ggplot2}. First, we set up our plot with <code>ggplot()</code>. Next, we state the data points we want to show with <code>aes</code>. Finally, we specify the type of plot with <code>geom_*()</code>, in this case, <code>geom_bar()</code>.</p>
-<div class="sourceCode" id="cb257"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb257-1"><a href="c08-communicating-results.html#cb257-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb257-2"><a href="c08-communicating-results.html#cb257-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb257-3"><a href="c08-communicating-results.html#cb257-3" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb257-4"><a href="c08-communicating-results.html#cb257-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, </span>
-<span id="cb257-5"><a href="c08-communicating-results.html#cb257-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> pct_trust)) <span class="sc">+</span></span>
-<span id="cb257-6"><a href="c08-communicating-results.html#cb257-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb258"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb258-1"><a href="c08-communicating-results.html#cb258-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb258-2"><a href="c08-communicating-results.html#cb258-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb258-3"><a href="c08-communicating-results.html#cb258-3" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
+<span id="cb258-4"><a href="c08-communicating-results.html#cb258-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, </span>
+<span id="cb258-5"><a href="c08-communicating-results.html#cb258-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> pct_trust)) <span class="sc">+</span></span>
+<span id="cb258-6"><a href="c08-communicating-results.html#cb258-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span></code></pre></div>
 <p><img src="bookdown_files/figure-html/results-plot1-1.png" width="672" /></p>
 <p>This is a great starting-off point: we can see that the percentage of people saying they always usually trust the government is higher for those who voted for Trump than Biden or other. What if we wanted to add color to better differentiate the three groups? We can add <code>fill</code> under <code>aesthetics</code>, denoting to use those datapoints to fill in the bars.</p>
-<div class="sourceCode" id="cb258"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb258-1"><a href="c08-communicating-results.html#cb258-1" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb258-2"><a href="c08-communicating-results.html#cb258-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, </span>
-<span id="cb258-3"><a href="c08-communicating-results.html#cb258-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> pct_trust,</span>
-<span id="cb258-4"><a href="c08-communicating-results.html#cb258-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
-<span id="cb258-5"><a href="c08-communicating-results.html#cb258-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb259"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb259-1"><a href="c08-communicating-results.html#cb259-1" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
+<span id="cb259-2"><a href="c08-communicating-results.html#cb259-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, </span>
+<span id="cb259-3"><a href="c08-communicating-results.html#cb259-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> pct_trust,</span>
+<span id="cb259-4"><a href="c08-communicating-results.html#cb259-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
+<span id="cb259-5"><a href="c08-communicating-results.html#cb259-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span></code></pre></div>
 <p><img src="bookdown_files/figure-html/results-plot2-1.png" width="672" /></p>
 <p>Now, let’s say we wanted to follow good statistical analysis practice and include our ranges on our plot. We can add another geom, <code>geom_errorbar()</code>, on top of our <code>geom_bar</code> layer using a plus sign <code>+</code>.</p>
-<div class="sourceCode" id="cb259"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb259-1"><a href="c08-communicating-results.html#cb259-1" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb259-2"><a href="c08-communicating-results.html#cb259-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
-<span id="cb259-3"><a href="c08-communicating-results.html#cb259-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> pct_trust,</span>
-<span id="cb259-4"><a href="c08-communicating-results.html#cb259-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
-<span id="cb259-5"><a href="c08-communicating-results.html#cb259-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
-<span id="cb259-6"><a href="c08-communicating-results.html#cb259-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low, </span>
-<span id="cb259-7"><a href="c08-communicating-results.html#cb259-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">ymax =</span> pct_trust_upp), </span>
-<span id="cb259-8"><a href="c08-communicating-results.html#cb259-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">width =</span> .<span class="dv">2</span>)</span></code></pre></div>
-<p><img src="bookdown_files/figure-html/results-plot3-1.png" width="672" /></p>
-<p>We can continue adding to our plot until we achieve the visualization we’d like to present.</p>
 <div class="sourceCode" id="cb260"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb260-1"><a href="c08-communicating-results.html#cb260-1" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
 <span id="cb260-2"><a href="c08-communicating-results.html#cb260-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
 <span id="cb260-3"><a href="c08-communicating-results.html#cb260-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> pct_trust,</span>
 <span id="cb260-4"><a href="c08-communicating-results.html#cb260-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
 <span id="cb260-5"><a href="c08-communicating-results.html#cb260-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
-<span id="cb260-6"><a href="c08-communicating-results.html#cb260-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low,</span>
-<span id="cb260-7"><a href="c08-communicating-results.html#cb260-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">ymax =</span> pct_trust_upp),</span>
-<span id="cb260-8"><a href="c08-communicating-results.html#cb260-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">width =</span> .<span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb260-9"><a href="c08-communicating-results.html#cb260-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#0b3954&quot;</span>, <span class="st">&quot;#bfd7ea&quot;</span>, <span class="st">&quot;#8d6b94&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb260-10"><a href="c08-communicating-results.html#cb260-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Election choice (2022)&quot;</span>) <span class="sc">+</span></span>
-<span id="cb260-11"><a href="c08-communicating-results.html#cb260-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Usually trust the government&quot;</span>) <span class="sc">+</span></span>
-<span id="cb260-12"><a href="c08-communicating-results.html#cb260-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
-<span id="cb260-13"><a href="c08-communicating-results.html#cb260-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>)</span></code></pre></div>
+<span id="cb260-6"><a href="c08-communicating-results.html#cb260-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low, </span>
+<span id="cb260-7"><a href="c08-communicating-results.html#cb260-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">ymax =</span> pct_trust_upp), </span>
+<span id="cb260-8"><a href="c08-communicating-results.html#cb260-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">width =</span> .<span class="dv">2</span>)</span></code></pre></div>
+<p><img src="bookdown_files/figure-html/results-plot3-1.png" width="672" /></p>
+<p>We can continue adding to our plot until we achieve the visualization we’d like to present.</p>
+<div class="sourceCode" id="cb261"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb261-1"><a href="c08-communicating-results.html#cb261-1" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
+<span id="cb261-2"><a href="c08-communicating-results.html#cb261-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
+<span id="cb261-3"><a href="c08-communicating-results.html#cb261-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> pct_trust,</span>
+<span id="cb261-4"><a href="c08-communicating-results.html#cb261-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
+<span id="cb261-5"><a href="c08-communicating-results.html#cb261-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
+<span id="cb261-6"><a href="c08-communicating-results.html#cb261-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low,</span>
+<span id="cb261-7"><a href="c08-communicating-results.html#cb261-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">ymax =</span> pct_trust_upp),</span>
+<span id="cb261-8"><a href="c08-communicating-results.html#cb261-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">width =</span> .<span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb261-9"><a href="c08-communicating-results.html#cb261-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#0b3954&quot;</span>, <span class="st">&quot;#bfd7ea&quot;</span>, <span class="st">&quot;#8d6b94&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb261-10"><a href="c08-communicating-results.html#cb261-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Election choice (2022)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb261-11"><a href="c08-communicating-results.html#cb261-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Usually trust the government&quot;</span>) <span class="sc">+</span></span>
+<span id="cb261-12"><a href="c08-communicating-results.html#cb261-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb261-13"><a href="c08-communicating-results.html#cb261-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>)</span></code></pre></div>
 <p><img src="bookdown_files/figure-html/results-plot4-1.png" width="672" /></p>
 </div>
 </div>
@@ -1519,9 +1519,9 @@ div.csl-indent {
 <h3><span class="header-section-number">8.3.1</span> Setting Random Number Seeds<a href="c08-communicating-results.html#setting-random-number-seeds" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Many tasks in survey analysis require randomness, such as model training or creating random samples. By default, the random numbers generated by R will change each time we rerun the code, which can make it difficult to reproduce the same results. By “setting the seed”, we can control the randomness and ensure that the random numbers remain consistent whenever we rerun the code. Others can use the same seed value to reproduce our random numbers and achieve the same results, facilitating reproducibility.</p>
 <p>In R, we can use the <code>set.seed()</code> function to control the randomness in our code. Set a seed value by providing an integer to the function:</p>
-<div class="sourceCode" id="cb261"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb261-1"><a href="c08-communicating-results.html#cb261-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">999</span>)</span>
-<span id="cb261-2"><a href="c08-communicating-results.html#cb261-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb261-3"><a href="c08-communicating-results.html#cb261-3" aria-hidden="true" tabindex="-1"></a><span class="fu">runif</span>(<span class="dv">5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb262"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb262-1"><a href="c08-communicating-results.html#cb262-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">999</span>)</span>
+<span id="cb262-2"><a href="c08-communicating-results.html#cb262-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb262-3"><a href="c08-communicating-results.html#cb262-3" aria-hidden="true" tabindex="-1"></a><span class="fu">runif</span>(<span class="dv">5</span>)</span></code></pre></div>
 <p>The <code>runif()</code> function generates five random numbers from a uniform distribution. Since the seed is set to <code>999</code>, running <code>runif()</code> multiple times will always produce the same sequence:</p>
 <pre><code>[1] 0.38907138 0.58306072 0.09466569 0.85263123 0.78674676</code></pre>
 <p>It is important to note that <code>set.seed()</code> should be used <em>before</em> any random number generation.</p>

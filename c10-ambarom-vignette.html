@@ -368,138 +368,138 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 <div id="preparing-files" class="section level2 hasAnchor" number="10.2">
 <h2><span class="header-section-number">10.2</span> Preparing files<a href="c10-ambarom-vignette.html#preparing-files" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Many of the variables are coded as numeric and do not have intuitive variable names so the next step is to create derived variables and analysis ready data. Using the core questionnaire as a codebook, derived variables are created below with factors where relevant with informative names.</p>
-<div class="sourceCode" id="cb327"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb327-1"><a href="c10-ambarom-vignette.html#cb327-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb327-2"><a href="c10-ambarom-vignette.html#cb327-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
-<span id="cb327-3"><a href="c10-ambarom-vignette.html#cb327-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code></pre></div>
+<div class="sourceCode" id="cb328"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb328-1"><a href="c10-ambarom-vignette.html#cb328-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb328-2"><a href="c10-ambarom-vignette.html#cb328-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
+<span id="cb328-3"><a href="c10-ambarom-vignette.html#cb328-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code></pre></div>
 <pre><code>## Linking to GEOS 3.10.2, GDAL 3.4.2, PROJ 8.2.1; sf_use_s2() is TRUE</code></pre>
-<div class="sourceCode" id="cb329"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb329-1"><a href="c10-ambarom-vignette.html#cb329-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth) <span class="co">#getting world maps</span></span></code></pre></div>
+<div class="sourceCode" id="cb330"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb330-1"><a href="c10-ambarom-vignette.html#cb330-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth) <span class="co">#getting world maps</span></span></code></pre></div>
 <pre><code>## The legacy packages maptools, rgdal, and rgeos, underpinning this package
 ## will retire shortly. Please refer to R-spatial evolution reports on
 ## https://r-spatial.org/r/2023/05/15/evolution4.html for details.
 ## This package is now running under evolution status 0</code></pre>
 <pre><code>## Support for Spatial objects (`sp`) will be deprecated in {rnaturalearth} and will be removed in a future release of the package. Please use `sf` objects with {rnaturalearth}. For example: `ne_download(returnclass = &#39;sf&#39;)`</code></pre>
-<div class="sourceCode" id="cb332"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb332-1"><a href="c10-ambarom-vignette.html#cb332-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearthdata)</span></code></pre></div>
+<div class="sourceCode" id="cb333"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb333-1"><a href="c10-ambarom-vignette.html#cb333-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearthdata)</span></code></pre></div>
 <pre><code>## 
 ## Attaching package: &#39;rnaturalearthdata&#39;</code></pre>
 <pre><code>## The following object is masked from &#39;package:rnaturalearth&#39;:
 ## 
 ##     countries110</code></pre>
-<div class="sourceCode" id="cb335"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb335-1"><a href="c10-ambarom-vignette.html#cb335-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
-<span id="cb335-2"><a href="c10-ambarom-vignette.html#cb335-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggpattern)</span></code></pre></div>
-<div class="sourceCode" id="cb336"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb336-1"><a href="c10-ambarom-vignette.html#cb336-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osfr)</span>
-<span id="cb336-2"><a href="c10-ambarom-vignette.html#cb336-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;helper-fun/helper-functions.R&quot;</span>)</span>
-<span id="cb336-3"><a href="c10-ambarom-vignette.html#cb336-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb336-4"><a href="c10-ambarom-vignette.html#cb336-4" aria-hidden="true" tabindex="-1"></a>ambarom_in <span class="ot">&lt;-</span> <span class="fu">read_rds_tsr</span>(<span class="st">&quot;lapop_2021.rds&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb337"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb337-1"><a href="c10-ambarom-vignette.html#cb337-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="ot">&lt;-</span> ambarom_in <span class="sc">%&gt;%</span></span>
-<span id="cb337-2"><a href="c10-ambarom-vignette.html#cb337-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb337-3"><a href="c10-ambarom-vignette.html#cb337-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Country=</span><span class="fu">factor</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-4"><a href="c10-ambarom-vignette.html#cb337-4" aria-hidden="true" tabindex="-1"></a>      pais,</span>
-<span id="cb337-5"><a href="c10-ambarom-vignette.html#cb337-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Mexico&quot;</span>,</span>
-<span id="cb337-6"><a href="c10-ambarom-vignette.html#cb337-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Guatemala&quot;</span>,</span>
-<span id="cb337-7"><a href="c10-ambarom-vignette.html#cb337-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;El Salvador&quot;</span>,</span>
-<span id="cb337-8"><a href="c10-ambarom-vignette.html#cb337-8" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Honduras&quot;</span>,</span>
-<span id="cb337-9"><a href="c10-ambarom-vignette.html#cb337-9" aria-hidden="true" tabindex="-1"></a>      <span class="dv">5</span><span class="sc">~</span><span class="st">&quot;Nicaragua&quot;</span>,</span>
-<span id="cb337-10"><a href="c10-ambarom-vignette.html#cb337-10" aria-hidden="true" tabindex="-1"></a>      <span class="dv">6</span><span class="sc">~</span><span class="st">&quot;Costa Rica&quot;</span>,</span>
-<span id="cb337-11"><a href="c10-ambarom-vignette.html#cb337-11" aria-hidden="true" tabindex="-1"></a>      <span class="dv">7</span><span class="sc">~</span><span class="st">&quot;Panama&quot;</span>,</span>
-<span id="cb337-12"><a href="c10-ambarom-vignette.html#cb337-12" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span><span class="sc">~</span><span class="st">&quot;Colombia&quot;</span>,</span>
-<span id="cb337-13"><a href="c10-ambarom-vignette.html#cb337-13" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span><span class="sc">~</span><span class="st">&quot;Ecuador&quot;</span>,</span>
-<span id="cb337-14"><a href="c10-ambarom-vignette.html#cb337-14" aria-hidden="true" tabindex="-1"></a>      <span class="dv">10</span><span class="sc">~</span><span class="st">&quot;Bolivia&quot;</span>,</span>
-<span id="cb337-15"><a href="c10-ambarom-vignette.html#cb337-15" aria-hidden="true" tabindex="-1"></a>      <span class="dv">11</span><span class="sc">~</span><span class="st">&quot;Peru&quot;</span>,</span>
-<span id="cb337-16"><a href="c10-ambarom-vignette.html#cb337-16" aria-hidden="true" tabindex="-1"></a>      <span class="dv">12</span><span class="sc">~</span><span class="st">&quot;Paraguay&quot;</span>,</span>
-<span id="cb337-17"><a href="c10-ambarom-vignette.html#cb337-17" aria-hidden="true" tabindex="-1"></a>      <span class="dv">13</span><span class="sc">~</span><span class="st">&quot;Chile&quot;</span>,</span>
-<span id="cb337-18"><a href="c10-ambarom-vignette.html#cb337-18" aria-hidden="true" tabindex="-1"></a>      <span class="dv">14</span><span class="sc">~</span><span class="st">&quot;Uruguay&quot;</span>,</span>
-<span id="cb337-19"><a href="c10-ambarom-vignette.html#cb337-19" aria-hidden="true" tabindex="-1"></a>      <span class="dv">15</span><span class="sc">~</span><span class="st">&quot;Brazil&quot;</span>,</span>
-<span id="cb337-20"><a href="c10-ambarom-vignette.html#cb337-20" aria-hidden="true" tabindex="-1"></a>      <span class="dv">17</span><span class="sc">~</span><span class="st">&quot;Argentina&quot;</span>,</span>
-<span id="cb337-21"><a href="c10-ambarom-vignette.html#cb337-21" aria-hidden="true" tabindex="-1"></a>      <span class="dv">21</span><span class="sc">~</span><span class="st">&quot;Dominican Republic&quot;</span>,</span>
-<span id="cb337-22"><a href="c10-ambarom-vignette.html#cb337-22" aria-hidden="true" tabindex="-1"></a>      <span class="dv">22</span><span class="sc">~</span><span class="st">&quot;Haiti&quot;</span>,</span>
-<span id="cb337-23"><a href="c10-ambarom-vignette.html#cb337-23" aria-hidden="true" tabindex="-1"></a>      <span class="dv">23</span><span class="sc">~</span><span class="st">&quot;Jamaica&quot;</span>,</span>
-<span id="cb337-24"><a href="c10-ambarom-vignette.html#cb337-24" aria-hidden="true" tabindex="-1"></a>      <span class="dv">24</span><span class="sc">~</span><span class="st">&quot;Guyana&quot;</span>,</span>
-<span id="cb337-25"><a href="c10-ambarom-vignette.html#cb337-25" aria-hidden="true" tabindex="-1"></a>      <span class="dv">40</span><span class="sc">~</span><span class="st">&quot;United States&quot;</span>,</span>
-<span id="cb337-26"><a href="c10-ambarom-vignette.html#cb337-26" aria-hidden="true" tabindex="-1"></a>      <span class="dv">41</span><span class="sc">~</span><span class="st">&quot;Canada&quot;</span></span>
-<span id="cb337-27"><a href="c10-ambarom-vignette.html#cb337-27" aria-hidden="true" tabindex="-1"></a>    )),</span>
-<span id="cb337-28"><a href="c10-ambarom-vignette.html#cb337-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">Gender=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-29"><a href="c10-ambarom-vignette.html#cb337-29" aria-hidden="true" tabindex="-1"></a>      q1tb,</span>
-<span id="cb337-30"><a href="c10-ambarom-vignette.html#cb337-30" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Male&quot;</span>,</span>
-<span id="cb337-31"><a href="c10-ambarom-vignette.html#cb337-31" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Female&quot;</span>,</span>
-<span id="cb337-32"><a href="c10-ambarom-vignette.html#cb337-32" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Other&quot;</span></span>
-<span id="cb337-33"><a href="c10-ambarom-vignette.html#cb337-33" aria-hidden="true" tabindex="-1"></a>    ), q1tb, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
-<span id="cb337-34"><a href="c10-ambarom-vignette.html#cb337-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">CovidWorry=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-35"><a href="c10-ambarom-vignette.html#cb337-35" aria-hidden="true" tabindex="-1"></a>      covid2at,</span>
-<span id="cb337-36"><a href="c10-ambarom-vignette.html#cb337-36" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Very worried&quot;</span>,</span>
-<span id="cb337-37"><a href="c10-ambarom-vignette.html#cb337-37" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Somewhat worried&quot;</span>,</span>
-<span id="cb337-38"><a href="c10-ambarom-vignette.html#cb337-38" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;A little worried&quot;</span>,</span>
-<span id="cb337-39"><a href="c10-ambarom-vignette.html#cb337-39" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Not worried at all&quot;</span></span>
-<span id="cb337-40"><a href="c10-ambarom-vignette.html#cb337-40" aria-hidden="true" tabindex="-1"></a>    ), covid2at, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
-<span id="cb337-41"><a href="c10-ambarom-vignette.html#cb337-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">EconSituation=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-42"><a href="c10-ambarom-vignette.html#cb337-42" aria-hidden="true" tabindex="-1"></a>      idio2,</span>
-<span id="cb337-43"><a href="c10-ambarom-vignette.html#cb337-43" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Better&quot;</span>,</span>
-<span id="cb337-44"><a href="c10-ambarom-vignette.html#cb337-44" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Same&quot;</span>,</span>
-<span id="cb337-45"><a href="c10-ambarom-vignette.html#cb337-45" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Worse&quot;</span></span>
-<span id="cb337-46"><a href="c10-ambarom-vignette.html#cb337-46" aria-hidden="true" tabindex="-1"></a>    ), idio2, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
-<span id="cb337-47"><a href="c10-ambarom-vignette.html#cb337-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">EconSituationWorse_Reason=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-48"><a href="c10-ambarom-vignette.html#cb337-48" aria-hidden="true" tabindex="-1"></a>      idio2cov,</span>
-<span id="cb337-49"><a href="c10-ambarom-vignette.html#cb337-49" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Coronavirus&quot;</span>,</span>
-<span id="cb337-50"><a href="c10-ambarom-vignette.html#cb337-50" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Another reason&quot;</span></span>
-<span id="cb337-51"><a href="c10-ambarom-vignette.html#cb337-51" aria-hidden="true" tabindex="-1"></a>    ), idio2cov, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
-<span id="cb337-52"><a href="c10-ambarom-vignette.html#cb337-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">CommunityTrustworthy=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-53"><a href="c10-ambarom-vignette.html#cb337-53" aria-hidden="true" tabindex="-1"></a>      it1,</span>
-<span id="cb337-54"><a href="c10-ambarom-vignette.html#cb337-54" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Very trustworthy&quot;</span>,</span>
-<span id="cb337-55"><a href="c10-ambarom-vignette.html#cb337-55" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Somewhat trustworthy&quot;</span>,</span>
-<span id="cb337-56"><a href="c10-ambarom-vignette.html#cb337-56" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Not very trustworthy&quot;</span>,</span>
-<span id="cb337-57"><a href="c10-ambarom-vignette.html#cb337-57" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Untrustworthy&quot;</span></span>
-<span id="cb337-58"><a href="c10-ambarom-vignette.html#cb337-58" aria-hidden="true" tabindex="-1"></a>    ), it1, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
-<span id="cb337-59"><a href="c10-ambarom-vignette.html#cb337-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">CoupCorruption=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-60"><a href="c10-ambarom-vignette.html#cb337-60" aria-hidden="true" tabindex="-1"></a>      jc13,</span>
-<span id="cb337-61"><a href="c10-ambarom-vignette.html#cb337-61" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Justified&quot;</span>,</span>
-<span id="cb337-62"><a href="c10-ambarom-vignette.html#cb337-62" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Not justified&quot;</span></span>
-<span id="cb337-63"><a href="c10-ambarom-vignette.html#cb337-63" aria-hidden="true" tabindex="-1"></a>    ), jc13, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
-<span id="cb337-64"><a href="c10-ambarom-vignette.html#cb337-64" aria-hidden="true" tabindex="-1"></a>    <span class="at">LeaderApproval=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-65"><a href="c10-ambarom-vignette.html#cb337-65" aria-hidden="true" tabindex="-1"></a>      m1,</span>
-<span id="cb337-66"><a href="c10-ambarom-vignette.html#cb337-66" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Very good&quot;</span>,</span>
-<span id="cb337-67"><a href="c10-ambarom-vignette.html#cb337-67" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Good&quot;</span>,</span>
-<span id="cb337-68"><a href="c10-ambarom-vignette.html#cb337-68" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Neither good nor bad (fair)&quot;</span>,</span>
-<span id="cb337-69"><a href="c10-ambarom-vignette.html#cb337-69" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Bad&quot;</span>,</span>
-<span id="cb337-70"><a href="c10-ambarom-vignette.html#cb337-70" aria-hidden="true" tabindex="-1"></a>      <span class="dv">5</span><span class="sc">~</span><span class="st">&quot;Very bad&quot;</span></span>
-<span id="cb337-71"><a href="c10-ambarom-vignette.html#cb337-71" aria-hidden="true" tabindex="-1"></a>    ), m1, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
-<span id="cb337-72"><a href="c10-ambarom-vignette.html#cb337-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">Employment=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-73"><a href="c10-ambarom-vignette.html#cb337-73" aria-hidden="true" tabindex="-1"></a>      ocup4a,</span>
-<span id="cb337-74"><a href="c10-ambarom-vignette.html#cb337-74" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)<span class="sc">~</span><span class="st">&quot;Working&quot;</span>,</span>
-<span id="cb337-75"><a href="c10-ambarom-vignette.html#cb337-75" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Looking for a job&quot;</span>,</span>
-<span id="cb337-76"><a href="c10-ambarom-vignette.html#cb337-76" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Student&quot;</span>,</span>
-<span id="cb337-77"><a href="c10-ambarom-vignette.html#cb337-77" aria-hidden="true" tabindex="-1"></a>      <span class="dv">5</span><span class="sc">~</span><span class="st">&quot;Homemaker&quot;</span>,</span>
-<span id="cb337-78"><a href="c10-ambarom-vignette.html#cb337-78" aria-hidden="true" tabindex="-1"></a>      <span class="dv">6</span><span class="sc">~</span><span class="st">&quot;Retired or disabled&quot;</span>,</span>
-<span id="cb337-79"><a href="c10-ambarom-vignette.html#cb337-79" aria-hidden="true" tabindex="-1"></a>      <span class="dv">7</span><span class="sc">~</span><span class="st">&quot;Not working, not looking for job&quot;</span></span>
-<span id="cb337-80"><a href="c10-ambarom-vignette.html#cb337-80" aria-hidden="true" tabindex="-1"></a>    ), ocup4a, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
-<span id="cb337-81"><a href="c10-ambarom-vignette.html#cb337-81" aria-hidden="true" tabindex="-1"></a>     <span class="at">IntentionMigrate=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-82"><a href="c10-ambarom-vignette.html#cb337-82" aria-hidden="true" tabindex="-1"></a>      q14,</span>
-<span id="cb337-83"><a href="c10-ambarom-vignette.html#cb337-83" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Yes&quot;</span>,</span>
-<span id="cb337-84"><a href="c10-ambarom-vignette.html#cb337-84" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;No&quot;</span></span>
-<span id="cb337-85"><a href="c10-ambarom-vignette.html#cb337-85" aria-hidden="true" tabindex="-1"></a>    ), q14, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
-<span id="cb337-86"><a href="c10-ambarom-vignette.html#cb337-86" aria-hidden="true" tabindex="-1"></a>    <span class="at">NewsFrequency=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
-<span id="cb337-87"><a href="c10-ambarom-vignette.html#cb337-87" aria-hidden="true" tabindex="-1"></a>      gi0n,</span>
-<span id="cb337-88"><a href="c10-ambarom-vignette.html#cb337-88" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Daily&quot;</span>,</span>
-<span id="cb337-89"><a href="c10-ambarom-vignette.html#cb337-89" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Few times a week&quot;</span>,</span>
-<span id="cb337-90"><a href="c10-ambarom-vignette.html#cb337-90" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Few times a month&quot;</span>,</span>
-<span id="cb337-91"><a href="c10-ambarom-vignette.html#cb337-91" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Few times a year&quot;</span>,</span>
-<span id="cb337-92"><a href="c10-ambarom-vignette.html#cb337-92" aria-hidden="true" tabindex="-1"></a>      <span class="dv">5</span><span class="sc">~</span><span class="st">&quot;Never&quot;</span></span>
-<span id="cb337-93"><a href="c10-ambarom-vignette.html#cb337-93" aria-hidden="true" tabindex="-1"></a>    ), gi0n, <span class="at">.na_rm=</span><span class="cn">FALSE</span>)</span>
-<span id="cb337-94"><a href="c10-ambarom-vignette.html#cb337-94" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb337-95"><a href="c10-ambarom-vignette.html#cb337-95" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
-<span id="cb337-96"><a href="c10-ambarom-vignette.html#cb337-96" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_NotInSchool=</span>covidedu1_1,</span>
-<span id="cb337-97"><a href="c10-ambarom-vignette.html#cb337-97" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_NormalSchool=</span>covidedu1_2,</span>
-<span id="cb337-98"><a href="c10-ambarom-vignette.html#cb337-98" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_VirtualSchool=</span>covidedu1_3,</span>
-<span id="cb337-99"><a href="c10-ambarom-vignette.html#cb337-99" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_Hybrid=</span>covidedu1_4,</span>
-<span id="cb337-100"><a href="c10-ambarom-vignette.html#cb337-100" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_NoSchool=</span>covidedu1_5,</span>
-<span id="cb337-101"><a href="c10-ambarom-vignette.html#cb337-101" aria-hidden="true" tabindex="-1"></a>    <span class="at">Age=</span>q2,</span>
-<span id="cb337-102"><a href="c10-ambarom-vignette.html#cb337-102" aria-hidden="true" tabindex="-1"></a>    <span class="at">HHSize=</span>q12c,</span>
-<span id="cb337-103"><a href="c10-ambarom-vignette.html#cb337-103" aria-hidden="true" tabindex="-1"></a>    <span class="at">HHChildren=</span>q12bn,</span>
-<span id="cb337-104"><a href="c10-ambarom-vignette.html#cb337-104" aria-hidden="true" tabindex="-1"></a>    <span class="at">ComputerTablet=</span>r15,</span>
-<span id="cb337-105"><a href="c10-ambarom-vignette.html#cb337-105" aria-hidden="true" tabindex="-1"></a>    <span class="at">BroadbandInternet=</span>r18n,</span>
-<span id="cb337-106"><a href="c10-ambarom-vignette.html#cb337-106" aria-hidden="true" tabindex="-1"></a>    <span class="at">Internet=</span>r18</span>
-<span id="cb337-107"><a href="c10-ambarom-vignette.html#cb337-107" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb337-108"><a href="c10-ambarom-vignette.html#cb337-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb337-109"><a href="c10-ambarom-vignette.html#cb337-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb337-110"><a href="c10-ambarom-vignette.html#cb337-110" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(Country, pais) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n=</span><span class="dv">22</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb336"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb336-1"><a href="c10-ambarom-vignette.html#cb336-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb336-2"><a href="c10-ambarom-vignette.html#cb336-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggpattern)</span></code></pre></div>
+<div class="sourceCode" id="cb337"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb337-1"><a href="c10-ambarom-vignette.html#cb337-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osfr)</span>
+<span id="cb337-2"><a href="c10-ambarom-vignette.html#cb337-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;helper-fun/helper-functions.R&quot;</span>)</span>
+<span id="cb337-3"><a href="c10-ambarom-vignette.html#cb337-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb337-4"><a href="c10-ambarom-vignette.html#cb337-4" aria-hidden="true" tabindex="-1"></a>ambarom_in <span class="ot">&lt;-</span> <span class="fu">read_rds_tsr</span>(<span class="st">&quot;lapop_2021.rds&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb338"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb338-1"><a href="c10-ambarom-vignette.html#cb338-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="ot">&lt;-</span> ambarom_in <span class="sc">%&gt;%</span></span>
+<span id="cb338-2"><a href="c10-ambarom-vignette.html#cb338-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb338-3"><a href="c10-ambarom-vignette.html#cb338-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Country=</span><span class="fu">factor</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-4"><a href="c10-ambarom-vignette.html#cb338-4" aria-hidden="true" tabindex="-1"></a>      pais,</span>
+<span id="cb338-5"><a href="c10-ambarom-vignette.html#cb338-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Mexico&quot;</span>,</span>
+<span id="cb338-6"><a href="c10-ambarom-vignette.html#cb338-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Guatemala&quot;</span>,</span>
+<span id="cb338-7"><a href="c10-ambarom-vignette.html#cb338-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;El Salvador&quot;</span>,</span>
+<span id="cb338-8"><a href="c10-ambarom-vignette.html#cb338-8" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Honduras&quot;</span>,</span>
+<span id="cb338-9"><a href="c10-ambarom-vignette.html#cb338-9" aria-hidden="true" tabindex="-1"></a>      <span class="dv">5</span><span class="sc">~</span><span class="st">&quot;Nicaragua&quot;</span>,</span>
+<span id="cb338-10"><a href="c10-ambarom-vignette.html#cb338-10" aria-hidden="true" tabindex="-1"></a>      <span class="dv">6</span><span class="sc">~</span><span class="st">&quot;Costa Rica&quot;</span>,</span>
+<span id="cb338-11"><a href="c10-ambarom-vignette.html#cb338-11" aria-hidden="true" tabindex="-1"></a>      <span class="dv">7</span><span class="sc">~</span><span class="st">&quot;Panama&quot;</span>,</span>
+<span id="cb338-12"><a href="c10-ambarom-vignette.html#cb338-12" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span><span class="sc">~</span><span class="st">&quot;Colombia&quot;</span>,</span>
+<span id="cb338-13"><a href="c10-ambarom-vignette.html#cb338-13" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span><span class="sc">~</span><span class="st">&quot;Ecuador&quot;</span>,</span>
+<span id="cb338-14"><a href="c10-ambarom-vignette.html#cb338-14" aria-hidden="true" tabindex="-1"></a>      <span class="dv">10</span><span class="sc">~</span><span class="st">&quot;Bolivia&quot;</span>,</span>
+<span id="cb338-15"><a href="c10-ambarom-vignette.html#cb338-15" aria-hidden="true" tabindex="-1"></a>      <span class="dv">11</span><span class="sc">~</span><span class="st">&quot;Peru&quot;</span>,</span>
+<span id="cb338-16"><a href="c10-ambarom-vignette.html#cb338-16" aria-hidden="true" tabindex="-1"></a>      <span class="dv">12</span><span class="sc">~</span><span class="st">&quot;Paraguay&quot;</span>,</span>
+<span id="cb338-17"><a href="c10-ambarom-vignette.html#cb338-17" aria-hidden="true" tabindex="-1"></a>      <span class="dv">13</span><span class="sc">~</span><span class="st">&quot;Chile&quot;</span>,</span>
+<span id="cb338-18"><a href="c10-ambarom-vignette.html#cb338-18" aria-hidden="true" tabindex="-1"></a>      <span class="dv">14</span><span class="sc">~</span><span class="st">&quot;Uruguay&quot;</span>,</span>
+<span id="cb338-19"><a href="c10-ambarom-vignette.html#cb338-19" aria-hidden="true" tabindex="-1"></a>      <span class="dv">15</span><span class="sc">~</span><span class="st">&quot;Brazil&quot;</span>,</span>
+<span id="cb338-20"><a href="c10-ambarom-vignette.html#cb338-20" aria-hidden="true" tabindex="-1"></a>      <span class="dv">17</span><span class="sc">~</span><span class="st">&quot;Argentina&quot;</span>,</span>
+<span id="cb338-21"><a href="c10-ambarom-vignette.html#cb338-21" aria-hidden="true" tabindex="-1"></a>      <span class="dv">21</span><span class="sc">~</span><span class="st">&quot;Dominican Republic&quot;</span>,</span>
+<span id="cb338-22"><a href="c10-ambarom-vignette.html#cb338-22" aria-hidden="true" tabindex="-1"></a>      <span class="dv">22</span><span class="sc">~</span><span class="st">&quot;Haiti&quot;</span>,</span>
+<span id="cb338-23"><a href="c10-ambarom-vignette.html#cb338-23" aria-hidden="true" tabindex="-1"></a>      <span class="dv">23</span><span class="sc">~</span><span class="st">&quot;Jamaica&quot;</span>,</span>
+<span id="cb338-24"><a href="c10-ambarom-vignette.html#cb338-24" aria-hidden="true" tabindex="-1"></a>      <span class="dv">24</span><span class="sc">~</span><span class="st">&quot;Guyana&quot;</span>,</span>
+<span id="cb338-25"><a href="c10-ambarom-vignette.html#cb338-25" aria-hidden="true" tabindex="-1"></a>      <span class="dv">40</span><span class="sc">~</span><span class="st">&quot;United States&quot;</span>,</span>
+<span id="cb338-26"><a href="c10-ambarom-vignette.html#cb338-26" aria-hidden="true" tabindex="-1"></a>      <span class="dv">41</span><span class="sc">~</span><span class="st">&quot;Canada&quot;</span></span>
+<span id="cb338-27"><a href="c10-ambarom-vignette.html#cb338-27" aria-hidden="true" tabindex="-1"></a>    )),</span>
+<span id="cb338-28"><a href="c10-ambarom-vignette.html#cb338-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">Gender=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-29"><a href="c10-ambarom-vignette.html#cb338-29" aria-hidden="true" tabindex="-1"></a>      q1tb,</span>
+<span id="cb338-30"><a href="c10-ambarom-vignette.html#cb338-30" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Male&quot;</span>,</span>
+<span id="cb338-31"><a href="c10-ambarom-vignette.html#cb338-31" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Female&quot;</span>,</span>
+<span id="cb338-32"><a href="c10-ambarom-vignette.html#cb338-32" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Other&quot;</span></span>
+<span id="cb338-33"><a href="c10-ambarom-vignette.html#cb338-33" aria-hidden="true" tabindex="-1"></a>    ), q1tb, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
+<span id="cb338-34"><a href="c10-ambarom-vignette.html#cb338-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">CovidWorry=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-35"><a href="c10-ambarom-vignette.html#cb338-35" aria-hidden="true" tabindex="-1"></a>      covid2at,</span>
+<span id="cb338-36"><a href="c10-ambarom-vignette.html#cb338-36" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Very worried&quot;</span>,</span>
+<span id="cb338-37"><a href="c10-ambarom-vignette.html#cb338-37" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Somewhat worried&quot;</span>,</span>
+<span id="cb338-38"><a href="c10-ambarom-vignette.html#cb338-38" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;A little worried&quot;</span>,</span>
+<span id="cb338-39"><a href="c10-ambarom-vignette.html#cb338-39" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Not worried at all&quot;</span></span>
+<span id="cb338-40"><a href="c10-ambarom-vignette.html#cb338-40" aria-hidden="true" tabindex="-1"></a>    ), covid2at, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
+<span id="cb338-41"><a href="c10-ambarom-vignette.html#cb338-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">EconSituation=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-42"><a href="c10-ambarom-vignette.html#cb338-42" aria-hidden="true" tabindex="-1"></a>      idio2,</span>
+<span id="cb338-43"><a href="c10-ambarom-vignette.html#cb338-43" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Better&quot;</span>,</span>
+<span id="cb338-44"><a href="c10-ambarom-vignette.html#cb338-44" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Same&quot;</span>,</span>
+<span id="cb338-45"><a href="c10-ambarom-vignette.html#cb338-45" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Worse&quot;</span></span>
+<span id="cb338-46"><a href="c10-ambarom-vignette.html#cb338-46" aria-hidden="true" tabindex="-1"></a>    ), idio2, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
+<span id="cb338-47"><a href="c10-ambarom-vignette.html#cb338-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">EconSituationWorse_Reason=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-48"><a href="c10-ambarom-vignette.html#cb338-48" aria-hidden="true" tabindex="-1"></a>      idio2cov,</span>
+<span id="cb338-49"><a href="c10-ambarom-vignette.html#cb338-49" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Coronavirus&quot;</span>,</span>
+<span id="cb338-50"><a href="c10-ambarom-vignette.html#cb338-50" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Another reason&quot;</span></span>
+<span id="cb338-51"><a href="c10-ambarom-vignette.html#cb338-51" aria-hidden="true" tabindex="-1"></a>    ), idio2cov, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
+<span id="cb338-52"><a href="c10-ambarom-vignette.html#cb338-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">CommunityTrustworthy=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-53"><a href="c10-ambarom-vignette.html#cb338-53" aria-hidden="true" tabindex="-1"></a>      it1,</span>
+<span id="cb338-54"><a href="c10-ambarom-vignette.html#cb338-54" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Very trustworthy&quot;</span>,</span>
+<span id="cb338-55"><a href="c10-ambarom-vignette.html#cb338-55" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Somewhat trustworthy&quot;</span>,</span>
+<span id="cb338-56"><a href="c10-ambarom-vignette.html#cb338-56" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Not very trustworthy&quot;</span>,</span>
+<span id="cb338-57"><a href="c10-ambarom-vignette.html#cb338-57" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Untrustworthy&quot;</span></span>
+<span id="cb338-58"><a href="c10-ambarom-vignette.html#cb338-58" aria-hidden="true" tabindex="-1"></a>    ), it1, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
+<span id="cb338-59"><a href="c10-ambarom-vignette.html#cb338-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">CoupCorruption=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-60"><a href="c10-ambarom-vignette.html#cb338-60" aria-hidden="true" tabindex="-1"></a>      jc13,</span>
+<span id="cb338-61"><a href="c10-ambarom-vignette.html#cb338-61" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Justified&quot;</span>,</span>
+<span id="cb338-62"><a href="c10-ambarom-vignette.html#cb338-62" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Not justified&quot;</span></span>
+<span id="cb338-63"><a href="c10-ambarom-vignette.html#cb338-63" aria-hidden="true" tabindex="-1"></a>    ), jc13, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
+<span id="cb338-64"><a href="c10-ambarom-vignette.html#cb338-64" aria-hidden="true" tabindex="-1"></a>    <span class="at">LeaderApproval=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-65"><a href="c10-ambarom-vignette.html#cb338-65" aria-hidden="true" tabindex="-1"></a>      m1,</span>
+<span id="cb338-66"><a href="c10-ambarom-vignette.html#cb338-66" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Very good&quot;</span>,</span>
+<span id="cb338-67"><a href="c10-ambarom-vignette.html#cb338-67" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Good&quot;</span>,</span>
+<span id="cb338-68"><a href="c10-ambarom-vignette.html#cb338-68" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Neither good nor bad (fair)&quot;</span>,</span>
+<span id="cb338-69"><a href="c10-ambarom-vignette.html#cb338-69" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Bad&quot;</span>,</span>
+<span id="cb338-70"><a href="c10-ambarom-vignette.html#cb338-70" aria-hidden="true" tabindex="-1"></a>      <span class="dv">5</span><span class="sc">~</span><span class="st">&quot;Very bad&quot;</span></span>
+<span id="cb338-71"><a href="c10-ambarom-vignette.html#cb338-71" aria-hidden="true" tabindex="-1"></a>    ), m1, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
+<span id="cb338-72"><a href="c10-ambarom-vignette.html#cb338-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">Employment=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-73"><a href="c10-ambarom-vignette.html#cb338-73" aria-hidden="true" tabindex="-1"></a>      ocup4a,</span>
+<span id="cb338-74"><a href="c10-ambarom-vignette.html#cb338-74" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)<span class="sc">~</span><span class="st">&quot;Working&quot;</span>,</span>
+<span id="cb338-75"><a href="c10-ambarom-vignette.html#cb338-75" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Looking for a job&quot;</span>,</span>
+<span id="cb338-76"><a href="c10-ambarom-vignette.html#cb338-76" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Student&quot;</span>,</span>
+<span id="cb338-77"><a href="c10-ambarom-vignette.html#cb338-77" aria-hidden="true" tabindex="-1"></a>      <span class="dv">5</span><span class="sc">~</span><span class="st">&quot;Homemaker&quot;</span>,</span>
+<span id="cb338-78"><a href="c10-ambarom-vignette.html#cb338-78" aria-hidden="true" tabindex="-1"></a>      <span class="dv">6</span><span class="sc">~</span><span class="st">&quot;Retired or disabled&quot;</span>,</span>
+<span id="cb338-79"><a href="c10-ambarom-vignette.html#cb338-79" aria-hidden="true" tabindex="-1"></a>      <span class="dv">7</span><span class="sc">~</span><span class="st">&quot;Not working, not looking for job&quot;</span></span>
+<span id="cb338-80"><a href="c10-ambarom-vignette.html#cb338-80" aria-hidden="true" tabindex="-1"></a>    ), ocup4a, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
+<span id="cb338-81"><a href="c10-ambarom-vignette.html#cb338-81" aria-hidden="true" tabindex="-1"></a>     <span class="at">IntentionMigrate=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-82"><a href="c10-ambarom-vignette.html#cb338-82" aria-hidden="true" tabindex="-1"></a>      q14,</span>
+<span id="cb338-83"><a href="c10-ambarom-vignette.html#cb338-83" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Yes&quot;</span>,</span>
+<span id="cb338-84"><a href="c10-ambarom-vignette.html#cb338-84" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;No&quot;</span></span>
+<span id="cb338-85"><a href="c10-ambarom-vignette.html#cb338-85" aria-hidden="true" tabindex="-1"></a>    ), q14, <span class="at">.na_rm=</span><span class="cn">FALSE</span>),</span>
+<span id="cb338-86"><a href="c10-ambarom-vignette.html#cb338-86" aria-hidden="true" tabindex="-1"></a>    <span class="at">NewsFrequency=</span><span class="fu">fct_reorder</span>(<span class="fu">case_match</span>(</span>
+<span id="cb338-87"><a href="c10-ambarom-vignette.html#cb338-87" aria-hidden="true" tabindex="-1"></a>      gi0n,</span>
+<span id="cb338-88"><a href="c10-ambarom-vignette.html#cb338-88" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="sc">~</span><span class="st">&quot;Daily&quot;</span>,</span>
+<span id="cb338-89"><a href="c10-ambarom-vignette.html#cb338-89" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span><span class="sc">~</span><span class="st">&quot;Few times a week&quot;</span>,</span>
+<span id="cb338-90"><a href="c10-ambarom-vignette.html#cb338-90" aria-hidden="true" tabindex="-1"></a>      <span class="dv">3</span><span class="sc">~</span><span class="st">&quot;Few times a month&quot;</span>,</span>
+<span id="cb338-91"><a href="c10-ambarom-vignette.html#cb338-91" aria-hidden="true" tabindex="-1"></a>      <span class="dv">4</span><span class="sc">~</span><span class="st">&quot;Few times a year&quot;</span>,</span>
+<span id="cb338-92"><a href="c10-ambarom-vignette.html#cb338-92" aria-hidden="true" tabindex="-1"></a>      <span class="dv">5</span><span class="sc">~</span><span class="st">&quot;Never&quot;</span></span>
+<span id="cb338-93"><a href="c10-ambarom-vignette.html#cb338-93" aria-hidden="true" tabindex="-1"></a>    ), gi0n, <span class="at">.na_rm=</span><span class="cn">FALSE</span>)</span>
+<span id="cb338-94"><a href="c10-ambarom-vignette.html#cb338-94" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb338-95"><a href="c10-ambarom-vignette.html#cb338-95" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
+<span id="cb338-96"><a href="c10-ambarom-vignette.html#cb338-96" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_NotInSchool=</span>covidedu1_1,</span>
+<span id="cb338-97"><a href="c10-ambarom-vignette.html#cb338-97" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_NormalSchool=</span>covidedu1_2,</span>
+<span id="cb338-98"><a href="c10-ambarom-vignette.html#cb338-98" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_VirtualSchool=</span>covidedu1_3,</span>
+<span id="cb338-99"><a href="c10-ambarom-vignette.html#cb338-99" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_Hybrid=</span>covidedu1_4,</span>
+<span id="cb338-100"><a href="c10-ambarom-vignette.html#cb338-100" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_NoSchool=</span>covidedu1_5,</span>
+<span id="cb338-101"><a href="c10-ambarom-vignette.html#cb338-101" aria-hidden="true" tabindex="-1"></a>    <span class="at">Age=</span>q2,</span>
+<span id="cb338-102"><a href="c10-ambarom-vignette.html#cb338-102" aria-hidden="true" tabindex="-1"></a>    <span class="at">HHSize=</span>q12c,</span>
+<span id="cb338-103"><a href="c10-ambarom-vignette.html#cb338-103" aria-hidden="true" tabindex="-1"></a>    <span class="at">HHChildren=</span>q12bn,</span>
+<span id="cb338-104"><a href="c10-ambarom-vignette.html#cb338-104" aria-hidden="true" tabindex="-1"></a>    <span class="at">ComputerTablet=</span>r15,</span>
+<span id="cb338-105"><a href="c10-ambarom-vignette.html#cb338-105" aria-hidden="true" tabindex="-1"></a>    <span class="at">BroadbandInternet=</span>r18n,</span>
+<span id="cb338-106"><a href="c10-ambarom-vignette.html#cb338-106" aria-hidden="true" tabindex="-1"></a>    <span class="at">Internet=</span>r18</span>
+<span id="cb338-107"><a href="c10-ambarom-vignette.html#cb338-107" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb338-108"><a href="c10-ambarom-vignette.html#cb338-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb338-109"><a href="c10-ambarom-vignette.html#cb338-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb338-110"><a href="c10-ambarom-vignette.html#cb338-110" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(Country, pais) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n=</span><span class="dv">22</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 22 × 3
 ##    Country             pais     n
 ##    &lt;fct&gt;              &lt;dbl&gt; &lt;int&gt;
@@ -525,7 +525,7 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 ## 20 Peru                  11  3038
 ## 21 United States         40  1500
 ## 22 Uruguay               14  3009</code></pre>
-<div class="sourceCode" id="cb339"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb339-1"><a href="c10-ambarom-vignette.html#cb339-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(Gender, q1tb)</span></code></pre></div>
+<div class="sourceCode" id="cb340"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb340-1"><a href="c10-ambarom-vignette.html#cb340-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(Gender, q1tb)</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 3
 ##   Gender  q1tb     n
 ##   &lt;fct&gt;  &lt;dbl&gt; &lt;int&gt;
@@ -533,7 +533,7 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 ## 2 Female     2 33208
 ## 3 Other      3   152
 ## 4 &lt;NA&gt;      NA    90</code></pre>
-<div class="sourceCode" id="cb341"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb341-1"><a href="c10-ambarom-vignette.html#cb341-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(EconSituation, idio2)</span></code></pre></div>
+<div class="sourceCode" id="cb342"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb342-1"><a href="c10-ambarom-vignette.html#cb342-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(EconSituation, idio2)</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 3
 ##   EconSituation idio2     n
 ##   &lt;fct&gt;         &lt;dbl&gt; &lt;int&gt;
@@ -541,14 +541,14 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 ## 2 Same              2 20143
 ## 3 Worse             3 34249
 ## 4 &lt;NA&gt;             NA  2766</code></pre>
-<div class="sourceCode" id="cb343"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb343-1"><a href="c10-ambarom-vignette.html#cb343-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(EconSituationWorse_Reason, idio2cov)</span></code></pre></div>
+<div class="sourceCode" id="cb344"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb344-1"><a href="c10-ambarom-vignette.html#cb344-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(EconSituationWorse_Reason, idio2cov)</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 3
 ##   EconSituationWorse_Reason idio2cov     n
 ##   &lt;fct&gt;                        &lt;dbl&gt; &lt;int&gt;
 ## 1 Coronavirus                      1 24839
 ## 2 Another reason                   2  7933
 ## 3 &lt;NA&gt;                            NA 31580</code></pre>
-<div class="sourceCode" id="cb345"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb345-1"><a href="c10-ambarom-vignette.html#cb345-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(CommunityTrustworthy, it1)</span></code></pre></div>
+<div class="sourceCode" id="cb346"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb346-1"><a href="c10-ambarom-vignette.html#cb346-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(CommunityTrustworthy, it1)</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 3
 ##   CommunityTrustworthy   it1     n
 ##   &lt;fct&gt;                &lt;dbl&gt; &lt;int&gt;
@@ -557,14 +557,14 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 ## 3 Not very trustworthy     3 18383
 ## 4 Untrustworthy            4  5806
 ## 5 &lt;NA&gt;                    NA  3631</code></pre>
-<div class="sourceCode" id="cb347"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb347-1"><a href="c10-ambarom-vignette.html#cb347-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(CoupCorruption, jc13)</span></code></pre></div>
+<div class="sourceCode" id="cb348"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb348-1"><a href="c10-ambarom-vignette.html#cb348-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(CoupCorruption, jc13)</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 3
 ##   CoupCorruption  jc13     n
 ##   &lt;fct&gt;          &lt;dbl&gt; &lt;int&gt;
 ## 1 Justified          1  5138
 ## 2 Not justified      2  8387
 ## 3 &lt;NA&gt;              NA 50827</code></pre>
-<div class="sourceCode" id="cb349"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb349-1"><a href="c10-ambarom-vignette.html#cb349-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(LeaderApproval, m1)</span></code></pre></div>
+<div class="sourceCode" id="cb350"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb350-1"><a href="c10-ambarom-vignette.html#cb350-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(LeaderApproval, m1)</span></code></pre></div>
 <pre><code>## # A tibble: 6 × 3
 ##   LeaderApproval                 m1     n
 ##   &lt;fct&gt;                       &lt;dbl&gt; &lt;int&gt;
@@ -574,7 +574,7 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 ## 4 Bad                             4  3854
 ## 5 Very bad                        5  5788
 ## 6 &lt;NA&gt;                           NA 33238</code></pre>
-<div class="sourceCode" id="cb351"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb351-1"><a href="c10-ambarom-vignette.html#cb351-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(Employment, ocup4a)</span></code></pre></div>
+<div class="sourceCode" id="cb352"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb352-1"><a href="c10-ambarom-vignette.html#cb352-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(Employment, ocup4a)</span></code></pre></div>
 <pre><code>## # A tibble: 8 × 3
 ##   Employment                       ocup4a     n
 ##   &lt;fct&gt;                             &lt;dbl&gt; &lt;int&gt;
@@ -586,14 +586,14 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 ## 6 Retired or disabled                   6  2547
 ## 7 Not working, not looking for job      7  1352
 ## 8 &lt;NA&gt;                                 NA 29505</code></pre>
-<div class="sourceCode" id="cb353"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb353-1"><a href="c10-ambarom-vignette.html#cb353-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(IntentionMigrate, q14)</span></code></pre></div>
+<div class="sourceCode" id="cb354"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb354-1"><a href="c10-ambarom-vignette.html#cb354-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(IntentionMigrate, q14)</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 3
 ##   IntentionMigrate   q14     n
 ##   &lt;fct&gt;            &lt;dbl&gt; &lt;int&gt;
 ## 1 Yes                  1  7992
 ## 2 No                   2 12230
 ## 3 &lt;NA&gt;                NA 44130</code></pre>
-<div class="sourceCode" id="cb355"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb355-1"><a href="c10-ambarom-vignette.html#cb355-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(NewsFrequency, gi0n)</span></code></pre></div>
+<div class="sourceCode" id="cb356"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb356-1"><a href="c10-ambarom-vignette.html#cb356-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">count</span>(NewsFrequency, gi0n)</span></code></pre></div>
 <pre><code>## # A tibble: 6 × 3
 ##   NewsFrequency      gi0n     n
 ##   &lt;fct&gt;             &lt;dbl&gt; &lt;int&gt;
@@ -607,37 +607,37 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 <div id="survey-design-objects-1" class="section level2 hasAnchor" number="10.3">
 <h2><span class="header-section-number">10.3</span> Survey design objects<a href="c10-ambarom-vignette.html#survey-design-objects-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The technical report is the best source to understand how to specify the sampling design in R<a href="#fn33" class="footnote-ref" id="fnref33"><sup>33</sup></a>. The data includes two weights: <code>wt</code> and <code>weight1500</code>. The first weight variable is country specific and sums to the sample size but is calibrated to reflect each country’s demographics while the second weight variable sums to 1500 for each country. The second weight is indicated as the weight to use for multi country analyses. While the documentation does not directly state this, the example Stata syntax <code>svyset upm [pw=weight1500], strata(strata)</code> indicates the variable <code>upm</code> is a clustering variable and <code>strata</code> is the strata variable thus the design object is setup as follows:</p>
-<div class="sourceCode" id="cb357"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb357-1"><a href="c10-ambarom-vignette.html#cb357-1" aria-hidden="true" tabindex="-1"></a>ambarom_des <span class="ot">&lt;-</span> ambarom <span class="sc">%&gt;%</span></span>
-<span id="cb357-2"><a href="c10-ambarom-vignette.html#cb357-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">ids=</span>upm, <span class="at">strata=</span>strata, <span class="at">weight=</span>weight1500)</span></code></pre></div>
+<div class="sourceCode" id="cb358"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb358-1"><a href="c10-ambarom-vignette.html#cb358-1" aria-hidden="true" tabindex="-1"></a>ambarom_des <span class="ot">&lt;-</span> ambarom <span class="sc">%&gt;%</span></span>
+<span id="cb358-2"><a href="c10-ambarom-vignette.html#cb358-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">ids=</span>upm, <span class="at">strata=</span>strata, <span class="at">weight=</span>weight1500)</span></code></pre></div>
 <p>One interesting thing to note is that these can only give us estimates to compare countries but not a multi-country estimate since the weights do not account for different sizes of countries. For example, Canada has about 10% of the population of the Untied States but an estimate that uses records from both countries would weight them equally.</p>
 </div>
 <div id="calculating-estimates-and-making-tables" class="section level2 hasAnchor" number="10.4">
 <h2><span class="header-section-number">10.4</span> Calculating estimates and making tables<a href="c10-ambarom-vignette.html#calculating-estimates-and-making-tables" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>This survey was administered in 2021 between March and August, varying by country<a href="#fn34" class="footnote-ref" id="fnref34"><sup>34</sup></a>. Given the state of the pandemic at that time, several questions about COVID were included. The first question about COVID asked whether people were worried about the possibility that they or someone in their household will get sick from coronavirus in the next 3 months. We will calculate the percent of people in each country who are very worried or somewhat worried.</p>
 <p>In the following code, estimates are calculated and then using the {{gt}} package, a table of the estimates is created.</p>
-<div class="sourceCode" id="cb358"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb358-1"><a href="c10-ambarom-vignette.html#cb358-1" aria-hidden="true" tabindex="-1"></a>covid_worry_country_ests <span class="ot">&lt;-</span></span>
-<span id="cb358-2"><a href="c10-ambarom-vignette.html#cb358-2" aria-hidden="true" tabindex="-1"></a>  ambarom_des <span class="sc">%&gt;%</span></span>
-<span id="cb358-3"><a href="c10-ambarom-vignette.html#cb358-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb358-4"><a href="c10-ambarom-vignette.html#cb358-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">CovidWorry_bin=</span><span class="fu">fct_collapse</span>(</span>
-<span id="cb358-5"><a href="c10-ambarom-vignette.html#cb358-5" aria-hidden="true" tabindex="-1"></a>      CovidWorry,</span>
-<span id="cb358-6"><a href="c10-ambarom-vignette.html#cb358-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">WorriedHi=</span><span class="fu">c</span>(<span class="st">&quot;Very worried&quot;</span>, <span class="st">&quot;Somewhat worried&quot;</span>),</span>
-<span id="cb358-7"><a href="c10-ambarom-vignette.html#cb358-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">WorriedLo=</span><span class="fu">c</span>(<span class="st">&quot;A little worried&quot;</span>, <span class="st">&quot;Not worried at all&quot;</span>)</span>
-<span id="cb358-8"><a href="c10-ambarom-vignette.html#cb358-8" aria-hidden="true" tabindex="-1"></a>    )) <span class="sc">%&gt;%</span></span>
-<span id="cb358-9"><a href="c10-ambarom-vignette.html#cb358-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span></span>
-<span id="cb358-10"><a href="c10-ambarom-vignette.html#cb358-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb358-11"><a href="c10-ambarom-vignette.html#cb358-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">p=</span><span class="fu">survey_mean</span>(CovidWorry_bin<span class="sc">==</span><span class="st">&quot;WorriedHi&quot;</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span></span>
-<span id="cb358-12"><a href="c10-ambarom-vignette.html#cb358-12" aria-hidden="true" tabindex="-1"></a>  ) </span>
-<span id="cb358-13"><a href="c10-ambarom-vignette.html#cb358-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb358-14"><a href="c10-ambarom-vignette.html#cb358-14" aria-hidden="true" tabindex="-1"></a>covid_worry_country_ests <span class="sc">%&gt;%</span></span>
-<span id="cb358-15"><a href="c10-ambarom-vignette.html#cb358-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Country&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb358-16"><a href="c10-ambarom-vignette.html#cb358-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
-<span id="cb358-17"><a href="c10-ambarom-vignette.html#cb358-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">p=</span><span class="st">&quot;Percent&quot;</span>,</span>
-<span id="cb358-18"><a href="c10-ambarom-vignette.html#cb358-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_se=</span><span class="st">&quot;SE&quot;</span></span>
-<span id="cb358-19"><a href="c10-ambarom-vignette.html#cb358-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb358-20"><a href="c10-ambarom-vignette.html#cb358-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(</span>
-<span id="cb358-21"><a href="c10-ambarom-vignette.html#cb358-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">title=</span><span class="st">&quot;Proportion worried about the possibility that they or someone in their household will get sick from coronavirus in the next 3 months&quot;</span></span>
-<span id="cb358-22"><a href="c10-ambarom-vignette.html#cb358-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb358-23"><a href="c10-ambarom-vignette.html#cb358-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals=</span><span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb359"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb359-1"><a href="c10-ambarom-vignette.html#cb359-1" aria-hidden="true" tabindex="-1"></a>covid_worry_country_ests <span class="ot">&lt;-</span></span>
+<span id="cb359-2"><a href="c10-ambarom-vignette.html#cb359-2" aria-hidden="true" tabindex="-1"></a>  ambarom_des <span class="sc">%&gt;%</span></span>
+<span id="cb359-3"><a href="c10-ambarom-vignette.html#cb359-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb359-4"><a href="c10-ambarom-vignette.html#cb359-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">CovidWorry_bin=</span><span class="fu">fct_collapse</span>(</span>
+<span id="cb359-5"><a href="c10-ambarom-vignette.html#cb359-5" aria-hidden="true" tabindex="-1"></a>      CovidWorry,</span>
+<span id="cb359-6"><a href="c10-ambarom-vignette.html#cb359-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">WorriedHi=</span><span class="fu">c</span>(<span class="st">&quot;Very worried&quot;</span>, <span class="st">&quot;Somewhat worried&quot;</span>),</span>
+<span id="cb359-7"><a href="c10-ambarom-vignette.html#cb359-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">WorriedLo=</span><span class="fu">c</span>(<span class="st">&quot;A little worried&quot;</span>, <span class="st">&quot;Not worried at all&quot;</span>)</span>
+<span id="cb359-8"><a href="c10-ambarom-vignette.html#cb359-8" aria-hidden="true" tabindex="-1"></a>    )) <span class="sc">%&gt;%</span></span>
+<span id="cb359-9"><a href="c10-ambarom-vignette.html#cb359-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span></span>
+<span id="cb359-10"><a href="c10-ambarom-vignette.html#cb359-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb359-11"><a href="c10-ambarom-vignette.html#cb359-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">p=</span><span class="fu">survey_mean</span>(CovidWorry_bin<span class="sc">==</span><span class="st">&quot;WorriedHi&quot;</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span></span>
+<span id="cb359-12"><a href="c10-ambarom-vignette.html#cb359-12" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb359-13"><a href="c10-ambarom-vignette.html#cb359-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb359-14"><a href="c10-ambarom-vignette.html#cb359-14" aria-hidden="true" tabindex="-1"></a>covid_worry_country_ests <span class="sc">%&gt;%</span></span>
+<span id="cb359-15"><a href="c10-ambarom-vignette.html#cb359-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Country&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb359-16"><a href="c10-ambarom-vignette.html#cb359-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
+<span id="cb359-17"><a href="c10-ambarom-vignette.html#cb359-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">p=</span><span class="st">&quot;Percent&quot;</span>,</span>
+<span id="cb359-18"><a href="c10-ambarom-vignette.html#cb359-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_se=</span><span class="st">&quot;SE&quot;</span></span>
+<span id="cb359-19"><a href="c10-ambarom-vignette.html#cb359-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb359-20"><a href="c10-ambarom-vignette.html#cb359-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(</span>
+<span id="cb359-21"><a href="c10-ambarom-vignette.html#cb359-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">title=</span><span class="st">&quot;Proportion worried about the possibility that they or someone in their household will get sick from coronavirus in the next 3 months&quot;</span></span>
+<span id="cb359-22"><a href="c10-ambarom-vignette.html#cb359-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb359-23"><a href="c10-ambarom-vignette.html#cb359-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals=</span><span class="dv">1</span>)</span></code></pre></div>
 <div id="ibkckwmzsj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#ibkckwmzsj table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -1174,7 +1174,7 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 </ul>
 </blockquote>
 <p>Multiple choice questions are interesting. If we want to look at how education was impacted only among those that were in school, we need to filter to the relevant responses which is anyone that responded no to the first part. An unweighted cross-tab fo the responses is included below and we can see there is a wide-range of impacts and that many combinations of impact on education are possible.</p>
-<div class="sourceCode" id="cb359"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb359-1"><a href="c10-ambarom-vignette.html#cb359-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Educ_NotInSchool<span class="sc">==</span><span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">count</span>(Educ_NormalSchool, Educ_VirtualSchool, Educ_Hybrid, Educ_NoSchool) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n=</span><span class="dv">50</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb360"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb360-1"><a href="c10-ambarom-vignette.html#cb360-1" aria-hidden="true" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Educ_NotInSchool<span class="sc">==</span><span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">count</span>(Educ_NormalSchool, Educ_VirtualSchool, Educ_Hybrid, Educ_NoSchool) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n=</span><span class="dv">50</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 12 × 5
 ##    Educ_NormalSchool Educ_VirtualSchool Educ_Hybrid Educ_NoSchool     n
 ##                &lt;dbl&gt;              &lt;dbl&gt;       &lt;dbl&gt;         &lt;dbl&gt; &lt;int&gt;
@@ -1196,45 +1196,45 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 <li>Indicator that education medium was changed - either virtual or hybrid</li>
 </ul>
 <p>We create these variables, make national estimates, and a summary table.</p>
-<div class="sourceCode" id="cb361"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb361-1"><a href="c10-ambarom-vignette.html#cb361-1" aria-hidden="true" tabindex="-1"></a>ambarom_des_educ <span class="ot">&lt;-</span> ambarom_des <span class="sc">%&gt;%</span></span>
-<span id="cb361-2"><a href="c10-ambarom-vignette.html#cb361-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Educ_NotInSchool<span class="sc">==</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb361-3"><a href="c10-ambarom-vignette.html#cb361-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb361-4"><a href="c10-ambarom-vignette.html#cb361-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_OnlyNormal=</span>Educ_NormalSchool<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> Educ_VirtualSchool<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> Educ_Hybrid<span class="sc">==</span><span class="dv">0</span>,</span>
-<span id="cb361-5"><a href="c10-ambarom-vignette.html#cb361-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_MediumChange=</span>Educ_VirtualSchool<span class="sc">==</span><span class="dv">1</span><span class="sc">|</span>Educ_Hybrid<span class="sc">==</span><span class="dv">1</span>,</span>
-<span id="cb361-6"><a href="c10-ambarom-vignette.html#cb361-6" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb361-7"><a href="c10-ambarom-vignette.html#cb361-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb361-8"><a href="c10-ambarom-vignette.html#cb361-8" aria-hidden="true" tabindex="-1"></a>covid_educ_ests <span class="ot">&lt;-</span> </span>
-<span id="cb361-9"><a href="c10-ambarom-vignette.html#cb361-9" aria-hidden="true" tabindex="-1"></a>  ambarom_des_educ <span class="sc">%&gt;%</span> </span>
-<span id="cb361-10"><a href="c10-ambarom-vignette.html#cb361-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span></span>
-<span id="cb361-11"><a href="c10-ambarom-vignette.html#cb361-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb361-12"><a href="c10-ambarom-vignette.html#cb361-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_onlynormal=</span><span class="fu">survey_mean</span>(Educ_OnlyNormal, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span>,</span>
-<span id="cb361-13"><a href="c10-ambarom-vignette.html#cb361-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_mediumchange=</span><span class="fu">survey_mean</span>(Educ_MediumChange, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span>,</span>
-<span id="cb361-14"><a href="c10-ambarom-vignette.html#cb361-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_noschool=</span><span class="fu">survey_mean</span>(Educ_NoSchool, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span>,</span>
-<span id="cb361-15"><a href="c10-ambarom-vignette.html#cb361-15" aria-hidden="true" tabindex="-1"></a>  ) </span>
-<span id="cb361-16"><a href="c10-ambarom-vignette.html#cb361-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb361-17"><a href="c10-ambarom-vignette.html#cb361-17" aria-hidden="true" tabindex="-1"></a>covid_educ_ests <span class="sc">%&gt;%</span></span>
-<span id="cb361-18"><a href="c10-ambarom-vignette.html#cb361-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Country&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb361-19"><a href="c10-ambarom-vignette.html#cb361-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
-<span id="cb361-20"><a href="c10-ambarom-vignette.html#cb361-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_onlynormal=</span><span class="st">&quot;%&quot;</span>,</span>
-<span id="cb361-21"><a href="c10-ambarom-vignette.html#cb361-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_onlynormal_se=</span><span class="st">&quot;SE&quot;</span>,</span>
-<span id="cb361-22"><a href="c10-ambarom-vignette.html#cb361-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_mediumchange=</span><span class="st">&quot;%&quot;</span>,</span>
-<span id="cb361-23"><a href="c10-ambarom-vignette.html#cb361-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_mediumchange_se=</span><span class="st">&quot;SE&quot;</span>,</span>
-<span id="cb361-24"><a href="c10-ambarom-vignette.html#cb361-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_noschool=</span><span class="st">&quot;%&quot;</span>,</span>
-<span id="cb361-25"><a href="c10-ambarom-vignette.html#cb361-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_noschool_se=</span><span class="st">&quot;SE&quot;</span></span>
-<span id="cb361-26"><a href="c10-ambarom-vignette.html#cb361-26" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb361-27"><a href="c10-ambarom-vignette.html#cb361-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb361-28"><a href="c10-ambarom-vignette.html#cb361-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">label=</span><span class="st">&quot;Normal school only&quot;</span>,</span>
-<span id="cb361-29"><a href="c10-ambarom-vignette.html#cb361-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns=</span><span class="fu">c</span>(<span class="st">&quot;p_onlynormal&quot;</span>, <span class="st">&quot;p_onlynormal_se&quot;</span>)</span>
-<span id="cb361-30"><a href="c10-ambarom-vignette.html#cb361-30" aria-hidden="true" tabindex="-1"></a>  )<span class="sc">%&gt;%</span></span>
-<span id="cb361-31"><a href="c10-ambarom-vignette.html#cb361-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb361-32"><a href="c10-ambarom-vignette.html#cb361-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">label=</span><span class="st">&quot;Medium change&quot;</span>,</span>
-<span id="cb361-33"><a href="c10-ambarom-vignette.html#cb361-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns=</span><span class="fu">c</span>(<span class="st">&quot;p_mediumchange&quot;</span>, <span class="st">&quot;p_mediumchange_se&quot;</span>)</span>
-<span id="cb361-34"><a href="c10-ambarom-vignette.html#cb361-34" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb361-35"><a href="c10-ambarom-vignette.html#cb361-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb361-36"><a href="c10-ambarom-vignette.html#cb361-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">label=</span><span class="st">&quot;Cut ties with school&quot;</span>,</span>
-<span id="cb361-37"><a href="c10-ambarom-vignette.html#cb361-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns=</span><span class="fu">c</span>(<span class="st">&quot;p_noschool&quot;</span>, <span class="st">&quot;p_noschool_se&quot;</span>)</span>
-<span id="cb361-38"><a href="c10-ambarom-vignette.html#cb361-38" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb361-39"><a href="c10-ambarom-vignette.html#cb361-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals=</span><span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb362"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb362-1"><a href="c10-ambarom-vignette.html#cb362-1" aria-hidden="true" tabindex="-1"></a>ambarom_des_educ <span class="ot">&lt;-</span> ambarom_des <span class="sc">%&gt;%</span></span>
+<span id="cb362-2"><a href="c10-ambarom-vignette.html#cb362-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Educ_NotInSchool<span class="sc">==</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb362-3"><a href="c10-ambarom-vignette.html#cb362-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb362-4"><a href="c10-ambarom-vignette.html#cb362-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_OnlyNormal=</span>Educ_NormalSchool<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> Educ_VirtualSchool<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> Educ_Hybrid<span class="sc">==</span><span class="dv">0</span>,</span>
+<span id="cb362-5"><a href="c10-ambarom-vignette.html#cb362-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Educ_MediumChange=</span>Educ_VirtualSchool<span class="sc">==</span><span class="dv">1</span><span class="sc">|</span>Educ_Hybrid<span class="sc">==</span><span class="dv">1</span>,</span>
+<span id="cb362-6"><a href="c10-ambarom-vignette.html#cb362-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb362-7"><a href="c10-ambarom-vignette.html#cb362-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb362-8"><a href="c10-ambarom-vignette.html#cb362-8" aria-hidden="true" tabindex="-1"></a>covid_educ_ests <span class="ot">&lt;-</span> </span>
+<span id="cb362-9"><a href="c10-ambarom-vignette.html#cb362-9" aria-hidden="true" tabindex="-1"></a>  ambarom_des_educ <span class="sc">%&gt;%</span> </span>
+<span id="cb362-10"><a href="c10-ambarom-vignette.html#cb362-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span></span>
+<span id="cb362-11"><a href="c10-ambarom-vignette.html#cb362-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb362-12"><a href="c10-ambarom-vignette.html#cb362-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_onlynormal=</span><span class="fu">survey_mean</span>(Educ_OnlyNormal, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span>,</span>
+<span id="cb362-13"><a href="c10-ambarom-vignette.html#cb362-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_mediumchange=</span><span class="fu">survey_mean</span>(Educ_MediumChange, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span>,</span>
+<span id="cb362-14"><a href="c10-ambarom-vignette.html#cb362-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_noschool=</span><span class="fu">survey_mean</span>(Educ_NoSchool, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span>,</span>
+<span id="cb362-15"><a href="c10-ambarom-vignette.html#cb362-15" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb362-16"><a href="c10-ambarom-vignette.html#cb362-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb362-17"><a href="c10-ambarom-vignette.html#cb362-17" aria-hidden="true" tabindex="-1"></a>covid_educ_ests <span class="sc">%&gt;%</span></span>
+<span id="cb362-18"><a href="c10-ambarom-vignette.html#cb362-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Country&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb362-19"><a href="c10-ambarom-vignette.html#cb362-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
+<span id="cb362-20"><a href="c10-ambarom-vignette.html#cb362-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_onlynormal=</span><span class="st">&quot;%&quot;</span>,</span>
+<span id="cb362-21"><a href="c10-ambarom-vignette.html#cb362-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_onlynormal_se=</span><span class="st">&quot;SE&quot;</span>,</span>
+<span id="cb362-22"><a href="c10-ambarom-vignette.html#cb362-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_mediumchange=</span><span class="st">&quot;%&quot;</span>,</span>
+<span id="cb362-23"><a href="c10-ambarom-vignette.html#cb362-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_mediumchange_se=</span><span class="st">&quot;SE&quot;</span>,</span>
+<span id="cb362-24"><a href="c10-ambarom-vignette.html#cb362-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_noschool=</span><span class="st">&quot;%&quot;</span>,</span>
+<span id="cb362-25"><a href="c10-ambarom-vignette.html#cb362-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_noschool_se=</span><span class="st">&quot;SE&quot;</span></span>
+<span id="cb362-26"><a href="c10-ambarom-vignette.html#cb362-26" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb362-27"><a href="c10-ambarom-vignette.html#cb362-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb362-28"><a href="c10-ambarom-vignette.html#cb362-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">label=</span><span class="st">&quot;Normal school only&quot;</span>,</span>
+<span id="cb362-29"><a href="c10-ambarom-vignette.html#cb362-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns=</span><span class="fu">c</span>(<span class="st">&quot;p_onlynormal&quot;</span>, <span class="st">&quot;p_onlynormal_se&quot;</span>)</span>
+<span id="cb362-30"><a href="c10-ambarom-vignette.html#cb362-30" aria-hidden="true" tabindex="-1"></a>  )<span class="sc">%&gt;%</span></span>
+<span id="cb362-31"><a href="c10-ambarom-vignette.html#cb362-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb362-32"><a href="c10-ambarom-vignette.html#cb362-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">label=</span><span class="st">&quot;Medium change&quot;</span>,</span>
+<span id="cb362-33"><a href="c10-ambarom-vignette.html#cb362-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns=</span><span class="fu">c</span>(<span class="st">&quot;p_mediumchange&quot;</span>, <span class="st">&quot;p_mediumchange_se&quot;</span>)</span>
+<span id="cb362-34"><a href="c10-ambarom-vignette.html#cb362-34" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb362-35"><a href="c10-ambarom-vignette.html#cb362-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb362-36"><a href="c10-ambarom-vignette.html#cb362-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">label=</span><span class="st">&quot;Cut ties with school&quot;</span>,</span>
+<span id="cb362-37"><a href="c10-ambarom-vignette.html#cb362-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns=</span><span class="fu">c</span>(<span class="st">&quot;p_noschool&quot;</span>, <span class="st">&quot;p_noschool_se&quot;</span>)</span>
+<span id="cb362-38"><a href="c10-ambarom-vignette.html#cb362-38" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb362-39"><a href="c10-ambarom-vignette.html#cb362-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals=</span><span class="dv">1</span>)</span></code></pre></div>
 <div id="hrwokkyhya" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#hrwokkyhya table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -1823,19 +1823,19 @@ lapop_in &lt;- here(&quot;RawData&quot;, &quot;LAPOP_2021&quot;, stata_files) %&
 <h2><span class="header-section-number">10.5</span> Mapping survey data<a href="c10-ambarom-vignette.html#mapping-survey-data" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>While the table presents the data well, a map could also be used. To obtain maps of the countries, the package {{rnaturalearth}} is used subsetting North and South America using the function <code>ne_countries()</code>. This returns an sf object with many columns but most importantly <code>soverignt</code> (soverignty), <code>geounit</code> (country or territory), and <code>geometry</code> (the shape). The United States, Puerto Rico, and the US Virgin Islands are all separate units but have the same sovereignty.</p>
 <p>That map (without data) is plotted. In the first map, the map is very wide as the Aleutian islands in Alaska extend into the Eastern Hemisphere. The shape file is cropped to only the Western Hemisphere to remove some of the trailing islands of Alaska and then plotted.</p>
-<div class="sourceCode" id="cb362"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb362-1"><a href="c10-ambarom-vignette.html#cb362-1" aria-hidden="true" tabindex="-1"></a>country_shape <span class="ot">&lt;-</span> <span class="fu">ne_countries</span>(<span class="at">scale =</span> <span class="st">&quot;medium&quot;</span>, <span class="at">returnclass =</span> <span class="st">&quot;sf&quot;</span>, <span class="at">continent=</span><span class="fu">c</span>(<span class="st">&quot;North America&quot;</span>, <span class="st">&quot;South America&quot;</span>))</span>
-<span id="cb362-2"><a href="c10-ambarom-vignette.html#cb362-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb362-3"><a href="c10-ambarom-vignette.html#cb362-3" aria-hidden="true" tabindex="-1"></a>country_shape <span class="sc">%&gt;%</span></span>
-<span id="cb362-4"><a href="c10-ambarom-vignette.html#cb362-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_sf</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb363"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb363-1"><a href="c10-ambarom-vignette.html#cb363-1" aria-hidden="true" tabindex="-1"></a>country_shape <span class="ot">&lt;-</span> <span class="fu">ne_countries</span>(<span class="at">scale =</span> <span class="st">&quot;medium&quot;</span>, <span class="at">returnclass =</span> <span class="st">&quot;sf&quot;</span>, <span class="at">continent=</span><span class="fu">c</span>(<span class="st">&quot;North America&quot;</span>, <span class="st">&quot;South America&quot;</span>))</span>
+<span id="cb363-2"><a href="c10-ambarom-vignette.html#cb363-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb363-3"><a href="c10-ambarom-vignette.html#cb363-3" aria-hidden="true" tabindex="-1"></a>country_shape <span class="sc">%&gt;%</span></span>
+<span id="cb363-4"><a href="c10-ambarom-vignette.html#cb363-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_sf</span>()</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:ambarom-americas-map"></span>
 <img src="bookdown_files/figure-html/ambarom-americas-map-1.png" alt="Map of North and South America" width="672" />
 <p class="caption">
 FIGURE 10.1: Map of North and South America
 </p>
 </div>
-<div class="sourceCode" id="cb363"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb363-1"><a href="c10-ambarom-vignette.html#cb363-1" aria-hidden="true" tabindex="-1"></a>country_shape <span class="sc">%&gt;%</span></span>
-<span id="cb363-2"><a href="c10-ambarom-vignette.html#cb363-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_crop</span>(<span class="fu">c</span>(<span class="at">xmin=</span><span class="sc">-</span><span class="dv">180</span>, <span class="at">xmax=</span><span class="dv">0</span>, <span class="at">ymin=</span><span class="sc">-</span><span class="dv">90</span>, <span class="at">ymax=</span><span class="dv">90</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb363-3"><a href="c10-ambarom-vignette.html#cb363-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_sf</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb364"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb364-1"><a href="c10-ambarom-vignette.html#cb364-1" aria-hidden="true" tabindex="-1"></a>country_shape <span class="sc">%&gt;%</span></span>
+<span id="cb364-2"><a href="c10-ambarom-vignette.html#cb364-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_crop</span>(<span class="fu">c</span>(<span class="at">xmin=</span><span class="sc">-</span><span class="dv">180</span>, <span class="at">xmax=</span><span class="dv">0</span>, <span class="at">ymin=</span><span class="sc">-</span><span class="dv">90</span>, <span class="at">ymax=</span><span class="dv">90</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb364-3"><a href="c10-ambarom-vignette.html#cb364-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_sf</span>()</span></code></pre></div>
 <pre><code>## Warning: attribute variables are assumed to be spatially constant
 ## throughout all geometries</code></pre>
 <div class="figure"><span style="display:block;" id="fig:ambarom-americas-map-crop"></span>
@@ -1845,16 +1845,16 @@ FIGURE 10.2: Map of North and South America, cropped to the Western Hemisphere
 </p>
 </div>
 <p>Then, using the <code>anti_join()</code> function, it is verified that all countries in the survey data are also in the map data. As shown below, United States is referred to as “United States” in the survey data but “Untied States of America” in the map data.</p>
-<div class="sourceCode" id="cb365"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb365-1"><a href="c10-ambarom-vignette.html#cb365-1" aria-hidden="true" tabindex="-1"></a>survey_country_list <span class="ot">&lt;-</span> ambarom <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(Country) </span>
-<span id="cb365-2"><a href="c10-ambarom-vignette.html#cb365-2" aria-hidden="true" tabindex="-1"></a>survey_country_list <span class="sc">%&gt;%</span> <span class="fu">anti_join</span>(country_shape, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;Country&quot;</span><span class="ot">=</span><span class="st">&quot;geounit&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb366"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb366-1"><a href="c10-ambarom-vignette.html#cb366-1" aria-hidden="true" tabindex="-1"></a>survey_country_list <span class="ot">&lt;-</span> ambarom <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(Country) </span>
+<span id="cb366-2"><a href="c10-ambarom-vignette.html#cb366-2" aria-hidden="true" tabindex="-1"></a>survey_country_list <span class="sc">%&gt;%</span> <span class="fu">anti_join</span>(country_shape, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;Country&quot;</span><span class="ot">=</span><span class="st">&quot;geounit&quot;</span>))</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 1
 ##   Country      
 ##   &lt;fct&gt;        
 ## 1 United States</code></pre>
-<div class="sourceCode" id="cb367"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb367-1"><a href="c10-ambarom-vignette.html#cb367-1" aria-hidden="true" tabindex="-1"></a>country_shape <span class="sc">%&gt;%</span> <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> <span class="fu">select</span>(geounit, sovereignt) <span class="sc">%&gt;%</span> </span>
-<span id="cb367-2"><a href="c10-ambarom-vignette.html#cb367-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(survey_country_list, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span><span class="ot">=</span><span class="st">&quot;Country&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb367-3"><a href="c10-ambarom-vignette.html#cb367-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(geounit) <span class="sc">%&gt;%</span></span>
-<span id="cb367-4"><a href="c10-ambarom-vignette.html#cb367-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n=</span><span class="dv">30</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb368"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb368-1"><a href="c10-ambarom-vignette.html#cb368-1" aria-hidden="true" tabindex="-1"></a>country_shape <span class="sc">%&gt;%</span> <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> <span class="fu">select</span>(geounit, sovereignt) <span class="sc">%&gt;%</span> </span>
+<span id="cb368-2"><a href="c10-ambarom-vignette.html#cb368-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(survey_country_list, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span><span class="ot">=</span><span class="st">&quot;Country&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb368-3"><a href="c10-ambarom-vignette.html#cb368-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(geounit) <span class="sc">%&gt;%</span></span>
+<span id="cb368-4"><a href="c10-ambarom-vignette.html#cb368-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n=</span><span class="dv">30</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 30 × 2
 ##    geounit                          sovereignt                      
 ##    &lt;chr&gt;                            &lt;chr&gt;                           
@@ -1889,32 +1889,32 @@ FIGURE 10.2: Map of North and South America, cropped to the Western Hemisphere
 ## 29 United States of America         United States of America        
 ## 30 Venezuela                        Venezuela</code></pre>
 <p>With the mismatched names, there are several ways to remedy the data to be able to join later. The simplest fix is to rename the data on the shape object before doing any merging. We then can plot the survey estimates after merging on the data.</p>
-<div class="sourceCode" id="cb369"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb369-1"><a href="c10-ambarom-vignette.html#cb369-1" aria-hidden="true" tabindex="-1"></a>country_shape_upd <span class="ot">&lt;-</span> country_shape <span class="sc">%&gt;%</span> </span>
-<span id="cb369-2"><a href="c10-ambarom-vignette.html#cb369-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">geounit=</span><span class="fu">if_else</span>(geounit<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>, <span class="st">&quot;United States&quot;</span>, geounit)) <span class="sc">%&gt;%</span></span>
-<span id="cb369-3"><a href="c10-ambarom-vignette.html#cb369-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_crop</span>(<span class="fu">c</span>(<span class="at">xmin=</span><span class="sc">-</span><span class="dv">180</span>, <span class="at">xmax=</span><span class="dv">0</span>, <span class="at">ymin=</span><span class="sc">-</span><span class="dv">90</span>, <span class="at">ymax=</span><span class="dv">90</span>)) </span></code></pre></div>
+<div class="sourceCode" id="cb370"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb370-1"><a href="c10-ambarom-vignette.html#cb370-1" aria-hidden="true" tabindex="-1"></a>country_shape_upd <span class="ot">&lt;-</span> country_shape <span class="sc">%&gt;%</span> </span>
+<span id="cb370-2"><a href="c10-ambarom-vignette.html#cb370-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">geounit=</span><span class="fu">if_else</span>(geounit<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>, <span class="st">&quot;United States&quot;</span>, geounit)) <span class="sc">%&gt;%</span></span>
+<span id="cb370-3"><a href="c10-ambarom-vignette.html#cb370-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_crop</span>(<span class="fu">c</span>(<span class="at">xmin=</span><span class="sc">-</span><span class="dv">180</span>, <span class="at">xmax=</span><span class="dv">0</span>, <span class="at">ymin=</span><span class="sc">-</span><span class="dv">90</span>, <span class="at">ymax=</span><span class="dv">90</span>)) </span></code></pre></div>
 <pre><code>## Warning: attribute variables are assumed to be spatially constant
 ## throughout all geometries</code></pre>
 <p>To merge on the data and make a map, we begin with the map file, merge on the estimates data, and then plot as shown below for the outcomes that we have used above in tables.</p>
-<div class="sourceCode" id="cb371"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb371-1"><a href="c10-ambarom-vignette.html#cb371-1" aria-hidden="true" tabindex="-1"></a>covid_sf <span class="ot">&lt;-</span> country_shape_upd <span class="sc">%&gt;%</span></span>
-<span id="cb371-2"><a href="c10-ambarom-vignette.html#cb371-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(covid_worry_country_ests, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span><span class="ot">=</span><span class="st">&quot;Country&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb371-3"><a href="c10-ambarom-vignette.html#cb371-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(covid_educ_ests, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span><span class="ot">=</span><span class="st">&quot;Country&quot;</span>))</span>
-<span id="cb371-4"><a href="c10-ambarom-vignette.html#cb371-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb371-5"><a href="c10-ambarom-vignette.html#cb371-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb371-6"><a href="c10-ambarom-vignette.html#cb371-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data=</span>covid_sf, <span class="fu">aes</span>(<span class="at">fill=</span>p, <span class="at">geometry=</span>geometry)) <span class="sc">+</span></span>
-<span id="cb371-7"><a href="c10-ambarom-vignette.html#cb371-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">guide=</span><span class="st">&quot;colourbar&quot;</span>,<span class="at">name=</span><span class="st">&quot;Percent&quot;</span>, <span class="at">labels=</span>scales<span class="sc">::</span>comma, </span>
-<span id="cb371-8"><a href="c10-ambarom-vignette.html#cb371-8" aria-hidden="true" tabindex="-1"></a>                       <span class="at">colours=</span><span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087E8B&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>), <span class="at">na.value=</span><span class="cn">NA</span>) <span class="sc">+</span></span>
-<span id="cb371-9"><a href="c10-ambarom-vignette.html#cb371-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(<span class="at">data=</span><span class="fu">filter</span>(covid_sf, <span class="fu">is.na</span>(p)), <span class="at">pattern=</span><span class="st">&quot;crosshatch&quot;</span>, <span class="at">pattern_fill=</span><span class="st">&quot;black&quot;</span>, <span class="at">fill=</span><span class="cn">NA</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb372"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb372-1"><a href="c10-ambarom-vignette.html#cb372-1" aria-hidden="true" tabindex="-1"></a>covid_sf <span class="ot">&lt;-</span> country_shape_upd <span class="sc">%&gt;%</span></span>
+<span id="cb372-2"><a href="c10-ambarom-vignette.html#cb372-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(covid_worry_country_ests, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span><span class="ot">=</span><span class="st">&quot;Country&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb372-3"><a href="c10-ambarom-vignette.html#cb372-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(covid_educ_ests, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span><span class="ot">=</span><span class="st">&quot;Country&quot;</span>))</span>
+<span id="cb372-4"><a href="c10-ambarom-vignette.html#cb372-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb372-5"><a href="c10-ambarom-vignette.html#cb372-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb372-6"><a href="c10-ambarom-vignette.html#cb372-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data=</span>covid_sf, <span class="fu">aes</span>(<span class="at">fill=</span>p, <span class="at">geometry=</span>geometry)) <span class="sc">+</span></span>
+<span id="cb372-7"><a href="c10-ambarom-vignette.html#cb372-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">guide=</span><span class="st">&quot;colourbar&quot;</span>,<span class="at">name=</span><span class="st">&quot;Percent&quot;</span>, <span class="at">labels=</span>scales<span class="sc">::</span>comma, </span>
+<span id="cb372-8"><a href="c10-ambarom-vignette.html#cb372-8" aria-hidden="true" tabindex="-1"></a>                       <span class="at">colours=</span><span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087E8B&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>), <span class="at">na.value=</span><span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb372-9"><a href="c10-ambarom-vignette.html#cb372-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(<span class="at">data=</span><span class="fu">filter</span>(covid_sf, <span class="fu">is.na</span>(p)), <span class="at">pattern=</span><span class="st">&quot;crosshatch&quot;</span>, <span class="at">pattern_fill=</span><span class="st">&quot;black&quot;</span>, <span class="at">fill=</span><span class="cn">NA</span>)</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:ambarom-make-maps-covid"></span>
 <img src="bookdown_files/figure-html/ambarom-make-maps-covid-1.png" alt="Percent of people worried someone in their household will get COVID-19 in the next 3 months by country" width="672" />
 <p class="caption">
 FIGURE 10.3: Percent of people worried someone in their household will get COVID-19 in the next 3 months by country
 </p>
 </div>
-<div class="sourceCode" id="cb372"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb372-1"><a href="c10-ambarom-vignette.html#cb372-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb372-2"><a href="c10-ambarom-vignette.html#cb372-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data=</span>covid_sf, <span class="fu">aes</span>(<span class="at">fill=</span>p_mediumchange, <span class="at">geometry=</span>geometry)) <span class="sc">+</span></span>
-<span id="cb372-3"><a href="c10-ambarom-vignette.html#cb372-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">guide=</span><span class="st">&quot;colourbar&quot;</span>,<span class="at">name=</span><span class="st">&quot;Percent&quot;</span>, <span class="at">labels=</span>scales<span class="sc">::</span>comma, </span>
-<span id="cb372-4"><a href="c10-ambarom-vignette.html#cb372-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">colours=</span><span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087E8B&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>), <span class="at">na.value=</span><span class="cn">NA</span>) <span class="sc">+</span></span>
-<span id="cb372-5"><a href="c10-ambarom-vignette.html#cb372-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(<span class="at">data=</span><span class="fu">filter</span>(covid_sf, <span class="fu">is.na</span>(p_mediumchange)), <span class="at">pattern=</span><span class="st">&quot;crosshatch&quot;</span>, <span class="at">pattern_fill=</span><span class="st">&quot;black&quot;</span>, <span class="at">fill=</span><span class="cn">NA</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb373"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb373-1"><a href="c10-ambarom-vignette.html#cb373-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb373-2"><a href="c10-ambarom-vignette.html#cb373-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data=</span>covid_sf, <span class="fu">aes</span>(<span class="at">fill=</span>p_mediumchange, <span class="at">geometry=</span>geometry)) <span class="sc">+</span></span>
+<span id="cb373-3"><a href="c10-ambarom-vignette.html#cb373-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">guide=</span><span class="st">&quot;colourbar&quot;</span>,<span class="at">name=</span><span class="st">&quot;Percent&quot;</span>, <span class="at">labels=</span>scales<span class="sc">::</span>comma, </span>
+<span id="cb373-4"><a href="c10-ambarom-vignette.html#cb373-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">colours=</span><span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087E8B&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>), <span class="at">na.value=</span><span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb373-5"><a href="c10-ambarom-vignette.html#cb373-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(<span class="at">data=</span><span class="fu">filter</span>(covid_sf, <span class="fu">is.na</span>(p_mediumchange)), <span class="at">pattern=</span><span class="st">&quot;crosshatch&quot;</span>, <span class="at">pattern_fill=</span><span class="st">&quot;black&quot;</span>, <span class="at">fill=</span><span class="cn">NA</span>)</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:ambarom-make-maps-covid-ed"></span>
 <img src="bookdown_files/figure-html/ambarom-make-maps-covid-ed-1.png" alt="Percent of students who participated in virtual or hybrid learning" width="672" />
 <p class="caption">
@@ -1922,14 +1922,14 @@ FIGURE 10.4: Percent of students who participated in virtual or hybrid learning
 </p>
 </div>
 <p>Canada, Mexico, and the United States did not include this question so it may make sense to remove North America from the map to focus on Central and South America. This is done below by restricting to Latin America and the Caribbean.</p>
-<div class="sourceCode" id="cb373"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb373-1"><a href="c10-ambarom-vignette.html#cb373-1" aria-hidden="true" tabindex="-1"></a>covid_c_s <span class="ot">&lt;-</span> covid_sf <span class="sc">%&gt;%</span></span>
-<span id="cb373-2"><a href="c10-ambarom-vignette.html#cb373-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(region_wb<span class="sc">==</span><span class="st">&quot;Latin America &amp; Caribbean&quot;</span>)</span>
-<span id="cb373-3"><a href="c10-ambarom-vignette.html#cb373-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb373-4"><a href="c10-ambarom-vignette.html#cb373-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb373-5"><a href="c10-ambarom-vignette.html#cb373-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data=</span>covid_c_s, <span class="fu">aes</span>(<span class="at">fill=</span>p_mediumchange, <span class="at">geometry=</span>geometry)) <span class="sc">+</span></span>
-<span id="cb373-6"><a href="c10-ambarom-vignette.html#cb373-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">guide=</span><span class="st">&quot;colourbar&quot;</span>,<span class="at">name=</span><span class="st">&quot;Percent&quot;</span>, <span class="at">labels=</span>scales<span class="sc">::</span>comma, </span>
-<span id="cb373-7"><a href="c10-ambarom-vignette.html#cb373-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">colours=</span><span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087E8B&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>), <span class="at">na.value=</span><span class="cn">NA</span>) <span class="sc">+</span></span>
-<span id="cb373-8"><a href="c10-ambarom-vignette.html#cb373-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(<span class="at">data=</span><span class="fu">filter</span>(covid_c_s, <span class="fu">is.na</span>(p_mediumchange)), <span class="at">pattern=</span><span class="st">&quot;crosshatch&quot;</span>, <span class="at">pattern_fill=</span><span class="st">&quot;black&quot;</span>, <span class="at">fill=</span><span class="cn">NA</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb374"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb374-1"><a href="c10-ambarom-vignette.html#cb374-1" aria-hidden="true" tabindex="-1"></a>covid_c_s <span class="ot">&lt;-</span> covid_sf <span class="sc">%&gt;%</span></span>
+<span id="cb374-2"><a href="c10-ambarom-vignette.html#cb374-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(region_wb<span class="sc">==</span><span class="st">&quot;Latin America &amp; Caribbean&quot;</span>)</span>
+<span id="cb374-3"><a href="c10-ambarom-vignette.html#cb374-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb374-4"><a href="c10-ambarom-vignette.html#cb374-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb374-5"><a href="c10-ambarom-vignette.html#cb374-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data=</span>covid_c_s, <span class="fu">aes</span>(<span class="at">fill=</span>p_mediumchange, <span class="at">geometry=</span>geometry)) <span class="sc">+</span></span>
+<span id="cb374-6"><a href="c10-ambarom-vignette.html#cb374-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">guide=</span><span class="st">&quot;colourbar&quot;</span>,<span class="at">name=</span><span class="st">&quot;Percent&quot;</span>, <span class="at">labels=</span>scales<span class="sc">::</span>comma, </span>
+<span id="cb374-7"><a href="c10-ambarom-vignette.html#cb374-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">colours=</span><span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087E8B&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>), <span class="at">na.value=</span><span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb374-8"><a href="c10-ambarom-vignette.html#cb374-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(<span class="at">data=</span><span class="fu">filter</span>(covid_c_s, <span class="fu">is.na</span>(p_mediumchange)), <span class="at">pattern=</span><span class="st">&quot;crosshatch&quot;</span>, <span class="at">pattern_fill=</span><span class="st">&quot;black&quot;</span>, <span class="at">fill=</span><span class="cn">NA</span>)</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:ambarom-make-maps-covid-ed-c-s"></span>
 <img src="bookdown_files/figure-html/ambarom-make-maps-covid-ed-c-s-1.png" alt="Percent of students who participated in virtual or hybrid learning, Central and South America" width="672" />
 <p class="caption">
@@ -1942,17 +1942,17 @@ FIGURE 10.5: Percent of students who participated in virtual or hybrid learning,
 <ol style="list-style-type: decimal">
 <li>Calculate the percentage of households with broadband internet and those with any internet in their home, including from phone or tablet. Hint: if you’re seeing countries with 0% itnernet usage, you may want to filter by something first.</li>
 </ol>
-<div class="sourceCode" id="cb374"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb374-1"><a href="c10-ambarom-vignette.html#cb374-1" aria-hidden="true" tabindex="-1"></a>int_ests <span class="ot">&lt;-</span> </span>
-<span id="cb374-2"><a href="c10-ambarom-vignette.html#cb374-2" aria-hidden="true" tabindex="-1"></a>  ambarom_des <span class="sc">%&gt;%</span> </span>
-<span id="cb374-3"><a href="c10-ambarom-vignette.html#cb374-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Internet)<span class="sc">|!</span><span class="fu">is.na</span>(BroadbandInternet)) <span class="sc">%&gt;%</span></span>
-<span id="cb374-4"><a href="c10-ambarom-vignette.html#cb374-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span></span>
-<span id="cb374-5"><a href="c10-ambarom-vignette.html#cb374-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb374-6"><a href="c10-ambarom-vignette.html#cb374-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_broadband=</span><span class="fu">survey_mean</span>(BroadbandInternet, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span>,</span>
-<span id="cb374-7"><a href="c10-ambarom-vignette.html#cb374-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_internet=</span><span class="fu">survey_mean</span>(Internet, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span></span>
-<span id="cb374-8"><a href="c10-ambarom-vignette.html#cb374-8" aria-hidden="true" tabindex="-1"></a>  ) </span>
-<span id="cb374-9"><a href="c10-ambarom-vignette.html#cb374-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb374-10"><a href="c10-ambarom-vignette.html#cb374-10" aria-hidden="true" tabindex="-1"></a>int_ests <span class="sc">%&gt;%</span></span>
-<span id="cb374-11"><a href="c10-ambarom-vignette.html#cb374-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n=</span><span class="dv">30</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb375"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb375-1"><a href="c10-ambarom-vignette.html#cb375-1" aria-hidden="true" tabindex="-1"></a>int_ests <span class="ot">&lt;-</span> </span>
+<span id="cb375-2"><a href="c10-ambarom-vignette.html#cb375-2" aria-hidden="true" tabindex="-1"></a>  ambarom_des <span class="sc">%&gt;%</span> </span>
+<span id="cb375-3"><a href="c10-ambarom-vignette.html#cb375-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Internet)<span class="sc">|!</span><span class="fu">is.na</span>(BroadbandInternet)) <span class="sc">%&gt;%</span></span>
+<span id="cb375-4"><a href="c10-ambarom-vignette.html#cb375-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span></span>
+<span id="cb375-5"><a href="c10-ambarom-vignette.html#cb375-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb375-6"><a href="c10-ambarom-vignette.html#cb375-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_broadband=</span><span class="fu">survey_mean</span>(BroadbandInternet, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span>,</span>
+<span id="cb375-7"><a href="c10-ambarom-vignette.html#cb375-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">p_internet=</span><span class="fu">survey_mean</span>(Internet, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">*</span><span class="dv">100</span></span>
+<span id="cb375-8"><a href="c10-ambarom-vignette.html#cb375-8" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb375-9"><a href="c10-ambarom-vignette.html#cb375-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb375-10"><a href="c10-ambarom-vignette.html#cb375-10" aria-hidden="true" tabindex="-1"></a>int_ests <span class="sc">%&gt;%</span></span>
+<span id="cb375-11"><a href="c10-ambarom-vignette.html#cb375-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n=</span><span class="dv">30</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 20 × 5
 ##    Country           p_broadband p_broadband_se p_internet p_internet_se
 ##    &lt;fct&gt;                   &lt;dbl&gt;          &lt;dbl&gt;      &lt;dbl&gt;         &lt;dbl&gt;
@@ -1979,23 +1979,23 @@ FIGURE 10.5: Percent of students who participated in virtual or hybrid learning,
 <ol start="2" style="list-style-type: decimal">
 <li>Make a faceted map showing both broadband internet and any internet usage.</li>
 </ol>
-<div class="sourceCode" id="cb376"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb376-1"><a href="c10-ambarom-vignette.html#cb376-1" aria-hidden="true" tabindex="-1"></a>internet_sf <span class="ot">&lt;-</span> country_shape_upd <span class="sc">%&gt;%</span></span>
-<span id="cb376-2"><a href="c10-ambarom-vignette.html#cb376-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(<span class="fu">select</span>(int_ests, <span class="at">p=</span>p_internet, <span class="at">geounit=</span>Country), <span class="at">by=</span><span class="st">&quot;geounit&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb376-3"><a href="c10-ambarom-vignette.html#cb376-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Type=</span><span class="st">&quot;Internet&quot;</span>)</span>
-<span id="cb376-4"><a href="c10-ambarom-vignette.html#cb376-4" aria-hidden="true" tabindex="-1"></a>broadband_sf <span class="ot">&lt;-</span> country_shape_upd <span class="sc">%&gt;%</span></span>
-<span id="cb376-5"><a href="c10-ambarom-vignette.html#cb376-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(<span class="fu">select</span>(int_ests, <span class="at">p=</span>p_broadband, <span class="at">geounit=</span>Country), <span class="at">by=</span><span class="st">&quot;geounit&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb376-6"><a href="c10-ambarom-vignette.html#cb376-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Type=</span><span class="st">&quot;Broadband&quot;</span>)</span>
-<span id="cb376-7"><a href="c10-ambarom-vignette.html#cb376-7" aria-hidden="true" tabindex="-1"></a>b_int_sf <span class="ot">&lt;-</span> internet_sf <span class="sc">%&gt;%</span></span>
-<span id="cb376-8"><a href="c10-ambarom-vignette.html#cb376-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(broadband_sf) <span class="sc">%&gt;%</span></span>
-<span id="cb376-9"><a href="c10-ambarom-vignette.html#cb376-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(region_wb<span class="sc">==</span><span class="st">&quot;Latin America &amp; Caribbean&quot;</span>)</span>
-<span id="cb376-10"><a href="c10-ambarom-vignette.html#cb376-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb376-11"><a href="c10-ambarom-vignette.html#cb376-11" aria-hidden="true" tabindex="-1"></a>b_int_sf <span class="sc">%&gt;%</span></span>
-<span id="cb376-12"><a href="c10-ambarom-vignette.html#cb376-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill=</span>p)) <span class="sc">+</span></span>
-<span id="cb376-13"><a href="c10-ambarom-vignette.html#cb376-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>() <span class="sc">+</span></span>
-<span id="cb376-14"><a href="c10-ambarom-vignette.html#cb376-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Type) <span class="sc">+</span></span>
-<span id="cb376-15"><a href="c10-ambarom-vignette.html#cb376-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">guide=</span><span class="st">&quot;colourbar&quot;</span>,<span class="at">name=</span><span class="st">&quot;Percent&quot;</span>, <span class="at">labels=</span>scales<span class="sc">::</span>comma, </span>
-<span id="cb376-16"><a href="c10-ambarom-vignette.html#cb376-16" aria-hidden="true" tabindex="-1"></a>                       <span class="at">colours=</span><span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087E8B&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>), <span class="at">na.value=</span><span class="cn">NA</span>) <span class="sc">+</span></span>
-<span id="cb376-17"><a href="c10-ambarom-vignette.html#cb376-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(<span class="at">data=</span><span class="fu">filter</span>(b_int_sf, <span class="fu">is.na</span>(p)), <span class="at">pattern=</span><span class="st">&quot;crosshatch&quot;</span>, <span class="at">pattern_fill=</span><span class="st">&quot;black&quot;</span>, <span class="at">fill=</span><span class="cn">NA</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb377"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb377-1"><a href="c10-ambarom-vignette.html#cb377-1" aria-hidden="true" tabindex="-1"></a>internet_sf <span class="ot">&lt;-</span> country_shape_upd <span class="sc">%&gt;%</span></span>
+<span id="cb377-2"><a href="c10-ambarom-vignette.html#cb377-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(<span class="fu">select</span>(int_ests, <span class="at">p=</span>p_internet, <span class="at">geounit=</span>Country), <span class="at">by=</span><span class="st">&quot;geounit&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb377-3"><a href="c10-ambarom-vignette.html#cb377-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Type=</span><span class="st">&quot;Internet&quot;</span>)</span>
+<span id="cb377-4"><a href="c10-ambarom-vignette.html#cb377-4" aria-hidden="true" tabindex="-1"></a>broadband_sf <span class="ot">&lt;-</span> country_shape_upd <span class="sc">%&gt;%</span></span>
+<span id="cb377-5"><a href="c10-ambarom-vignette.html#cb377-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(<span class="fu">select</span>(int_ests, <span class="at">p=</span>p_broadband, <span class="at">geounit=</span>Country), <span class="at">by=</span><span class="st">&quot;geounit&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb377-6"><a href="c10-ambarom-vignette.html#cb377-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Type=</span><span class="st">&quot;Broadband&quot;</span>)</span>
+<span id="cb377-7"><a href="c10-ambarom-vignette.html#cb377-7" aria-hidden="true" tabindex="-1"></a>b_int_sf <span class="ot">&lt;-</span> internet_sf <span class="sc">%&gt;%</span></span>
+<span id="cb377-8"><a href="c10-ambarom-vignette.html#cb377-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(broadband_sf) <span class="sc">%&gt;%</span></span>
+<span id="cb377-9"><a href="c10-ambarom-vignette.html#cb377-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(region_wb<span class="sc">==</span><span class="st">&quot;Latin America &amp; Caribbean&quot;</span>)</span>
+<span id="cb377-10"><a href="c10-ambarom-vignette.html#cb377-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb377-11"><a href="c10-ambarom-vignette.html#cb377-11" aria-hidden="true" tabindex="-1"></a>b_int_sf <span class="sc">%&gt;%</span></span>
+<span id="cb377-12"><a href="c10-ambarom-vignette.html#cb377-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill=</span>p)) <span class="sc">+</span></span>
+<span id="cb377-13"><a href="c10-ambarom-vignette.html#cb377-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>() <span class="sc">+</span></span>
+<span id="cb377-14"><a href="c10-ambarom-vignette.html#cb377-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Type) <span class="sc">+</span></span>
+<span id="cb377-15"><a href="c10-ambarom-vignette.html#cb377-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">guide=</span><span class="st">&quot;colourbar&quot;</span>,<span class="at">name=</span><span class="st">&quot;Percent&quot;</span>, <span class="at">labels=</span>scales<span class="sc">::</span>comma, </span>
+<span id="cb377-16"><a href="c10-ambarom-vignette.html#cb377-16" aria-hidden="true" tabindex="-1"></a>                       <span class="at">colours=</span><span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087E8B&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>), <span class="at">na.value=</span><span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb377-17"><a href="c10-ambarom-vignette.html#cb377-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(<span class="at">data=</span><span class="fu">filter</span>(b_int_sf, <span class="fu">is.na</span>(p)), <span class="at">pattern=</span><span class="st">&quot;crosshatch&quot;</span>, <span class="at">pattern_fill=</span><span class="st">&quot;black&quot;</span>, <span class="at">fill=</span><span class="cn">NA</span>)</span></code></pre></div>
 <p><img src="bookdown_files/figure-html/ambarom-facet-map-1.png" width="672" /></p>
 
 </div>
