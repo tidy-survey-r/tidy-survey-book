@@ -4,7 +4,7 @@ The National Crime Victimization Survey (NCVS) is a household survey sponsored b
 
 The NCVS has been ongoing since 1992. An earlier survey, the National Crime Survey, was run from 1972 to 1991 (@ncvs_tech_2016). The survey is administered using a rotating panel. When an address enters the sample, the residents of that address are interviewed every six months for a total of 7 interviews. If the initial residents move away from the address during the period, the new residents are included in the survey, and people are not followed when they move.
 
-NCVS data is publicly available and distributed by Inter-university Consortium for Political and Social Research (ICPSR)^[https://www.icpsr.umich.edu/web/ICPSR/series/95] with data going back to 1992. The vignette in this book will include data from 2021 (@ncvs_data_2021). The NCVS data structure is complicated, and the User's Guide contains examples for analysis in SAS, SUDAAN, SPSS, and Stata, but not R (@ncvs_user_guide). This vignette will adapt those examples for R.
+NCVS data is publicly available and distributed by Inter-university Consortium for Political and Social Research (ICPSR)^[https://www.icpsr.umich.edu/web/ICPSR/series/95], with data going back to 1992. The vignette in this book will include data from 2021 (@ncvs_data_2021). The NCVS data structure is complicated, and the User's Guide contains examples for analysis in SAS, SUDAAN, SPSS, and Stata, but not R (@ncvs_user_guide). This vignette will adapt those examples for R.
 
 ## Data structure
 
@@ -16,17 +16,17 @@ The data from ICPSR are distributed with five files with their unique identifier
 - Incident Record - `YEARQ`, `IDHH`, `IDPER`
 - 2021 Collection Year Incident - `YEARQ`, `IDHH`, `IDPER`
 
-We will focus on the household, person, and incident files. From these files, we selected a subset of columns for examples and have included the subset on the book's GitHub repository and the file subsets will be used in this vignette. Find the dataset in the book's GitHub repository or download the full files at ICPSR^[https://www.icpsr.umich.edu/web/NACJD/studies/38429].
+We will focus on the household, person, and incident files. From these files, we selected a subset of columns for examples and have included the subset on the book's GitHub repository, and the file subsets will be used in this vignette. Find the dataset in the book's GitHub repository or download the complete files at ICPSR^[https://www.icpsr.umich.edu/web/NACJD/studies/38429].
 
 ## Data file preparation
 
 Some work is necessary to prepare the files before analysis. The design variables indicating pseudostratum (`V2117`) and half-sample code (`V2118`) are only included on the household file, so they must be added to the person and incident files for any analysis. 
 
-To calculate victimization rates, we need to know about the victimization status for both victims and non-victims. The incident file must be summarized and then merged onto the household or person files for person-level and household-level crimes, respectively. We begin this vignette by discussing how to create these incident summary files. This is following Section 2.2 of the NCVS User's Guide.
+To calculate victimization rates, we need to know the victimization status for both victims and non-victims. The incident file must be summarized and merged onto the household or person files for person-level and household-level crimes, respectively. We begin this vignette by discussing how to create these incident summary files. This is following Section 2.2 of the NCVS User's Guide.
 
 ### Preparing files for estimation of victimization rates
 
-Each record on the incident file represents one victimization, which is not the same as one incident. Some victimizations have several instances that make it difficult for the victim to differentiate the details of these incidents, labeled as series crimes. Appendix A of the User's Guide indicates how to calculate the series weight in other statistical languages, and that code is adapted here for R. Essentially, if a victimization is a series crime, its series weight is top-coded at 10 based on the number of actual victimizations. If an incident is a series crime, but the number of occurrences is unknown, the series weight is set to 6. A description of the variables used in this chunk is included in the following table:
+Each record on the incident file represents one victimization, which is not the same as one incident. Some victimizations have several instances that make it difficult for the victim to differentiate the details of these incidents, labeled as series crimes. Appendix A of the User's Guide indicates how to calculate the series weight in other statistical languages. That code is adapted here for R. Essentially, if a victimization is a series crime, its series weight is top-coded at 10 based on the number of actual victimizations. If an incident is a series crime, but the number of occurrences is unknown, the series weight is set to 6. A description of the variables used in this chunk is included in the following table:
 
 |Variable|Description|Value|Label|
 |---|---|---|---|
@@ -45,7 +45,6 @@ Each record on the incident file represents one victimization, which is not the 
 #| label: ncvs-vign-incfile
 #| message: false
 #| cache: TRUE
-
 library(tidyverse)
 library(srvyr)
 library(gt)
@@ -206,13 +205,12 @@ inc_ind %>%
         AAST_Other)
 ```
 
-In the code above, some checking of derived variables is done. This is a good point and pause to look at the output of crosswalks between an original variable and a derived to check the logic was programmed correctly and everything ends up in the bucket you expect. 
+In the code above, some checking of derived variables is done. This is a good point to pause to look at the output of crosswalks between an original variable and a derived to check the logic was programmed correctly and everything ends up in the bucket you expect. 
 
-After creating indicators of victimization types and characteristics, the file is summarized, and crimes are summed across persons or households by `YEARQ.` Property crimes are summed across households, and personal crimes (violent plus purse snatching and pocket-picking) are summed across persons. The indicators are summed using the `serieswgt`, and the variable `WGTVICCY` needs to be retained for later analysis.
+After creating indicators of victimization types and characteristics, the file is summarized, and crimes are summed across persons or households by `YEARQ.` Property crimes are summed across households, and personal crimes (violent, purse snatching, and pocket-picking) are summed across persons. The indicators are summed using the `serieswgt`, and the variable `WGTVICCY` needs to be retained for later analysis.
 
 ```{r}
 #| label: ncvs-vign-inc-sum
-
 inc_hh_sums <-
   inc_ind %>%
   filter(V4529_num > 23) %>% # restrict to household crimes
@@ -236,11 +234,11 @@ inc_pers_sums <-
             .groups = "drop")
 ```
 
-The victimization summary files are then merged onto the appropriate files. For any record on the household or person file that is not on the victimization file, the victimization counts are set to 0 after merging. In this step, we will also create the victimization adjustment factor. See 2.2.4 in the User's Guide for details of why this adjustment is created. It is calculated as follows:
+The victimization summary files are then merged into the appropriate files. For any record on the household or person file that is not on the victimization file, the victimization counts are set to 0 after merging. In this step, we will also create the victimization adjustment factor. See 2.2.4 in the User's Guide for details of why this adjustment is created. It is calculated as follows:
 
 $$ A_{ijk}=\frac{v_{ijk}}{w_{ijk}}$$
 
-where $w_{ijk}$ is the person weight (`WGTPERCY`) for personal crimes or the household weight (`WGTHHCY`) for household crimes and $v_{ijk}$ is the victimization weight (`WGTVICCY`) for household $i$, respondent $j$, in reporting period $k$. The adjustment factor is set to 0 if no incidents are reported.
+where $w_{ijk}$ is the person weight (`WGTPERCY`) for personal crimes or the household weight (`WGTHHCY`) for household crimes, and $v_{ijk}$ is the victimization weight (`WGTVICCY`) for household $i$, respondent $j$, in reporting period $k$. The adjustment factor is set to 0 if no incidents are reported.
 
 ```{r}
 #| label: ncvs-vign-merge-inc-sum
@@ -268,9 +266,9 @@ pers_vsum <- pers_in %>%
 
 ### Derived demographic variables
 
-A final step in file preparation for the household and person files is creating any derived variables on the household and person files, such as income categories or age categories, for subgroup analysis. This step can be done before or after merging on the victimization counts.
+A final step in file preparation for the household and person files is creating any derived variables on the household and person files, such as income categories or age categories, for subgroup analysis. This step can be done before or after merging the victimization counts.
 
-For the household file, we create categories for tenure (rental status), urbanicity, income, place size, and region. For the person file, we create categories for sex, race/Hispanic origin, age categories, and marital status. We also merge on the household demographics to the person file as well as the design variables (`V2117` and `V2118`).
+For the household file, we create categories for tenure (rental status), urbanicity, income, place size, and region. For the person file, we create categories for sex, race/Hispanic origin, age categories, and marital status. We also merge the household demographics to the person file as well as the design variables (`V2117` and `V2118`).
 
 Brief codebook for household variables:
 
@@ -352,18 +350,18 @@ Brief codebook for person variables:
 
 ```{r}
 #| label: ncvs-vign-hh-pers-der
-
 hh_vsum_der <- hh_vsum %>%
   mutate(
     Tenure = factor(
-      case_when(V2015==1 ~ "Owned",!is.na(V2015) ~ "Rented"),
+      case_when(V2015 == 1 ~ "Owned", !is.na(V2015) ~ "Rented"),
       levels = c("Owned", "Rented")
     ),
-    Urbanicity = factor(case_when(
-      V2143==1~"Urban",
-      V2143==2~"Suburban",
-      V2143==3~"Rural"
-    ), levels=c("Urban", "Suburban", "Rural")),
+    Urbanicity = factor(
+      case_when(V2143 == 1 ~ "Urban",
+                V2143 == 2 ~ "Suburban",
+                V2143 == 3 ~ "Rural"),
+      levels = c("Urban", "Suburban", "Rural")
+    ),
     SC214A_num = as.numeric(as.character(SC214A)),
     Income = case_when(
       SC214A_num <= 8 ~ "Less than $25,000",
@@ -382,16 +380,17 @@ hh_vsum_der <- hh_vsum %>%
       18 ~ "100,000-249,999",
       19 ~ "250,000-499,999",
       20 ~ "500,000-999,999",
-      c(21, 22, 23)~"1,000,000 or more"),
-    PlaceSize=fct_reorder(PlaceSize, as.numeric(V2126B)),
-    Region= case_match(
-      as.numeric(V2127B),
-      1~"Northeast",
-      2~"Midwest",
-      3~"South",
-      4~"West"
+      c(21, 22, 23) ~ "1,000,000 or more"
     ),
-    Region=fct_reorder(Region, as.numeric(V2127B))
+    PlaceSize = fct_reorder(PlaceSize, as.numeric(V2126B)),
+    Region = case_match(
+      as.numeric(V2127B),
+      1 ~ "Northeast",
+      2 ~ "Midwest",
+      3 ~ "South",
+      4 ~ "West"
+    ),
+    Region = fct_reorder(Region, as.numeric(V2127B))
   )
 
 hh_vsum_der %>% count(Tenure, V2015)
@@ -410,27 +409,24 @@ hh_vsum_slim <- hh_vsum_der %>%
          Region)
 
 
-NHOPI <- "Native Hawaiian or Other Pacific Islander" # made for usage later
+NHOPI <-
+  "Native Hawaiian or Other Pacific Islander" # made for usage later
 pers_vsum_der <- pers_vsum %>%
   mutate(
-    Sex = factor(
-      case_when(
-        V3018==1~"Male",
-        V3018==2~"Female"
-      )
-    ),
+    Sex = factor(case_when(V3018 == 1 ~ "Male",
+                           V3018 == 2 ~ "Female")),
     RaceHispOrigin = factor(
       case_when(
-        V3024==1 ~ "Hispanic",
-        V3023A==1 ~ "White",
-        V3023A==2 ~ "Black",
-        V3023A==4 ~ "Asian",
-        V3023A==5 ~ NHOPI,
+        V3024 == 1 ~ "Hispanic",
+        V3023A == 1 ~ "White",
+        V3023A == 2 ~ "Black",
+        V3023A == 4 ~ "Asian",
+        V3023A == 5 ~ NHOPI,
         TRUE ~ "Other"
       ),
       levels = c("White", "Black", "Hispanic", "Asian", NHOPI, "Other")
     ),
-    V3014_num=as.numeric(as.character(V3014)),
+    V3014_num = as.numeric(as.character(V3014)),
     AgeGroup = case_when(
       V3014_num <= 17 ~ "12-17",
       V3014_num <= 24 ~ "18-24",
@@ -442,11 +438,11 @@ pers_vsum_der <- pers_vsum %>%
     AgeGroup = fct_reorder(AgeGroup, V3014_num),
     MaritalStatus = factor(
       case_when(
-        V3015==1~"Married",
-        V3015==2~"Widowed",
-        V3015==3~"Divorced",
-        V3015==4~"Separated",
-        V3015==5~"Never married"
+        V3015 == 1 ~ "Married",
+        V3015 == 2 ~ "Widowed",
+        V3015 == 3 ~ "Divorced",
+        V3015 == 4 ~ "Separated",
+        V3015 == 5 ~ "Never married"
       ),
       levels = c("Never married", "Married", "Widowed",
                  "Divorced", "Separated")
@@ -496,7 +492,7 @@ inc_analysis <- inc_ind %>%
 
 ## Survey design objects
 
-All of the data prep above is necessary to prepare the data for survey analysis. At this point, we can create the design objects and finally begin analysis. We will create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster variable for analysis.
+All the data prep above is necessary to prepare the data for survey analysis. At this point, we can create the design objects and finally begin analysis. We will create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster variable for analysis.
 
 ```{r}
 #| label: ncvs-vign-desobj
@@ -565,12 +561,10 @@ inc_des %>%
   )
 
 hh_des %>%
-  summarize(
-    Property_Vzn = survey_total(Property * ADJINC_WT, na.rm = TRUE))
+  summarize(Property_Vzn = survey_total(Property * ADJINC_WT, na.rm = TRUE))
 
 pers_des %>%
-  summarize(
-    Violent_Vzn = survey_total(Violent * ADJINC_WT, na.rm = TRUE))
+  summarize(Violent_Vzn = survey_total(Violent * ADJINC_WT, na.rm = TRUE))
 ```
 
 ### Victimization proportions
@@ -595,7 +589,7 @@ inc_des %>%
 
 ### Victimization rates
 
-Victimization rates measure the number of victimizations per population and are not an estimate of the proportion of households or persons who are victimized, which is a prevalence rate and described in the next section. Victimization rates are estimated using the household or person design objects depending on the type of crime, and the adjustment factor must be incorporated. We return to the example of property and violent victimizations used in the example for victimization totals. In the following example, the property victimization totals are calculated as above, as well as the property victimization rate, using `survey_mean()`, and the population size using `survey_total()`.
+Victimization rates measure the number of victimizations per population and are not an estimate of the proportion of households or persons who are victimized, which is a prevalence rate described in the next section. Victimization rates are estimated using the household or person design objects depending on the type of crime, and the adjustment factor must be incorporated. We return to the example of property and violent victimizations used in the example for victimization totals. In the following example, the property victimization totals are calculated as above, as well as the property victimization rate, using `survey_mean()`, and the population size using `survey_total()`.
 
 ```{r}
 #| label: ncvs-vign-vic-rate
@@ -619,7 +613,7 @@ pers_des %>%
   ))
 ```
 
-A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by()` statement for each categorization separately. Thus, we make a function to do this and then use `map_df()` from the {purrr} package to loop through the variables. Finally, the {gt} package is used to make a publishable table.
+A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate the violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by()` statement for each categorization separately. Thus, we make a function to do this and then use `map_df()` from the {purrr} package to loop through the variables. Finally, the {gt} package is used to make a publishable table.
 
 ```{r}
 #| ncvs-vign-rates-demo
@@ -694,8 +688,7 @@ pers_est_df %>%
     Alaska Native only or as two or more races.",
     locations = cells_stub(rows = Level == "Other")
   ) %>%
-  tab_source_note(
-    source_note = "Note: Rates per 1,000 persons age 12 or older.") %>%
+  tab_source_note(source_note = "Note: Rates per 1,000 persons age 12 or older.") %>%
   tab_source_note(source_note = "Source: Bureau of Justice Statistics,
                   National Crime Victimization Survey, 2021.") %>%
   tab_stubhead(label = "Victim demographic") %>%
@@ -709,66 +702,52 @@ Prevalence rates are different from victimization rates as the numerator is the 
 
 ```{r}
 #| label: ncvs-vign-prevexamp
-
 pers_prev_des <-
   pers_des %>%
-  mutate(Year=floor(YEARQ)) %>%
+  mutate(Year = floor(YEARQ)) %>%
   group_by(Year, IDHH, IDPER) %>%
-  mutate(
-    Violent_Ind=sum(Violent)>0,
-    AAST_Ind=sum(AAST)>0
-  ) %>%
+  mutate(Violent_Ind = sum(Violent) > 0,
+         AAST_Ind = sum(AAST) > 0) %>%
   ungroup()
 
 pers_prev_ests <- pers_prev_des %>%
-  summarize(
-    Violent_Prev=survey_mean(Violent_Ind*100),
-    AAST_Prev=survey_mean(AAST_Ind*100)
-  )
+  summarize(Violent_Prev = survey_mean(Violent_Ind * 100),
+            AAST_Prev = survey_mean(AAST_Ind * 100))
 
 pers_prev_ests
-
 ```
 
-In the example above, the indicator is multiplied by 100 to return a percentage rather than a proportion. In 2021, we estimate that `r round(pers_prev_ests$Violent_Prev, 2)`% of people age 12 and older were a victim of violent crime in the United States and `r round(pers_prev_ests$AAST_Prev, 2)`% were victims of aggravated assault.
+In the example above, the indicator is multiplied by 100 to return a percentage rather than a proportion. In 2021, we estimate that `r round(pers_prev_ests$Violent_Prev, 2)`% of people aged 12 and older were a victim of violent crime in the United States, and `r round(pers_prev_ests$AAST_Prev, 2)`% were victims of aggravated assault.
 
 ## Exercises
 
-1. What proportion of completed motor vehicle thefts are not reported to the police? Hint: Use codebook to look at definition of Type of Crime (V4529).
+1. What proportion of completed motor vehicle thefts are not reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).
 
 ```{r}
 #| label: ncvs-vign-des-sol1
 ans1 <- inc_des %>%
   filter(str_detect(V4529, "40|41")) %>%
   group_by(ReportPolice) %>%
-  summarize(
-    Pct=survey_prop(na.rm=TRUE)*100
-  )
+  summarize(Pct = survey_prop(na.rm = TRUE) * 100)
 ans1
 ans1 %>% filter(!ReportPolice) %>% pull(Pct)
 ```
-
 
 2. How many violent crimes occur in each region?
 
 ```{r}
 #| label: ncvs-vign-des-sol2
-
 inc_des %>%
   filter(Violent) %>%
   survey_count(Region)
 ```
 
-
 3. What is the property victimization rate among each income level?
 
 ```{r}
 #| label: ncvs-vign-des-sol3
-
 hh_des %>%
   group_by(Income) %>%
-  summarize(
-    Property_Rate=survey_mean(Property*ADJINC_WT*1000, na.rm=TRUE)
-  )
+  summarize(Property_Rate = survey_mean(Property * ADJINC_WT * 1000, na.rm =
+                                          TRUE))
 ```
-
