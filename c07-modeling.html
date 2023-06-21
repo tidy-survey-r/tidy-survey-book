@@ -23,7 +23,7 @@
 <meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
 
 
-<meta name="date" content="2023-06-19" />
+<meta name="date" content="2023-06-21" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -346,9 +346,9 @@ div.csl-indent {
             <section class="normal" id="section-">
 <div id="c07-modeling" class="section level1 hasAnchor" number="7">
 <h1><span class="header-section-number">Chapter 7</span> Modeling<a href="c07-modeling.html#c07-modeling" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey}<span class="citation">(<a href="#ref-lumley2010complex" role="doc-biblioref">Lumley 2010</a>, <a href="#ref-R-survey" role="doc-biblioref">2023</a>)</span> package as was true in Chapter <a href="c06-statistical-testing.html#c06-statistical-testing">6</a>. In this chapter, we will first review concepts of modeling in R and how to specify formulas. Then, we will introduce linear modeling including ANOVA and linear regression and logistic regression. For details on other types of regression including ordinal regression, log-linear models, and survival analysis, refer to <span class="citation">Lumley (<a href="#ref-lumley2010complex" role="doc-biblioref">2010</a>)</span>. <span class="citation">Lumley (<a href="#ref-lumley2010complex" role="doc-biblioref">2010</a>)</span> also discusses custom models such as a negative binomial or poisson model in Appendix E of his book.</p>
-<p>Accounting for the survey design and weights in modeling can generalize a model to the target population. When using the survey design objects, the statistical tests account for the fact that the observations may not be independent. There is some debate as to whether weights should be used in regression <span class="citation">(<a href="#ref-gelman2007weights" role="doc-biblioref">Gelman 2007</a>; <a href="#ref-bollen2016weightsreg" role="doc-biblioref">Bollen et al. 2016</a>)</span>.</p>
-<p>In all models in R, you need to specify the structure of the model using a formula. The left side of the formula is the response/dependent variable and the right side of the formula has the predictor/independent variable(s). There are many symbols used in R to specify the formula.</p>
+<p>Modeling survey data cannot be directly done in {srvyr} but can be done in the {survey}<span class="citation">(<a href="#ref-lumley2010complex" role="doc-biblioref">Lumley 2010</a>, <a href="#ref-R-survey" role="doc-biblioref">2023</a>)</span> package, as mentioned in Chapter <a href="c06-statistical-testing.html#c06-statistical-testing">6</a>. In this chapter, we will first review modeling concepts in R and how to specify formulas. Then, we will introduce linear modeling, including ANOVA, linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to <span class="citation">Lumley (<a href="#ref-lumley2010complex" role="doc-biblioref">2010</a>)</span>. <span class="citation">Lumley (<a href="#ref-lumley2010complex" role="doc-biblioref">2010</a>)</span> also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book.</p>
+<p>Accounting for the survey design and weights in modeling can generalize a model to the target population. When using the survey design objects, the statistical tests account for the fact that the observations may not be independent. There is some debate about whether weights should be used in regression <span class="citation">(<a href="#ref-gelman2007weights" role="doc-biblioref">Gelman 2007</a>; <a href="#ref-bollen2016weightsreg" role="doc-biblioref">Bollen et al. 2016</a>)</span>.</p>
+<p>In all models in R, we need to specify the structure of the model using a formula. The left side of the formula is the response/dependent variable, and the right side of the formula has the predictor/independent variable(s). There are many symbols used in R to specify the formula.</p>
 <p>For example, a linear formula mathematically specified as</p>
 <p><span class="math display">\[Y_i=\beta_0+\beta_1 X_i+\epsilon_i\]</span>
 would be specified in R as <code>y~x</code> where the intercept is not explicitly included. To fit a model with no intercept, that is,</p>
@@ -415,8 +415,8 @@ would be specified in R as <code>y~x</code> where the intercept is not explicitl
 </ul>
 <div id="chapter-set-up" class="section level2 hasAnchor" number="7.1">
 <h2><span class="header-section-number">7.1</span> Chapter Set-Up<a href="c07-modeling.html#chapter-set-up" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>For this chapter, we will be using the same data as we did in <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a>: ANES and RECS. As a reminder, we will need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.</p>
-<p>First, make sure you have installed and loaded the following packages:</p>
+<p>For this chapter, we will use the same data as we did in <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a>: ANES and RECS. As a reminder, we need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.</p>
+<p>First, make sure we have installed and loaded the following packages:</p>
 <div class="sourceCode" id="cb195"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb195-1"><a href="c07-modeling.html#cb195-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb195-2"><a href="c07-modeling.html#cb195-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey) <span class="co"># for survey analysis</span></span>
 <span id="cb195-3"><a href="c07-modeling.html#cb195-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr) <span class="co"># for tidy survey analysis</span></span>
@@ -424,15 +424,18 @@ would be specified in R as <code>y~x</code> where the intercept is not explicitl
 <span id="cb195-5"><a href="c07-modeling.html#cb195-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osfr)</span>
 <span id="cb195-6"><a href="c07-modeling.html#cb195-6" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;helper-fun/helper-functions.R&quot;</span>)</span></code></pre></div>
 <p>Second, we need to read in the data and create the design objects.</p>
-<p>Here is how you create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information) as well as Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a>.</p>
+<p>Here is how we create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information, as well as Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a>.</p>
 <div class="sourceCode" id="cb196"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb196-1"><a href="c07-modeling.html#cb196-1" aria-hidden="true" tabindex="-1"></a>anes_in <span class="ot">&lt;-</span> <span class="fu">read_rds_tsr</span>(<span class="st">&quot;anes_2020.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb196-2"><a href="c07-modeling.html#cb196-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">mutate</span>(<span class="at">Weight=</span>Weight<span class="sc">/</span><span class="fu">sum</span>(Weight)<span class="sc">*</span>targetpop) </span>
-<span id="cb196-3"><a href="c07-modeling.html#cb196-3" aria-hidden="true" tabindex="-1"></a>anes_des <span class="ot">&lt;-</span> anes_in <span class="sc">%&gt;%</span></span>
-<span id="cb196-4"><a href="c07-modeling.html#cb196-4" aria-hidden="true" tabindex="-1"></a>   <span class="fu">as_survey_design</span>(<span class="at">weights =</span> Weight,</span>
-<span id="cb196-5"><a href="c07-modeling.html#cb196-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">strata =</span> Stratum,</span>
-<span id="cb196-6"><a href="c07-modeling.html#cb196-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">ids =</span> VarUnit,</span>
-<span id="cb196-7"><a href="c07-modeling.html#cb196-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">nest =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
-<p>Here is how you create the design object for the RECS data. More details for this are included in the RECS documentation and Chapter <a href="c03-specifying-sample-designs.html#c03-specifying-sample-designs">3</a>.</p>
+<span id="cb196-2"><a href="c07-modeling.html#cb196-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Weight =</span> Weight <span class="sc">/</span> <span class="fu">sum</span>(Weight) <span class="sc">*</span> targetpop)</span>
+<span id="cb196-3"><a href="c07-modeling.html#cb196-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb196-4"><a href="c07-modeling.html#cb196-4" aria-hidden="true" tabindex="-1"></a>anes_des <span class="ot">&lt;-</span> anes_in <span class="sc">%&gt;%</span></span>
+<span id="cb196-5"><a href="c07-modeling.html#cb196-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
+<span id="cb196-6"><a href="c07-modeling.html#cb196-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> Weight,</span>
+<span id="cb196-7"><a href="c07-modeling.html#cb196-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata =</span> Stratum,</span>
+<span id="cb196-8"><a href="c07-modeling.html#cb196-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">ids =</span> VarUnit,</span>
+<span id="cb196-9"><a href="c07-modeling.html#cb196-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">nest =</span> <span class="cn">TRUE</span></span>
+<span id="cb196-10"><a href="c07-modeling.html#cb196-10" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p>Here is how we create the design object for the RECS data. More details for this are included in the RECS documentation and Chapter <a href="c03-specifying-sample-designs.html#c03-specifying-sample-designs">3</a>.</p>
 <div class="sourceCode" id="cb197"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb197-1"><a href="c07-modeling.html#cb197-1" aria-hidden="true" tabindex="-1"></a>recs_in <span class="ot">&lt;-</span><span class="fu">read_rds_tsr</span>(<span class="st">&quot;recs_2015.rds&quot;</span>)</span>
 <span id="cb197-2"><a href="c07-modeling.html#cb197-2" aria-hidden="true" tabindex="-1"></a>recs_des <span class="ot">&lt;-</span> recs_in <span class="sc">%&gt;%</span></span>
 <span id="cb197-3"><a href="c07-modeling.html#cb197-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> NWEIGHT,</span>
@@ -443,35 +446,37 @@ would be specified in R as <code>y~x</code> where the intercept is not explicitl
 </div>
 <div id="linear-modeling" class="section level2 hasAnchor" number="7.2">
 <h2><span class="header-section-number">7.2</span> Linear modeling<a href="c07-modeling.html#linear-modeling" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>In this section, we will discuss linear models. Many common models and tests are linear models including analysis of variance (ANOVA) and linear regression. Jonas Kristoffer Lindeløv has an interesting <a href="https://lindeloev.github.io/tests-as-linear/">discussion</a> of many statistical tests and models being equivalent to a linear model. As an example, a one-way ANOVA is a linear model with one categorical independent variable and a two-sample t-test is an ANOVA where the independent variable has exactly 2 levels.</p>
+<p>In this section, we will discuss linear models. Many common models and tests are linear models, including analysis of variance (ANOVA) and linear regression. Jonas Kristoffer Lindeløv has an interesting <a href="https://lindeloev.github.io/tests-as-linear/">discussion</a> of many statistical tests and models being equivalent to a linear model. For example, a one-way ANOVA is a linear model with one categorical independent variable, and a two-sample t-test is an ANOVA where the independent variable has exactly two levels.</p>
 <div id="anova" class="section level3 hasAnchor" number="7.2.1">
 <h3><span class="header-section-number">7.2.1</span> ANOVA<a href="c07-modeling.html#anova" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>In ANOVA, we are testing whether the mean of an outcome is the same across two or more groups. Statistically, we set up this as:</p>
+<p>In ANOVA, we are testing whether the mean of an outcome is the same across two or more groups. Statistically, we set up this as follows:</p>
 <ul>
-<li><span class="math inline">\(H_0: \mu_1 = \mu_2= \dots = \mu_k\)</span> where <span class="math inline">\(\mu_i\)</span> is the is the mean outcome for group <span class="math inline">\(i\)</span></li>
+<li><span class="math inline">\(H_0: \mu_1 = \mu_2= \dots = \mu_k\)</span> where <span class="math inline">\(\mu_i\)</span> is the mean outcome for group <span class="math inline">\(i\)</span></li>
 <li><span class="math inline">\(H_A: \text{At least one mean is different}\)</span></li>
 </ul>
 <p>Some assumptions when using ANOVA on survey data include:</p>
 <ul>
-<li>Outcome variable is normally distributed within each group</li>
+<li>The outcome variable is normally distributed within each group</li>
 <li>The variances of the outcome variable between each group are approximately equal</li>
 <li>We do NOT assume independence between the groups as with general ANOVA. The covariance is accounted for in the survey design</li>
 </ul>
 <p>To perform this type of test in R, the general syntax is as follows:</p>
-<pre><code>des_obj %&gt;%
-  svyglm(design=.,
-         outcomevar~groupvar,
-         na.action=na.omit,
-         df.resid=degf(.))</code></pre>
+<div class="sourceCode" id="cb198"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb198-1"><a href="c07-modeling.html#cb198-1" aria-hidden="true" tabindex="-1"></a>des_obj <span class="sc">%&gt;%</span></span>
+<span id="cb198-2"><a href="c07-modeling.html#cb198-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb198-3"><a href="c07-modeling.html#cb198-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb198-4"><a href="c07-modeling.html#cb198-4" aria-hidden="true" tabindex="-1"></a>    outcomevar <span class="sc">~</span> groupvar,</span>
+<span id="cb198-5"><a href="c07-modeling.html#cb198-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit,</span>
+<span id="cb198-6"><a href="c07-modeling.html#cb198-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">df.resid =</span> <span class="fu">degf</span>(.)</span>
+<span id="cb198-7"><a href="c07-modeling.html#cb198-7" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 <p>where <code>des_obj</code> is a design object, <code>outcomevar</code> is the outcome variable, <code>groupvar</code> is the group variable, and <code>na.action=na.omit</code> is set so that records with missing data in the outcome or group variable are removed for prediction <a href="#fn18" class="footnote-ref" id="fnref18"><sup>18</sup></a>. The function <code>svyglm()</code> does not have the design as the first argument so the <code>.</code> notation is used to pass it with a pipe.</p>
-<p>Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer which is encoded in the variable <code>SummerTempNight</code>. A descriptive analysis is displayed below of the temperature set by region and the sample sizes.</p>
+<p>Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer, which is encoded in the variable <code>SummerTempNight</code>. A descriptive analysis of the temperature set by region and the sample sizes is displayed below.</p>
 <div class="sourceCode" id="cb199"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb199-1"><a href="c07-modeling.html#cb199-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb199-2"><a href="c07-modeling.html#cb199-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ACUsed) <span class="sc">%&gt;%</span></span>
 <span id="cb199-3"><a href="c07-modeling.html#cb199-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
 <span id="cb199-4"><a href="c07-modeling.html#cb199-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb199-5"><a href="c07-modeling.html#cb199-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">SMN=</span><span class="fu">survey_mean</span>(SummerTempNight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb199-6"><a href="c07-modeling.html#cb199-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n=</span><span class="fu">unweighted</span>(<span class="fu">n</span>()),</span>
-<span id="cb199-7"><a href="c07-modeling.html#cb199-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_na=</span><span class="fu">unweighted</span>(<span class="fu">sum</span>(<span class="fu">is.na</span>(SummerTempNight)))</span>
+<span id="cb199-5"><a href="c07-modeling.html#cb199-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">SMN =</span> <span class="fu">survey_mean</span>(SummerTempNight, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb199-6"><a href="c07-modeling.html#cb199-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">unweighted</span>(<span class="fu">n</span>()),</span>
+<span id="cb199-7"><a href="c07-modeling.html#cb199-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_na =</span> <span class="fu">unweighted</span>(<span class="fu">sum</span>(<span class="fu">is.na</span>(SummerTempNight)))</span>
 <span id="cb199-8"><a href="c07-modeling.html#cb199-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 5
 ##   Region      SMN SMN_se     n  n_na
@@ -480,11 +485,11 @@ would be specified in R as <code>y~x</code> where the intercept is not explicitl
 ## 2 Midwest    71.4  0.151  1235     0
 ## 3 South      72.0  0.118  1917     0
 ## 4 West       72.1  0.299  1115     0</code></pre>
-<p>In the following code, we test whether this temperature varies by region by first using <code>svyglm()</code> to run the test and then using <code>broom::tidy()</code> to display the output. Note that the temperature setting is set to NA when the household does not use air-conditioning and thus <code>na.action=na.omit</code> is specified to ignore these cases.</p>
+<p>In the following code, we test whether this temperature varies by region by first using <code>svyglm()</code> to run the test and then using <code>broom::tidy()</code> to display the output. Note that the temperature setting is set to NA when the household does not use air-conditioning, and thus <code>na.action=na.omit</code> is specified to ignore these cases.</p>
 <div class="sourceCode" id="cb201"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb201-1"><a href="c07-modeling.html#cb201-1" aria-hidden="true" tabindex="-1"></a>anova_out <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb201-2"><a href="c07-modeling.html#cb201-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">svyglm</span>(<span class="at">design=</span>.,</span>
-<span id="cb201-3"><a href="c07-modeling.html#cb201-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">formula=</span>SummerTempNight<span class="sc">~</span>Region,</span>
-<span id="cb201-4"><a href="c07-modeling.html#cb201-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">na.action=</span>na.omit)</span>
+<span id="cb201-2"><a href="c07-modeling.html#cb201-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
+<span id="cb201-3"><a href="c07-modeling.html#cb201-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">formula =</span> SummerTempNight <span class="sc">~</span> Region,</span>
+<span id="cb201-4"><a href="c07-modeling.html#cb201-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">na.action =</span> na.omit)</span>
 <span id="cb201-5"><a href="c07-modeling.html#cb201-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb201-6"><a href="c07-modeling.html#cb201-6" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(anova_out)</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 5
@@ -494,26 +499,28 @@ would be specified in R as <code>y~x</code> where the intercept is not explicitl
 ## 2 RegionMidwest    0.874     0.253      3.46 8.18e-  4
 ## 3 RegionSouth      1.49      0.231      6.45 5.20e-  9
 ## 4 RegionWest       1.66      0.353      4.70 9.27e-  6</code></pre>
-<p>In the output above, we can see the estimated coefficients (<code>estimate</code>), estimated standard errors of the coefficients (<code>std.error</code>), the t-statistic (<code>statistic</code>), and the p-value for each coefficient. In this output, the intercept represents the reference value which is the Northeast region<a href="#fn19" class="footnote-ref" id="fnref19"><sup>19</sup></a>. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, 0.874 degrees higher than in the Northeast during summer nights.</p>
+<p>In the output above, we can see the estimated coefficients (<code>estimate</code>), estimated standard errors of the coefficients (<code>std.error</code>), the t-statistic (<code>statistic</code>), and the p-value for each coefficient. In this output, the intercept represents the reference value of the Northeast region<a href="#fn19" class="footnote-ref" id="fnref19"><sup>19</sup></a>. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, 0.874 degrees higher than in the Northeast during summer nights.</p>
 </div>
 <div id="linear-regression" class="section level3 hasAnchor" number="7.2.2">
 <h3><span class="header-section-number">7.2.2</span> Linear regression<a href="c07-modeling.html#linear-regression" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Linear regression is a more generalized method than ANOVA. In linear regression, we are fitting a model of a continuous outcome with any number of predictors which are categorical or continuous. We form these models as follows:</p>
+<p>Linear regression is a more generalized method than ANOVA. In linear regression, we are fitting a model of a continuous outcome with any number of categorical or continuous predictors. We form these models as follows:</p>
 <p><span class="math display">\[y_i=\beta_0 +\sum_{i=1}^p \beta_i x_i + \epsilon_i\]</span></p>
 <p>where <span class="math inline">\(y_i\)</span> is the outcome, <span class="math inline">\(\beta_0\)</span> is an intercept, <span class="math inline">\(x_1, \cdots, x_n\)</span> are the predictors with <span class="math inline">\(\beta_1, \cdots, \beta_p\)</span> as the associated coefficients, and <span class="math inline">\(\epsilon_i\)</span> is the error.</p>
 <p>Assumptions in linear regression using survey data include:</p>
 <ul>
-<li>The residuals (<span class="math inline">\(\epsilon_i\)</span>) are normally distributed but there is not an assumption of independence and the correlation structure is captured in the survey design object.</li>
+<li>The residuals (<span class="math inline">\(\epsilon_i\)</span>) are normally distributed, but there is not an assumption of independence, and the correlation structure is captured in the survey design object</li>
 <li>There is a linear relationship between the outcome variable and the independent variables</li>
-<li>The residuals are homoscedastic, that is the error term is the same across all values of independent variables</li>
+<li>The residuals are homoscedastic, that is, the error term is the same across all values of independent variables</li>
 </ul>
 <p>The syntax for linear regression is nearly identical to ANOVA as follows:</p>
-<pre><code>des_obj %&gt;%
-  svyglm(design=.,
-         outcomevar~x1+x2+x3,
-         na.action=na.omit,
-         df.resid=degf(.))</code></pre>
-<p>As discussed in the beginning of the chapter, the formula on the right-hand side can be specified many ways whether interactions are desired or not, for example. On RECS, information on the square footage of homes and the electric bills are obtained. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to examine whether it is reasonable to assume a linear relationship. In the plot below, each hexagon represents the weighted count of households in the bin.</p>
+<div class="sourceCode" id="cb203"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb203-1"><a href="c07-modeling.html#cb203-1" aria-hidden="true" tabindex="-1"></a>des_obj <span class="sc">%&gt;%</span></span>
+<span id="cb203-2"><a href="c07-modeling.html#cb203-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb203-3"><a href="c07-modeling.html#cb203-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb203-4"><a href="c07-modeling.html#cb203-4" aria-hidden="true" tabindex="-1"></a>    outcomevar <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">+</span> x3,</span>
+<span id="cb203-5"><a href="c07-modeling.html#cb203-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit,</span>
+<span id="cb203-6"><a href="c07-modeling.html#cb203-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">df.resid =</span> <span class="fu">degf</span>(.)</span>
+<span id="cb203-7"><a href="c07-modeling.html#cb203-7" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p>As discussed at the beginning of the chapter, the formula on the right-hand side can be specified in many ways, whether interactions are desired or not, for example. On RECS, we can obtain information on the square footage of homes and the electric bills. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to determine whether it is reasonable to assume a linear relationship. In the plot below, each hexagon represents the weighted count of households in the bin.</p>
 <div class="figure"><span style="display:block;" id="fig:model-plot-sf-elbill"></span>
 <img src="bookdown_files/figure-html/model-plot-sf-elbill-1.png" alt="Relationship between square footage and dollars spent on electricity, RECS 2015" width="672" />
 <p class="caption">
@@ -531,13 +538,17 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
 ##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
 ## 1 (Intercept)  880.      26.3         33.4 5.51e-54
 ## 2 TOTSQFT_EN     0.246    0.0134      18.4 6.01e-33</code></pre>
-<p>In the output above, we can see the estimated coefficients (<code>estimate</code>), estimated standard errors of the coefficients (<code>std.error</code>), the t-statistic (<code>statistic</code>), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by 24.6 cents and that square footage is significantly associated with electricity expenditure. This is a very simple model and there are likely many more factors in electricity expenditure including the type of cooling, number of appliances, location, and more.</p>
-<p>In the following example, a model is fit predicting electricity expenditure including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning is used (logical/categorical) with all two-way interactions also included.</p>
+<p>In the output above, we can see the estimated coefficients (<code>estimate</code>), estimated standard errors of the coefficients (<code>std.error</code>), the t-statistic (<code>statistic</code>), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by 24.6 cents and that square footage is significantly associated with electricity expenditure. This is a very simple model, and there are likely many more factors in electricity expenditure, including the type of cooling, number of appliances, location, and more.</p>
+<p>In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning is used (logical/categorical) with all two-way interactions also included.</p>
 <div class="sourceCode" id="cb206"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb206-1"><a href="c07-modeling.html#cb206-1" aria-hidden="true" tabindex="-1"></a>m_electric_multi <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb206-2"><a href="c07-modeling.html#cb206-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">svyglm</span>(<span class="at">design=</span>.,</span>
-<span id="cb206-3"><a href="c07-modeling.html#cb206-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">formula=</span>DOLLAREL<span class="sc">~</span>(Region<span class="sc">+</span>Urbanicity<span class="sc">+</span>TOTSQFT_EN<span class="sc">+</span>ACUsed)<span class="sc">^</span><span class="dv">2-1</span>,</span>
-<span id="cb206-4"><a href="c07-modeling.html#cb206-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">na.action=</span>na.omit)</span>
-<span id="cb206-5"><a href="c07-modeling.html#cb206-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(m_electric_multi) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n=</span><span class="dv">50</span>)</span></code></pre></div>
+<span id="cb206-2"><a href="c07-modeling.html#cb206-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb206-3"><a href="c07-modeling.html#cb206-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb206-4"><a href="c07-modeling.html#cb206-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula =</span> DOLLAREL <span class="sc">~</span> (Region <span class="sc">+</span> Urbanicity <span class="sc">+</span> TOTSQFT_EN <span class="sc">+</span> ACUsed) <span class="sc">^</span></span>
+<span id="cb206-5"><a href="c07-modeling.html#cb206-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">2</span> <span class="sc">-</span> <span class="dv">1</span>,</span>
+<span id="cb206-6"><a href="c07-modeling.html#cb206-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit</span>
+<span id="cb206-7"><a href="c07-modeling.html#cb206-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb206-8"><a href="c07-modeling.html#cb206-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb206-9"><a href="c07-modeling.html#cb206-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(m_electric_multi) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">50</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 25 × 5
 ##    term                            estimate std.error statistic  p.value
 ##    &lt;chr&gt;                              &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
@@ -573,15 +584,14 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
 ##  in svyglm(design = ., formula = DOLLAREL ~ (Region + Urbanicity + 
 ##     TOTSQFT_EN + ACUsed)^2 - 1, na.action = na.omit)
 ## F =  7.167  on  6  and  71  df: p= 5.3e-06</code></pre>
-<p>As demonstrated above, there is a significant interaction betwee urbanicity and region (p-value=5.34^{-6}).</p>
-<p>To examine the predictions, residuals and more from the model, the function <code>augment()</code> from {broom} can be used. The <code>augment()</code> function will return a tibble with the independent and dependent variables and other fit statistics. The <code>augment()</code> function has not been specifically written for objects of class <code>svrepglm</code> and as such, a warning will be displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using augment to get the predicted (<code>.fitted</code>) and standard error (<code>.se.fit</code>) values as demonstrated below.</p>
-<p>These results can then be used in a variety of ways including examining residual plots as is illustrated below:</p>
+<p>As demonstrated above, there is a significant interaction between urbanicity and region (p-value=5.34^{-6}).</p>
+<p>To examine the predictions, residuals and more from the model, the function <code>augment()</code> from {broom} can be used. The <code>augment()</code> function will return a tibble with the independent and dependent variables and other fit statistics. The <code>augment()</code> function has not been specifically written for objects of class <code>svrepglm</code>, and as such, a warning will be displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using augment to get the predicted (<code>.fitted</code>) and standard error (<code>.se.fit</code>) values, as demonstrated below.</p>
+<p>These results can then be used in a variety of ways, including examining residual plots as illustrated below:</p>
 <div class="sourceCode" id="cb210"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb210-1"><a href="c07-modeling.html#cb210-1" aria-hidden="true" tabindex="-1"></a>fitstats <span class="ot">&lt;-</span></span>
 <span id="cb210-2"><a href="c07-modeling.html#cb210-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(m_electric_multi) <span class="sc">%&gt;%</span></span>
-<span id="cb210-3"><a href="c07-modeling.html#cb210-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb210-4"><a href="c07-modeling.html#cb210-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">.se.fit=</span><span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), <span class="co"># extract the variance of the fitted value</span></span>
-<span id="cb210-5"><a href="c07-modeling.html#cb210-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">.fitted=</span><span class="fu">as.numeric</span>(.fitted) </span>
-<span id="cb210-6"><a href="c07-modeling.html#cb210-6" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<span id="cb210-3"><a href="c07-modeling.html#cb210-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
+<span id="cb210-4"><a href="c07-modeling.html#cb210-4" aria-hidden="true" tabindex="-1"></a>         <span class="co"># extract the variance of the fitted value</span></span>
+<span id="cb210-5"><a href="c07-modeling.html#cb210-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted))</span></code></pre></div>
 <pre><code>## Warning: The `augment()` method for objects of class `svrepglm` is not maintained by the broom team, and is only supported through the `glm` tidier method. Please be cautious in interpreting and reporting broom output.
 ## 
 ## This warning is displayed once per session.</code></pre>
@@ -603,9 +613,9 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
 ## # ℹ 6 more variables: .resid &lt;dbl&gt;, .hat &lt;dbl&gt;, .sigma &lt;dbl&gt;,
 ## #   .cooksd &lt;dbl&gt;, .std.resid &lt;dbl&gt;, .se.fit &lt;dbl&gt;</code></pre>
 <div class="sourceCode" id="cb214"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb214-1"><a href="c07-modeling.html#cb214-1" aria-hidden="true" tabindex="-1"></a>fitstats <span class="sc">%&gt;%</span></span>
-<span id="cb214-2"><a href="c07-modeling.html#cb214-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>.fitted, .resid)) <span class="sc">+</span></span>
+<span id="cb214-2"><a href="c07-modeling.html#cb214-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> .fitted, .resid)) <span class="sc">+</span></span>
 <span id="cb214-3"><a href="c07-modeling.html#cb214-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb214-4"><a href="c07-modeling.html#cb214-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span><span class="dv">0</span>, <span class="at">colour=</span><span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
+<span id="cb214-4"><a href="c07-modeling.html#cb214-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
 <span id="cb214-5"><a href="c07-modeling.html#cb214-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb214-6"><a href="c07-modeling.html#cb214-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Fitted value of electricity cost&quot;</span>) <span class="sc">+</span></span>
 <span id="cb214-7"><a href="c07-modeling.html#cb214-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Residual of model&quot;</span>)</span></code></pre></div>
@@ -615,16 +625,30 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
 FIGURE 7.2: Residual plot of electric cost model with covariates Region, Urbanicity, TOTSQFT_EN, and ACUsed
 </p>
 </div>
-<p>Additionally, <code>augment()</code> can be used to predict outcomes for data that was not used in modeling. Perhaps, you would like to predict the energy expenditure for a home in an urban area in the south which uses air-conditioning and is 2,500 square feet. First, make a tibble including that additional data and then use the <code>newdata</code> argument in the augment function.</p>
-<div class="sourceCode" id="cb215"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb215-1"><a href="c07-modeling.html#cb215-1" aria-hidden="true" tabindex="-1"></a>add_data <span class="ot">&lt;-</span> recs_in <span class="sc">%&gt;%</span> <span class="fu">select</span>(DOEID, Region, Urbanicity, TOTSQFT_EN, ACUsed, DOLLAREL) <span class="sc">%&gt;%</span></span>
-<span id="cb215-2"><a href="c07-modeling.html#cb215-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(<span class="fu">tibble</span>(<span class="at">DOEID=</span><span class="cn">NA</span>, <span class="at">Region=</span><span class="st">&quot;South&quot;</span>, <span class="at">Urbanicity=</span><span class="st">&quot;Urban Area&quot;</span>, <span class="at">TOTSQFT_EN=</span><span class="dv">2500</span>, <span class="at">ACUsed=</span><span class="cn">TRUE</span>, <span class="at">DOLLAREL=</span><span class="cn">NA</span>)) <span class="sc">%&gt;%</span> <span class="fu">tail</span>(<span class="dv">1</span>)</span>
-<span id="cb215-3"><a href="c07-modeling.html#cb215-3" aria-hidden="true" tabindex="-1"></a>pred_data <span class="ot">&lt;-</span> <span class="fu">augment</span>(m_electric_multi, <span class="at">newdata =</span> add_data) <span class="sc">%&gt;%</span></span>
-<span id="cb215-4"><a href="c07-modeling.html#cb215-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
-<span id="cb215-5"><a href="c07-modeling.html#cb215-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">.se.fit=</span><span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), <span class="co"># extract the variance of the fitted value</span></span>
-<span id="cb215-6"><a href="c07-modeling.html#cb215-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.fitted=</span><span class="fu">as.numeric</span>(.fitted) </span>
-<span id="cb215-7"><a href="c07-modeling.html#cb215-7" aria-hidden="true" tabindex="-1"></a>    ) </span>
-<span id="cb215-8"><a href="c07-modeling.html#cb215-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb215-9"><a href="c07-modeling.html#cb215-9" aria-hidden="true" tabindex="-1"></a>pred_data </span></code></pre></div>
+<p>Additionally, <code>augment()</code> can be used to predict outcomes for data not used in modeling. Perhaps, we would like to predict the energy expenditure for a home in an urban area in the south that uses air-conditioning and is 2,500 square feet. First, make a tibble including that additional data and then use the <code>newdata</code> argument in the augment function.</p>
+<div class="sourceCode" id="cb215"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb215-1"><a href="c07-modeling.html#cb215-1" aria-hidden="true" tabindex="-1"></a>add_data <span class="ot">&lt;-</span></span>
+<span id="cb215-2"><a href="c07-modeling.html#cb215-2" aria-hidden="true" tabindex="-1"></a>  recs_in <span class="sc">%&gt;%</span> <span class="fu">select</span>(DOEID,</span>
+<span id="cb215-3"><a href="c07-modeling.html#cb215-3" aria-hidden="true" tabindex="-1"></a>                     Region,</span>
+<span id="cb215-4"><a href="c07-modeling.html#cb215-4" aria-hidden="true" tabindex="-1"></a>                     Urbanicity,</span>
+<span id="cb215-5"><a href="c07-modeling.html#cb215-5" aria-hidden="true" tabindex="-1"></a>                     TOTSQFT_EN,</span>
+<span id="cb215-6"><a href="c07-modeling.html#cb215-6" aria-hidden="true" tabindex="-1"></a>                     ACUsed,</span>
+<span id="cb215-7"><a href="c07-modeling.html#cb215-7" aria-hidden="true" tabindex="-1"></a>                     DOLLAREL) <span class="sc">%&gt;%</span></span>
+<span id="cb215-8"><a href="c07-modeling.html#cb215-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(</span>
+<span id="cb215-9"><a href="c07-modeling.html#cb215-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(</span>
+<span id="cb215-10"><a href="c07-modeling.html#cb215-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">DOEID =</span> <span class="cn">NA</span>,</span>
+<span id="cb215-11"><a href="c07-modeling.html#cb215-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">Region =</span> <span class="st">&quot;South&quot;</span>,</span>
+<span id="cb215-12"><a href="c07-modeling.html#cb215-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">Urbanicity =</span> <span class="st">&quot;Urban Area&quot;</span>,</span>
+<span id="cb215-13"><a href="c07-modeling.html#cb215-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">TOTSQFT_EN =</span> <span class="dv">2500</span>,</span>
+<span id="cb215-14"><a href="c07-modeling.html#cb215-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">ACUsed =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb215-15"><a href="c07-modeling.html#cb215-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">DOLLAREL =</span> <span class="cn">NA</span></span>
+<span id="cb215-16"><a href="c07-modeling.html#cb215-16" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb215-17"><a href="c07-modeling.html#cb215-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> <span class="fu">tail</span>(<span class="dv">1</span>)</span>
+<span id="cb215-18"><a href="c07-modeling.html#cb215-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb215-19"><a href="c07-modeling.html#cb215-19" aria-hidden="true" tabindex="-1"></a>pred_data <span class="ot">&lt;-</span> <span class="fu">augment</span>(m_electric_multi, <span class="at">newdata =</span> add_data) <span class="sc">%&gt;%</span></span>
+<span id="cb215-20"><a href="c07-modeling.html#cb215-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), <span class="co"># extract the variance of the fitted value</span></span>
+<span id="cb215-21"><a href="c07-modeling.html#cb215-21" aria-hidden="true" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) </span>
+<span id="cb215-22"><a href="c07-modeling.html#cb215-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb215-23"><a href="c07-modeling.html#cb215-23" aria-hidden="true" tabindex="-1"></a>pred_data </span></code></pre></div>
 <pre><code>## # A tibble: 1 × 8
 ##   DOEID Region Urbanicity TOTSQFT_EN ACUsed DOLLAREL .fitted .se.fit
 ##   &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;           &lt;dbl&gt; &lt;lgl&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
@@ -634,14 +658,13 @@ FIGURE 7.2: Residual plot of electric cost model with covariates Region, Urbanic
 <div id="exercises-2" class="section level3 hasAnchor" number="7.2.3">
 <h3><span class="header-section-number">7.2.3</span> Exercises<a href="c07-modeling.html#exercises-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <ol style="list-style-type: decimal">
-<li>The type of housing unit may have an impact on energy expense. Is there any relationship between housing unit type (<code>HousingUnitType</code>) and total energy expenditure (<code>TOTALDOL</code>)? First, find the average energy expenditure by housing unit type as a descriptive analysis and then do the test. The reference level in the comparison should be the housing unit type which is most common.</li>
+<li>The type of housing unit may have an impact on energy expenses. Is there any relationship between housing unit type (<code>HousingUnitType</code>) and total energy expenditure (<code>TOTALDOL</code>)? First, find the average energy expenditure by housing unit type as a descriptive analysis and then do the test. The reference level in the comparison should be the housing unit type that is most common.</li>
 </ol>
 <div class="sourceCode" id="cb217"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb217-1"><a href="c07-modeling.html#cb217-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb217-2"><a href="c07-modeling.html#cb217-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(HousingUnitType) <span class="sc">%&gt;%</span></span>
-<span id="cb217-3"><a href="c07-modeling.html#cb217-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb217-4"><a href="c07-modeling.html#cb217-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Expense=</span><span class="fu">survey_mean</span>(TOTALDOL, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb217-5"><a href="c07-modeling.html#cb217-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">HUs=</span><span class="fu">survey_total</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb217-6"><a href="c07-modeling.html#cb217-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(HUs))</span></code></pre></div>
+<span id="cb217-3"><a href="c07-modeling.html#cb217-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Expense =</span> <span class="fu">survey_mean</span>(TOTALDOL, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb217-4"><a href="c07-modeling.html#cb217-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">HUs =</span> <span class="fu">survey_total</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb217-5"><a href="c07-modeling.html#cb217-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(HUs))</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 5
 ##   HousingUnitType            Expense Expense_se       HUs   HUs_se
 ##   &lt;fct&gt;                        &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
@@ -651,13 +674,14 @@ FIGURE 7.2: Residual plot of electric cost model with covariates Region, Urbanic
 ## 4 Single-family attached       1607.       33.8  7010132. 0.0253  
 ## 5 Mobile home                  1752.       60.2  6787043. 0.0183</code></pre>
 <div class="sourceCode" id="cb219"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb219-1"><a href="c07-modeling.html#cb219-1" aria-hidden="true" tabindex="-1"></a>exp_unit_out <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb219-2"><a href="c07-modeling.html#cb219-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">HousingUnitType=</span><span class="fu">fct_infreq</span>(HousingUnitType, NWEIGHT)) <span class="sc">%&gt;%</span></span>
-<span id="cb219-3"><a href="c07-modeling.html#cb219-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design=</span>.,</span>
-<span id="cb219-4"><a href="c07-modeling.html#cb219-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">formula=</span>TOTALDOL<span class="sc">~</span>HousingUnitType,</span>
-<span id="cb219-5"><a href="c07-modeling.html#cb219-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">na.action=</span>na.omit</span>
-<span id="cb219-6"><a href="c07-modeling.html#cb219-6" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb219-7"><a href="c07-modeling.html#cb219-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb219-8"><a href="c07-modeling.html#cb219-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(exp_unit_out)</span></code></pre></div>
+<span id="cb219-2"><a href="c07-modeling.html#cb219-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">HousingUnitType =</span> <span class="fu">fct_infreq</span>(HousingUnitType, NWEIGHT)) <span class="sc">%&gt;%</span></span>
+<span id="cb219-3"><a href="c07-modeling.html#cb219-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb219-4"><a href="c07-modeling.html#cb219-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb219-5"><a href="c07-modeling.html#cb219-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula =</span> TOTALDOL <span class="sc">~</span> HousingUnitType,</span>
+<span id="cb219-6"><a href="c07-modeling.html#cb219-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit</span>
+<span id="cb219-7"><a href="c07-modeling.html#cb219-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb219-8"><a href="c07-modeling.html#cb219-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb219-9"><a href="c07-modeling.html#cb219-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(exp_unit_out)</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 5
 ##   term                             estimate std.error statistic  p.value
 ##   &lt;chr&gt;                               &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
@@ -669,14 +693,16 @@ FIGURE 7.2: Residual plot of electric cost model with covariates Region, Urbanic
 <div class="sourceCode" id="cb221"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb221-1"><a href="c07-modeling.html#cb221-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Single-family detached units are most common</span></span>
 <span id="cb221-2"><a href="c07-modeling.html#cb221-2" aria-hidden="true" tabindex="-1"></a><span class="co"># There is a significant relationship between energy expenditure and housing unit type</span></span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
-<li>Does temperature play a role in energy expenditure? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, CDD65=0. While a day that averages 85°F would have CDD80=20 because it is 20 degrees warmer. For each day in the year, this is summed to give an indicator for how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65°F (18.3°C)<a href="#fn20" class="footnote-ref" id="fnref20"><sup>20</sup></a>. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.</li>
+<li>Does temperature play a role in energy expenditure? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, CDD65=0. While a day that averages 85°F would have CDD80=20 because it is 20 degrees warmer. For each day in the year, this is summed to give an indicator of how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65°F (18.3°C)<a href="#fn20" class="footnote-ref" id="fnref20"><sup>20</sup></a>. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.</li>
 </ol>
 <div class="sourceCode" id="cb222"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb222-1"><a href="c07-modeling.html#cb222-1" aria-hidden="true" tabindex="-1"></a>temps_sqft_exp <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb222-2"><a href="c07-modeling.html#cb222-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">svyglm</span>(<span class="at">design=</span>.,</span>
-<span id="cb222-3"><a href="c07-modeling.html#cb222-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">formula=</span>DOLLAREL<span class="sc">~</span>(TOTSQFT_EN<span class="sc">+</span>CDD65<span class="sc">+</span>HDD65)<span class="sc">^</span><span class="dv">2</span>,</span>
-<span id="cb222-4"><a href="c07-modeling.html#cb222-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">na.action=</span>na.omit)</span>
-<span id="cb222-5"><a href="c07-modeling.html#cb222-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb222-6"><a href="c07-modeling.html#cb222-6" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(temps_sqft_exp)</span></code></pre></div>
+<span id="cb222-2"><a href="c07-modeling.html#cb222-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb222-3"><a href="c07-modeling.html#cb222-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb222-4"><a href="c07-modeling.html#cb222-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula =</span> DOLLAREL <span class="sc">~</span> (TOTSQFT_EN <span class="sc">+</span> CDD65 <span class="sc">+</span> HDD65) <span class="sc">^</span> <span class="dv">2</span>,</span>
+<span id="cb222-5"><a href="c07-modeling.html#cb222-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit</span>
+<span id="cb222-6"><a href="c07-modeling.html#cb222-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb222-7"><a href="c07-modeling.html#cb222-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb222-8"><a href="c07-modeling.html#cb222-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(temps_sqft_exp)</span></code></pre></div>
 <pre><code>## # A tibble: 7 × 5
 ##   term                 estimate    std.error statistic       p.value
 ##   &lt;chr&gt;                   &lt;dbl&gt;        &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;
@@ -688,20 +714,21 @@ FIGURE 7.2: Residual plot of electric cost model with covariates Region, Urbanic
 ## 6 TOTSQFT_EN:HDD65  -0.0000366    0.00000922   -3.97   0.000143     
 ## 7 CDD65:HDD65        0.0000232    0.00000835    2.78   0.00660</code></pre>
 <ol start="3" style="list-style-type: decimal">
-<li>Continuing with your results from question 2, create a plot between the actual expenditures and the predicted expenditures and a residual plot for the predicted expenditures.</li>
+<li>Continuing with our results from question 2, create a plot between the actual and predicted expenditures and a residual plot for the predicted expenditures.</li>
 </ol>
 <div class="sourceCode" id="cb224"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb224-1"><a href="c07-modeling.html#cb224-1" aria-hidden="true" tabindex="-1"></a>temps_sqft_exp_fit <span class="ot">&lt;-</span> temps_sqft_exp <span class="sc">%&gt;%</span></span>
 <span id="cb224-2"><a href="c07-modeling.html#cb224-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb224-3"><a href="c07-modeling.html#cb224-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb224-4"><a href="c07-modeling.html#cb224-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">.se.fit=</span><span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), <span class="co"># extract the variance of the fitted value</span></span>
-<span id="cb224-5"><a href="c07-modeling.html#cb224-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">.fitted=</span><span class="fu">as.numeric</span>(.fitted) </span>
-<span id="cb224-6"><a href="c07-modeling.html#cb224-6" aria-hidden="true" tabindex="-1"></a>  ) </span></code></pre></div>
+<span id="cb224-3"><a href="c07-modeling.html#cb224-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
+<span id="cb224-4"><a href="c07-modeling.html#cb224-4" aria-hidden="true" tabindex="-1"></a>         <span class="co"># extract the variance of the fitted value</span></span>
+<span id="cb224-5"><a href="c07-modeling.html#cb224-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) </span></code></pre></div>
 <div class="sourceCode" id="cb225"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb225-1"><a href="c07-modeling.html#cb225-1" aria-hidden="true" tabindex="-1"></a>temps_sqft_exp_fit <span class="sc">%&gt;%</span></span>
-<span id="cb225-2"><a href="c07-modeling.html#cb225-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>DOLLAREL, <span class="at">y=</span>.fitted)) <span class="sc">+</span> </span>
+<span id="cb225-2"><a href="c07-modeling.html#cb225-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> DOLLAREL, <span class="at">y =</span> .fitted)) <span class="sc">+</span></span>
 <span id="cb225-3"><a href="c07-modeling.html#cb225-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb225-4"><a href="c07-modeling.html#cb225-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept=</span><span class="dv">0</span>, <span class="at">slope=</span><span class="dv">1</span>, <span class="at">colour=</span><span class="st">&quot;red&quot;</span>) <span class="sc">+</span> </span>
-<span id="cb225-5"><a href="c07-modeling.html#cb225-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Actual expenditures&quot;</span>) <span class="sc">+</span></span>
-<span id="cb225-6"><a href="c07-modeling.html#cb225-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Predicted expenditures&quot;</span>)</span></code></pre></div>
+<span id="cb225-4"><a href="c07-modeling.html#cb225-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>,</span>
+<span id="cb225-5"><a href="c07-modeling.html#cb225-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">slope =</span> <span class="dv">1</span>,</span>
+<span id="cb225-6"><a href="c07-modeling.html#cb225-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">colour =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
+<span id="cb225-7"><a href="c07-modeling.html#cb225-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Actual expenditures&quot;</span>) <span class="sc">+</span></span>
+<span id="cb225-8"><a href="c07-modeling.html#cb225-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Predicted expenditures&quot;</span>)</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:model-lin-sol-3-p1"></span>
 <img src="bookdown_files/figure-html/model-lin-sol-3-p1-1.png" alt="Actual and predicted electricity expenditures" width="672" />
 <p class="caption">
@@ -709,9 +736,9 @@ FIGURE 7.3: Actual and predicted electricity expenditures
 </p>
 </div>
 <div class="sourceCode" id="cb226"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb226-1"><a href="c07-modeling.html#cb226-1" aria-hidden="true" tabindex="-1"></a>temps_sqft_exp_fit <span class="sc">%&gt;%</span></span>
-<span id="cb226-2"><a href="c07-modeling.html#cb226-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>.fitted, <span class="at">y=</span>.resid)) <span class="sc">+</span> </span>
+<span id="cb226-2"><a href="c07-modeling.html#cb226-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> .fitted, <span class="at">y =</span> .resid)) <span class="sc">+</span></span>
 <span id="cb226-3"><a href="c07-modeling.html#cb226-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb226-4"><a href="c07-modeling.html#cb226-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span><span class="dv">0</span>, <span class="at">colour=</span><span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
+<span id="cb226-4"><a href="c07-modeling.html#cb226-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
 <span id="cb226-5"><a href="c07-modeling.html#cb226-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb226-6"><a href="c07-modeling.html#cb226-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Predicted expenditure&quot;</span>) <span class="sc">+</span></span>
 <span id="cb226-7"><a href="c07-modeling.html#cb226-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Residual value of expenditure&quot;</span>)</span></code></pre></div>
@@ -725,7 +752,7 @@ FIGURE 7.4: Residual plot of electric cost model with covariates TOTSQFT_EN, CDD
 </div>
 <div id="logistic-regression" class="section level2 hasAnchor" number="7.3">
 <h2><span class="header-section-number">7.3</span> Logistic regression<a href="c07-modeling.html#logistic-regression" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Logistic regression is used to model a binary outcome and is a specific type of a generalized linear model (GLM). A GLM uses a link function to link the response variable to the linear model. In logistic regression, the link model is the logit function. Specifically, the model is specified as follows:</p>
+<p>Logistic regression is used to model a binary outcome and is a specific generalized linear model (GLM). A GLM uses a link function to link the response variable to the linear model. In logistic regression, the link model is the logit function. Specifically, the model is specified as follows:</p>
 <p><span class="math display">\[ y_i \sim \text{Bernoulli}(\pi_i)\]</span></p>
 <p><span class="math display" id="eq:logoddlin">\[\begin{equation}
 \log \left(\frac{\pi_i}{1-\pi_i} \right)=\beta_0 +\sum_{i=1}^p \beta_i x_i
@@ -736,45 +763,54 @@ FIGURE 7.4: Residual plot of electric cost model with covariates TOTSQFT_EN, CDD
 where <span class="math inline">\(y_i\)</span> is the outcome, <span class="math inline">\(\beta_0\)</span> is an intercept, and <span class="math inline">\(x_1, \cdots, x_n\)</span> are the predictors with <span class="math inline">\(\beta_1, \cdots, \beta_n\)</span> as the associated coefficients.</p>
 <p>Assumptions in logistic regression using survey data include:</p>
 <ul>
-<li>The outcome variable has 2 levels</li>
+<li>The outcome variable has two levels</li>
 <li>There is a linear relationship between the independent variables and the log odds <a href="c07-modeling.html#eq:logoddlin">(7.1)</a></li>
-<li>The residuals are homoscedastic, that is the error term is the same across all values of independent variables</li>
+<li>The residuals are homoscedastic, that is, the error term is the same across all values of independent variables</li>
 </ul>
 <p>The syntax for logistic regression is as follows:</p>
-<pre><code>des_obj %&gt;%
-  svyglm(design=.,
-         outcomevar~x1+x2+x3,
-         na.action=na.omit,
-         df.resid=degf(.),
-         family= quasibinomial, # use this to avoid warning about non-integers
-         )</code></pre>
-<p>Note <code>svyglm()</code> is the same function as used in both ANOVA and linear regression. However, we’ve added the link function quasibinomial. While you can use the binomial link function, it is recommended to use the quasibinomial as your weights may not be integers and the quasibinomial also allows for overdispersion. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of two ways with survey data:</p>
+<div class="sourceCode" id="cb227"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb227-1"><a href="c07-modeling.html#cb227-1" aria-hidden="true" tabindex="-1"></a>des_obj <span class="sc">%&gt;%</span></span>
+<span id="cb227-2"><a href="c07-modeling.html#cb227-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb227-3"><a href="c07-modeling.html#cb227-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb227-4"><a href="c07-modeling.html#cb227-4" aria-hidden="true" tabindex="-1"></a>    outcomevar <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">+</span> x3,</span>
+<span id="cb227-5"><a href="c07-modeling.html#cb227-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit,</span>
+<span id="cb227-6"><a href="c07-modeling.html#cb227-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">df.resid =</span> <span class="fu">degf</span>(.),</span>
+<span id="cb227-7"><a href="c07-modeling.html#cb227-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># use this to avoid warning about non-integers</span></span>
+<span id="cb227-8"><a href="c07-modeling.html#cb227-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> quasibinomial</span>
+<span id="cb227-9"><a href="c07-modeling.html#cb227-9" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p>Note <code>svyglm()</code> is the same function used in both ANOVA and linear regression. However, we’ve added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of two ways with survey data:</p>
 <ul>
 <li>A factor variable where not being the first level of the factor indicates a “success”</li>
 <li>A numeric variable which is 1 or 0 where 1 indicates a success</li>
 <li>A logical variable where TRUE indicates a success</li>
 </ul>
-<p>In the following example, the ANES data is used and we are modeling whether someone usually has trust in the government<a href="#fn21" class="footnote-ref" id="fnref21"><sup>21</sup></a> by who someone voted in 2020. As a reminder, the main candidates were Biden and Trump though people could vote for someone else in neither the Democratic or Republican parties. Those votes are all grouped into an “Other” category. We first create a binary outcome for trusting in the government and plot the data. A scatter plot of the raw data is not useful as it is all 0 and 1 outcomes so instead a summary of the data is plotted.</p>
+<p>In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government<a href="#fn21" class="footnote-ref" id="fnref21"><sup>21</sup></a> by who someone voted for in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an “Other” category. We first create a binary outcome for trusting in the government and plot the data. A scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data.</p>
 <div class="sourceCode" id="cb228"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb228-1"><a href="c07-modeling.html#cb228-1" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb228-2"><a href="c07-modeling.html#cb228-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustGovernmentUsually=</span><span class="fu">case_when</span>(</span>
-<span id="cb228-3"><a href="c07-modeling.html#cb228-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">is.na</span>(TrustGovernment)<span class="sc">~</span><span class="cn">NA</span>,</span>
-<span id="cb228-4"><a href="c07-modeling.html#cb228-4" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span><span class="sc">~</span>TrustGovernment <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Always&quot;</span>, <span class="st">&quot;Most of the time&quot;</span>)))</span>
-<span id="cb228-5"><a href="c07-modeling.html#cb228-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb228-6"><a href="c07-modeling.html#cb228-6" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb228-7"><a href="c07-modeling.html#cb228-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection) <span class="sc">%&gt;%</span></span>
-<span id="cb228-8"><a href="c07-modeling.html#cb228-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb228-9"><a href="c07-modeling.html#cb228-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">pct_trust=</span><span class="fu">survey_mean</span>(TrustGovernmentUsually, <span class="at">na.rm=</span><span class="cn">TRUE</span>, <span class="at">proportion=</span><span class="cn">TRUE</span>, <span class="at">vartype=</span><span class="st">&quot;ci&quot;</span>),</span>
-<span id="cb228-10"><a href="c07-modeling.html#cb228-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups=</span><span class="st">&quot;drop&quot;</span></span>
-<span id="cb228-11"><a href="c07-modeling.html#cb228-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb228-12"><a href="c07-modeling.html#cb228-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">complete.cases</span>(.)) <span class="sc">%&gt;%</span></span>
-<span id="cb228-13"><a href="c07-modeling.html#cb228-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>VotedPres2020_selection, <span class="at">y=</span>pct_trust, <span class="at">fill=</span>VotedPres2020_selection)) <span class="sc">+</span></span>
-<span id="cb228-14"><a href="c07-modeling.html#cb228-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
-<span id="cb228-15"><a href="c07-modeling.html#cb228-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin=</span>pct_trust_low, <span class="at">ymax=</span>pct_trust_upp), <span class="at">width=</span>.<span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb228-16"><a href="c07-modeling.html#cb228-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#0b3954&quot;</span>, <span class="st">&quot;#bfd7ea&quot;</span>, <span class="st">&quot;#8d6b94&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb228-17"><a href="c07-modeling.html#cb228-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Election choice (2022)&quot;</span>) <span class="sc">+</span></span>
-<span id="cb228-18"><a href="c07-modeling.html#cb228-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Usually trust the government&quot;</span>)<span class="sc">+</span></span>
-<span id="cb228-19"><a href="c07-modeling.html#cb228-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels=</span>scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
-<span id="cb228-20"><a href="c07-modeling.html#cb228-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill=</span><span class="st">&quot;none&quot;</span>)</span></code></pre></div>
+<span id="cb228-2"><a href="c07-modeling.html#cb228-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustGovernmentUsually =</span> <span class="fu">case_when</span>(</span>
+<span id="cb228-3"><a href="c07-modeling.html#cb228-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">is.na</span>(TrustGovernment) <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb228-4"><a href="c07-modeling.html#cb228-4" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> TrustGovernment <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Always&quot;</span>, <span class="st">&quot;Most of the time&quot;</span>)</span>
+<span id="cb228-5"><a href="c07-modeling.html#cb228-5" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb228-6"><a href="c07-modeling.html#cb228-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb228-7"><a href="c07-modeling.html#cb228-7" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
+<span id="cb228-8"><a href="c07-modeling.html#cb228-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection) <span class="sc">%&gt;%</span></span>
+<span id="cb228-9"><a href="c07-modeling.html#cb228-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb228-10"><a href="c07-modeling.html#cb228-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">pct_trust =</span> <span class="fu">survey_mean</span>(</span>
+<span id="cb228-11"><a href="c07-modeling.html#cb228-11" aria-hidden="true" tabindex="-1"></a>      TrustGovernmentUsually,</span>
+<span id="cb228-12"><a href="c07-modeling.html#cb228-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb228-13"><a href="c07-modeling.html#cb228-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">proportion =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb228-14"><a href="c07-modeling.html#cb228-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span></span>
+<span id="cb228-15"><a href="c07-modeling.html#cb228-15" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb228-16"><a href="c07-modeling.html#cb228-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb228-17"><a href="c07-modeling.html#cb228-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb228-18"><a href="c07-modeling.html#cb228-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">complete.cases</span>(.)) <span class="sc">%&gt;%</span></span>
+<span id="cb228-19"><a href="c07-modeling.html#cb228-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, <span class="at">y =</span> pct_trust, <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
+<span id="cb228-20"><a href="c07-modeling.html#cb228-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
+<span id="cb228-21"><a href="c07-modeling.html#cb228-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low, <span class="at">ymax =</span> pct_trust_upp), <span class="at">width =</span></span>
+<span id="cb228-22"><a href="c07-modeling.html#cb228-22" aria-hidden="true" tabindex="-1"></a>                  .<span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb228-23"><a href="c07-modeling.html#cb228-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#0b3954&quot;</span>, <span class="st">&quot;#bfd7ea&quot;</span>, <span class="st">&quot;#8d6b94&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb228-24"><a href="c07-modeling.html#cb228-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Election choice (2022)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb228-25"><a href="c07-modeling.html#cb228-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Usually trust the government&quot;</span>) <span class="sc">+</span></span>
+<span id="cb228-26"><a href="c07-modeling.html#cb228-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb228-27"><a href="c07-modeling.html#cb228-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>)</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:model-logisticexamp-plot"></span>
 <img src="bookdown_files/figure-html/model-logisticexamp-plot-1.png" alt="Relationship between candidate selection and trust in government, ANES 2020" width="672" />
 <p class="caption">
@@ -783,11 +819,13 @@ FIGURE 7.5: Relationship between candidate selection and trust in government, AN
 </div>
 <p>Next, we fit the model.</p>
 <div class="sourceCode" id="cb229"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb229-1"><a href="c07-modeling.html#cb229-1" aria-hidden="true" tabindex="-1"></a>logistic_trust_vote <span class="ot">&lt;-</span> anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb229-2"><a href="c07-modeling.html#cb229-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design=</span>.,</span>
-<span id="cb229-3"><a href="c07-modeling.html#cb229-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">formula=</span>TrustGovernmentUsually<span class="sc">~</span> VotedPres2020_selection ,</span>
-<span id="cb229-4"><a href="c07-modeling.html#cb229-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">family =</span> quasibinomial) </span>
-<span id="cb229-5"><a href="c07-modeling.html#cb229-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb229-6"><a href="c07-modeling.html#cb229-6" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(logistic_trust_vote)</span></code></pre></div>
+<span id="cb229-2"><a href="c07-modeling.html#cb229-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb229-3"><a href="c07-modeling.html#cb229-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb229-4"><a href="c07-modeling.html#cb229-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula =</span> TrustGovernmentUsually <span class="sc">~</span> VotedPres2020_selection ,</span>
+<span id="cb229-5"><a href="c07-modeling.html#cb229-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> quasibinomial</span>
+<span id="cb229-6"><a href="c07-modeling.html#cb229-6" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb229-7"><a href="c07-modeling.html#cb229-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb229-8"><a href="c07-modeling.html#cb229-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(logistic_trust_vote)</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 5
 ##   term                         estimate std.error statistic  p.value
 ##   &lt;chr&gt;                           &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
@@ -801,13 +839,16 @@ FIGURE 7.5: Relationship between candidate selection and trust in government, AN
 ## 1 (Intercept)                     0.141
 ## 2 VotedPres2020_selectionTrump    1.49 
 ## 3 VotedPres2020_selectionOther    0.464</code></pre>
-<p>In the output above, we can see the estimated coefficients (<code>estimate</code>), estimated standard errors of the coefficients (<code>std.error</code>), the t-statistic (<code>statistic</code>), and the p-value for each coefficient when the <code>tidy()</code> function is run the first time. The second time the <code>tidy</code> function is used, the coefficients are exponentiated which illustrates the odds. In this example, we can interpret this as saying that the odds of trusting in government for someone who voted for Trump is 149% as likely to trust the government compared to a person who voted for Biden (the reference level) while a person who voted for neither Biden nor Trump is 46.4% as likely to trust the government as someone who voted for Biden.</p>
+<p>In the output above, we can see the estimated coefficients (<code>estimate</code>), estimated standard errors of the coefficients (<code>std.error</code>), the t-statistic (<code>statistic</code>), and the p-value for each coefficient when the <code>tidy()</code> function is run the first time. The second time the <code>tidy</code> function is used, the coefficients are exponentiated, which illustrates the odds. In this example, we can interpret this as saying that the odds of trusting in government for someone who voted for Trump is 149% as likely to trust the government compared to a person who voted for Biden (the reference level). In comparison, a person who voted for neither Biden nor Trump is 46.4% as likely to trust the government as someone who voted for Biden.</p>
 <p>As with linear regression, the <code>augment()</code> can be used to predict values. By default, the prediction is the link function and not the probability. To predict the probability, add an argument of <code>type.predict="response"</code> as demonstrated below:</p>
 <div class="sourceCode" id="cb233"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb233-1"><a href="c07-modeling.html#cb233-1" aria-hidden="true" tabindex="-1"></a>logistic_trust_vote <span class="sc">%&gt;%</span></span>
-<span id="cb233-2"><a href="c07-modeling.html#cb233-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(<span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb233-3"><a href="c07-modeling.html#cb233-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit=</span><span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), <span class="co"># extract the variance of the fitted value</span></span>
-<span id="cb233-4"><a href="c07-modeling.html#cb233-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">.fitted=</span><span class="fu">as.numeric</span>(.fitted)) <span class="sc">%&gt;%</span></span>
-<span id="cb233-5"><a href="c07-modeling.html#cb233-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(TrustGovernmentUsually, VotedPres2020_selection, .fitted, .se.fit)</span></code></pre></div>
+<span id="cb233-2"><a href="c07-modeling.html#cb233-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(<span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb233-3"><a href="c07-modeling.html#cb233-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), <span class="co"># extract the variance of the fitted value</span></span>
+<span id="cb233-4"><a href="c07-modeling.html#cb233-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) <span class="sc">%&gt;%</span></span>
+<span id="cb233-5"><a href="c07-modeling.html#cb233-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(TrustGovernmentUsually,</span>
+<span id="cb233-6"><a href="c07-modeling.html#cb233-6" aria-hidden="true" tabindex="-1"></a>         VotedPres2020_selection,</span>
+<span id="cb233-7"><a href="c07-modeling.html#cb233-7" aria-hidden="true" tabindex="-1"></a>         .fitted,</span>
+<span id="cb233-8"><a href="c07-modeling.html#cb233-8" aria-hidden="true" tabindex="-1"></a>         .se.fit)</span></code></pre></div>
 <pre><code>## Warning: The `augment()` method for objects of class `svyglm` is not maintained by the broom team, and is only supported through the `glm` tidier method. Please be cautious in interpreting and reporting broom output.
 ## 
 ## This warning is displayed once per session.</code></pre>
@@ -832,11 +873,13 @@ FIGURE 7.5: Relationship between candidate selection and trust in government, AN
 </ol>
 <div class="sourceCode" id="cb236"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb236-1"><a href="c07-modeling.html#cb236-1" aria-hidden="true" tabindex="-1"></a>earlyvote_mod <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
 <span id="cb236-2"><a href="c07-modeling.html#cb236-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(EarlyVote2020)) <span class="sc">%&gt;%</span></span>
-<span id="cb236-3"><a href="c07-modeling.html#cb236-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design=</span>.,</span>
-<span id="cb236-4"><a href="c07-modeling.html#cb236-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">formula=</span>EarlyVote2020<span class="sc">~</span> (Age<span class="sc">+</span>Education<span class="sc">+</span>PartyID)<span class="sc">^</span><span class="dv">2</span> ,</span>
-<span id="cb236-5"><a href="c07-modeling.html#cb236-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">family =</span> quasibinomial) </span>
-<span id="cb236-6"><a href="c07-modeling.html#cb236-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb236-7"><a href="c07-modeling.html#cb236-7" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(earlyvote_mod) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(p.value)</span></code></pre></div>
+<span id="cb236-3"><a href="c07-modeling.html#cb236-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb236-4"><a href="c07-modeling.html#cb236-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb236-5"><a href="c07-modeling.html#cb236-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula =</span> EarlyVote2020 <span class="sc">~</span> (Age <span class="sc">+</span> Education <span class="sc">+</span> PartyID) <span class="sc">^</span> <span class="dv">2</span> ,</span>
+<span id="cb236-6"><a href="c07-modeling.html#cb236-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> quasibinomial</span>
+<span id="cb236-7"><a href="c07-modeling.html#cb236-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb236-8"><a href="c07-modeling.html#cb236-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb236-9"><a href="c07-modeling.html#cb236-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(earlyvote_mod) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(p.value)</span></code></pre></div>
 <pre><code>## # A tibble: 46 × 5
 ##    term                             estimate std.error statistic p.value
 ##    &lt;chr&gt;                               &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
@@ -852,19 +895,23 @@ FIGURE 7.5: Relationship between candidate selection and trust in government, AN
 ## 10 EducationPost HS:PartyIDIndepen…  -1.50      1.35       -1.11  0.311 
 ## # ℹ 36 more rows</code></pre>
 <ol start="2" style="list-style-type: decimal">
-<li>Continuing from exercise 1, predict the probability of early voting for 2 people - each are 28 years old and have a graduate degree but one person is a strong democrat and the other is a strong republican.</li>
+<li>Continuing from Exercise 1, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.</li>
 </ol>
 <div class="sourceCode" id="cb238"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb238-1"><a href="c07-modeling.html#cb238-1" aria-hidden="true" tabindex="-1"></a>add_vote_dat <span class="ot">&lt;-</span> anes_in <span class="sc">%&gt;%</span></span>
 <span id="cb238-2"><a href="c07-modeling.html#cb238-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(EarlyVote2020, Age, Education, PartyID) <span class="sc">%&gt;%</span></span>
-<span id="cb238-3"><a href="c07-modeling.html#cb238-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(</span>
-<span id="cb238-4"><a href="c07-modeling.html#cb238-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(<span class="at">EarlyVote2020=</span><span class="cn">NA</span>, <span class="at">Age=</span><span class="dv">28</span>, <span class="at">Education=</span><span class="st">&quot;Graduate&quot;</span>, <span class="at">PartyID=</span><span class="fu">c</span>(<span class="st">&quot;Strong democrat&quot;</span>, <span class="st">&quot;Strong republican&quot;</span>))</span>
-<span id="cb238-5"><a href="c07-modeling.html#cb238-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb238-6"><a href="c07-modeling.html#cb238-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tail</span>(<span class="dv">2</span>)</span>
-<span id="cb238-7"><a href="c07-modeling.html#cb238-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb238-8"><a href="c07-modeling.html#cb238-8" aria-hidden="true" tabindex="-1"></a>log_ex_2_out <span class="ot">&lt;-</span> earlyvote_mod <span class="sc">%&gt;%</span></span>
-<span id="cb238-9"><a href="c07-modeling.html#cb238-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(<span class="at">newdata=</span>add_vote_dat, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb238-10"><a href="c07-modeling.html#cb238-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">.se.fit=</span><span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), <span class="co"># extract the variance of the fitted value</span></span>
-<span id="cb238-11"><a href="c07-modeling.html#cb238-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">.fitted=</span><span class="fu">as.numeric</span>(.fitted))</span></code></pre></div>
+<span id="cb238-3"><a href="c07-modeling.html#cb238-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(<span class="fu">tibble</span>(</span>
+<span id="cb238-4"><a href="c07-modeling.html#cb238-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">EarlyVote2020 =</span> <span class="cn">NA</span>,</span>
+<span id="cb238-5"><a href="c07-modeling.html#cb238-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Age =</span> <span class="dv">28</span>,</span>
+<span id="cb238-6"><a href="c07-modeling.html#cb238-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Education =</span> <span class="st">&quot;Graduate&quot;</span>,</span>
+<span id="cb238-7"><a href="c07-modeling.html#cb238-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">PartyID =</span> <span class="fu">c</span>(<span class="st">&quot;Strong democrat&quot;</span>, <span class="st">&quot;Strong republican&quot;</span>)</span>
+<span id="cb238-8"><a href="c07-modeling.html#cb238-8" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb238-9"><a href="c07-modeling.html#cb238-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tail</span>(<span class="dv">2</span>)</span>
+<span id="cb238-10"><a href="c07-modeling.html#cb238-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb238-11"><a href="c07-modeling.html#cb238-11" aria-hidden="true" tabindex="-1"></a>log_ex_2_out <span class="ot">&lt;-</span> earlyvote_mod <span class="sc">%&gt;%</span></span>
+<span id="cb238-12"><a href="c07-modeling.html#cb238-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(<span class="at">newdata =</span> add_vote_dat, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb238-13"><a href="c07-modeling.html#cb238-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
+<span id="cb238-14"><a href="c07-modeling.html#cb238-14" aria-hidden="true" tabindex="-1"></a>         <span class="co"># extract the variance of the fitted value</span></span>
+<span id="cb238-15"><a href="c07-modeling.html#cb238-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted))</span></code></pre></div>
 
 </div>
 </div>
