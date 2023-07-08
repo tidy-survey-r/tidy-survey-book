@@ -10,7 +10,7 @@ When analyzing results from a survey, the point estimates described in Chapter \
 - Tests of independence `svychisq()`
 - Tests of homogeneity `svychisq()`
 
-Up to this point, the functions we've provided have used the wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers from the {srvyr} package and are instead used directly from the {survey} package. This means that the design object is *not* the first argument and that to use these functions with the magrittr pipe `%>%` and tidyverse syntax, we will need to use dot (`.`) notation. Functions that work with the magrittr pipe `%>%` have the first argument as data. When data is run, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to only cars with six cylinders, we can write the code in one of three ways:
+Up to this point, the functions we've provided have used the wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers from the {srvyr} package and are instead used directly from the {survey} package. This means that the design object is *not* the first argument and that to use these functions with the magrittr pipe `%>%` and tidyverse syntax, we will need to use dot (`.`) notation. Functions that work with the magrittr pipe `%>%` have the first argument as data. When data is run, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to only cars with six cylinders, we can write the code in one of three ways:  
 
 1. `filter(mtcars, cyl == 6)`
 2. `mtcars %>% filter(cyl == 6)`
@@ -91,7 +91,7 @@ recs_des <- recs_in %>%
 
 ## Comparison of Proportions and Means {#stattest-ttest}
 
-To compare two proportions or means, we use t-tests. This allows us to determine if one proportion or mean is statistically different from the other. T-tests are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., males vs. females). Comparing a single estimate to a known value is called a *one sample t-test*, and we can set up the hypothesis test as follows:
+To compare two proportions or means, we use t-tests. This allows us to determine if one proportion or mean is statistically different from the other. T-tests are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., males vs. females). Comparing a single estimate to a known value is called a *one sample t-test*, and we can set up the hypothesis test as follows:  
 
 - $H_0: \mu = 0$ where $\mu$ is the mean outcome and $0$ is the value we are comparing it to
 - $H_A: \mu \neq 0$
@@ -126,14 +126,14 @@ Notice that the first argument here is the `formula` and not the `design`. This 
 
 The `formula` argument can take on a couple of different forms depending on what we are measuring. Here are a few common scenarios:
 
-1. **One-sample t-test:** 
-  a. **Comparison to 0:** `var ~ 0`, where `var` is the measure of interest, and `0` is the value we compare it to. For example, we could test if the proportion of the population that has blue eyes is different from `0`.
-  b. **Comparison to a different value:** `I(var - value) ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. We need to use the `I()` function to tell the program to calculate the difference between the variable and the comparison value before testing. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `I(var - 0.25)~0`.
-2. **Two-sample t-test:**
-  a. **Unpaired:**
-    - **2 level grouping variable:** `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories. For example, we could test if the proportion of the population that has blue eyes is different for children aged 5-10 years old compared to children under 5 years old. 
-    - **3+ level grouping variable:** `var ~ I(groupVar == level)`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. Again we need to use the `I()` function to tell the program to isolate the category before doing the comparison across groups. For example, we could test if the test scores in one classroom differed from all other classrooms.
-  b. **Paired:** `I(var_1 - var_2) ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. We again will have to use the `I()` function to have the program calculate the difference between the two variables before comparing it against `0`. For example, we could test if test scores on a subject differed between the start and the end of a course.
+1. **One-sample t-test:**     
+  a. **Comparison to 0:** `var ~ 0`, where `var` is the measure of interest, and `0` is the value we compare it to. For example, we could test if the proportion of the population that has blue eyes is different from `0`.  
+  b. **Comparison to a different value:** `I(var - value) ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. We need to use the `I()` function to tell the program to calculate the difference between the variable and the comparison value before testing. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `I(var - 0.25)~0`.  
+2. **Two-sample t-test:**  
+  a. **Unpaired:**  
+    - **2 level grouping variable:** `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories. For example, we could test if the proportion of the population that has blue eyes is different for children aged 5-10 years old compared to children under 5 years old.   
+    - **3+ level grouping variable:** `var ~ I(groupVar == level)`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. Again we need to use the `I()` function to tell the program to isolate the category before doing the comparison across groups. For example, we could test if the test scores in one classroom differed from all other classrooms.   
+  b. **Paired:** `I(var_1 - var_2) ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. We again will have to use the `I()` function to have the program calculate the difference between the two variables before comparing it against `0`. For example, we could test if test scores on a subject differed between the start and the end of a course.  
 
 Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing, the t-test will not compute. Throughout this chapter we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c04-understanding-survey-data-documentation) to better understand how to handle missing data. Finally, the `level` argument is $1-\alpha$, or the amount of type 1 error. The default is $0.95$.
 
@@ -150,12 +150,12 @@ ANES asked respondents if they voted for president in the 2020 election. In our 
 
 voteprop <- anes_des %>%
  group_by(VotedPres2020) %>%
- summarize(survey_prop())
+ summarize(survey_prop())  
 
 voteprop
 ```
 
-Based on this, `r signif((voteprop %>% filter(VotedPres2020=="Yes") %>% pull(coef))*100,3)`% of the U.S. voting-eligible population voted for president in 2020. If we wanted to know how this compares to other countries, we could use `svyttest()`. For example, if we know that the voter turnout in Germany in the 2017 general election was 76.2%, we could set up our hypothesis as follows:
+Based on this, `r signif((voteprop %>% filter(VotedPres2020=="Yes") %>% pull(coef))*100,3)`% of the U.S. voting-eligible population voted for president in 2020. If we wanted to know how this compares to other countries, we could use `svyttest()`. For example, if we know that the voter turnout in Germany in the 2017 general election was 76.2%, we could set up our hypothesis as follows:  
 
 - $H_0: p = 0.762$ where $p$ is the proportion of the U.S. voting-eligible population that voted for president in 2020
 - $H_A: p \neq 0.762$
@@ -218,7 +218,7 @@ Or, we could take our t-test estimate (`ttest_ex2$estimate`) and add it to 68:
 ttest_ex2$estimate + 68
 ```
 
-The result is the same in both methods, so we see that the average temperature U.S. Households set their thermostat to in the summer at night is `r signif(ttest_ex2$estimate + 68,3)`. Looking at the output from the `svyttest()`, the t-statistic is `r ttest_ex2$statistic`, and the p-value is `r ttest_ex2$p.value`, indicating that the average is statistically different from 68$^\circ$F at an $\alpha$ level of $0.05$.
+The result is the same in both methods, so we see that the average temperature U.S. Households set their thermostat to in the summer at night is `r signif(ttest_ex2$estimate + 68,3)`. Looking at the output from the `svyttest()`, the t-statistic is `r ttest_ex2$statistic`, and the p-value is `r ttest_ex2$p.value`, indicating that the average is statistically different from 68$^\circ$F at an $\alpha$ level of $0.05$.  
 
 #### Example 3: Unpaired two-sample t-test {.unnumbered #stattest-ttest-ex3}
 
@@ -248,7 +248,7 @@ ttest_ex3 <- recs_des %>%
 ttest_ex3
 ```
 
-The results indicate that the difference in electrical bills for those that used AC and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r ttest_ex3$statistic` and the p-value is `r ttest_ex3$p.value`.
+The results indicate that the difference in electrical bills for those that used AC and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r ttest_ex3$statistic` and the p-value is `r ttest_ex3$p.value`.   
 
 #### Example 4: Paired two-sample t-test {.unnumbered #stattest-ttest-ex4}
 
@@ -270,7 +270,7 @@ ttest_ex4 <- recs_des %>%
 ttest_ex4
 ```
 
-U.S. households set their thermostat on average `r signif(ttest_ex4$estimate,2)`$^\circ$F warmer in summer nights than winter nights, which is statistically significant (t = `r ttest_ex4$statistic`, p-value = `r ttest_ex4$p.value`).
+U.S. households set their thermostat on average `r signif(ttest_ex4$estimate,2)`$^\circ$F warmer in summer nights than winter nights, which is statistically significant (t = `r ttest_ex4$statistic`, p-value = `r ttest_ex4$p.value`).  
 
 ### Exercises {#stattest-ttest-exercises}
 
@@ -429,8 +429,8 @@ chi_ex1 <- anes_des_educ %>%
 chi_ex1
 ```
 
-The output from the `svygofchisq()` indicates that at least one proportion from ANES does not match the ACS data ( $\chi^2=$ `r chi_ex1$statistic`; $p-value=$ `r signif(chi_ex1$p.value,3)` ). To get a better idea of the differences, we can use the `expected` output along with `survey_mean()` to create a comparison table:
-<!--This doesn't render correctly in HTML but does ok in PDF.-->
+The output from the `svygofchisq()` indicates that at least one proportion from ANES does not match the ACS data ( $\chi^2=$ `r chi_ex1$statistic`; $p-value=$ `r signif(chi_ex1$p.value,3)` ). To get a better idea of the differences, we can use the `expected` output along with `survey_mean()` to create a comparison table:  
+<!--This doesn't render correctly in HTML but does ok in PDF.-->  
 
 ```{r}
 #| label: stattest-chi-ex1-table
@@ -475,8 +475,8 @@ ex1_table %>%
   ) %>%
   ggplot(aes(x = Education, y = Proportion, color = Names)) +
   geom_point(alpha = 0.5) +
-  geom_errorbar(aes(ymin = Observed_low, ymax = Observed_upp)) +
-  theme_bw()
+  geom_errorbar(aes(ymin = Observed_low, ymax = Observed_upp)) +   
+  theme_bw()   
 ```
 
 #### Example 2: Test of Independence {.unnumbered #stattest-chi-ex2}
@@ -555,13 +555,13 @@ We may find it easier to look at these proportions graphically. We can use `gglo
 <!--Perhaps a mosaic plot instead?-->
 ```{r}
 #| label: stattest-chi-ex2-graph
-chi_ex2_obs %>%
-  ggplot(aes(x = TrustGovernment, y = Observed, color = TrustGovernment)) +
-  facet_wrap( ~ TrustPeople, ncol = 5) +
-  geom_point() +
-  geom_errorbar(aes(ymin = Observed_low, ymax = Observed_upp)) +
-  ylab("Proportion") +
-  theme_bw()
+chi_ex2_obs %>%  
+  ggplot(aes(x = TrustGovernment, y = Observed, color = TrustGovernment)) +  
+  facet_wrap( ~ TrustPeople, ncol = 5) +  
+  geom_point() +  
+  geom_errorbar(aes(ymin = Observed_low, ymax = Observed_upp)) +    
+  ylab("Proportion") +      
+  theme_bw()     
 ```
 
 #### Example 3: Test of Homogeneity {.unnumbered #stattest-chi-ex3}
@@ -571,12 +571,12 @@ Researchers and politicians often look at specific demographics each election cy
 If we want to see if there is a difference in how each age group voted for the 2020 candidates, this would be a test of homogeneity, and the hypothesis could be set up as follows:
 
 <!--Need to figure out how to make this readable.-->
-- $H_0: p_{1_{Biden}} = p_{1_{Trump}} = p_{1_{Other}},\\
-    p_{2_{Biden}} = p_{2_{Trump}} = p_{2_{Other}},\\
-    p_{3_{Biden}} = p_{3_{Trump}} = p_{3_{Other}},\\
-    p_{4_{Biden}} = p_{4_{Trump}} = p_{4_{Other}},\\
-    p_{5_{Biden}} = p_{5_{Trump}} = p_{5_{Other}},\\
-    p_{6_{Biden}} = p_{6_{Trump}} = p_{6_{Other}}$
+- $H_0: p_{1_{Biden}} = p_{1_{Trump}} = p_{1_{Other}},\\  
+    p_{2_{Biden}} = p_{2_{Trump}} = p_{2_{Other}},\\  
+    p_{3_{Biden}} = p_{3_{Trump}} = p_{3_{Other}},\\  
+    p_{4_{Biden}} = p_{4_{Trump}} = p_{4_{Other}},\\  
+    p_{5_{Biden}} = p_{5_{Trump}} = p_{5_{Other}},\\  
+    p_{6_{Biden}} = p_{6_{Trump}} = p_{6_{Other}}$  
     where $p_{i_{Biden}}$ is the observed proportion of each age group ($i$) that voted for Biden, $p_{i_{Trump}}$ is the observed proportion of each age group ($i$) that voted for Trump, and $p_{i_{Other}}$ is the observed proportion of each age group ($i$) that voted for another candidate
 - $H_A:$ at least one category of $p_{i_{Biden}}$ does not match $p_{i_{Trump}}$ or $p_{i_{Other}}$
 
