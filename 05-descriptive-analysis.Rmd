@@ -42,7 +42,7 @@ dstrata %>% # A `tbl_svy` object
 The functions in {srvyr} also play nicely with other tidyverse functions. If we wanted to create our survey object by selecting specific columns, we could use `dplyr::select()`'s special selection functions (such as `starts_with()`, `one_of()`, etc.).
 
 ```{r}
-dstrata <- dstrata %>%
+dstrata <- dstrata %>% 
   as_survey_design(
     1,
     strata = stype,
@@ -124,7 +124,7 @@ The {srvyr} package includes several functions for determining measures of distr
 
 * The `survey_total()` function calculates totals
 * The `survey_count()` and `survey_tally()` functions calculate weighted observations by group
-* The `survey_prop()` function calculates proportions
+* The `survey_prop()` function calculates proportions 
 * The `survey_quantile()` function calculates quantiles
 * The `survey_ratio()` function calculates ratios
 
@@ -134,7 +134,7 @@ Measures of central tendency find the central (or average) responses. These incl
 
 * Examples: Average 2000 Academic Performance Index in California, the median house price in Canada
 
-The `survey_mean()` and `survey_median()` functions from {srvyr} calculate mean and median using survey data, respectively. These functions must be called from within `summarize()`.
+The `survey_mean()` and `survey_median()` functions from {srvyr} calculate mean and median using survey data, respectively. These functions must be called from within `summarize()`.  
 
 #### Measures of dispersion {-}
 
@@ -173,7 +173,7 @@ This practice can lead to incorrect inferences because categorical variables lac
 
 ### Setup
 
-Recall from [Chapter 05](#c05) the general process for estimation with the {srvyr} package:
+Recall from [Chapter 05](#c05) the general process for estimation with the {srvyr} package:  
 
 1. Create a `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()`.
 2. Subset the data for subpopulations using `dplyr::filter()`, if needed.
@@ -251,9 +251,9 @@ recs_des %>% #  Specify the sample design
   survey_count() # Run `survey_count()`
 ```
 
-There are 118,208,250 observations in the survey. <!--TODO: Calculate this-->
+There are 118,208,250 observations in the survey. <!--TODO: Calculate this-->    
 
-`srvyr::count()` can take one or many variables. To calculate the number of observations for a combination of variables, such as Region and Division, we run the below:
+`srvyr::count()` can take one or many variables. To calculate the number of observations for a combination of variables, such as Region and Division, we run the below:    
 
 ```{r}
 recs_des %>%
@@ -261,7 +261,7 @@ recs_des %>%
   survey_count(Region, Division, name = "N") 
 ```
 
-When we run the crosstab, we see 5,638,844 observations from the Northeast's New England division, 15,377,694 from the Northeast's Middle Atlantic division, and so on. <!--TODO: Calculate this-->
+When we run the crosstab, we see 5,638,844 observations from the Northeast's New England division, 15,377,694 from the Northeast's Middle Atlantic division, and so on. <!--TODO: Calculate this-->   
 
 ### Calculate total sums using survey methods using `survey_total()`
 
@@ -297,8 +297,8 @@ To calculate a population count estimate with `survey_total()`, we can run the f
 
 ```{r}
 recs_des %>%
-  summarize(survey_total(),
-            .groups = "drop")
+  summarize(survey_total(),  
+            .groups = "drop")  
 ```
 
 Note that the result from `recs_des %>% summarize(survey_total(), .groups = "drop")` is equivalent to the `survey_count()` call. However, the `survey_total()` function is called within `summarize`, where as `survey_count()`, like `dplyr::count()`, is not.
@@ -309,19 +309,19 @@ The difference between `survey_total()` and `survey_count()` is more evident whe
 recs_des %>%
   summarize(
     elec_bill = survey_total(DOLLAREL),
-    elec_unweight = unweighted(sum(!is.na(DOLLAREL))),
-    .groups = "drop"
+    elec_unweight = unweighted(sum(!is.na(DOLLAREL))),  
+    .groups = "drop"    
   )
 ```
 
-$162,495,237,023 was spent on electricity. The unweighted sum is $5686. <!--TODO: add calculation-->
+$162,495,237,023 was spent on electricity. The unweighted sum is $5686. <!--TODO: add calculation-->   
 
 Since we are using the {srvyr} package, we can use `group_by()` to calculate the cost of electricity by different groups. Let's see how much the cost of electricity in whole dollars differed between regions:
 
 ```{r}
 recs_des %>%
   group_by(Region) %>%
-  cascade(elec_bill = survey_total(!is.na(DOLLAREL)))
+  cascade(elec_bill = survey_total(DOLLAREL))   
 ```
 
 The Northeast spent $28,271,369,286 on electricity, the Midwest spent $31,527,659,004, the South spent $72,463,508,778, and the West spent $30,232,699,955.  <!--TODO: Add calculation-->
@@ -376,7 +376,7 @@ We use `srvyr::survey_prop()` to estimate a survey's proportion of categorical v
 ```{r}
 recs_des %>%
   group_by(Region) %>%
-  summarize(survey_prop(),
+  summarize(survey_prop(),   
             .groups = "drop")
 ```
 
@@ -391,7 +391,7 @@ recs_des %>%
             .groups = "drop")
 ```
 
-### The `proportion` argument
+### The `proportion` argument   
 
 Note that when we run `survey_prop()`, we see a message that says:
 
@@ -402,7 +402,7 @@ When `proportion` is unspecified, `survey_prop()` now defaults to `proportion = 
 
 If the `proportion` argument is not specified in the function call, `survey_prop()` defaults to `proportion = TRUE`. This change was made to improve the accuracy of the confidence intervals calculated by the function since the function defaulted to `proportion = FALSE` in the past. The warning message is intended to alert users to this change and to suggest that any code relying on the previous default setting may need to be updated.
 
-### Print total overall numbers in our output
+### Print total overall numbers in our output   
 
 If we want to see the total overall numbers from our `survey_mean()` function, we can use `cascade`. `cascade` is similar to `summarize` but calculates summary statistics for the total of a group in addition to each group.
 
