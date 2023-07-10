@@ -15,7 +15,7 @@ Up to this point, the functions we've provided have used the wrappers from the {
 1. `filter(mtcars, cyl == 6)`
 2. `mtcars %>% filter(cyl == 6)`
 3. `mtcars %>% filter(., cyl == 6)`
-4. `mtcars %>% filter(.data= ., cyl == 6)`
+4. `mtcars %>% filter(.data = ., cyl == 6)`
 
 Each of these lines of code will produce the same output since the argument that takes the data is in the first spot in `filter()`. The first two are probably familiar to those who have worked with the tidyverse. The third option functions the same way as the second one but is explicit that `mtcars` goes into the first argument, and the fourth option indicates that mtcars is going into the named argument of `.data`. Here we're telling R to take what's on the left side of the pipe `mtcars` and pipe it into the spot with the dot (`.`)---the first argument.
 
@@ -26,7 +26,7 @@ svydata_des %>%
  svyttest(x ~ y, .)
 ```
 
-Placing the dot (`.`) in the second argument spot indicates that the survey design object `svydata_svy` should be used in the second argument and not the first (which is the default). 
+Placing the dot (`.`) in the second argument spot indicates that the survey design object `svydata_des` should be used in the second argument and not the first (which is the default). 
 
 Alternatively, named arguments could be used to place the dot first, as in the following:
 
@@ -37,7 +37,7 @@ svydata_des %>%
 
 ## Chapter Set-Up {#stattest-setup}
 
-For this chapter, we use the same data as in \@ref(c05-descriptive-analysis): ANES and RECS. As a reminder, we need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately; thus, we can accurately determine statistical significance.
+For this chapter, we use the same RECS data as in Chapter \@ref(c05-descriptive-analysis) along with the ANES survey data introduced in Chapter \@ref(c04-understanding-survey-data-documentation). As a reminder, we need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately; thus, we can accurately determine statistical significance.
 
 First, make sure to install and load the following packages:
 
@@ -57,7 +57,7 @@ source("helper-fun/helper-functions.R")
 
 Second, we need to read in the data and create the design objects.
 
-Here is how to create the design object for the ANES data. Remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information).
+Here is how to create the design object for the ANES data. As we showed in Chapter \@ref(c04-understanding-survey-data-documentation), we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights by the target population count (see the ANES methodology documentation for more information).
 
 ```{r stattest-anesdes}
 #| eval: FALSE
@@ -93,13 +93,13 @@ recs_des <- recs_in %>%
 
 To compare two proportions or means, we use t-tests. This allows us to determine if one proportion or mean is statistically different from the other. T-tests are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., males vs. females). Comparing a single estimate to a known value is called a *one sample t-test*, and we can set up the hypothesis test as follows:  
 
-- $H_0: \mu = 0$ where $\mu$ is the mean outcome and $0$ is the value we are comparing it to
-- $H_A: \mu \neq 0$
+  - $H_0: \mu = 0$ where $\mu$ is the mean outcome and $0$ is the value we are comparing it to
+  - $H_A: \mu \neq 0$
 
 For comparing two estimates, this is called a *two-sample t-test* and we can set up the hypothesis test as follows:
 
-- $H_0: \mu_1 = \mu_2$ where $\mu_i$ is the mean outcome for group $i$
-- $H_A: \mu_1 \neq \mu_2$
+  - $H_0: \mu_1 = \mu_2$ where $\mu_i$ is the mean outcome for group $i$
+  - $H_A: \mu_1 \neq \mu_2$
 
 Two sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., males vs females), the t-test run will be an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention). 
 
@@ -107,10 +107,10 @@ The difference between t-tests with non-survey data and survey data is based on 
 
 ### Syntax {#stattest-ttest-syntax}
 
-When we do not have survey data, we can use the `t.test()` function. This function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, we need to use the svyttest() function when using survey data. Many of the arguments are the same between the two functions, but there are two key differences:
+When we do not have survey data, we can use the `t.test()` function. This function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, we need to use the `svyttest()` function when using survey data. Many of the arguments are the same between the two functions, but there are two key differences:
 
-- We need to use the survey design object instead of data
-- We can only use a formula and not separate x and y data
+  - We need to use the survey design object instead of data
+ - We can only use a formula and not separate x and y data
 
 Here is the syntax for the `svyttest()` function:
 
@@ -140,7 +140,7 @@ Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data 
 ### Examples {#stattest-ttest-examples}
 Let's walk through a few examples using the ANES and RECS data. See Section \@ref(stattest-setup) above to set up the design objects.
 
-#### Example 1: One-sample t-test {.unnumbered #stattest-ttest-ex1}
+#### Example 1: One-sample t-test {.unnumbered #stattest-ttest-ex1}  
 <!--Would love to do a comparison to 0 for this example, but have changed it for now. Thoughts?-->
 
 ANES asked respondents if they voted for president in the 2020 election. In our data, we've called this variable `VotedPres2020`. Let's look at the proportion of the U.S. voting-eligible population that voted for president in 2020 using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis). 
@@ -322,20 +322,20 @@ Chi-square tests ($\chi^2$) allow us to examine multiple proportions using a goo
 
 First, **goodness-of-fit** tests are used when comparing *observed* data to *expected* data. For example, this could be used to determine if respondent demographics (the observed data) match known population information (the expected data). In this case, we can set up the hypothesis test as follows:
 
-- $H_0: p_1 = \pi_1, ~ p_2 = \pi_2, ~ ..., ~ p_k = \pi_k$ where $p_i$ is the observed proportion for category $i$, $\pi_i$ is expected proportion for category $i$, and $k$ is the number of categories
-- $H_A:$ at least one level of $p_i$ does not match $\pi_i$
+  - $H_0: p_1 = \pi_1, ~ p_2 = \pi_2, ~ ..., ~ p_k = \pi_k$ where $p_i$ is the observed proportion for category $i$, $\pi_i$ is expected proportion for category $i$, and $k$ is the number of categories
+  - $H_A:$ at least one level of $p_i$ does not match $\pi_i$
 
 Second, **tests of independence** are used when comparing two types of *observed* data to see if there is a relationship. For example, this could be used to determine if the proportion of respondents who voted for each political party in the Presidential election matches the proportion of respondents who voted for each political party in a local election. In this case, we can set up the hypothesis test as follows:
 
-- $H_0:$ The two variables/factors are independent
-- $H_A:$ The two variables/factors are *not* independent 
+  - $H_0:$ The two variables/factors are independent
+  - $H_A:$ The two variables/factors are *not* independent 
 
 Third, **tests of homogeneity** are used to compare two distributions to see if they match. For example, this could be used to determine if the highest education achieved is the same for both men and women. In this case, we can set up the hypothesis test as follows:
 
-- $H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}$ where $p_{ia}$ is the observed proportion of category $i$ for subgroup $a$, $p_{ib}$ is the observed proportion of category $i$ for subgroup $a$ and $k$ is the number of categories
-- $H_A:$ at least one category of $p_{ia}$ does not match $p_{ib}$
+  - $H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}$ where $p_{ia}$ is the observed proportion of category $i$ for subgroup $a$, $p_{ib}$ is the observed proportion of category $i$ for subgroup $a$ and $k$ is the number of categories
+  - $H_A:$ at least one category of $p_{ia}$ does not match $p_{ib}$
 
-The difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation difference. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c03-specifying-sample-designs). 
+As with t-tests, the difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c03-specifying-sample-designs). 
 
 ### Syntax {#stattest-chi-syntax}
 
@@ -356,7 +356,7 @@ svygofchisq(formula,
             ...)
 ```
 
-In this function, you'll notice that the first argument is the `formula`, the second is `p`, which is the expected proportions, and the third is the `design`. Therefore, we again must use the dot `(.)` notation if we pipe in the survey design object (as described at the beginning of this chapter). For the goodness of fit tests, the formula will be a single variable `formula = ~VARIABLE` as we compare the observed data from this variable to the expected data. The expected probabilities are then entered in the `p` argument and need to be a vector of the same length as the number of categories in the variable. For example, if we want to know if the proportion of males and females match a distribution of 30/70, then the sex variable (with two categories) would be used in the formula `formula = ~SEX`, and the proportions would be included as `p = c(.3,.7)`. It is important to note that the variable entered into the formula should be formatted as either a factor or a character. The examples below provide more detail and tips on how to make sure the levels match up correctly.
+In this function, you'll notice that the first argument is the `formula`, the second is `p`, which is the expected proportions, and the third is the `design`. Therefore, we again must use the dot `(.)` notation if we pipe in the survey design object (as described at the beginning of this chapter). For the goodness of fit tests, the formula will be a single variable `formula = ~var` as we compare the observed data from this variable to the expected data. The expected probabilities are then entered in the `p` argument and need to be a vector of the same length as the number of categories in the variable. For example, if we want to know if the proportion of males and females match a distribution of 30/70, then the sex variable (with two categories) would be used `formula = ~SEX`, and the proportions would be included as `p = c(.3,.7)`. It is important to note that the variable entered into the formula should be formatted as either a factor or a character. The examples below provide more detail and tips on how to make sure the levels match up correctly.
 
 The function for tests of independence and homogeneity (`svychisq()`) is similar to the goodness of fit function in that the `formula` argument is first. However, instead of an argument for the expected proportions, the `svychisq()` function has an argument to select the statistic used for the test:
 
@@ -373,9 +373,9 @@ svychisq(
 
 There are six statistics that are accepted in this formula. For tests of homogeneity (when comparing cross-tabulations), the `F` or `Chisq` statistics should be used.^[These two statistics can also be used for goodness of fit tests, if the `svygofchisq()` function is not used.] The `F` statistic is the default and uses the Rao-Scott second-order correction. This correction is designed to assist with complicated sampling designs (i.e., those other than a simple random sample) (CITE)^[http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf]. The `Chisq` statistic is an adjusted version of the Pearson $\chi^2$ statistic. The version of this statistic in the `svychisq()` function compares the design effect estimate from the provided survey data to what the $\chi^2$ distribution would have been if the data came from a simple random sampling.
 
-For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons. If the data has a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this. The `lincom` and `saddlepoint` statistics are available for more complicated data structures.<!--I'm struggling to find a lot of information around these last two statistics, any thoughts/suggestions?-->
+For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons. If the data has a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this. The `lincom` and `saddlepoint` statistics are available for more complicated data structures.<!--I'm struggling to find a lot of information around these last two statistics, any thoughts/suggestions?--> 
 
-The formula argument will always be one-sided, unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula=~VAR1+VAR2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
+The formula argument will always be one-sided, unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula = ~ var_1 + var_2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
 
 Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. This argument defaults to `FALSE`; however, unlike the t-test function, if any data is missing, the $\chi^2$ tests will assume that `NA` is a category and will include it in the calculation. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c04-understanding-survey-data-documentation) to better understand how to handle missing data.
 
@@ -387,17 +387,17 @@ Let's walk through a few examples using the ANES data. See Section \@ref(stattes
 #### Example 1: Goodness of Fit Test {.unnumbered #stattest-chi-ex1}
 
 ANES asked respondents about their highest education level. Based on the data from the 2020 American Community Survey (ACS) 5-year estimates^[Data was pulled from data.census.gov using the S1501 Education Attainment 2020: ACS 5-Year Estimates Subject Tables], the education distribution of those 18+ in the U.S. is as follows:
-- 11% had less than High School degree
-- 27% had a High School degree
-- 29% had some college or associate's degree
-- 33% had a bachelor's degree or higher
+  - 11% had less than High School degree
+  - 27% had a High School degree
+  - 29% had some college or associate's degree
+  - 33% had a bachelor's degree or higher
 
 If we want to see if the weighted distribution from the ANES 2020 data matches this distribution, we could set up the hypothesis as follows:
 
-- $H_0: p_1 = 0.11, ~ p_2 = 0.27, ~ p_3 = 0.29, ~ p_4 = 0.33$
-- $H_A:$ at least one of the education levels does not match between the ANES and the ACS
+  - $H_0: p_1 = 0.11, ~ p_2 = 0.27, ~ p_3 = 0.29, ~ p_4 = 0.33$
+  - $H_A:$ at least one of the education levels does not match between the ANES and the ACS
 
-To conduct this in R, let's first look at the education variable (`Education`) we have on the ANES data. Using the `survey_mean()` function discussed in Chapter \@ref(c05-descriptive-analysis), we can see our different education levels and estimated proportion.
+To conduct this in R, let's first look at the education variable (`Education`) we have on the ANES data. Using the `survey_mean()` function discussed in Chapter \@ref(c05-descriptive-analysis), we can see the education levels and estimated proportions.
 
 ```{r}
 #| label: stattest-chi-ex1-educmean
@@ -483,13 +483,13 @@ ex1_table %>%
 
 ANES asked respondents two questions about trust:
 
-- How often can you trust the federal government to do what is right?
-- How often can you trust other people?
+  - How often can you trust the federal government to do what is right?
+  - How often can you trust other people?
 
 If we want to see if the distributions of these two questions are similar or not, we can conduct a test of independence. Here is how the hypothesis could be set up:
 
-- $H_0:$ People's trust in the federal government and their trust in other people are independent (i.e., *not* related)
-- $H_A:$ People's trust in the federal government and their trust in other people are *not* independent (i.e., they are related)
+  - $H_0:$ People's trust in the federal government and their trust in other people are independent (i.e., *not* related)
+  - $H_A:$ People's trust in the federal government and their trust in other people are *not* independent (i.e., they are related)
 
 To conduct this in R, we will use the `svychisq()` function to compare the two variables:
 
@@ -525,10 +525,10 @@ chi_ex2$observed %>% as_tibble() %>%
   gt(rowname_col = "TrustGovernment") %>%
   tab_stubhead(label = "Trust in Government") %>%
   tab_spanner(label = "Trust in People",
-              columns = everything())
+              columns = everything()) 
 ```
 
-The second option is to use `group_by()` and `survey_mean()` functions to calculate the proportions from the ANES design object. A reminder that with more than one variable listed in the `group_by()` statement, the proportions are within the first variable listed. As mentioned above, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`.
+The second option is to use `group_by()` and `survey_mean()` functions to calculate the proportions from the ANES design object. A reminder that with more than one variable listed in the `group_by()` statement, the proportions are within the first variable listed. As mentioned above, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. 
 
 ```{r}
 #| label: stattest-chi-ex2-prop2
@@ -545,7 +545,7 @@ chi_ex2_obs %>%
   gt(rowname_col = "TrustGovernment") %>%
   tab_stubhead(label = "Trust in Government") %>%
   tab_spanner(label = "Trust in People",
-              columns = everything())
+              columns = everything()) 
 ```
 
 Both methods produce the same output as the `svychisq()` function does account for the survey design. However, calculating the proportions directly from the design object means that you can also obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those that never trust people, 50.3% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people. 
@@ -613,7 +613,8 @@ chi_ex3_obs %>%
   mutate(prop = paste0(Observed, " (", Observed_low, ", ",
                        Observed_upp, ")")) %>%
   select(AgeGroup, VotedPres2020_selection, prop) %>%
-  pivot_wider(names_from = VotedPres2020_selection, values_from = prop) %>%
+  pivot_wider(names_from = VotedPres2020_selection, 
+              values_from = prop) %>%
   gt(rowname_col = "AgeGroup") %>%
   tab_stubhead(label = "Age Group")
 ```
