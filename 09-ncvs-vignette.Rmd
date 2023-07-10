@@ -2,23 +2,23 @@
 
 <!-- author review -->
 
-The National Crime Victimization Survey (NCVS) is a household survey sponsored by the Bureau of Justice Statistics (BJS), which collects data on criminal victimization, including characteristics of the crimes, offenders, and victims. Both household and personal crimes include violent and non-violent crimes. The target population of this survey is all people in the United States age 12 and older living in housing units and noninstitutional group quarters.
+The National Crime Victimization Survey (NCVS) is a household survey sponsored by the Bureau of Justice Statistics (BJS), which collects data on criminal victimization, including characteristics of the crimes, offenders, and victims. Both household and personal crimes include violent and non-violent crimes. The target population of this survey is all people in the United States age 12 and older living in housing units and noninstitutional group quarters. 
 
-The NCVS has been ongoing since 1992. An earlier survey, the National Crime Survey, was run from 1972 to 1991 (@ncvs_tech_2016). The survey is administered using a rotating panel. When an address enters the sample, the residents of that address are interviewed every six months for a total of 7 interviews. If the initial residents move away from the address during the period, the new residents are included in the survey, and people are not followed when they move.
+The NCVS has been ongoing since 1992. An earlier survey, the National Crime Survey, was run from 1972 to 1991 (@ncvs_tech_2016). The survey is administered using a rotating panel. When an address enters the sample, the residents of that address are interviewed every six months for a total of 7 interviews. If the initial residents move away from the address during the period, the new residents are included in the survey, and people are not followed when they move. 
 
-NCVS data is publicly available and distributed by Inter-university Consortium for Political and Social Research (ICPSR)^[https://www.icpsr.umich.edu/web/ICPSR/series/95], with data going back to 1992. The vignette in this book will include data from 2021 (@ncvs_data_2021). The NCVS data structure is complicated, and the User's Guide contains examples for analysis in SAS, SUDAAN, SPSS, and Stata, but not R (@ncvs_user_guide). This vignette will adapt those examples for R.
+NCVS data is publicly available and distributed by Inter-university Consortium for Political and Social Research (ICPSR)^[https://www.icpsr.umich.edu/web/ICPSR/series/95], with data going back to 1992. The vignette in this book will include data from 2021 (@ncvs_data_2021). The NCVS data structure is complicated, and the User's Guide contains examples for analysis in SAS, SUDAAN, SPSS, and Stata, but not R (@ncvs_user_guide). This vignette will adapt those examples for R. 
 
 ## Data structure
 
 The data from ICPSR are distributed with five files with their unique identifiers indicated:
 
-- Address Record - `YEARQ`, `IDHH`
-- Household Record - `YEARQ`, `IDHH`
-- Person Record - `YEARQ`, `IDHH`, `IDPER`
-- Incident Record - `YEARQ`, `IDHH`, `IDPER`
-- 2021 Collection Year Incident - `YEARQ`, `IDHH`, `IDPER`
+  - Address Record - `YEARQ`, `IDHH`
+  - Household Record - `YEARQ`, `IDHH`
+  - Person Record - `YEARQ`, `IDHH`, `IDPER`
+  - Incident Record - `YEARQ`, `IDHH`, `IDPER`
+  - 2021 Collection Year Incident - `YEARQ`, `IDHH`, `IDPER`
 
-We will focus on the household, person, and incident files. From these files, we selected a subset of columns for examples and have included the subset on the book's GitHub repository, and the file subsets will be used in this vignette. Find the dataset in the book's GitHub repository or download the complete files at ICPSR^[https://www.icpsr.umich.edu/web/NACJD/studies/38429].
+We will focus on the household, person, and incident files. From these files, we selected a subset of columns for examples and have included the subset on the book's GitHub repository, and the file subsets will be used in this vignette. Find the dataset in the book's GitHub repository or download the complete files at ICPSR^[https://www.icpsr.umich.edu/web/NACJD/studies/38429]. 
 
 ## Data file preparation
 
@@ -30,7 +30,7 @@ To calculate victimization rates, we need to know the victimization status for b
 
 Each record on the incident file represents one victimization, which is not the same as one incident. Some victimizations have several instances that make it difficult for the victim to differentiate the details of these incidents, labeled as series crimes. Appendix A of the User's Guide indicates how to calculate the series weight in other statistical languages. That code is adapted here for R. Essentially, if a victimization is a series crime, its series weight is top-coded at 10 based on the number of actual victimizations. If an incident is a series crime, but the number of occurrences is unknown, the series weight is set to 6. A description of the variables used in this chunk is included in the following table:
 
-|Variable|Description|Value|Label|
+|Variable|Description|Value|Label| 
 |---|---|---|---|
 |V4016|HOW MANY TIMES INCIDENT OCCUR LAST 6 MOS|1-996|Number of times|
 |||997|Don't know|
@@ -104,7 +104,7 @@ In the following example, we will create the following indicators:
 
 A brief codebook for this section is as follows:
 
-|Variable|Description|Value|Label|
+|Variable|Description|Value|Label| 
 |---|---|---|---|
 |V4022|IN WHAT CITY, TOWN, VILLAGE|1|Outside U.S.|
 |||2|Not inside a city/town/village|
@@ -207,7 +207,7 @@ inc_ind %>%
         AAST_Other)
 ```
 
-In the code above, some checking of derived variables is done. This is a good point to pause to look at the output of crosswalks between an original variable and a derived to check the logic was programmed correctly and everything ends up in the bucket you expect. 
+In the code above, some checking of derived variables is done. This is a good point to pause to look at the output of crosswalks between an original variable and a derived to check the logic was programmed correctly and everything ends up in the bucket you expect.  
 
 After creating indicators of victimization types and characteristics, the file is summarized, and crimes are summed across persons or households by `YEARQ.` Property crimes are summed across households, and personal crimes (violent, purse snatching, and pocket-picking) are summed across persons. The indicators are summed using the `serieswgt`, and the variable `WGTVICCY` needs to be retained for later analysis.
 
@@ -317,7 +317,7 @@ Brief codebook for household variables:
 
 Brief codebook for person variables:
 
-|Variable|Description|Value|Label|
+|Variable|Description|Value|Label| 
 |---|---|---|---|
 |V3014|AGE||12 through 90
 |V3015|MARITAL STATUS (Current)|1|Married|
@@ -532,9 +532,9 @@ We will discuss four estimate types as follows:
 
 $$ \hat{t}_D = \sum_{ijkl \in D} v_{ijkl}$$
 
-where $v_{ijkl}$ is the series-adjusted victimization weight for household $i$, respondent $j$, reporting period $k$, and victimization $l$, that is `WGTVICCY`.
+where $v_{ijkl}$ is the series-adjusted victimization weight for household $i$, respondent $j$, reporting period $k$, and victimization $l$, that is `WGTVICCY`. 
 
-2. Victimization proportions estimate characteristics among victimizations or victims. Victimization proportions are calculated using the incident design object. The estimated victimization proportion for domain $D$ across level $a$ of covariate $A$, $\hat{p}_{A_a,D}$ is
+2. Victimization proportions estimate characteristics among victimizations or victims. Victimization proportions are calculated using the incident design object. The estimated victimization proportion for domain $D$ across level $a$ of covariate $A$, $\hat{p}_{A_a,D}$ is 
 
 $$ \hat{p}_{A_a,D} =\frac{\sum_{ijkl \in A_a, D} v_{ijkl}}{\sum_{ijkl \in D} v_{ijkl}}.$$
 The numerator is the number of incidents with a particular characteristic in a domain, and the denominator is the number of incidents in a domain.
@@ -679,7 +679,7 @@ pers_est_df %>%
     locations = cells_column_spanners(spanners = "viol_span")
   ) %>%
   tab_footnote(footnote = "Excludes persons of Hispanic origin",
-               locations = cells_stub(rows = Level != "Hispanic")) %>%
+               locations = cells_stub(rows = Level != "Hispanic")) %>% 
   tab_footnote(
     footnote = "Inlcudes persons who identified as
     Native Hawaiian or Other Pacific Islander only.",
