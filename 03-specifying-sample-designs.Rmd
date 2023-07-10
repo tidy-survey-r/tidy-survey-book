@@ -6,13 +6,13 @@ The primary reason for using packages like {survey} and {srvyr} is to incorporat
 
 The general process for estimation in the {srvyr} package is to:
 
-1. Create a `tbl_svy` object (a survey object) using: `as_survey_design` or `as_survey_rep`
+1. Create a `tbl_svy` object (a survey object) using: `as_survey_design()` or `as_survey_rep()`
 
-2. Subset data (if needed) using `filter` (subpopulations)
+2. Subset data (if needed) using `filter()` (subpopulations)
 
-3. Specify domains of analysis using `group_by` 
+3. Specify domains of analysis using `group_by()` 
 
-4. Within `summarize`, specify variables to calculate, including means, totals, proportions, quantiles, and more
+4. Within `summarize()`, specify variables to calculate, including means, totals, proportions, quantiles, and more
 
 This chapter includes details on the first step - creating the survey object. The other steps are detailed in the next several chapters.
 
@@ -40,13 +40,13 @@ The estimate for the population mean of variable $y$ is:
 
 $$\bar{y}=\frac{1}{n}\sum_{i=1}^n y_i$$
 
-and the estimate of the standard error of mean is:
+and the estimate of the standard error of the mean is:
 
 $$se(\bar{y})=\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}$$ where
 
 $$s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.$$
 
-This standard error estimate might look very similar to equations in other applications except for the part on the right side of the equation: $1-\frac{n}{N}$. This is called the finite population correction factor (FPC), and if the size of the frame, $N$, is very large, the FPC is negligible, so it is often ignored. 
+This standard error estimate might look very similar to equations in other applications except for the part on the right side of the equation: $1-\frac{n}{N}$. This is called the finite population correction factor (FPC), and if the size of the frame, $N$, is very large, the FPC is negligible, so it is often ignored.  
 
 To estimate proportions, we define $x_i$ as the indicator if the outcome is observed. That is, $x_i=1$ if the outcome is observed, and $x_i=0$ if the outcome is not observed. Then the estimated proportion from an SRS design is:
 
@@ -60,7 +60,7 @@ $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} $$
 If a sample was drawn through SRS and had no nonresponse or other weighting adjustments, in R, specify this design as:
 
 ```r
-des_srs1 <- dat %>%
+srs1_des <- dat %>%
  as_survey_design(fpc = fpcvar)
 ```
 
@@ -74,7 +74,7 @@ des_srs2 <- dat %>%
 If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:
 
 ```r
-des_srs3 <- dat %>%
+srs3_des <- dat %>%
  as_survey_design(weights = wtvar, fpc = fpcvar)
 ```
 
@@ -118,11 +118,11 @@ In the printed design object above, the design is described as an "Independent S
 
 ### Simple random sample with replacement
 
-- **Description**: The simple random sample with replacement (SRSWR) is a sampling design where a sample is selected from a sampling frame with the units being replaced before drawing again, so units can be selected more than once.
-- **Requirements**: The sampling frame must include the entire population.
-- **Advantages**: SRSWR requires no information about the units apart from contact information.
-- **Disadvantages**: The sampling frame may not be available for the entire population. This design is not generally feasible for in-person data collection. Units can be selected more than once, resulting in a smaller realized sample size. For small populations, SRSWR has larger standard errors than SRS designs.
-- **Example**: A professor puts all students' names on paper slips and selects them randomly to ask students questions, but the professor replaces the paper after calling on the student so they can be selected again at any time.
+Similar to the SRS design, the simple random sample with replacement (SRSWR) design randomly selects the sample from the entire sampling frame.  However, while SRS removes sampled units before selecting again, the SRSWR instead replaces each sampled unit before drawing again, so units can be selected more than once.
+  - **Requirements**: The sampling frame must include the entire population.
+  - **Advantages**: SRSWR requires no information about the units apart from contact information.
+  - **Disadvantages**: The sampling frame may not be available for the entire population. This design is not generally feasible for in-person data collection. Units can be selected more than once, resulting in a smaller realized sample size. For small populations, SRSWR has larger standard errors than SRS designs.
+  - **Example**: A professor puts all students' names on paper slips and selects them randomly to ask students questions, but the professor replaces the paper after calling on the student so they can be selected again at any time.
 
 
 #### The math {-}
@@ -165,7 +165,7 @@ where `wtvar` is the variable for the weight on the data.
 
 #### Example {-} 
 
-The {survey} package does not include an example of SRSWR, so we create an example from the population data provided. We call this new dataset `apisrswr`.
+The {survey} package does not include an example of SRSWR, so to illustrate this design we create an example from the population data provided. We call this new dataset `apisrswr`.
 
 ```{r}
 #| label: samp-des-apisrs-wr-display
@@ -183,7 +183,7 @@ head(apisrswr)
 
 ```
 
-Because this is a SRS design *with replacement*, there will be duplicates in the data. It is important to keep the duplicates in the data for proper estimation, but for reference, here are the duplicates in the example we just created.
+Because this is a SRS design *with replacement*, there will be duplicates in the data. It is important to keep the duplicates in the data for proper estimation, but for reference we can view the duplicates in the example data we just created.
 
 ```{r}
 #| label: samp-des-apisrs-wr-duplicates
@@ -195,7 +195,7 @@ apisrswr %>%
 ```
 
 
-A weight variable was added, which is the inverse of the probability of selection. To specify the sampling design for `apisrswr`, the following syntax should be used:
+We created a weight variable in this example data, which is the inverse of the probability of selection. To specify the sampling design for `apisrswr`, the following syntax should be used:
 
 ```{r}
 #| label: samp-des-apisrswr-des
@@ -216,13 +216,13 @@ In the chunk above, the design object is printed, and the object summary is show
 - **Disadvantages**: Auxiliary data may not exist to divide the sampling frame into groups, or the data may be outdated.
 - Examples: 
  - **Example 1**: A population of North Carolina residents could be separated into urban and rural areas, and then a SRS of residents from both rural and urban areas is selected independently. This ensures there are rural residents in the sample.
- - **Example 2**: There are three primary general-purpose law enforcement agencies in the US - local police, sheriff's departments, and state police. In a survey of law enforcement agencies, the agency type could be used to form strata.
+ - **Example 2**: There are three primary general-purpose law enforcement agencies in the US - local police, sheriff's departments, and state police. In a survey of law enforcement agencies, the agency type could be used to form strata. 
 
 #### The math {-} 
 
 Let $\bar{y}_h$ be the sample mean for stratum $h$, $N_h$ be the population size of stratum $h$, and $n_h$ be the sample size of stratum $h$. Then the estimate for the population mean under stratified SRS sampling is:
 
-$$\bar{y}=\frac{1}{N}\sum_{h=1}^H N_h\bar{y}_h$$
+$$\bar{y}=\frac{1}{N}\sum_{h=1}^H N_h\bar{y}_h$$ 
 and the estimate of the standard error of $\bar{y}$ is:
 
 $$se(\bar{y})=\sqrt{\frac{1}{N^2} \sum_{h=1}^H N_h^2 s_h^2\left(1-\frac{n_h}{N_h}\right)} $$ 
@@ -240,7 +240,7 @@ $$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_
 
 #### The syntax {-} 
 
-To specify a stratified SRS design in {srvyr} where the population sizes of the strata are not too large and are known, that is, you are using the fpc, specify the design as:
+To specify a stratified SRS design in {srvyr} when using the fpc, that is, where the population sizes of the strata are not too large and are known, that is, you are using the fpc, specify the design as:
 
 ```r
 des_stsrs1 <- dat %>%
@@ -283,7 +283,7 @@ des_apistrat
 summary(des_apistrat)
 ```
 
-When printing the object, it is specified as a "Stratified Independent Sampling design," also known as a stratified SRS, and the strata variable is included. In the summary, a numeric summary of the probabilities of selection is displayed, as well as the sample and population stratum sizes.
+When printing the object, it is specified as a "Stratified Independent Sampling design," also known as a stratified SRS, and the strata variable is included. Printing the summary we see a distribution of probabilities, as we saw with SRS, but we also see the sample and populations sizes by stratum.
 
 ### Clustered sampling
 
@@ -328,7 +328,7 @@ des_clus2 <- dat %>%
 
 where `PSU` and `SSU` are the variables indicating the PSU and SSU identifiers, and `N` and `M` are the variables indicating the population sizes for each level (i.e., `N` is the number of clusters, and `M` is the number of units within each cluster). Note that `N` will be the same for all records (within a strata), and `M` will be the same for all records within the same cluster.
 
-If clusters were sampled with replacement or from a very large population, a fpc is unnecessary. Additionally, only the first stage of selection is necessary regardless of whether the units were selected with replacement at any stage. The subsequent stages of selection are ignored in computation as their contribution to the variance is overpowered by the first stage. See @sarndal2003model or @wolter2007introduction for a more in-depth discussion. The syntax below will yield the same estimates in the end:
+If clusters were sampled with replacement or from a very large population, a fpc is unnecessary. Additionally, only the first stage of selection is necessary regardless of whether the units were selected with replacement at any stage. The subsequent stages of selection are ignored in computation as their contribution to the variance is overpowered by the first stage (see @sarndal2003model or @wolter2007introduction for a more in-depth discussion). Therefore, the syntax below will yield the same estimates in the end:
 
 ```r
 des_clus2wra <- dat %>%
@@ -382,19 +382,19 @@ Replicate weights are often included on analysis files instead of, or in additio
 
 The different types of replicate weights largely differ in step 1 - how the sample is divided into subsamples, and step 4 - which multiplication factors (scales) are used to multiply the variance.
 
-### BRR method
+### Balanced Repeated Replication (BRR) Method
 
-The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by two but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have one row, two rows, or a multiple of four rows. An example of a $4\times4$ Hadamard matrix is below:
+The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by two but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have one row, two rows, or a multiple of four rows. An example of a $4\times4$ Hadamard matrix is below: 
 
 $$ \begin{array}{rrrr} +1 &+1 &+1 &+1\\ +1&-1&+1&-1\\ +1&+1&-1&-1\\ +1 &-1&-1&+1 \end{array} $$
 The columns specify the strata and the rows the replicate. In the first replicate, all the values are +1, so in each stratum, the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in stratum 1 and 3, while the second PSU would be used in stratum 2 and 4. In the third replicate, the first PSU would be used in stratum 1 and 2, while the second PSU would be used in strata 3 and 4. Finally, in the fourth replicate, the first PSU would be used in strata 1 and 4, while the second PSU would be used in strata 2 and 3.
 
 #### The math {-}
 
-A weighted estimate for the full sample is calculated as $\hat{\theta}$, and then a weighted estimate for each replicate is calculated as $\hat{\theta}_r$ for $R$ replicates. Then the standard error of the estimate is calculated as follows:
+A weighted estimate for the full sample is calculated as $\hat{\theta}$, and then a weighted estimate for each replicate is calculated as $\hat{\theta}_r$ for $R$ replicates. The standard error of the estimate is calculated as follows:
 
 $$se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$
-Specifying replicate weights in R requires specifying the type of replicate weights, the main weight variable, the replicate weight variables, and other options. One of the key options is for `mse`. If `mse=TRUE`, variances are computed around the point estimate $(\hat{\theta})$, whereas if `mse=FALSE`, variances are computed around the mean of the replicates $(\bar{\theta})$ instead which looks like this:
+Specifying replicate weights in R requires specifying the type of replicate weights, the main weight variable, the replicate weight variables, and other options. One of the key options is for `mse`. If `mse=TRUE`, variances are computed around the point estimate $(\hat{\theta})$, whereas if `mse=FALSE`, variances are computed around the mean of the replicates $(\bar{\theta})$ instead which looks like this: 
 
 $$se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\bar{\theta}\right)^2}$$ where $$\bar{\theta}=\frac{1}{R}\sum_{r=1}^R \hat{\theta}_r$$
 
@@ -402,15 +402,13 @@ The default option for `mse` is to use the global option of "survey.replicates.m
 
 #### The syntax {-} 
 
-Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 in the American Community Survey (ACS) or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS). The {srvyr} package relies on tidy selection^[dplyr documentation on tidy-select: https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] to choose variables. If replicate weight variables need to be specified with a character vector, use the `all_of` function to select variables from a character vector. Some other methods are also illustrated below in the examples, but these apply to any replicate weights and not just BRR.
-
-If a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, use the following syntax (both are equivalent):
+Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 in the American Community Survey (ACS) or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS). This makes it easy to use some of the tidy selection^[dplyr documentation on tidy-select: https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] functions in R. For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, we can use the following syntax (both are equivalent):
 
 ```r
 des_brr <- dat %>%
   as_survey_rep(
     weights = WT0,
-    repweights = all_of(str_c("WT", 1:20)),
+    repweights = all_of(str_c("WT", 1:20)), 
     type = "BRR",
     mse = TRUE
   )
@@ -456,7 +454,7 @@ des_brr <- dat %>%
   )
 ```
 
-Typically, the replicate weights sum to a value similar to the main weight, as they are both supposed to provide population estimates. Rarely an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. This would be indicated in the documentation, and Section \@ref(und-surv-doc) discusses how to understand documentation. In this case, the replicate weights are not combined, and the option `combined_weights = FALSE` should be indicated, as the default value for this argument is TRUE. This specific syntax is shown below:
+Typically, the replicate weights sum to a value similar to the main weight, as they are both supposed to provide population estimates. Rarely an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. This would be indicated in the documentation, and Section \@ref(und-surv-doc) and Chapter \@ref(c04-understanding-survey-data-documentation) discuss how to understand documentation. In this case, the replicate weights are not combined, and the option `combined_weights = FALSE` should be indicated, as the default value for this argument is TRUE. This specific syntax is shown below:
 
 ```r
 des_brr <- dat %>%
@@ -507,15 +505,15 @@ des_brr_scd
 summary(des_brr_scd)
 ```
 
-Note that `combined_weights` was specified as `FALSE` because these weights are simply specified as 0 and 2 and do not incorporate the overall weight. When printing the object, the type of replication is noted as Balanced Repeated Replicates, and the replicate weights and the weight variable are specified. When looking at the summary, the only additional information provided ys the variables included.
+Note that `combined_weights` was specified as `FALSE` because these weights are simply specified as 0 and 2 and do not incorporate the overall weight. When printing the object, the type of replication is noted as Balanced Repeated Replicates, and the replicate weights and the weight variable are specified. Additionally, the summary lists the variables included.
 
 ### Fay's BRR Method
 
-Fay's BRR method for replicate weights still uses a Hadamard matrix to construct replicate weights, but rather than deleting PSUs for each replicate, half of the PSUs have a replicate weight which is the main weight multiplied by $\rho$, and the other half have the main weight multiplied by $(2-\rho)$ where $0 \le \rho < 1$. Note that when $\rho=0$, this is equivalent to the standard BRR weights, and as $\rho$ becomes closer to 1, this method is more similar to jackknife discussed in the next section. To obtain the value of $\rho$, it is necessary to read the documentation as discussed in Section \@ref(und-surv-doc).
+Fay's BRR method for replicate weights is similar to the BRR method in that it uses a Hadamard matrix to construct replicate weights. However, rather than deleting PSUs for each replicate, with Fay's BRR half of the PSUs have a replicate weight which is the main weight multiplied by $\rho$, and the other half have the main weight multiplied by $(2-\rho)$ where $0 \le \rho < 1$. Note that when $\rho=0$, this is equivalent to the standard BRR weights, and as $\rho$ becomes closer to 1, this method is more similar to jackknife discussed in the next section. To obtain the value of $\rho$, it is necessary to read the documentation as discussed in Section \@ref(und-surv-doc) and Chapter \@ref(c04-understanding-survey-data-documentation).
 
 #### The math {-}
 
-The standard error estimate for $\hat{\theta}$ is slightly different and calculated as:
+The standard error estimate for $\hat{\theta}$ is slightly different than the BRR, due to the addtion of the multipler of \rho, and is calculated as:
 
 $$se(\hat{\theta})=\sqrt{\frac{1}{R (1-\rho)^2} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$
 
@@ -536,9 +534,9 @@ des_fay <- dat %>%
 
 #### Example {-} 
 
-The 2015 RECS uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with $\rho=0.5$^[Using the 2015 microdata file to compute estimates and standard errors (RSEs): https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf]. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region.
+The 2015 RECS uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with $\rho=0.5$^[Using the 2015 microdata file to compute estimates and standard errors (RSEs): https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf]. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. 
 
-To load any data in the book, use the function `read_rds_tsr()`, which reads the data file from a directory on OSF where all book data has been placed for sharing. 
+To load any data in the book, use the function `read_rds_tsr()`, which reads the data file from a directory on OSF where all book data has been placed for sharing.  
 
 ```{r}
 #| label: samp-des-read-recs
@@ -568,9 +566,9 @@ recs_des <- recs_in %>%
     variables = c(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC)
   )
 
-recs_des
+recs_des 
 
-summary(recs_des)
+summary(recs_des) 
 ```
 
 ```{r}
@@ -587,13 +585,13 @@ recs_des <- recs_in %>%
   )
 ```
 
-In specifying the design, the `variables` option was also used to include which variables might be used in analyses. This is optional but can make your object smaller. When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Fay's variance method (rho= 0.5) with 96 replicates and MSE variances`, and the variables are included. No weight or probability summary is included, as was done in some other design objects.
+In specifying the design, the `variables` option was also used to include which variables might be used in analyses. This is optional but can make your object smaller. When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Fay's variance method (rho= 0.5) with 96 replicates and MSE variances`, and the variables are included. No weight or probability summary is included in this output as we have seen in some other design objects.
 
 ### Jackknife method
 
 There are three jackknife estimators implemented in {srvyr} - Jackknife 1 (JK1), Jackknife n (JKn), and Jackknife 2 (JK2). The JK1 method can be used for unstratified designs, and replicates are created by removing one PSU at a time so the number of replicates is the same as the number of PSUs. If there is no clustering, then the PSU is the ultimate sampling unit (e.g., unit). 
 
-The JKn method is used for stratified designs and requires two or more PSUs per stratum. In this case, each replicate is created by deleting one PSU from each stratum, so the number of replicates is the number of total PSUs across all strata. The JK2 method is a special case of JKn when there are exactly 2 PSUs sampled per stratum. For variance estimation, scaling constants must also be specified.
+The JKn method is used for stratified designs and requires two or more PSUs per stratum. In this case, each replicate is created by deleting one PSU from each stratum, so the number of replicates is the number of total PSUs across all strata. The JK2 method is a special case of JKn when there are exactly 2 PSUs sampled per stratum. For variance estimation, scaling constants must also be specified. 
 
 #### The math {-}
 
@@ -606,7 +604,7 @@ $$se(\hat{\theta})=\sqrt{\sum_{r=1}^R \left(\alpha_r \hat{\theta}_r-\hat{\theta}
 
 #### The syntax {-}
 
-To specify the Jackknife method, the type would be `JK1`, `JKn`, or `JK2`. Additionally, the overall multiplier for JK1 is specified with the scale argument, whereas the replicate-specific multiplier ($\alpha_r) is specified with the rscales argument.
+To specify the Jackknife method, the type would be `JK1`, `JKn`, or `JK2`. Additionally, the overall multiplier for JK1 is specified with the scale argument, whereas the replicate-specific multiplier ($\alpha_r) is specified with the rscales argument. 
 
 Consider a case for the JK1 method where the multiplier, $(R-1)/R=19/20=0.95$ and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, ..., WT20, then the syntax would be
 
@@ -626,7 +624,7 @@ des_jkn <- dat %>%
 
 #### Example {-}
 
-The American Community Survey releases public use microdata with JK1 weights at the person and household level. This example includes data at the household level where the replicate weights are specified as WGTP1, ..., WGTP80, and the main weight is WGTP^[American Community Survey 2016-2020 5-Year PUMS File: https://www2.census.gov/programs-surveys/acs/tech_docs/pums/ACS2016_2020_PUMS_README.pdf]. Using the {tidycensus} package^[tidycensus package: https://walker-data.com/tidycensus/], data is downloaded from the Census API. This request gets data for each person in each household in two Public Use Microdata Areas (PUMAs) in Durham County, NC^[Public Use Microdata Areas in North Carolina: https://www.census.gov/geographies/reference-maps/2010/geo/2010-pumas/north-carolina.html]. The variables requested are NP (number of persons in the household), BDSP (number of bedrooms), HINCP (household income), and TYPEHUGQ (type of household). By default, several other variables will come along, including SERIALNO (a unique identifier for each household), SPORDER (a unique identifier for each person within each household), PUMA, ST (state), person weight (PWGTP), and the household weights (WGTP, WGTP1, ..., WGTP80). Filtering to records where SPORDER=1 yields only one record per household and TYPEHUGQ=1 filters to only households and not group quarters.
+The American Community Survey releases public use microdata with JK1 weights at the person and household level. This example includes data at the household level where the replicate weights are specified as WGTP1, ..., WGTP80, and the main weight is WGTP^[American Community Survey 2016-2020 5-Year PUMS File: https://www2.census.gov/programs-surveys/acs/tech_docs/pums/ACS2016_2020_PUMS_README.pdf]. Using the {tidycensus} package^[tidycensus package: https://walker-data.com/tidycensus/], data is downloaded from the Census API. For example, the code below has a request to obtain data for each person in each household in two Public Use Microdata Areas (PUMAs) in Durham County, NC^[Public Use Microdata Areas in North Carolina: https://www.census.gov/geographies/reference-maps/2010/geo/2010-pumas/north-carolina.html]. The variables requested are NP (number of persons in the household), BDSP (number of bedrooms), HINCP (household income), and TYPEHUGQ (type of household). By default, several other variables will come along, including SERIALNO (a unique identifier for each household), SPORDER (a unique identifier for each person within each household), PUMA, ST (state), person weight (PWGTP), and the household weights (WGTP, WGTP1, ..., WGTP80). Filtering to records where SPORDER=1 yields only one record per household and TYPEHUGQ=1 filters to only households and not group quarters. 
 
 ```{r}
 #| label: samp-des-acsexamp
@@ -637,8 +635,8 @@ library(tidycensus)
 
 pums_in <- get_pums(
   variables = c("NP", "BDSP", "HINCP"),
-  state = "37",
-  puma = c("01301", "01302"),
+  state = "37", 
+  puma = c("01301", "01302"), 
   rep_weights = "housing",
   year = 2020,
   survey = "acs5",
@@ -661,22 +659,22 @@ des_acs <- pums_in %>%
     scale = 4 / 80
   )
 
-des_acs
+des_acs 
 
-summary(des_acs)
+summary(des_acs) 
 ```
 
-When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Unstratified cluster jacknife (JK1) with 80 replicates and MSE variances`, and the variables are included. No weight or probability summary is included, as was done in some other design objects.
+When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Unstratified cluster jacknife (JK1) with 80 replicates and MSE variances`, and the variables are included. No weight or probability summary is included.
 
-### Bootstrap method
+### Bootstrap Method
 
-In bootstrap resampling, replicates are created by selecting random samples of the PSUs with replacement. If there are $M$ PSUs in the sample, then each replicate will be created by selecting a random sample of $M$ PSUs with replacement. Each replicate is created independently, and the weights for each replicate are adjusted to reflect the population, generally using the same method as how the analysis weight was adjusted. 
+In bootstrap resampling, replicates are created by selecting random samples of the PSUs with replacement. If there are $M$ PSUs in the sample, then each replicate will be created by selecting a random sample of $M$ PSUs with replacement. Each replicate is created independently, and the weights for each replicate are adjusted to reflect the population, generally using the same method as how the analysis weight was adjusted.  
 
 #### The math {-}
 
 A weighted estimate for the full sample is calculated as $\hat{\theta}$, and then a weighted estimate for each replicate is calculated as $\hat{\theta}_r$ for $R$ replicates. Then the standard error of the estimate is calculated as follows:
 
-$$se(\hat{\theta})=\sqrt{\alpha \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$
+$$se(\hat{\theta})=\sqrt{\alpha \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$ 
 
 #### The syntax {-}
 
@@ -689,11 +687,11 @@ des_bs <- dat %>%
 
 ```
 
-Note that the scale is usually provided in the documentation and is a constant, so it is not provided as a variable in the tibble.
+Note that the scale (\alpha) is usually provided in the documentation and is a constant, so it is not provided as a variable in the tibble.
 
 #### Example {-}
 
-Returning to the api example, bootstrap weights were constructed for a one-cluster design. Fifty replicate weights were created on a dataset `apiclus1_slim` which has some familiar variables, including cds, dnum, fpc, and pw but now additionally includes bootstrap weights pw1, ..., pw50. The scale $(\alpha)$ is $15/(14*49)=0.02186589$
+Returning to the api example, bootstrap weights were constructed for a one-cluster design. Fifty replicate weights were created on a dataset `apiclus1_slim` which has some familiar variables, including cds, dnum, fpc, and pw but now additionally includes bootstrap weights pw1, ..., pw50. The scale $(\alpha)$ is $15/(14*49)=0.02186589$ 
 
 ```{r}
 #| label: samp-des-genbs
@@ -737,20 +735,20 @@ des_api1_bs <- apiclus1_slim %>%
     mse = TRUE
   )
 
-des_api1_bs
+des_api1_bs 
 
-summary(des_api1_bs)
+summary(des_api1_bs) 
 ```
 
 As with other replicate design objects, when printing the object or looking at the summary, the replicate weights are provided along with the data variables.
 
 ## Understanding survey design documentation {#und-surv-doc}
 
-SRS, stratified, and clustered designs are the backbone of sampling designs, and the features are often combined in one design. Additionally, rather than using SRS for selection, other sampling mechanisms are commonly used, such as probability proportional to size (PPS), systematic sampling, or selection with unequal probabilities, which are briefly described here. In PPS sampling, a size measure is constructed for each unit - perhaps the population of the PSU or the number of occupied housing units, and then units with larger size measures are more likely to be sampled. Systematic sampling is commonly used to ensure representation across a population. Units are sorted by a feature and then every $k$ units are selected from a random start point so the sample is spread across the population. In addition to PPS, other unequal probabilities of selection may be used. For example, in a study of establishments that conducts a survey every year, an establishment that recently participated (e.g., participated last year) has a reduced chance of selection in a subsequent round to reduce the burden on the establishment. To learn more about sampling designs, refer to @valliant2013practical, @cox2011business, @cochran1977sampling, and @deming1991sample.
+SRS, stratified, and clustered designs are the backbone of sampling designs, and the features are often combined in one design. Additionally, rather than using SRS for selection, other sampling mechanisms are commonly used, such as probability proportional to size (PPS), systematic sampling, or selection with unequal probabilities, which are briefly described here. In PPS sampling, a size measure is constructed for each unit (e.g., the population of the PSU or the number of occupied housing units) and then units with larger size measures are more likely to be sampled. Systematic sampling is commonly used to ensure representation across a population. Units are sorted by a feature and then every $k$ units are selected from a random start point so the sample is spread across the population. In addition to PPS, other unequal probabilities of selection may be used. For example, in a study of establishments that conducts a survey every year, an establishment that recently participated (e.g., participated last year) may have a reduced chance of selection in a subsequent round to reduce the burden on the establishment. To learn more about sampling designs, refer to @valliant2013practical, @cox2011business, @cochran1977sampling, and @deming1991sample.
 
-A common method of sampling is to stratify PSUs, select PSUs within the stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step in survey analysis to understand the design and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User's Guides, methodology, analysis guides, or technical documentation.
+A common method of sampling is to stratify PSUs, select PSUs within the stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step in survey analysis to understand the design of the survey you are using and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User's Guides, methodology, analysis guides, or technical documentation (see Chapter \@ref(c04-understanding-survey-data-documentation) for more details).
 
-For example, the 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation - https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] had a stratified multi-stage area probability sample. Counties or collections of counties were the primary sampling units stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected via PPS. In the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. In the third stage, housing units were selected within the sampled neighborhoods. In the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on the person's age and sex. The public use file does not include all these levels of selection and instead has pseudo-strata and pseudo-clusters, which are the variables used in R to specify the design. As specified on page 4 of the documentation, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. Thus, to specify this design in R, one would use the following syntax:
+For example, the 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation - https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] had a stratified multi-stage area probability sample. In the first stage, PSUs are counties or collections of counties and are stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected via PPS. In the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. In the third stage, housing units were selected within the sampled neighborhoods. In the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on the person's age and sex. The public use file does not include all these levels of selection and instead has pseudo-strata and pseudo-clusters, which are the variables used in R to specify the design. As specified on page 4 of the documentation, the stratum variable is `SEST`, the cluster variable is `SECU`, and the weight variable is `WGT2017_2019`. Thus, to specify this design in R, use the following syntax:
 
 ```r
 des_nsfg <- nsfgdata %>%
