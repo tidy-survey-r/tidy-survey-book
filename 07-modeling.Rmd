@@ -20,7 +20,7 @@ it can be specified as `y~x-1`. Formula notation details in R can be found in th
 Table: Common symbols in formula notation
 
 Symbol | Example | Meaning
--|-|-
+-|-|- 
 +|`+X`|include this variable
 -|`-X`|delete this variable
 :|`X:Z`|include the interaction between these variables
@@ -34,19 +34,19 @@ $$mpg_i=\beta_0+\beta_1cyl_{i}+\beta_2disp_{i}+\beta_3hp_{i}+\beta_4cyl_{i}disp_
 
 This could be specified as any of the following:
 
-- `mpg~(cyl+disp+hp)^2`
-- `mpg~cyl+disp+hp+cyl:disp+cyl:hp+disp:hp` 
-- `mpg~cyl*disp+cyl*hp+disp*hp`
+  - `mpg~(cyl+disp+hp)^2`
+  - `mpg~cyl+disp+hp+cyl:disp+cyl:hp+disp:hp` 
+  - `mpg~cyl*disp+cyl*hp+disp*hp`
 
 Note that the following two specifications are not the same:
 
-- `mpg~cyl:disp:hp` this only has the interactions and not the main effect
-- `mpg~cyl*disp*hp` this also has the 3-way interaction in addition to the main effects and 2-way interactions
+  - `mpg~cyl:disp:hp` this only has the interactions and not the main effect
+  - `mpg~cyl*disp*hp` this also has the 3-way interaction in addition to the main effects and 2-way interactions
 
 
 ## Chapter Set-Up
 
-For this chapter, we will use the same data as we did in \@ref(c05-descriptive-analysis): ANES and RECS. As a reminder, we need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.
+For this chapter, we will use the same data as we did in Chapters \@ref(c05-descriptive-analysis) and \@ref(c06-statistical-testing): ANES and RECS. As a reminder, we need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately, and thus we can accurately determine statistical significance.
 
 First, make sure we have installed and loaded the following packages:
 
@@ -65,7 +65,7 @@ source("helper-fun/helper-functions.R")
 
 Second, we need to read in the data and create the design objects.
 
-Here is how we create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information, as well as Chapter \@ref(c04-understanding-survey-data-documentation).
+Here is how we create the design object for the ANES data, remember that we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights (see the ANES methodology documentation for more information, as well as Chapter \@ref(c04-understanding-survey-data-documentation)).
 ```{r}
 #| label: model-anes-des-c07
 #| eval: FALSE
@@ -104,14 +104,14 @@ In this section, we will discuss linear models. Many common models and tests are
 
 In ANOVA, we are testing whether the mean of an outcome is the same across two or more groups. Statistically, we set up this as follows:
 
-- $H_0: \mu_1 = \mu_2= \dots = \mu_k$ where $\mu_i$ is the mean outcome for group $i$
-- $H_A: \text{At least one mean is different}$
+  - $H_0: \mu_1 = \mu_2= \dots = \mu_k$ where $\mu_i$ is the mean outcome for group $i$
+  - $H_A: \text{At least one mean is different}$
 
 Some assumptions when using ANOVA on survey data include:
 
-- The outcome variable is normally distributed within each group
-- The variances of the outcome variable between each group are approximately equal
-- We do NOT assume independence between the groups as with general ANOVA. The covariance is accounted for in the survey design
+  - The outcome variable is normally distributed within each group
+  - The variances of the outcome variable between each group are approximately equal
+  - We do NOT assume independence between the groups as with general ANOVA. The covariance is accounted for in the survey design
 
 To perform this type of test in R, the general syntax is as follows:
 
@@ -125,9 +125,9 @@ des_obj %>%
   )
 ```
 
-where `des_obj` is a design object, `outcomevar` is the outcome variable, `groupvar` is the group variable, and `na.action=na.omit` is set so that records with missing data in the outcome or group variable are removed for prediction ^[See `help(na.omit)` for more information on options to use for `na.action`]. The function `svyglm()` does not have the design as the first argument so the `.` notation is used to pass it with a pipe.
+where `des_obj` is a design object, `outcomevar` is the outcome variable, `groupvar` is the group variable, and `na.action=na.omit` is set so that records with missing data in the outcome or group variable are removed for prediction^[See `help(na.omit)` for more information on options to use for `na.action`]. The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details).
 
-Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer, which is encoded in the variable `SummerTempNight`. A descriptive analysis  of the temperature set by region and the sample sizes is displayed below.
+Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer.  To analyze this data, we filter the respondents to only those using AC (`ACUsed`).  Then if we want to see if there are differences by region, we can use `group_by()`. A descriptive analysis of the temperature at night (`SummerTempNight`) set by region and the sample sizes is displayed below. 
 
 ```{r}
 #| label: model-anova-prep
@@ -165,9 +165,9 @@ where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_n$ are th
 
 Assumptions in linear regression using survey data include:
 
-- The residuals ($\epsilon_i$) are normally distributed, but there is not an assumption of independence, and the correlation structure is captured in the survey design object
-- There is a linear relationship between the outcome variable and the independent variables
-- The residuals are homoscedastic, that is, the error term is the same across all values of independent variables
+  - The residuals ($\epsilon_i$) are normally distributed, but there is not an assumption of independence, and the correlation structure is captured in the survey design object
+  - There is a linear relationship between the outcome variable and the independent variables
+  - The residuals are homoscedastic, that is, the error term is the same across all values of independent variables
 
 The syntax for linear regression is nearly identical to ANOVA as follows:
 
@@ -228,11 +228,11 @@ m_electric_multi <- recs_des %>%
   svyglm(
     design = .,
     formula = DOLLAREL ~ (Region + Urbanicity + TOTSQFT_EN + ACUsed) ^
-      2 - 1,
+      2 - 1, 
     na.action = na.omit
   )
 
-tidy(m_electric_multi) %>% print(n = 50)
+tidy(m_electric_multi) %>% print(n = 50) 
 ```
 
 As shown above, there are many terms in this model. To test whether coefficients for a term are different from zero, the function `regTermTest()` can be used. For example, in the above regression, we can test whether the interaction of region and urbanicity is significant as follows:
@@ -246,7 +246,7 @@ urb_reg_test
 
 As demonstrated above, there is a significant interaction between urbanicity and region (p-value=`r signif(urb_reg_test$p, 3)`).
 
-To examine the predictions, residuals and more from the model, the function `augment()` from {broom} can be used. The `augment()` function will return a tibble with the independent and dependent variables and other fit statistics. The `augment()` function has not been specifically written for objects of class `svrepglm`, and as such, a warning will be displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using augment to get the predicted (`.fitted`) and standard error (`.se.fit`) values, as demonstrated below.
+To examine the predictions, residuals and more from the model, the function `augment()` from {broom} can be used. The `augment()` function will return a tibble with the independent and dependent variables and other fit statistics. The `augment()` function has not been specifically written for objects of class `svyglm`, and as such, a warning will be displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using augment to get the predicted (`.fitted`) and standard error (`.se.fit`) values, as demonstrated below.
 
 These results can then be used in a variety of ways, including examining residual plots as illustrated below:
 
@@ -257,7 +257,7 @@ fitstats <-
   augment(m_electric_multi) %>%
   mutate(.se.fit = sqrt(attr(.fitted, "var")), 
          # extract the variance of the fitted value
-         .fitted = as.numeric(.fitted))
+         .fitted = as.numeric(.fitted)) 
 
 fitstats
 
@@ -290,7 +290,8 @@ add_data <-
       ACUsed = TRUE,
       DOLLAREL = NA
     )
-  ) %>% tail(1)
+  ) %>% 
+  tail(1)
 
 pred_data <- augment(m_electric_multi, newdata = add_data) %>%
   mutate(.se.fit = sqrt(attr(.fitted, "var")), # extract the variance of the fitted value
@@ -299,7 +300,7 @@ pred_data <- augment(m_electric_multi, newdata = add_data) %>%
 pred_data 
 ```
 
-In the above example, it is predicted that the energy expenditure would be $`r pred_data %>% slice_tail(n=1) %>% pull(.fitted) %>% round(2)`.
+In the above example, it is predicted that the energy expenditure would be $`r pred_data %>% slice_tail(n=1) %>% pull(.fitted) %>% round(2)`. 
 
 ### Exercises
 
@@ -395,9 +396,9 @@ where $y_i$ is the outcome, $\beta_0$ is an intercept, and $x_1, \cdots, x_n$ ar
 
 Assumptions in logistic regression using survey data include:
 
-- The outcome variable has two levels
-- There is a linear relationship between the independent variables and the log odds \@ref(eq:logoddlin)
-- The residuals are homoscedastic, that is, the error term is the same across all values of independent variables
+  - The outcome variable has two levels
+  - There is a linear relationship between the independent variables and the log odds \@ref(eq:logoddlin) 
+  - The residuals are homoscedastic, that is, the error term is the same across all values of independent variables
 
 The syntax for logistic regression is as follows:
 
@@ -408,18 +409,17 @@ des_obj %>%
     outcomevar ~ x1 + x2 + x3,
     na.action = na.omit,
     df.resid = degf(.),
-    # use this to avoid warning about non-integers
-    family = quasibinomial
+    family = quasibinomial  #use this to avoid warning about non-integers
   )
 ```
 
 Note `svyglm()` is the same function used in both ANOVA and linear regression. However, we've added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of two ways with survey data:
 
-- A factor variable where not being the first level of the factor indicates a "success"
-- A numeric variable which is 1 or 0 where 1 indicates a success
-- A logical variable where TRUE indicates a success
+  - A factor variable where not being the first level of the factor indicates a "success"
+  - A numeric variable which is 1 or 0 where 1 indicates a success
+  - A logical variable where TRUE indicates a success
 
-In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. We first create a binary outcome for trusting in the government and plot the data. A scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data.
+In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. We first create a binary outcome for trusting in the government and plot the data. A scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data. 
 
 ```{r}
 #| label: model-logisticexamp-plot
@@ -442,15 +442,16 @@ anes_des_der %>%
     .groups = "drop"
   ) %>%
   filter(complete.cases(.)) %>%
-  ggplot(aes(x = VotedPres2020_selection, y = pct_trust, fill = VotedPres2020_selection)) +
+  ggplot(aes(x = VotedPres2020_selection, y = pct_trust, 
+             fill = VotedPres2020_selection)) +
   geom_bar(stat = "identity") +
-  geom_errorbar(aes(ymin = pct_trust_low, ymax = pct_trust_upp), width =
-                  .2) +
+  geom_errorbar(aes(ymin = pct_trust_low, ymax = pct_trust_upp), 
+                width = .2) +
   scale_fill_manual(values = c("#0b3954", "#bfd7ea", "#8d6b94")) +
   xlab("Election choice (2022)") +
   ylab("Usually trust the government") +
   scale_y_continuous(labels = scales::percent) +
-  guides(fill = "none")
+  guides(fill = "none") 
 ```
 
 Next, we fit the model. 
@@ -485,12 +486,12 @@ As with linear regression, the `augment()` can be used to predict values. By def
 #| label: model-logistic-aug
 logistic_trust_vote %>%
   augment(type.predict = "response") %>%
-  mutate(.se.fit = sqrt(attr(.fitted, "var")), # extract the variance of the fitted value
+  mutate(.se.fit = sqrt(attr(.fitted, "var")), # extract the variance of the fitted value 
          .fitted = as.numeric(.fitted)) %>%
   select(TrustGovernmentUsually,
          VotedPres2020_selection,
          .fitted,
-         .se.fit)
+         .se.fit) 
 ```
 
 ### Exercises
