@@ -10,9 +10,9 @@ Descriptive analyses describe and summarize the basic quantitative information o
 
 In addition to describing our data, we can use these analyses to compare across people or other units. Descriptive analyses help us identify potential errors and assess outliers. We gain crucial information for deciding on a deeper analysis.
 
-In complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. This requires reading the survey documentation (as described in Chapter \@ref(c03-specifying-sample-designs)) to apply the appropriate sampling weights, PSUs, strata, and replicate weights. Neglecting to incorporate these elements can lead to inaccurate descriptive analyses. 
+In complex survey analysis, we must consider the available design and sampling elements when conducting descriptive analysis. This requires reading the survey documentation (as described in Chapter \@ref(c04-understanding-survey-data-documentation)) to apply the appropriate sampling weights, PSUs, strata, and replicate weights (see Chapter \@ref(c03-specifying-sample-designs)). Neglecting to incorporate these elements can lead to inaccurate descriptive analyses. 
 
-The functions in the {srvyr} package allow us to run descriptive analyses while applying design and sampling elements. Thanks to the 'pipe-able' functions, we can run multiple calculations in the same command. The package also provides consistent return types so we can use outputs with other packages like {ggplot2}. 
+The functions in the {srvyr} package allow us to run descriptive analyses while applying design and sampling elements. Thanks to the 'pipe-able' functions, we can run multiple calculations in the same command. The package also provides consistent return types so we can use outputs with other packages in the {tidyverse}, like {ggplot2}. 
 
 This chapter describes the types of descriptive analytics and the steps involved in running descriptive analysis with {srvyr}.
 
@@ -42,7 +42,7 @@ dstrata %>% # A `tbl_svy` object
 The functions in {srvyr} also play nicely with other tidyverse functions. If we wanted to create our survey object by selecting specific columns, we could use `dplyr::select()`'s special selection functions (such as `starts_with()`, `one_of()`, etc.). 
 
 ```{r}
-dstrata <- dstrata %>% 
+dstrata <- apistrat %>% 
   as_survey_design(
     1,
     strata = stype,
@@ -173,14 +173,14 @@ This practice can lead to incorrect inferences because categorical variables lac
 
 ### Setup
 
-Recall from [Chapter 05](#c05) the general process for estimation with the {srvyr} package:  
+Recall from Chapter \@ref(c03-specifying-sample-designs) the general process for estimation with the {srvyr} package:  
 
 1. Create a `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()`.
 2. Subset the data for subpopulations using `dplyr::filter()`, if needed.
 3. Specify domains of analysis using `dplyr::group_by()`, if needed.
 4. Within `srvyr::summarize()`, specify variables to calculate means, totals, proportions, quantiles, and more.
 
-Filtering should be done after creating the `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()` because these functions incorporate the survey design information into the resulting object. 
+Filtering should be done after creating the `tbl_svy` object (using `as_survey_design()` or `as_survey_rep()`) because survey objects incorporate the survey design information into the resulting object. 
 
 <!-- TODO: edit this depending on how much we've talked about it in earlier chapters-->
 The Residential Energy Consumption Survey (RECS) provides energy consumption and expenditures data. It is funded by Energy Information Administration and collects information through energy suppliers through in-person, phone, and web interviews. It has been fielded 14 times between 1950 and 2020. Topics include appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.
@@ -244,7 +244,7 @@ The steps to use `survey_count()` are:
 * Filter subsets using `dplyr::filter()`, if needed, 
 * Run `survey_count()`, specifying the required arguments within the function 
 
-Let's see the weighted count of responses in RECS: 
+If we do not specify any variables in `survey_count()`, the function will output the estimated population count (n) and standard error (n_se).  For example, in the RECS data we can obtain the estimated number of households in the U.S. (the target population) by running the following code: 
 
 ```{r}
 recs_des %>% #  Specify the sample design
@@ -253,7 +253,7 @@ recs_des %>% #  Specify the sample design
 
 There are 118,208,250 observations in the survey. <!--TODO: Calculate this-->    
 
-`srvyr::count()` can take one or many variables. To calculate the number of observations for a combination of variables, such as Region and Division, we run the below:    
+To calculate the estimated number of observations for subgroups, such as Region and Division, we can add the variables of interest into the function.     
 
 ```{r}
 recs_des %>%
@@ -261,7 +261,7 @@ recs_des %>%
   survey_count(Region, Division, name = "N") 
 ```
 
-When we run the crosstab, we see 5,638,844 observations from the Northeast's New England division, 15,377,694 from the Northeast's Middle Atlantic division, and so on. <!--TODO: Calculate this-->   
+When we run the crosstab, we see 5,638,844 weighted observations from the Northeast's New England division, 15,377,694 from the Northeast's Middle Atlantic division, and so on. <!--TODO: Calculate this-->   
 
 ### Calculate total sums using survey methods using `survey_total()`
 
@@ -303,14 +303,13 @@ recs_des %>%
 
 Note that the result from `recs_des %>% summarize(survey_total(), .groups = "drop")` is equivalent to the `survey_count()` call. However, the `survey_total()` function is called within `summarize`, where as `survey_count()`, like `dplyr::count()`, is not. 
 
-The difference between `survey_total()` and `survey_count()` is more evident when specifying numeric variables to sum. Let's compute the total cost of electricity in whole dollars from variable `DOLLAREL`. We also calculate an unweighted estimate using `unweighted`. 
+The difference between `survey_total()` and `survey_count()` is more evident when specifying continuous variables to sum. Let's compute the total cost of electricity in whole dollars from variable `DOLLAREL`. We also calculate an unweighted estimate using `unweighted`. 
 
 ```{r}
 recs_des %>%
   summarize(
     elec_bill = survey_total(DOLLAREL),
-    elec_unweight = unweighted(sum(!is.na(DOLLAREL))),  
-    .groups = "drop"    
+    elec_unweight = unweighted(sum(DOLLAREL))
   )
 ```
 
@@ -376,7 +375,7 @@ We use `srvyr::survey_prop()` to estimate a survey's proportion of categorical v
 ```{r}
 recs_des %>%
   group_by(Region) %>%
-  summarize(survey_prop(),   
+  summarize(p=survey_prop(),   
             .groups = "drop") 
 ```
 
