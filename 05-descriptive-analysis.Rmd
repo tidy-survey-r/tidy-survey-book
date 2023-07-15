@@ -42,7 +42,7 @@ mtcars %>%
             mpg_median = median(mpg))
 ```
 
-Similarly, in the next example, the variance and standard deviation of the variable `api00` are calculated for the tbl_svy object `dstrata`. Note how similar the syntax is. When we dig into the functions later, we will show that the results output are similar in that one row is output for each group (if there are groups) but there will be more columns output. Specifically, by default, you will get the standard error of the statistic requested in addition to the statistic requested.
+Similarly, in the next example, the variance and standard deviation of the variable `api00` are calculated for the tbl_svy object `dstrata`. Note how similar the syntax is. When we dig into the functions later, we will show that the results output are similar in that one row is output for each group (if there are groups) but there will be more columns output. Specifically, by default, the standard error of the statistic is calculated in addition to the statistic.
 
 ```{r}
 #| label: desc-srvyr-examp
@@ -90,7 +90,7 @@ mtcars %>%
   summarize(mpg_mean = survey_mean(mpg))
 ```
 
-A few functions in {srvyr} parallel functions in {dplyr}, such as `srvyr::summarize()` and `srvyr::group_by()`. Unlike {srvyr}-specific verbs, the package recognizes if you attempt to run these parallel functions on a non-survey object. It will not error and instead give you the equivalent output from {dplyr}:
+A few functions in {srvyr} parallel functions in {dplyr}, such as `srvyr::summarize()` and `srvyr::group_by()`. Unlike {srvyr}-specific verbs, the package recognizes these parallel functions on a non-survey object. It will not error and instead give the equivalent output from {dplyr}:
 
 ```{r}
 #| label: desc-nsobj-noerr
@@ -239,6 +239,14 @@ survey_count(
   .drop = dplyr::group_by_drop_default(x),
   vartype = c("se", "ci", "var", "cv")
   )
+  
+survey_tally(
+  x,
+  wt,
+  sort = FALSE,
+  name = "n",
+  vartype = c("se", "ci", "var", "cv")
+)
 ```
 The arguments are:
 
@@ -250,7 +258,7 @@ The arguments are:
 * `.drop`: whether to drop empty groups
 * `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error)
 
-We will discuss `vartype` in a later section as this option occurs in all functions. We will introduce all the types of variance estimates in that section.
+We will discuss `vartype` in Section \@ref(Variance-types) as this option occurs in all functions.
 
 If we do not specify any variables in `survey_count()`, the function will output the estimated population count (n) and standard error (n_se).  For example, in the RECS data we can obtain the estimated number of households in the U.S. (the target population) by running the following code: 
 
@@ -291,19 +299,7 @@ recs_des %>%
 
 When we run the crosstab, we see  there are an estimated `r .est_pop_div %>% filter(Division=="New England") %>% pull(N)` housing units in the New England Division.
 
-The `survey_tally()` function is similar to the `survey_count()` function with the syntax below:
-
-```r
-survey_tally(
-  x,
-  wt,
-  sort = FALSE,
-  name = "n",
-  vartype = c("se", "ci", "var", "cv")
-)
-```
-
-The `survey_tally()` function lacks the following arguments `...` (used to specify the by groups) and `.drop`. To get the estimated overall population, `survey_count()` and `survey_total()` will seem identical and the example below yields the same results as using `survey_count()` previously.
+The `survey_tally()` function is similar to the `survey_count()`, but the `survey_tally()` function lacks the following arguments `...` (used to specify the by groups) and `.drop`. To get the estimated overall population, `survey_count()` and `survey_total()` will be identical and the example below yields the same results as using `survey_count()` previously.
 
 ```{r}
 #| label: desc-tally-oa
@@ -345,13 +341,15 @@ survey_total(
 )
 ```
 
+The arguments are:
+
 * `x`: a variable, expression, or empty
 * `na.rm`: an indicator of whether missing values should be dropped, defaults to `FALSE`
 * `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error)
 * `level`: a number or a vector indicating the confidence level, defaults to 0.95
 * `deff`: a logical value stating whether the design effect should be returned, defaults to FALSE
 * `df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution
-  * For the {srvyr} package, this defaults to `NULL`, whereas the {survey} package defaults to `Inf`
+* `...`: Ignored and not used
 
 To calculate a population count estimate with `survey_total()`, the argument `x` can be left empty as shown in the example below::
 
@@ -435,11 +433,18 @@ survey_prop(
 )
 ```
 
-The steps involved are:
+The arguments are:
 
-* Specify the sample design,
-* Specify the cross tab in `group_by()`,
-* Run `survey_mean()` or `survey_prop()` within `summarize()`
+* `x`: a variable, expression, or empty
+* `na.rm`: an indicator of whether missing values should be dropped, defaults to `FALSE`
+* `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error)
+* `level`: a number or a vector indicating the confidence level, defaults to 0.95
+* `proportion`: an indicator of whether the estimate is a proportion. Defaults to `FALSE` in `survey_mean()` and `TRUE` in `survey_prop`. Only impacts confidence intervals
+* `prop_method`: Method to calculate confidence interval for confidence intervals. More details in \@ref(Variance-types)
+* `deff`: a logical value stating whether the design effect should be returned, defaults to FALSE
+* `df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution
+* `...`: Ignored and not used
+
 
 We can calculate the estimated average cost of electricity in the U.S. and then for each region in the U.S.: 
 
@@ -511,6 +516,88 @@ It should be noted that there is a difference between using `survey_mean()` and 
 
 ### Quantiles and medians
 
+The `survey_median()` and `survey_quantile()` functions are analogous to `median` and `quantile`. This can be used to find the estimated median and quantiles of an outcome. Let's explore the syntax:
+
+```r
+survey_quantile(
+  x,
+  quantiles,
+  na.rm = FALSE,
+  vartype = c("se", "ci", "var", "cv"),
+  level = 0.95,
+  interval_type = c("mean", "beta", "xlogit", "asin", "score", "quantile"),
+  qrule = c("math", "school", "shahvaish", "hf1", "hf2", "hf3", "hf4", "hf5", "hf6",
+    "hf7", "hf8", "hf9"),
+  df = NULL,
+  ...
+)
+
+survey_median(
+  x,
+  na.rm = FALSE,
+  vartype = c("se", "ci", "var", "cv"),
+  level = 0.95,
+  interval_type = c("mean", "beta", "xlogit", "asin", "score", "quantile"),
+  qrule = c("math", "school", "shahvaish", "hf1", "hf2", "hf3", "hf4", "hf5", "hf6",
+    "hf7", "hf8", "hf9"),
+  df = NULL,
+  ...
+)
+```
+
+The arguments are:
+
+* `x`: a variable, expression, or empty
+* `quantiles`: A vector of quantiles to calculate
+* `na.rm`: an indicator of whether missing values should be dropped, defaults to `FALSE`
+* `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error)
+* `level`: a number or a vector indicating the confidence level, defaults to 0.95
+* `interval_type`: method for calculating confidence interval
+* `qrule`: rule for defining quantiles. The default is the lower end of the quantile interval ("math"). The midpoint of the quantile interval is the "school" rule. "hf1" to "hf9" are weighted analogues to type=1 to 9 in `quantile()`. "shahvaish" corresponds to a rule proposed by @shahvaish. See `vignette("qrule", package="survey")` for more information.
+* `df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution
+* `...`: Ignored and not used
+
+As a reminder, the median is a special quantile which is the 50^{th} percentile. Quantiles are useful in learning about the distribution of an outcome. WHile we've shown what average electricity bills are, let's look into the quarantines, specifically, the first quartile (p=0.25), the median (p=0.5) and the third quartile (p=0.75) of electric bills. We also show the median to illustrate it is the same as the quantile where p=0.25.
+
+```{r}
+#| label: desc-quantile-oa
+recs_des %>%
+  summarize(
+    elec_bill = survey_quantile(DOLLAREL, quantiles=c(0.25, .5, 0.75)),
+    elec_bill_med = survey_median(DOLLAREL))
+```
+
+```{r}
+#| label: desc-quantile-oa-save
+#| echo: FALSE
+.elbill_quant <- recs_des %>%
+  summarize(
+    elec_bill = survey_quantile(DOLLAREL, quantiles=c(0.25, .5, 0.75)),
+    elec_bill_med = survey_median(DOLLAREL)) %>%
+  mutate(
+    across(c(starts_with("elec_bill")), \(x) str_c("$", prettyNum(round(x, 0), big.mark=",")))
+  )
+```
+
+In the output above, we see the 3 quartiles, their respective standard errors, the median, and its standard error. Note that the 50^{th} percentile and the median are the same, as expected. The average electric bill for households was `r pull(.elbill_mn, elec_bill)` but the estimated median electric bill is `r pull(.elbill_quant, elec_bill_q50)`. We can also estimate the quantiles of electric bills by region as shown below:
+
+```{r}
+#| label: desc-quantile-reg
+recs_des %>%
+  group_by(Region) %>%
+  summarize(
+    elec_bill = survey_quantile(DOLLAREL, quantiles=c(0.25, .5, 0.75)))
+```
+
+While we can specify quantiles of 0 and 1 which represent the minimum and maximum, this is not recommended. It only returns the minimum and maximum of the respondents and cannot be extrapolated to the population as there is no valid definition of standard error.
+
+```{r}
+#| label: desc-quantile-minmax
+recs_des %>%
+  summarize(
+    elec_bill = survey_quantile(DOLLAREL, quantiles=c(0, 1)))
+```
+
 ### Standard deviation and variance
 
 ### Ratios
@@ -519,7 +606,7 @@ It should be noted that there is a difference between using `survey_mean()` and 
 
 ## Advanced topics
 
-### Variance types
+### Variance types {#Variance-types}
 
 ### Design effects
 
