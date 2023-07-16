@@ -557,13 +557,19 @@ We may find it easier to look at these proportions graphically. We can use `gglo
 <!--Perhaps a mosaic plot instead?-->
 ```{r}
 #| label: stattest-chi-ex2-graph
-chi_ex2_obs %>%  
-  ggplot(aes(x = TrustGovernment, y = Observed, color = TrustGovernment)) +  
-  facet_wrap( ~ TrustPeople, ncol = 5) +  
-  geom_point() +  
-  geom_errorbar(aes(ymin = Observed_low, ymax = Observed_upp)) +    
-  ylab("Proportion") +      
-  theme_bw()     
+chi_ex2_obs %>%
+  mutate(TrustPeople=str_c("Trust in People:\n", TrustPeople)) %>%
+  ggplot(aes(x = TrustGovernment, y = Observed, color = TrustGovernment)) +
+  facet_wrap( ~ TrustPeople, ncol = 5, labeller = ) +
+  geom_point() +
+  geom_errorbar(aes(ymin = Observed_low, ymax = Observed_upp)) +
+  ylab("Proportion") +
+  xlab("") +
+  theme_bw() +
+  scale_color_manual(name="Trust in Government", values=book_colors) +
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(),
+        legend.position = "bottom")
 ```
 
 #### Example 3: Test of Homogeneity {.unnumbered #stattest-chi-ex3}
