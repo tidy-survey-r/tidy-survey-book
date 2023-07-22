@@ -24,17 +24,17 @@ A sampling design is the method used to draw a sample. Both logistical and stati
 
 Some common terminology across the designs are:
 
-- sample size, generally denoted as $n$, is the number of units selected
-- population size, generally denoted as $N$, is the number of units in the population
-- sampling frame, the list of units from which the sample is drawn
+  - **sample size**, generally denoted as $n$, is the number of units selected to be sampled
+  - **population size**, generally denoted as $N$, is the number of units in the target population
+  - **sampling frame**, the list of units from which the sample is drawn
 
 ### Simple random sample without replacement
 
-- **Description**: The simple random sample (SRS) without replacement is a sampling design where a fixed sample size is selected from a sampling frame, and every possible subsample has an equal probability of selection.
+The simple random sample (SRS) without replacement is a sampling design where a fixed sample size is selected from a sampling frame, and every possible subsample has an equal probability of selection.
 - **Requirements**: The sampling frame must include the entire population.
 - **Advantages**: SRS requires no information about the units apart from contact information.
 - **Disadvantages**: The sampling frame may not be available for the entire population. This design is not generally feasible for in-person data collection.
-- **Example**: Randomly students in a university from a roster provided by the registrar's office. 
+- **Example**: Randomly select students in a university from a roster provided by the registrar's office. 
 
 #### The math {-}
 
@@ -69,7 +69,7 @@ srs1_des <- dat %>%
 where `dat` is a tibble or data.frame with the survey data, and `fpcvar` is a variable on the tibble indicating the sampling frame's size. If the frame is very large, sometimes the frame size is not provided. In that case, the FPC is not needed, and specify the design as:
 
 ```r
-des_srs2 <- dat %>%
+srs2_des <- dat %>%
  as_survey_design()
 ```
 
@@ -84,7 +84,7 @@ where `wtvar` is the variable for the weight on the data. Again, the FPC can be 
 
 #### Example {-} 
 
-The {survey} package in R provides some example datasets that we will use throughout this chapter. Reading the documentation about these datasets provide detail on the variables. One of the example datasets we will use is from the Academic Performance Index (API). The API was a program administered by the California Department of Education, and the {survey} package includes a population file (frame) of all schools with at least 100 students and several different samples pulled from that data using different sampling methods. For this first example, we will use the `apisrs` dataset, which contains an SRS of 200 schools. For printing purposes, we create a new dataset called `apisrs_slim`, which sorts the data by the school district and school ID and subsets the data to only a few columns. The SRS sample data is illustrated below: 
+The {survey} package in R provides some example datasets that we will use throughout this chapter. The documentation provides detailed information about the variables. One of the example datasets we will use is from the Academic Performance Index (API). The API was a program administered by the California Department of Education, and the {survey} package includes a population file (sample frame) of all schools with at least 100 students and several different samples pulled from that data using different sampling methods. For this first example, we will use the `apisrs` dataset, which contains an SRS of 200 schools. For printing purposes, we create a new dataset called `apisrs_slim`, which sorts the data by the school district and school ID and subsets the data to only a few columns. The SRS sample data is illustrated below: 
 
 ```{r}
 #| label: samp-des-apisrs-display
@@ -212,13 +212,13 @@ In the chunk above, the design object is printed, and the object summary is show
 
 ### Stratified sampling
 
-- **Description**: A population is divided into mutually exclusive subpopulations (strata), and then samples are selected independently within each stratum.
-- **Requirements**: The sampling frame must include the information to divide the population into groups for every unit.
+A population is divided into mutually exclusive subpopulations (strata), and then samples are selected independently within each stratum.
+  - **Requirements**: The sampling frame must include the information to divide the population into groups for every unit.
 - **Advantages**: This design ensures sample representation in all subpopulations. Often, for the same sample size as a SRS sample, the standard errors are smaller, so it is a more efficient design. This is true if the strata are correlated with outcomes. 
-- **Disadvantages**: Auxiliary data may not exist to divide the sampling frame into groups, or the data may be outdated.
-- Examples: 
+  - **Disadvantages**: Auxiliary data may not exist to divide the sampling frame into groups, or the data may be outdated.
+  - Examples: 
  - **Example 1**: A population of North Carolina residents could be separated into urban and rural areas, and then a SRS of residents from both rural and urban areas is selected independently. This ensures there are rural residents in the sample.
- - **Example 2**: There are three primary general-purpose law enforcement agencies in the US - local police, sheriff's departments, and state police. In a survey of law enforcement agencies, the agency type could be used to form strata. 
+    - **Example 2**: There are three primary general-purpose law enforcement agencies in the US - local police, sheriff's departments, and state police. In a survey of law enforcement agencies, the agency type could be used to form strata. 
 
 #### The math {-} 
 
@@ -289,7 +289,7 @@ When printing the object, it is specified as a "Stratified Independent Sampling 
 
 ### Clustered sampling
 
-- **Description**: A population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs). A random selection of PSUs is sampled, and then another level of sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available, or data collection involves interviewers needing direct contact with respondents.
+A population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs). A random selection of PSUs is sampled, and then another level of sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available, or data collection involves interviewers needing direct contact with respondents.
 - **Requirements**: There must be a way to divide the population into clusters. Clusters are commonly structural such as institutions (e.g., schools, prisons) or geography (e.g., states, counties). 
 - **Advantages**: Clustered sampling is advantageous when data collection is done in person, so interviewers are sent to specific sampled areas rather than completely at random across a country. With cluster sampling, a list of the entire population is not necessary. For example, if sampling students, you do not need a list of all students but only a list of all schools. Once the schools are sampled, lists of students can be obtained within the sampled schools.
 - **Disadvantages**: Compared to a simple random sample for the same sample size, clustered samples generally have larger standard errors of estimates.
@@ -536,7 +536,7 @@ des_fay <- dat %>%
 
 #### Example {-} 
 
-The 2015 RECS uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with $\rho=0.5$^[Using the 2015 microdata file to compute estimates and standard errors (RSEs): https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf]. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. 
+The 2015 RECS^[Using the 2015 microdata file to compute estimates and standard errors (RSEs): https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf] uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with $\rho=0.5$. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. 
 
 To load any data in the book, use the function `read_rds_tsr()`, which reads the data file from a directory on OSF where all book data has been placed for sharing.  
 
@@ -606,7 +606,7 @@ $$se(\hat{\theta})=\sqrt{\sum_{r=1}^R \left(\alpha_r \hat{\theta}_r-\hat{\theta}
 
 #### The syntax {-}
 
-To specify the Jackknife method, the type would be `JK1`, `JKn`, or `JK2`. Additionally, the overall multiplier for JK1 is specified with the scale argument, whereas the replicate-specific multiplier ($\alpha_r) is specified with the rscales argument. 
+To specify the Jackknife method, the type would be `JK1`, `JKn`, or `JK2`. Additionally, the overall multiplier for JK1 is specified with the scale argument, whereas the replicate-specific multiplier ($\alpha_r$) is specified with the scales argument. 
 
 Consider a case for the JK1 method where the multiplier, $(R-1)/R=19/20=0.95$ and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, ..., WT20, then the syntax would be
 
