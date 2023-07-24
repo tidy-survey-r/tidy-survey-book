@@ -1,4 +1,4 @@
-read_rds_tsr <- function(filename){
+read_osf <- function(filename){
   #' Downloads file from Tidy Survey Analysis in R
   #' Reads in file
   #' Deletes file from computer
