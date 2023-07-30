@@ -108,6 +108,8 @@ Some assumptions when using ANOVA on survey data include:
   - The variances of the outcome variable between each group are approximately equal
   - We do NOT assume independence between the groups as with general ANOVA. The covariance is accounted for in the survey design
 
+### Syntax
+
 To perform this type of test in R, the general syntax is as follows:
 
 ``` r
@@ -121,6 +123,8 @@ des_obj %>%
 ```
 
 where `des_obj` is a design object, `outcomevar` is the outcome variable, `groupvar` is the group variable, and `na.action=na.omit` is set so that records with missing data in the outcome or group variable are removed for prediction^[See `help(na.omit)` for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c04-understanding-survey-data-documentation).]. The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details).
+
+### Example
 
 Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer. To analyze this data, we filter the respondents to only those using AC (`ACUsed`). Then if we want to see if there are differences by region, we can use `group_by()`. A descriptive analysis of the temperature at night (`SummerTempNight`) set by region and the sample sizes is displayed below.
 
@@ -164,6 +168,8 @@ Assumptions in Gaussian linear regression using survey data include:
   - There is a linear relationship between the outcome variable and the independent variables
   - The residuals are homoscedastic, that is, the error term is the same across all values of independent variables
 
+### Syntax
+
 The syntax for linear regression uses the same function as ANOVA, but can have more than one variable listed on the right-hand side of the formula:
 
 ``` r
@@ -176,7 +182,11 @@ des_obj %>%
   )
 ```
 
-As discussed at the beginning of the chapter, the formula on the right-hand side can be specified in many ways, whether interactions are desired or not, for example. On RECS, we can obtain information on the square footage of homes and the electric bills. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to determine whether it is reasonable to assume a linear relationship. In the plot below, each hexagon represents the weighted count of households in the bin and we can see a general positive linear trend (as the square footage increases so does the amount of money spent on electricity).
+As discussed at the beginning of the chapter, the formula on the right-hand side can be specified in many ways, whether interactions are desired or not, for example. 
+
+### Example
+
+On RECS, we can obtain information on the square footage of homes and the electric bills. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to determine whether it is reasonable to assume a linear relationship. In the plot below, each hexagon represents the weighted count of households in the bin and we can see a general positive linear trend (as the square footage increases so does the amount of money spent on electricity).
 
 ```{r}
 #| label: model-plot-sf-elbill
@@ -320,6 +330,8 @@ Assumptions in logistic regression using survey data include:
   - There is a linear relationship between the independent variables and the log odds (Equation \@ref(eq:logoddlin))
   - The residuals are homoscedastic, that is, the error term is the same across all values of independent variables
 
+### Syntax
+
 The syntax for logistic regression is as follows:
 
 ``` r
@@ -338,6 +350,8 @@ Note `svyglm()` is the same function used in both ANOVA and linear regression. H
   - A factor variable where not being the first level of the factor indicates a "success"
   - A numeric variable which is 1 or 0 where 1 indicates a success
   - A logical variable where TRUE indicates a success
+
+### Example
 
 In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. We first create a binary outcome for trusting in the government and plot the data. A scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data.
 
@@ -495,7 +509,6 @@ temps_sqft_exp_fit %>%
   ylab("Residual value of expenditure") +
   theme_minimal()
 ```
-
 
 4.  Early voting expanded in 2020^[<https://www.npr.org/2020/10/26/927803214/62-million-and-counting-americans-are-breaking-early-voting-records>]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`). Include two-way interactions.
 
