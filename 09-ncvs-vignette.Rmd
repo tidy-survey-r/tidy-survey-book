@@ -22,7 +22,17 @@ We will focus on the household, person, and incident files. From these files, we
 
 ## Survey analysis
 
-We will discuss four estimate types:
+The NCVS User Guide (@ncvs_user_guide) uses the following notation:
+
+* $i$ represents NCVVS households, identified on the household-level file on the basis of the household identification number `IDHH`.
+* $j$ represents NCVS individual respondents within households $i$, identified on the person-level file on the basis of the person identification number `IDPER`.
+* $k$ represents reporting periods (i.e., `YEARQ`) for households $i$ and individual respondent $j$.
+* $l$ represents victimization records for respondent $j$ in household $i$ and reporting period $k$. Each record on the NCVS incident-level file is associated with a victimization record $l$.
+* $D$ represents one or more domain characteristics of interest in the calculation of NCVS estimates. For victimization totals and proportions, domains can be defined on the basis of crime types (e.g., violent crimes, property crimes), characteristics of victims (e.g., age, sex, household income), or characteristics of the victimizations (e.g., victimizations reported to police, victimizations committed with a weapon present). Domains could also be a combination of all of these types of characteristics. For the calculation of victimization rates, domains are defined on the basis of characteristics of the victims.
+* $A_a$ represents the level $a$ of covariate $A$. Covariate $A$ is defined in the calculation of victimization proportions and represents the characteristic for which the analyst wants to obtain the distribution of victimizations in domain $D$.
+* $C$ represents the personal or property crime for which we want to obtain a victimization rate.
+
+In this vignette, we will discuss four estimate types:
 
 1. *Victimization totals* estimate the number of criminal victimizations with a given characteristic. As demonstrated below, these can be calculated from any of the design objects. The estimated victimization total, $\hat{t}_D$ for domain $D$ is estimated as
 
@@ -54,7 +64,7 @@ For victimization rates, we need to know the victimization status for both victi
 
 ### Preparing files for estimation of victimization rates
 
-Each record on the incident file represents one victimization, which is not the same as one incident. Some victimizations have several instances that make it difficult for the victim to differentiate the details of these incidents, labeled as "series crimes". Appendix A of the User's Guide indicates how to calculate the series weight in other statistical languages. 
+Each record on the incident file represents one victimization, which is not the same as one incident. Some victimizations have several instances that make it difficult for the victim to differentiate the details of these incidents, labeled as "series crimes". Appendix A of the User's Guide indicates how to calculate the series weight in other statistical languages.
 
 Here, we adapt that code adapted for R. Essentially, if a victimization is a series crime, its series weight is top-coded at 10 based on the number of actual victimizations. If an incident is a series crime, but the number of occurrences is unknown, the series weight is set to 6. A description of the variables used in this chunk is included in the following table:
 
@@ -236,7 +246,7 @@ inc_ind %>%
         AAST_Other)
 ```
 
-After creating indicators of victimization types and characteristics, the file is summarized, and crimes are summed across persons or households by `YEARQ.` Property crimes are summed across households, and personal crimes (violent, purse snatching, and pocket-picking) are summed across persons. The indicators are summed using the `serieswgt`, and the variable `WGTVICCY` needs to be retained for later analysis.
+After creating indicators of victimization types and characteristics, the file is summarized, and crimes are summed across persons or households by `YEARQ.` Property crimes (i.e., crimes committed against households, such as household burglary or motor vehicle theft) are summed across households, and personal crimes (i.e., crimes committed against an individual, such as assault, robbery, and personal theft) are summed across persons. The indicators are summed using the `serieswgt`, and the variable `WGTVICCY` needs to be retained for later analysis.
 
 ```{r}
 #| label: ncvs-vign-inc-sum
