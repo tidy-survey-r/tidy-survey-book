@@ -140,6 +140,8 @@ The `formula` argument can take on a couple of different forms depending on what
         - **2 level grouping variable:** `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories. For example, we could test if the proportion of the population that has blue eyes is different for children aged 5-10 years old compared to children under 5 years old. 
         - **3+ level grouping variable:** `var ~ I(groupVar == level)`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. Again, we need to use the `I()` function to tell the program to isolate the category before doing the comparison across groups. For example, we could test if the test scores in one classroom differed from all other classrooms.
     b. **Paired:** `I(var_1 - var_2) ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. We again will have to use the `I()` function to have the program calculate the difference between the two variables before comparing it against `0`. For example, we could test if test scores on a subject differed between the start and the end of a course.
+    
+In R, `I()` is a special function that isolates its content from R's parsing code. It is often referred to as the "as-is" operator. When we wrap an expression inside `I()`, we can include variables or expressions that should be taken "as-is", without any variable name expansion or other interpretation, allowing the standard R operators to work as they would if we used them outside of a formula.
 
 Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing, the t-test will not compute. Throughout this chapter we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c04-understanding-survey-data-documentation) to better understand how to handle missing data. Finally, the `level` argument is $1-\alpha$, or the amount of type 1 error. The default is $0.95$.
 
@@ -253,10 +255,10 @@ ttest_ex3 <- recs_des %>%
            design = .,
            na.rm = TRUE)
 
-tidy(ttest_ex3)
+broom::tidy(ttest_ex3)
 ```
 
-The results indicate that the difference in electrical bills for those that used AC and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r ttest_ex3$statistic` and the p-value is `r signif(ttest_ex3$p.value, 3)`.   
+The results indicate that the difference in electrical bills for those that used AC and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r ttest_ex3$statistic` and the p-value is `r signif(ttest_ex3$p.value, 3)`. Households that used AC spent on average $462.90 more in 2015.
 
 #### Example 4: Paired two-sample t-test {.unnumbered #stattest-ttest-ex4}
 
@@ -275,7 +277,7 @@ ttest_ex4 <- recs_des %>%
     na.rm = TRUE
   )
 
-tidy(ttest_ex4)
+broom::tidy(ttest_ex4)
 ```
 
 U.S. households set their thermostat on average `r signif(ttest_ex4$estimate,2)`$^\circ$F warmer in summer nights than winter nights, which is statistically significant (t = `r signif(ttest_ex4$statistic, 3)`, p-value = `r signif(ttest_ex4$p.value, 3)`).  
@@ -337,7 +339,7 @@ svychisq(
 
 There are six statistics that are accepted in this formula. For tests of homogeneity (when comparing cross-tabulations), the `F` or `Chisq` statistics should be used.^[These two statistics can also be used for goodness of fit tests, if the `svygofchisq()` function is not used.] The `F` statistic is the default and uses the Rao-Scott second-order correction. This correction is designed to assist with complicated sampling designs (i.e., those other than a simple random sample) (CITE)^[http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf]. The `Chisq` statistic is an adjusted version of the Pearson $\chi^2$ statistic. The version of this statistic in the `svychisq()` function compares the design effect estimate from the provided survey data to what the $\chi^2$ distribution would have been if the data came from a simple random sampling.
 
-For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons. If the data has a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this. The `lincom` and `saddlepoint` statistics are available for more complicated data structures.<!--I'm struggling to find a lot of information around these last two statistics, any thoughts/suggestions?--> 
+For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons (@lumley2010complex). If the data has a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this. The `lincom` and `saddlepoint` statistics are available for more complicated data structures.<!--I'm struggling to find a lot of information around these last two statistics, any thoughts/suggestions?--> 
 
 The formula argument will always be one-sided, unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula = ~ var_1 + var_2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
 
@@ -491,7 +493,10 @@ chi_ex2$observed %>% as_tibble() %>%
   gt(rowname_col = "TrustGovernment") %>%
   tab_stubhead(label = "Trust in Government") %>%
   tab_spanner(label = "Trust in People",
-              columns = everything()) 
+              columns = everything()) %>% 
+  cols_label(`Most of the time` = md("Most of<br />the time"),
+             `About half the time` = md("About half<br />the time"),
+             `Some of the time` = md("Some of<br />the time"))
 ```
 
 The second option is to use `group_by()` and `survey_mean()` functions to calculate the proportions from the ANES design object. A reminder that with more than one variable listed in the `group_by()` statement, the proportions are within the first variable listed. As mentioned above, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. 
@@ -511,7 +516,8 @@ chi_ex2_obs %>%
   gt(rowname_col = "TrustGovernment") %>%
   tab_stubhead(label = "Trust in Government") %>%
   tab_spanner(label = "Trust in People",
-              columns = everything()) 
+              columns = everything()) %>% 
+  tab_options(page.orientation = "landscape")
 ```
 
 Both methods produce the same output as the `svychisq()` function does account for the survey design. However, calculating the proportions directly from the design object means that we can also obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those that never trust people, 50.3% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people. 
@@ -525,7 +531,7 @@ We may find it easier to look at these proportions graphically. We can use `ggpl
 chi_ex2_obs %>%
   mutate(TrustPeople=str_c("Trust in People:\n", TrustPeople)) %>%
   ggplot(aes(x = TrustGovernment, y = Observed, color = TrustGovernment)) +
-  facet_wrap( ~ TrustPeople, ncol = 5, labeller = ) +
+  facet_wrap( ~ TrustPeople, ncol = 5) +
   geom_point() +
   geom_errorbar(aes(ymin = Observed_low, ymax = Observed_upp)) +
   ylab("Proportion") +
