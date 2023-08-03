@@ -124,8 +124,8 @@ dstrata %>%
 Recall from Chapter \@ref(c03-specifying-sample-designs) the general process for estimation with the {srvyr} package:  
 
 1. Create a `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()`.
-2. Subset the data for subpopulations using `dplyr::filter()`, if needed.
-3. Specify domains of analysis using `dplyr::group_by()`, if needed.
+2. Subset the data for subpopulations using `srvyr::filter()`, if needed.
+3. Specify domains of analysis using `srvyr::group_by()`, if needed.
 4. Within `srvyr::summarize()`, specify variables to calculate means, totals, proportions, quantiles, and more.
 
 Filtering should be done after creating the `tbl_svy` object (using `as_survey_design()` or `as_survey_rep()`) because survey objects incorporate the survey design information into the resulting object. 
@@ -918,6 +918,34 @@ Though not a statistical test, it does appear the cost rates in the Midwest for 
 
 ## Additional topics
 
+### Subpopulation analysis
+
+Briefly, we mentioned using `filter()` to subset a survey object for analysis. This operation should be done after creating the design object. In rare circumstances, subsetting data before creating the object can lead to incorrect variability estimates. This can occur if subsetting removes an entire PSU.
+
+Suppose, we wanted estimates of the average amount spent on natural gas among housing units that use natural gas. This could be obtained by first filtering records to only include records where `BTUNG>0` and then finding the average amount of money spent.
+
+```{r}
+#| label: desc-subpop
+
+recs_des %>%
+  filter(BTUNG>0) %>%
+  summarize(
+    NG_mean=survey_mean(DOLLARNG, vartype = c("se", "ci"))
+  )
+```
+
+Note that this yields a higher mean than when not applying the filter. When including housing units that do not use natural gas, many $0 amounts are included in the mean calculation.
+
+```{r}
+#| label: desc-subpop-2
+
+recs_des %>%
+  summarize(
+    NG_mean=survey_mean(DOLLARNG, vartype = c("se", "ci"))
+  )
+```
+
+
 ### Variability types {#Var-types}
 
 In all of the functions discussed above (except `survey_sd()`), measures of variability can be calculated. The default variability measure is the standard error (`se`). There are 4 types of variability measures that can be calculated which are:
@@ -988,12 +1016,21 @@ anes_des_sel <- anes_des  %>%
   mutate(VoteOther=(VotedPres2020_selection=="Other")) %>%
   group_by(VoteOther)
 
-anes_des_sel %>% summarize(p_logit=survey_prop(vartype="ci", prop_method="logit")) %>% filter(VoteOther)
-anes_des_sel %>% summarize(p_like=survey_prop(vartype="ci", prop_method="likelihood")) %>% filter(VoteOther)
-anes_des_sel %>% summarize(p_asin=survey_prop(vartype="ci", prop_method="asin")) %>% filter(VoteOther)
-anes_des_sel %>% summarize(p_beta=survey_prop(vartype="ci", prop_method="beta")) %>% filter(VoteOther)
-anes_des_sel %>% summarize(p_mean=survey_prop(vartype="ci", prop_method="mean")) %>% filter(VoteOther)
-anes_des_sel %>% summarize(p_xlogit=survey_prop(vartype="ci", prop_method="xlogit")) %>% filter(VoteOther)
+ci_p_vototh <- 
+  anes_des_sel %>% summarize(
+  p_logit=survey_prop(vartype="ci", prop_method="logit"),
+  p_like=survey_prop(vartype="ci", prop_method="likelihood"),
+  p_asin=survey_prop(vartype="ci", prop_method="asin"),
+  p_beta=survey_prop(vartype="ci", prop_method="beta"),
+  p_mean=survey_prop(vartype="ci", prop_method="mean"),
+  p_xlogit=survey_prop(vartype="ci", prop_method="xlogit")
+) %>% filter(VoteOther) 
+
+ci_p_vototh %>%
+  select(ends_with("low"))
+
+ci_p_vototh %>%
+  select(ends_with("upp"))
 ```
 
 #### Confidence intervals for quantiles {-}
@@ -1008,11 +1045,18 @@ In the example below the confidence interval for the 95^th^ percentile of electr
 ```{r}
 #| label: desc-prop-quant
 
-recs_des %>% summarize(p90_mean=survey_quantile(DOLLAREL, .95, vartype="ci", interval_type = "asin"))
-recs_des %>% summarize(p90_mean=survey_quantile(DOLLAREL, .95, vartype="ci", interval_type = "beta"))
-recs_des %>% summarize(p90_mean=survey_quantile(DOLLAREL, .95, vartype="ci", interval_type = "mean"))
-recs_des %>% summarize(p90_mean=survey_quantile(DOLLAREL, .95, vartype="ci", interval_type = "xlogit"))
-recs_des %>% summarize(p90_mean=survey_quantile(DOLLAREL, .95, vartype="ci", interval_type = "quantile"))
+ci_elbill_p90 <- recs_des %>% summarize(
+  p90_asin=survey_quantile(DOLLAREL, .9, vartype="ci", interval_type = "asin"),
+  p90_beta=survey_quantile(DOLLAREL, .9, vartype="ci", interval_type = "beta"),
+  p90_mean=survey_quantile(DOLLAREL, .9, vartype="ci", interval_type = "mean"),
+  p90_xlog=survey_quantile(DOLLAREL, .9, vartype="ci", interval_type = "xlogit"),
+  p90_quant=survey_quantile(DOLLAREL, .9, vartype="ci", interval_type = "quantile")
+)
+ci_elbill_p90 %>%
+  select(ends_with("low"))
+ci_elbill_p90 %>%
+  select(ends_with("upp"))
+  
 ```
 
 In the example below, the mean and score type confidence interval are calculated for the median age of the voting age population.
@@ -1020,11 +1064,13 @@ In the example below, the mean and score type confidence interval are calculated
 ```{r}
 #| label: desc-prop-quant-2
 
-anes_des %>% summarize(age_median=survey_median(Age, vartype="ci", interval_type="mean", na.rm=TRUE))
-anes_des %>% summarize(age_median=survey_median(Age, vartype="ci", interval_type="score", na.rm=TRUE))
+anes_des %>% summarize(
+  am=survey_median(Age, vartype="ci", interval_type="mean", na.rm=TRUE),
+  as=survey_median(Age, vartype="ci", interval_type="score", na.rm=TRUE),
+  )
 ```
 
-
+Note that in instances when there are many ties in the data, the score method can produce confidence intervals that do not contain the estimate as is shown above. The documentation in the {survey} package indicates this method has lower performance than the beta and logit intervals. This is the method implemented in SUDAAN though SUDAAN now adds noise to the values to prevent the issue with the ties.
 
 ### Design effects
 
@@ -1236,8 +1282,8 @@ In the example below, we create a table that has the variable name as a column, 
 ```{r}
 #| label: desc-map-1
 anes_des %>%
+  drop_na(TrustGovernment) %>%
   group_by(TrustGovernment) %>%
-  filter(!is.na(TrustGovernment)) %>%
   summarise(p=survey_prop()*100) %>%
   mutate(Variable="TrustGovernment") %>%
   rename(Answer=TrustGovernment) %>%
@@ -1251,8 +1297,8 @@ To turn this into a function, we need to use a bit of tidy evaluation which is a
 
 calcps <- function(var){
   anes_des %>%
+    drop_na(!!sym(var)) %>%
     group_by(!!sym(var)) %>%
-    filter(!is.na(!!sym(var))) %>%
     summarise(p=survey_prop()*100) %>%
     mutate(Variable=var) %>%
     rename(Answer:=!!sym(var)) %>%
@@ -1283,3 +1329,11 @@ The first set of exercises should use the design object `anes_des` created in th
 4. What percentage of people voted in both the 2016 election and in the 2020 election?  Include the logit confidence interval. Hint: The variable `VotedPres2016` indicates whether someone voted in 2016.
 
 5. What is the design effect for the proportion of people who voted early? Hint: The variable `EarlyVote2020` indicates whether someone voted early in 2020.
+
+6. What is the average temperature that people set their thermostats to at night during the winter? Hint: The variable `WinterTempNight` indicates the temperature that people set their temperature in the winter at night.
+
+7. People do not always set their temperature the same over different seasons and during the day. What are the median temperatures that people set their thermostat to in the summer and winter both during the day and during the night? Include confidence intervals. Hint: Use the variables `WinterTempDay`, `WinterTempNight`, `SummerTempDay`, and `SummerTempNight`. 
+
+8. What is the correlation between the temperature that people set their temperature at during the night and during the day in the summer?
+
+9. What is the 1st, 2nd, and 3rd quartile of the amount of money spent on energy by Building America (BA) climate zone? Hint: `TOTALDOL` indicates the total amount spent on electricity and `ClimateRegion_BA` indicates the BA climate zones
