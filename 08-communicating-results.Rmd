@@ -2,15 +2,23 @@
 
 One of the most important aspects of data analysis is communicating the results to others. This could include other researchers familiar with our survey data or others who will be seeing this data and results for the first time. Ensuring that we are accurately discussing the methodology, analysis, and displaying results is crucial to making sure our audience comprehends what the results are saying. It is our responsibility to discuss and present the results carefully.
 
+Before beginning any dissemination of results, it is important to understand the audience. Some questions we might consider about our audience include:
+
+- What medium will results be presented? Examples might include website, print media. Based on the media type, we might limit or enhance the use of graphical representation. 
+- How much does the audience know about the study and/or data being presented? Audiences can range from the general public to data experts. If you don't expect your audience to know much about the study, be sure to describe it (see later recommendations)
+- What are we trying to communicate? This could be summary statistics, trends, patterns, and more. Summary statistics might be best presented in tables but trends and patterns might be better shared with plots.
+- Is the audience accustomed to looking at plots? If not, we might want to add text to describe how to read plots
+- What level of statistics knowledge does the audience have? If the audience does not have a strong statistics background, it could be useful to include text on standard errors, confidence intervals, and other estimate types that are being shared
+
 ## Describing Results through Text
 
 As researchers, we often focus on the data itself; communicating the results effectively can be a forgotten step. However, all of the steps that we as researchers need to consider when conducting analyses must be communicated to our audience as well. The first few chapters of this book Chapters \@ref(c02-overview-surveys) through \@ref(c04-understanding-survey-data-documentation) provided insights into what we need to consider when conducting analyses. Each of these topics should also be considered when presenting results to others. 
 
 ### Methodology
 
-If we are using existing data, methodologically sound surveys will provide documentation about how the survey was fielded, the questionnaires, and the needed information for analyses. For example, the survey's methodology reports should include the population of interest, sampling procedures, response rates, questionnaire documentation, weighting, and general overview of disclosure statements. Many organizations are part of the American Association for Public Opinion Research's (AAPOR) [Transparency Initiative](https://aapor.org/standards-and-ethics/transparency-initiative), which requires the organization to include specific details in their methodology to ensure that people understand the context in which analyses can and should be conducted from each survey. Being transparent about these methods is crucial for the scientific rigor of the field.
+If we are using existing data, methodologically sound surveys will provide documentation about how the survey was fielded, the questionnaires, and the needed information for analyses. For example, the survey's methodology reports should include the population of interest, sampling procedures, response rates, questionnaire documentation, weighting, and general overview of disclosure statements. Many American organizations are part of the American Association for Public Opinion Research's (AAPOR) [Transparency Initiative](https://aapor.org/standards-and-ethics/transparency-initiative), which requires the organization to include specific details in their methodology to ensure that people understand the context in which analyses can and should be conducted from each survey. Being transparent about these methods is crucial for the scientific rigor of the field.
 
-When using publicly available data, such as with the examples in this book, oftentimes we can link to the methodology report in our final output. However, it is still important to provide the high-level information that will make it easy for the audience to understand at a quick glance the context around the findings. For example, indicating the target population (e.g., all U.S. homeowners or U.S. eligible voters) helps the audience understand how generalizable the results are. Including the question wording will also ensure that the audience understands the context and limitations if the response options are narrow. The details provided in Chapter \@ref(c02-overview-surveys) about what we as researchers need to consider when analyzing the data should also be provided to the audience when presenting the results. 
+When using publicly available data, such as with the examples in this book, oftentimes we can link to the methodology report in our final output. However, it is still important to provide the high-level information that will make it easy for the audience to understand at a quick glance the context around the findings. For example, indicating who (age or other population information), where the study was done, and when the study was done helps the audience understand how generalizable the results are. Including the question wording will also ensure that the audience understands the context and limitations if the response options are narrow. The details provided in Chapter \@ref(c02-overview-surveys) about what we as researchers need to consider when analyzing the data should also be provided to the audience when presenting the results. 
 
 The inclusion of this material is especially important if no methodology report exists for the data used in the analyses. For example, if the researcher conducted the survey for the purposes of this analysis, then including as much information about the survey as possible in the write-up and dissemination of the findings is crucial. Following the AAPOR Transparency Initiative guidelines is a good way to ensure all necessary information is provided to the audience.
 
@@ -49,7 +57,7 @@ Including data tables and graphs are used to portray a large amount of data in a
 
 ### Tables
 
-Tables are a great way to provide a large amount of data when we want the individual data points to be read. However, it is important to present tables in a readable format. Numbers should be aligned, and rows and columns should be easy to follow. Using key visualization techniques, we can create tables that are informative and nice to look at. Many packages can be used to create easy-to-read tables (e.g., {kable} + {kableExtra}, {gt}, {gtsummary}, {DT}, {formattable}, {flextable}, {reactable}). We will focus on {gt} here, but we encourage learning about others as they may have additional helpful components. At this time, {gtsummary} is not well enough developed for recommended wide use for survey analysis. It lacks the ability to work with replicate designs. We provide one small example using {gtsummary} and hope it can become a better tool over time.
+Tables are a great way to provide a large amount of data when we want the individual data points to be read. However, it is important to present tables in a readable format. Numbers should be aligned, and rows and columns should be easy to follow. Using key visualization techniques, we can create tables that are informative and nice to look at. Many packages can be used to create easy-to-read tables (e.g., {kable} + {kableExtra}, {gt}, {gtsummary}, {DT}, {formattable}, {flextable}, {reactable}). We will focus on {gt} here, but we encourage learning about others as they may have additional helpful components. We like the {gt} package as it is flexible, pipeable, and has many extensions to make beautiful tables. At this time, {gtsummary} is not well enough developed for recommended wide use for survey analysis. It lacks the ability to work with replicate designs. We provide one example using {gtsummary} and hope it can become a better tool over time.
 
 #### srvyr output to gt table {-}
 
@@ -58,7 +66,7 @@ Let's start by using some of the data we calculated earlier in this book. In Cha
 ```{r}
 #| label: results-table-raw
 trust_gov <- anes_des %>%
-  filter(!is.na(TrustGovernment)) %>%
+  drop_na(TrustGovernment) %>%
   group_by(TrustGovernment) %>%
   summarize(trust_gov_p = survey_prop())
 
@@ -125,7 +133,7 @@ For continuous variables, the following summary statistics are available:
 In the following example, we will build up a table using {gtsummary} which will be similar to the table in the {gt} example. The main function used is `tbl_svysummary()`. In this function, the variables we want to analyze are included in the `include` argument and the statistics we want to display are in the `statistic` argument. To specify statistics, the syntax from the {glue} package are used where variables you want to insert is included inside curly brackets. To specify that we want, the proportion followed by the standard error of the proportion in parentheses, we use "{p} ({p.std.error})". You must specify the statistics you want using the names of the statistics in the two lists above. 
 
 ```{r}
-#| label: gtsummary-ex-1
+#| label: results-gts-ex-1
 library(gtsummary)
 
 anes_des %>%
@@ -138,7 +146,7 @@ anes_des %>%
 In this default table, the weighted number of missing (or Unknown) records is included. Additionally, the standard error is reported as a proportion while the proportion is styled as a percentage. In the next step, we remove the Unknown category by setting the missing argument to "no" and format the standard error as a percentage within the digits argument. Finally, we label the "TrustGovernment" variable to something more publication-ready using the label argument.
 
 ```{r}
-#| label: gtsummary-ex-2
+#| label: results-gts-ex-2
 anes_des %>%
   tbl_svysummary(
     include=TrustGovernment,
@@ -152,7 +160,7 @@ anes_des %>%
 To remove the phrase "Characteristic" and the estimated population size, we can modify the header using the function `modify_header()` to update the label and stat_0. To add footnotes and a title, we can first convert the object to a gt table using `as_gt()` and then use the same functions we did previously.
 
 ```{r}
-#| label: gtsummary-ex-3
+#| label: results-gts-ex-3
 anes_des %>%
   tbl_svysummary(
     include=TrustGovernment,
@@ -176,7 +184,7 @@ anes_des %>%
 Continuous variables can also be added and we add a summary of the age variable to the table below by updating the include, statistic, and digits argument. Adding on additional variables is a large benefit to the {gtsummary} package.
 
 ```{r}
-#| label: gtsummary-ex-4
+#| label: results-gts-ex-4
 anes_des %>%
   tbl_svysummary(
     include=c(TrustGovernment, Age),
@@ -200,7 +208,7 @@ anes_des %>%
 The {gtsummary} also allows calculating statistics by different groups  easily. Let's adapt the prior example to perform analysis by whether the person voted for president in 2020. The argument for by is updated and the header names are updated. Finally, we update the header. 
 
 ```{r}
-#| label: gtsummary-ex-5
+#| label: results-gts-ex-5
 #| messages: FALSE
 
 anes_des %>%
@@ -248,7 +256,7 @@ anes_des_der <- anes_des %>%
     ),
     .groups = "drop"
   ) %>%
-  filter(!is.na(VotedPres2020_selection))
+  drop_na(VotedPres2020_selection)
 
 anes_des_der
 ```
@@ -258,12 +266,15 @@ Now, we can begin creating our chart with {ggplot2}. First, we set up our plot w
 ```{r}
 #| label: results-plot1
 #| fig.cap: "Bar chart of trust in government by chosen 2020 presidential candidate"
+#| fig.alt: !expr str_c(BrailleR::VI(p)$text, collapse=" ")
 library(ggplot2)
+library(BrailleR)
 
-anes_des_der %>%
+p <- anes_des_der %>%
   ggplot(aes(x = VotedPres2020_selection,
              y = pct_trust)) +
   geom_bar(stat = "identity")
+p
 ```
 
 
@@ -274,19 +285,22 @@ This is a great starting-off point: we can see that the percentage of people say
 ```{r}
 #| label: results-plot2
 #| fig.cap: "Bar chart of trust in government by chosen 2020 presidential candidate with colors"
-anes_des_der %>%
+#| fig.alt: !expr str_c(BrailleR::VI(pcolor)$text, collapse=" ")
+pcolor <- anes_des_der %>%
   ggplot(aes(x = VotedPres2020_selection,
              y = pct_trust,
              fill = VotedPres2020_selection)) +
   geom_bar(stat = "identity")
+pcolor
 ```
 
-Let's say we wanted to follow good statistical analysis practice and include our ranges on our plot. We can add another geom, `geom_errorbar()`, on top of our `geom_bar` layer using a plus sign `+`. 
+Let's say we wanted to follow good statistical analysis practice and include our ranges on our plot. We can add another geom, `geom_errorbar()`, on top of our `geom_bar()` layer using a plus sign `+`. 
 
 ```{r}
 #| label: results-plot3
 #| fig.cap: "Bar chart of trust in government by chosen 2020 presidential candidate with colors and error bars"
-anes_des_der %>%
+#| fig.alt: !expr str_c(BrailleR::VI(pcol_error)$text, collapse=" ")
+pcol_error <- anes_des_der %>%
   ggplot(aes(x = VotedPres2020_selection,
              y = pct_trust,
              fill = VotedPres2020_selection)) +
@@ -294,6 +308,7 @@ anes_des_der %>%
   geom_errorbar(aes(ymin = pct_trust_low,
                     ymax = pct_trust_upp),
                 width = .2)
+pcol_error
 ```
 
 We can continue adding to our plot until we achieve the visualization we'd like to present.
@@ -301,7 +316,9 @@ We can continue adding to our plot until we achieve the visualization we'd like 
 ```{r}
 #| label: results-plot4
 #| fig.cap: "Bar chart of trust in government by chosen 2020 presidential candidate with colors, labels, error bars, and title"
-anes_des_der %>%
+#| fig.alt: !expr str_c(BrailleR::VI(pfull)$text, collapse=" ")
+pfull <- 
+  anes_des_der %>%
   ggplot(aes(x = VotedPres2020_selection,
              y = pct_trust,
              fill = VotedPres2020_selection)) +
@@ -316,6 +333,7 @@ anes_des_der %>%
   guides(fill = "none") +
   labs(title = "Percent of voters who usually trust the government by chosen 2020 presidential candidate",
        caption = "Source: American National Election Studies, 2020")
+pfull
 ```
 
 ## Reproducibility
