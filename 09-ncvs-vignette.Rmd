@@ -1,6 +1,33 @@
 # National Crime Victimization Survey Vignette {#c09-ncvs-vignette}
 
-<!-- author review -->
+::: {.prereqbox-header}
+`r if (knitr:::is_html_output()) '### Prerequisites {- #prereq}'`
+:::
+
+::: {.prereqbox data-latex="{Prerequisites}"}
+For this chapter, here are the libraries and helper functions we will need:
+```{r}
+#| label: ncvs-setup
+#| error: FALSE
+#| warning: FALSE
+#| message: FALSE
+library(tidyverse)
+library(srvyr) 
+library(gt)
+library(osfr)
+source("helper-fun/helper-functions.R")
+```
+
+We will be using data from NCVS. Here is the code to read in the three datasets that we will be working with:
+```{r}
+#| label: ncvs-data
+inc_in <- read_osf("ncvs_2021_incident.rds")
+hh_in <- read_osf("ncvs_2021_household.rds")
+pers_in <- read_osf("ncvs_2021_person.rds")
+```
+:::
+
+## Introduction
 
 The United States National Crime Victimization Survey (NCVS) is a household survey sponsored by the Bureau of Justice Statistics (BJS), which collects data on criminal victimization, including characteristics of the crimes, offenders, and victims. Both household and personal crimes include violent and non-violent crimes. The target population of this survey is all people in the United States age 12 and older living in housing units and noninstitutional group quarters.
 
@@ -84,14 +111,6 @@ Here, we adapt that code adapted for R. Essentially, if a victimization is a ser
 #| label: ncvs-vign-incfile
 #| message: false
 #| cache: TRUE
-library(tidyverse)
-library(srvyr)
-library(gt)
-library(osfr)
-source("helper-fun/helper-functions.R")
-
-inc_in <- read_osf("ncvs_2021_incident.rds")
-
 inc_series <- inc_in %>%
   mutate(
     series = case_when(
@@ -282,9 +301,6 @@ where $w_{ijk}$ is the person weight (`WGTPERCY`) for personal crimes or the hou
 ```{r}
 #| label: ncvs-vign-merge-inc-sum
 #| cache: TRUE
-hh_in <- read_osf("ncvs_2021_household.rds")
-
-pers_in <- read_osf("ncvs_2021_person.rds")
 
 # Set up a list of 0s for each crime type/characteristic to replace NA's
 hh_z_list <- rep(0, ncol(inc_hh_sums) - 3) %>% as.list() %>%

@@ -22,7 +22,7 @@ source("helper-fun/helper-functions.R")
 We will be using data from ANES. Here is the code to read in the data.
 ```{r}
 #| label: understand-anes-c04
-anes_in <- read_osf("anes_2020.rds")
+anes_raw <- read_osf("anes_2020.rds")
 ```
 :::
 
@@ -245,14 +245,14 @@ The target population in 2020 is `r scales::comma(targetpop)`. This information 
 
 ```{r}
 #| label: understand-read-anes
-anes_popweights <- anes_in %>%
+anes_in <- anes_raw %>%
   mutate(Weight = V200010b / sum(V200010b) * targetpop) 
 ```
 
 Once we have the weights adjusted to the population, we can then create the survey design using our new weight variable in the `weights` argument and use the strata and cluster variables identified in the users manual.
 ```{r}
 #| label: understand-anes-des
-anes_des <- anes_popweights %>%
+anes_des <- anes_in %>%
   as_survey_design(
     weights = Weight,
     strata = V200010d,

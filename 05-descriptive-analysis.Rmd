@@ -13,25 +13,82 @@ tribble(
   knitr::kable(format="pandoc", col.names=NULL, caption="Summary of Chapter 5")
 ```
 
+::: {.prereqbox-header}
+`r if (knitr:::is_html_output()) '### Prerequisites {- #prereq}'`
+:::
 
+::: {.prereqbox data-latex="{Prerequisites}"}
+For this chapter, here are the libraries and helper functions we will need:
 ```{r}
-#| label: desc-tidy
-#| include: FALSE
+#| label: desc-setup
+#| error: FALSE
+#| warning: FALSE
+#| message: FALSE
+library(tidyverse)
+library(survey) 
+library(srvyr) 
+library(broom)
+library(osfr)
+source("helper-fun/helper-functions.R")
+
 knitr::opts_chunk$set(tidy = TRUE)
 ```
 
-## Similarities between {dplyr} and {srvyr} functions
-
+To help explain the similarities between {dplyr} functions and {srvyr} functions, this chapter will use the `mtcars` and `iris` datasets that are built-in to R and `apistrat` data that comes in the {survey} package:
 ```{r}
-#| label: desc-dstrat
-#| include: false
-library(srvyr)
-library(survey)
-data(api)
+#| label: desc-setup-surveydata
+data(mtcars)
+data(iris)
 
+data(api)
 dstrata <- apistrat %>%
   as_survey_design(strata = stype, weights = pw)
 ```
+
+We will be using data from ANES and RECS. Here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-understanding-survey-data-documentation) for more information).
+```{r}
+#| label: desc-anes-des
+#| eval: FALSE
+anes_in <- read_osf("anes_2020.rds") %>%
+  mutate(Weight = Weight / sum(Weight) * targetpop)
+
+anes_des <- anes_in %>%
+  as_survey_design(
+    weights = Weight,
+    strata = Stratum,
+    ids = VarUnit,
+    nest = TRUE)
+```
+
+For RECS, details are included in the RECS documentation and Chapter \@ref(c03-specifying-sample-designs).
+```{r}
+#| label: desc-recs-des
+#| eval: FALSE
+recs_in <-read_osf("recs_2015.rds")
+
+recs_des <- recs_in %>%
+  as_survey_rep(weights = NWEIGHT,
+                repweights = starts_with("BRRWT"),
+                type = "Fay",
+                rho = 0.5,
+                mse = TRUE)
+```
+:::
+
+## Introduction
+
+Recall from Chapter \@ref(c03-specifying-sample-designs) the general process for estimation with the {srvyr} package:  
+
+1. Create a `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()`.
+2. Subset the data for subpopulations using `srvyr::filter()`, if needed.
+3. Specify domains of analysis using `srvyr::group_by()`, if needed.
+4. Within `srvyr::summarize()`, specify variables to calculate means, totals, proportions, quantiles, and more.
+
+Filtering should be done after creating the `tbl_svy` object (using `as_survey_design()` or `as_survey_rep()`) because survey objects incorporate the survey design information into the resulting object. 
+
+<!-- We need to add more here about why we do descriptive analysis, this chapter was missing an intro-->
+
+## Similarities between {dplyr} and {srvyr} functions
 
 One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package. We can use pipes to specify a tbl_svy object, apply a function, and then feed that output into the next function's first argument. Functions follow the 'tidy' convention of snake_case functions names. In the example below, the mean and median are calculated for the variable `mpg` on the `mtcars` dataset.
 
@@ -119,49 +176,6 @@ dstrata %>%
             api00_median = survey_median(api00))
 ```
 
-## Chapter set up
-
-Recall from Chapter \@ref(c03-specifying-sample-designs) the general process for estimation with the {srvyr} package:  
-
-1. Create a `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()`.
-2. Subset the data for subpopulations using `srvyr::filter()`, if needed.
-3. Specify domains of analysis using `srvyr::group_by()`, if needed.
-4. Within `srvyr::summarize()`, specify variables to calculate means, totals, proportions, quantiles, and more.
-
-Filtering should be done after creating the `tbl_svy` object (using `as_survey_design()` or `as_survey_rep()`) because survey objects incorporate the survey design information into the resulting object. 
-
-<!-- TODO: edit this depending on how much we've talked about it in earlier chapters-->
-The Residential Energy Consumption Survey (RECS) provides energy consumption and expenditures data. It is funded by Energy Information Administration and collects information through energy suppliers through in-person, phone, and web interviews. It has been fielded 14 times between 1950 and 2020. Topics include appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.
-
-The survey targets primarily occupied housing units in the US. RECS uses Balanced Repeated Replication (BRR) to estimate the variances. The full sample information is available on the [EIA website](https://www.eia.gov/consumption/residential/index.php). 
-
-To begin analyzing RECS, we create a `tbl_svy` object using `srvyr::as_survey_design()`:
-
-```{r}
-#| label: recs_des
-#| error: FALSE
-#| warning: FALSE
-#| message: FALSE
-#| eval: FALSE
-library(survey) # for survey analysis
-library(srvyr) # for tidy survey analysis
-library(readr)
-library(osfr)
-source("helper-fun/helper-functions.R")
-
-recs_in <-
-  read_osf("recs_2015.rds")
-
-recs_des <- recs_in %>%
-  as_survey_rep(
-    weights = NWEIGHT,
-    repweights = starts_with("BRRWT"),
-    type = "Fay",
-    rho = 0.5,
-    mse = TRUE
-  )
-```
-
 
 ## Deciding on descriptive analyses
 
@@ -236,7 +250,9 @@ We will discuss `vartype` in Section \@ref(Var-types) as this option occurs in a
 
 #### Examples {-}
 
-If we do not specify any variables in `survey_count()`, the function will output the estimated population count (n) and standard error (n_se).  For example, in the RECS data we can obtain the estimated number of households in the U.S. (the target population) by running the following code: 
+For an example, let's use the Residential Energy Consumption Survey (RECS), which provides energy consumption and expenditures data. RECS funded by Energy Information Administration and collects information through energy suppliers through in-person, phone, and web interviews. It has been fielded 14 times between 1950 and 2020 and includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.  The survey targets primarily occupied housing units in the US.
+
+If we wanted to obtain the estimated number of households in the U.S. (the target population) using the RECS data we could use `survey_count()`. If we do not specify any variables in the `survey_count()` function, it will output the estimated population count (n) and standard error (n_se).
 
 ```{r}
 #| label: desc-count-overall
@@ -252,7 +268,6 @@ recs_des %>%
   pull(n) %>%
   prettyNum(big.mark=",", digits=20)
 ```
-
 
 Thus, the estimated number of households in the U.S. is `r .est_pop`.
 
