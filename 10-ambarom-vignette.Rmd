@@ -47,7 +47,7 @@ library(ggpattern)
 library(osfr)
 source("helper-fun/helper-functions.R")
 
-ambarom_in <- read_rds_tsr("lapop_2021.rds")
+ambarom_in <- read_osf("lapop_2021.rds")
 ```
 
 ```{r}
@@ -188,7 +188,6 @@ ambarom <- ambarom_in %>%
     Internet = r18
   )
 
-
 ambarom %>% count(Country, pais) %>% print(n = 22)
 ambarom %>% count(Gender, q1tb)
 ambarom %>% count(EconSituation, idio2)
@@ -319,6 +318,7 @@ That map (without data) is plotted. The first map is very wide as the Aleutian i
 ```{r}
 #| label: ambarom-americas-map
 #| fig.cap: "Map of North and South America"
+#| error: true
 country_shape <-
   ne_countries(
     scale = "medium",
@@ -327,19 +327,6 @@ country_shape <-
   )
 
 country_shape %>%
-  ggplot() + geom_sf()
-```
-
-```{r}
-#| label: ambarom-americas-map-crop
-#| fig.cap: "Map of North and South America, cropped to the Western Hemisphere"
-country_shape %>%
-  st_crop(c(
-    xmin = -180,
-    xmax = 0,
-    ymin = -90,
-    ymax = 90
-  )) %>%
   ggplot() + 
   geom_sf()
 ```
@@ -375,6 +362,7 @@ To merge the data and make a map, we begin with the map file, merge the estimate
 ```{r}
 #| label: ambarom-make-maps-covid
 #| fig.cap: "Percent of people worried someone in their household will get COVID-19 in the next 3 months by country"
+#| error: true
 covid_sf <- country_shape_upd %>%
   full_join(covid_worry_country_ests, by = c("geounit" = "Country")) %>%
   full_join(covid_educ_ests, by = c("geounit" = "Country"))
@@ -399,6 +387,7 @@ ggplot() +
 ```{r}
 #| label: ambarom-make-maps-covid-ed
 #| fig.cap: "Percent of students who participated in virtual or hybrid learning"
+#| error: true
 ggplot() +
   geom_sf(data = covid_sf, aes(fill = p_mediumchange, geometry = geometry)) +
   scale_fill_gradientn(
@@ -421,6 +410,7 @@ Canada, Mexico, and the United States did not include this question, so removing
 ```{r}
 #| label: ambarom-make-maps-covid-ed-c-s
 #| fig.cap: "Percent of students who participated in virtual or hybrid learning, Central and South America"
+#| error: true
 
 covid_c_s <- covid_sf %>%
   filter(region_wb == "Latin America & Caribbean")
@@ -465,6 +455,7 @@ int_ests %>%
 
 ```{r}
 #| label: ambarom-facet-map
+#| error: true
 internet_sf <- country_shape_upd %>%
   full_join(select(int_ests, p = p_internet, geounit = Country), by = "geounit") %>%
   mutate(Type = "Internet")
