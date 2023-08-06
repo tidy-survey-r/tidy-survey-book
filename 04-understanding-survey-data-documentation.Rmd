@@ -1,12 +1,34 @@
 # Understanding survey data documentation {#c04-understanding-survey-data-documentation}
 
+::: {.prereqbox-header}
+`r if (knitr:::is_html_output()) '### Prerequisites {- #prereq}'`
+:::
+
+::: {.prereqbox data-latex="{Prerequisites}"}
+For this chapter, here are the libraries and helper functions we will need:
 ```{r}
+#| label: understand-c04-setup
+#| error: FALSE
+#| warning: FALSE
+#| message: FALSE
 library(tidyverse)
 library(censusapi)
+library(survey)
 library(srvyr)
+library(osfr)
+source("helper-fun/helper-functions.R")
 ```
 
-Before diving into survey analysis, it's crucial to review the survey documentation thoroughly. This documentation includes technical guides, questionnaires, codebooks, errata, and other useful resources. By taking the time to review these materials, we can gain a comprehensive understanding of the survey data and effectively conduct our analysis.
+We will be using data from ANES. Here is the code to read in the data.
+```{r}
+#| label: understand-anes-c04
+anes_in <- read_osf("anes_2020.rds")
+```
+:::
+
+## Introduction
+
+Before diving into survey analysis, it's crucial to review the survey documentation thoroughly. This documentation includes technical guides, questionnaires, codebooks, errata, and other useful resources. By taking the time to review these materials, we can gain a comprehensive understanding of the survey data (including research and design decisions discussed in Chapters \@ref(c02-overview-surveys) and \@ref(c03-specifying-sample-designs)) and effectively conduct our analysis. 
 
 Survey documentation can vary in organization, type, and ease of use. The information may be stored in any format - PDFs, Excel spreadsheets, Word documents, etc. Some surveys save different documentation together, such as providing a single document containing both the codebook and the questionnaire. Others keep them in separate files. Despite these differences, it's important to know what kind of information is available in each documentation type and what to focus on in each one.
 
@@ -16,19 +38,19 @@ Survey documentation can vary in organization, type, and ease of use. The inform
 <!-- this is adapted from chapter 05 ending -->
 The technical documentation, also known as user guides or methodology/analysis guides, highlights the variables necessary to specify the survey design. We recommend focusing on these key sections:
 
-* **Introduction:** The introduction orients us to the survey. This section provides the project's background, the study's purpose, and the main research questions.
-* **Study design:** The study design section describes how researchers prepared and administered the survey.
-* **Sample:** The sample section describes how researchers selected cases, any sampling error that occurred, and the limitations of the sample. This section can contain recommendations on how to use sampling weights. Look for weight information, whether the survey design is strata and/or clusters/PSUs or replicate weights, and any population sizes or finite population correction. This documentation is critical in successfully running our analysis, and more detail on sample designs is available in [Chapter 05: Specifying sample designs in {srvyr}](#c05).
+  * **Introduction:** The introduction orients us to the survey. This section provides the project's background, the study's purpose, and the main research questions.
+  * **Study design:** The study design section describes how researchers prepared and administered the survey.
+  * **Sample:** The sample section describes how researchers selected cases, any sampling error that occurred, and the limitations of the sample. This section can contain recommendations on how to use sampling weights. Look for weight information, whether the survey design is strata and/or clusters/PSUs or replicate weights, and any population sizes, finite population correction, or replicate weight scaling information. This documentation is critical in successfully running our analysis, and more detail on sample designs is available in Chapter \@ref(c03-specifying-sample-designs).
 
 The technical documentation may include other helpful information. Some technical documentation includes syntax for SAS, SUDAAN, Stata, and/or R, meaning we don't have to create this code from scratch.
 
 ### Questionnaires
 
-A questionnaire is a series of questions asked to obtain information from survey respondents. A questionnaire gathers opinions, behaviors, or demographic data by employing different types of questions, such as multiple-choice, open-ended, Likert scales, or ranking questions. It may randomize responses or include instructions to help respondents understand the questions. A survey may have one questionnaire or multiple, depending on its scale and scope.
+A questionnaire is a series of questions asked to obtain information from survey respondents. A questionnaire gathers opinions, behaviors, or demographic data by employing different types of questions, such as closed-ended (e.g., radio button select one or check all that apply), open-ended (e.g., numeric or text), Likert scales, or ranking questions. It may randomize the display order of responses or include instructions to help respondents understand the questions. A survey may have one questionnaire or multiple, depending on its scale and scope.
 
-The questionnaire is an essential resource for understanding and interpreting the survey data, and we should use it alongside any analysis. It provides details about each of the questions asked in the survey, such as question name, question wording, response options, skip logic, randomizations, display specification, mode differences, and the universe (if only a subset of respondents were asked the question).
+The questionnaire is an essential resource for understanding and interpreting the survey data (see Section \@ref(overview-design-questionnaire)), and we should use it alongside any analysis. It provides details about each of the questions asked in the survey, such as question name, question wording, response options, skip logic, randomizations, display specification, mode differences, and the universe (if only a subset of respondents were asked the question).
 
-Below in Figure \@ref(fig:que-examp), we show a question from the ANES 2020 questionnaire. The screenshot shows a particular question's question name (`postvote_rvote`), description (Did R Vote?), full wording of the question and responses, response order, universe, question logic (if `vote_pre` = 0), and other specifications. The section also includes the variable name, which we can link to the codebook.
+Below in Figure \@ref(fig:que-examp), we show a question from the ANES 2020 questionnaire [@anes-svy]. This figure shows a particular question's question name (`postvote_rvote`), description (Did R Vote?), full wording of the question and responses, response order, universe, question logic (if `vote_pre` = 0), and other specifications. The section also includes the variable name, which we can link to the codebook.
 
 ```{r}
 #| label: que-examp
@@ -39,7 +61,7 @@ Below in Figure \@ref(fig:que-examp), we show a question from the ANES 2020 ques
 knitr::include_graphics(path="images/questionnaire-example.jpg")
 ```
 
-The content and structure of questionnaires vary depending on the specific survey. For instance, question names may be informative (like the ANES example), sequential, or denoted by a code.  In some cases, surveys may not use separate names for questions and variables. Here is a question from the Behavioral Risk Factor Surveillance System (BRFSS) questionnaire that shows a sequential question number and a coded variable name (as opposed to a question name):
+The content and structure of questionnaires vary depending on the specific survey. For instance, question names may be informative (like the ANES example), sequential, or denoted by a code.  In some cases, surveys may not use separate names for questions and variables. Figure \@ref(fig:que-examp-2) shows a question from the Behavioral Risk Factor Surveillance System (BRFSS) questionnaire that shows a sequential question number and a coded variable name (as opposed to a question name) [@brfss-svy].
 
 ```{r}
 #| label: que-examp-2
@@ -50,13 +72,13 @@ The content and structure of questionnaires vary depending on the specific surve
 knitr::include_graphics(path="images/questionnaire-example-2.jpg")
 ```
 
-Given the variety in documentation, it is essential to consider the specific survey when interpreting the information presented in a questionnaire.
+Given the variety in how the survey information is presented in documentation, it is essential to consider the specific survey when interpreting the information presented in a questionnaire.  For example, surveys that use different modes (e.g., web and mail) may have different question wording or skip logic as a web survey can include fills or automate skip logic.  Reviewing the questionnaire documentation for the specific survey is crucial in understanding how to interpret the data and findings.
 
 ### Codebooks
 
 While a questionnaire provides information about the questions asked to respondents, the codebook explains how the survey data was coded and recorded. The codebook lists details such as variable names, variable labels, variable meanings, codes for missing data, values labels, and value types (whether categorical or continuous, etc.). In particular, the codebook often includes information on missing data (as opposed to the questionnaire). The codebook enables us to understand and use the variables appropriately in our analysis.
 
-Below is a question from the ANES 2020 codebook. This part indicates a particular variable's name (`V202066`), question wording, value labels, universe, and associated survey question (`postvote_rvote`).
+Figure \@ref(fig:codebook-examp) is a question from the ANES 2020 codebook [@anes-cb]. This part indicates a particular variable's name (`V202066`), question wording, value labels, universe, and associated survey question (`postvote_rvote`).
 
 ```{r}
 #| label: codebook-examp
@@ -67,46 +89,39 @@ Below is a question from the ANES 2020 codebook. This part indicates a particula
 knitr::include_graphics(path="images/codebook-example.jpg")
 ```
 
-Reviewing both questionnaires and codebooks in parallel is important, as questions and variables are not one-to-one. A single question may have multiple associated variables, or a single variable may summarize multiple questions. Reviewing the codebook clarifies how to interpret the variables.
+Reviewing both questionnaires and codebooks in parallel is important (Figures \@ref(fig:que-examp) and \@ref(fig:codebook-examp), as questions and variables do not always correspond directly to each other in a one-to-one mapping. A single question may have multiple associated variables, or a single variable may summarize multiple questions. Reviewing the codebook clarifies how to interpret the variables. 
 
 ### Errata
 
 An erratum (singular) or errata (plural) is a document that lists errors found in a publication or dataset, such as a survey questionnaire. The purpose of an erratum is to correct or update mistakes or inaccuracies in the original document.
 
-For example, if a survey questionnaire contains an error, such as a typo or confusing wording, the researchers would release an erratum that provides a corrected version. Review these corrections before conducting any analysis to ensure the accuracy and reliability of the survey data and analysis.
+For example, if a survey questionnaire contains an error, such as a typo or confusing wording, the researchers would release an erratum that provides a corrected version. Another type of erratum is incorrectly programmed skips in an electronic survey where questions are skipped by the respondent when they should not have been. Review these errata before conducting any analysis to ensure the accuracy and reliability of the survey data and analysis.
 
 ### Additional resources
 
-Surveys may have additional resources, such as interviewer instructions or "show cards" held up to respondents to help them answer questions. Explore the survey website to find out what resources were used and in what contexts.
+Surveys may have additional resources, such as interviewer instructions or "show cards" provided to respondents during interviewer administed surveys to help respondents answer questions. Explore the survey website to find out what resources were used and in what contexts.
 
 ## Working with missing data
 
 Missing data in surveys refers to situations where participants do not provide complete responses to survey questions. Respondents may not have seen a question by design. Or, they may not respond to a question for various other reasons, such as not wanting to answer a particular question, not understanding the question, or simply forgetting to answer. 
 
-Missing data can be a significant problem in survey analysis, as it can introduce bias and reduce the representativeness of the data. There are several different types of missing data^[Mack C, Su Z, Westreich D. Managing Missing Data in Patient Registries: Addendum to Registries for Evaluating Patient Outcomes: A User’s Guide, Third Edition [Internet]. Rockville (MD): Agency for Healthcare Research and Quality (US); 2018 Feb. Types of Missing Data. Available from: https://www.ncbi.nlm.nih.gov/books/NBK493614/]:
+Missing data can be a significant problem in survey analysis, as it can introduce bias and reduce the representativeness of the data. Missing data typically falls into two main categories, either missing by design or unintentional missing mechanisms.
 
-1. Missing by design/questionnaire skip logic: This type of missingness occurs when certain respondents are intentionally directed to skip specific questions based on their previous responses or characteristics. For example, in a survey about employment, if a respondent indicates that they are not employed, they may be directed to skip questions related to their job responsibilities.
+1. **Missing by design/questionnaire skip logic**: This type of missingness occurs when certain respondents are intentionally directed to skip specific questions based on their previous responses or characteristics. For example, in a survey about employment, if a respondent indicates that they are not employed, they may be directed to skip questions related to their job responsibilities.
 
-2. Missing completely at random (MCAR): The missing data is unrelated to both observed and unobserved data, and the probability of being missing is the same across all cases. For example, if a respondent missed a question because they had to leave the survey early due to an emergency.
+2. **Unintentional missing data**: This type of missingness occurs when researchers did not intend for there to be missing data on a particular question.  For example, respondents did not finish the survey or refused to answer individual questions.  There are 3 main types of unintentional missing data that each should be considered and may need to be handled differently [@mack; @Schafer2002]:   
 
-3. Missing at random (MAR): The missing data is related to observed data but not unobserved data, and the probability of being missing is the same within groups. For example, if older respondents choose not to answer specific questions than younger respondents, and we ask about age in the demographic section.
+    a. **Missing completely at random (MCAR)**: The missing data is unrelated to both observed and unobserved data, and the probability of being missing is the same across all cases. For example, if a respondent missed a question because they had to leave the survey early due to an emergency.
 
-4. Missing not at random (MNAR): The missing data is related to unobserved data, and the probability of being missing varies for reasons we are not measuring. For example, if respondents with depression do not answer a question about depression severity.
+    b. **Missing at random (MAR)**: The missing data is related to observed data but not unobserved data, and the probability of being missing is the same within groups. For example, if older respondents choose not to answer specific questions but younger respondents do answer them, and know the respondent's age.
 
-The survey documentation, often the codebook, represents the missing data with a code. For example, a survey may have "Yes" responses coded to `1`, "No" responses coded to `2`, and missing responses coded to `-9`. Or, the codebook may list different codes depending on why certain data is missing. In the example of variable `V202066` from the ANES, `-9` represents "Refused," `-7` means that the response was deleted due to an incomplete interview, `-6` means that there is no response because there was no follow-up interview, and `-1` means "Inapplicable" (due to the designed skip pattern). See the codebook section for the variable below:
+    c. **Missing not at random (MNAR)**: The missing data is related to unobserved data, and the probability of being missing varies for reasons we are not measuring. For example, if respondents with depression do not answer a question about depression severity.
 
-```{r}
-#| label: codebook-examp-2
-#| echo: false
-#| fig.cap: ANES 2020 Codebook Example
-#| fig.alt: Variable information about the variable V202066 from ANES 2020 questionnaire Variable meaning, Value labels, Universe, and Survey Question(s) are included. 
+The survey documentation, often the codebook, represents the missing data with a code. For example, a survey may have "Yes" responses coded to `1`, "No" responses coded to `2`, and missing responses coded to `-9`. Or, the codebook may list different codes depending on why certain data is missing. In the example of variable `V202066` from the ANES (Figure \@ref(fig:codebook-examp)), `-9` represents "Refused," `-7` means that the response was deleted due to an incomplete interview, `-6` means that there is no response because there was no follow-up interview, and `-1` means "Inapplicable" (due to the designed skip pattern). 
 
-knitr::include_graphics(path="images/codebook-example.jpg")
-```
+When running analysis in R, we must handle missing responses as missing data (i.e., `NA`) and not numeric data. If missing responses are treated as zeros or arbitrary values, they can artificially alter summary statistics or introduce spurious patterns in the analysis. Recoding these values to `NA` will allow you to handle missing data in different ways in R, such as using functions like `na.omit()`, `complete.cases()`, or specialized packages like {tidyimpute} or {mice}. These tools allow us to treat missing responses as missing data to conduct your analysis accurately and obtain valid results.
 
-When running analysis in R, we must missing responses as missing data (i.e., `NA`) and not numeric data. If missing responses are treated as zeros or arbitrary values, they can artificially alter summary statistics or introduce spurious patterns in the analysis.
-
-There are various ways to handle missing data in R, such as using functions like `na.omit()`, `complete.cases()`, or specialized packages like `tidyimpute` or `mice.` These tools allow us to treat missing responses as missing data to conduct your analysis accurately and obtain valid results.
+Visualizing the missing data can also help to inform the types of missing data that are present.  The {naniar} package provides many valuable missing data visualizations, such as using `gg_miss_var()` to see the count or percent of missing data points by variable or `gg_miss_fct()` to see relationships in missing data across levels of a factor variable.  Investigating the relationships and nature of the missing data before running models can ensure that the missing data is accurately accounted for.
 
 ### Accounting for questionnaire skip patterns
 
@@ -114,44 +129,46 @@ Questionnaires may include skip patterns, in which specific questions are skippe
 
 Skip patterns are used in surveys to streamline the data collection process and avoid asking irrelevant questions to certain respondents. However, they also result in missing data, as respondents cannot respond to questions they were instructed to skip. Analyzing the data missing by design requires understanding the underlying reasons for the skip patterns. Our survey analysis must properly account for skip patterns to ensure unbiased and accurate population parameters.
 
-Dealing with missing data due to skip patterns requires careful consideration.  We can treat skipped questions as missing data. Or, we can run an analysis that accounts for the conditional dependence between the skipped and answered questions. The appropriate method depends on the nature and extent of the skip patterns, the research questions, and the methodology. For example, if we wanted to know what proportion of eligible voters voted for a particular candidate, the denominator would be all eligible voters, while if we wanted to know what proportion voted for a specific candidate among those who voted, the denominator would be those who voted. We include or exclude missing values depending on our question.
+Dealing with missing data due to skip patterns requires careful consideration.  We can treat skipped questions as missing data. Or, we can run an analysis that accounts for the conditional dependence between the skipped and answered questions. The appropriate method depends on the nature and extent of the skip patterns, the research questions, and the methodology. For example, if we wanted to know what proportion of eligible voters voted for a particular candidate, the denominator would be all eligible voters, while if we wanted to know what proportion voted for a specific candidate among those who voted, the denominator would be those who voted. We include or exclude missing values depending on our research question.
 
-### Accounting for MCAR, MAR, and MNAR missingness
+### Accounting for Missing Completely at Random (MCAR), Missing at Random (MAR), and Missing not at Random (MNAR) missingness 
 
-When dealing with missing data that is MCAR, MAR, or MNAR, we must consider the implications of how we handle these missing data and avoid introducing more sources of bias. For instance, we can analyze only the respondents who answered all questions by performing listwise deletion, which drops all rows from a data frame with a missing value in any column. We can use the function `tidyr::drop_na()` for listwise deletion. In the example below, only the first row will remain:
+When dealing with missing data that is MCAR, MAR, or MNAR, we must consider the implications of how we handle these missing data and avoid introducing more sources of bias. For instance, we can analyze only the respondents who answered all questions by performing listwise deletion, which drops all rows from a data frame with a missing value in any column. We can use the function `tidyr::drop_na()` for listwise deletion. For example, let's say we have a dataset `dat` that has one complete case and 2 cases with some missing data.
 
 ```{r}
-#| label: drop-na-example
+#| label: drop-na-example1
 dat <- tibble::tribble(~ col1, ~ col2, ~ col3,
                        "a",    "d",   "e",
                        "b",    NA,    NA,
                        "c",    NA,    "f")
 
+dat
+```
+
+If we use the `tidyr::drop_na()` funtion, only the first case will remain as the other two cases have at least one missing value.
+```{r}
+#| label: drop-na-example2
 dat %>%
   tidyr::drop_na()
 ```
 
-Suppose our data is not missing completely at random (MCAR). In that case, listwise deletion may produce biased estimates if there is a pattern of respondents who do not respond to specific questions. In these circumstances, we should explore other options, such as multiple imputation or weighted estimation. However, imputation is not always appropriate and can introduce its own sources of bias. See Allison (2002) for more detail.
+If the data is not missing completely at random (MCAR), then listwise deletion may produce biased estimates if there is a pattern of respondents who do not respond to specific questions. In these circumstances, we should explore other options, such as multiple imputation or weighted estimation. However, imputation is not always appropriate and can introduce its own sources of bias. See @allison for more detail.
 
 In summary, we need to deeply understand the types and reasons for missing data in our survey before running any analysis. The survey documentation is an important resource for understanding how to deal with missing data. Carefully review the documentation for guidance from the researchers.
 
-## Example: American National Election Studies (ANES) 2020 survey documentation
+## Example: American National Election Studies (ANES) 2020 survey documentation 
 
-Let's look at the survey documentation for the American National Election Studies (ANES) 2020. The survey website is located at [https://electionstudies.org/data-center/2020-time-series-study/](https://electionstudies.org/data-center/2020-time-series-study/). 
+Let's look at the survey documentation for the American National Election Studies (ANES) 2020. The survey website is located at [https://electionstudies.org/data-center/2020-time-series-study/](https://electionstudies.org/data-center/2020-time-series-study/).  
 
-Navigating to "User Guide and Codebook," we can download the PDF that contains the survey documentation, titled "ANES 2020 Time Series Study Full Release: User Guide and Codebook". Don't be daunted by the 796-page PDF. We can focus on the most critical information.
+Navigating to "User Guide and Codebook," [@anes-cb] we can download the PDF that contains the survey documentation, titled "ANES 2020 Time Series Study Full Release: User Guide and Codebook". Do not be daunted by the 796-page PDF. We can focus on the most critical information.
 
 #### Introduction {-}
 
-The first section in the User Guide explains that the ANES 2020 Times Series Study continues a series of election surveys conducted since 1948. These surveys contain data on public opinion and voting behavior in the U.S. presidential elections. It states that interviewers used one of three modes (web, video, or telephone). The introduction then summarizes the number of pre-election interviews (8,280) and post-election re-interviews (7,449).
+The first section in the User Guide explains that the ANES 2020 Times Series Study continues a series of election surveys conducted since 1948. These surveys contain data on public opinion and voting behavior in the U.S. presidential elections. The introduction also includes information about the modes used for data collection (web, live video interviewing, or CATI). Additionally, there is a summary of the number of pre-election interviews (8,280) and post-election re-interviews (7,449).
 
 #### Sample Design and Respondent Recruitment {-}
 
-The section "Sample Design and Respondent Recruitment" describes how the survey was conducted: 
-
-> ...a contactless, mixed-mode design.... a sequential mixed-mode design was implemented that included self-administered online surveys, live video interviews conducted online, and telephone interviews.
-
-In addition to respondents who participated in 2016 ANES, the 2020 survey included a freshly-drawn cross-section:
+The section "Sample Design and Respondent Recruitment" provides more detail about how the survey was conducted in that it was a sequential mixed-mode design.  This means that all 3 modes were conducted one after another and not at the same time.  Additionally, it indicates that for the 2020 survey they resampled all respondents who participated in 2016 ANES, along with a freshly-drawn cross-section:
 
 > The target population for the fresh cross-section was the 231 million non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or the District of Columbia.
 
@@ -166,17 +183,15 @@ The section "Data Analysis, Weights, and Variance Estimation" includes informati
 The document provides more information about the variables, summarized below:
 
 For weight | Use variance unit/PSU/cluster | and use variance stratum
------------|-------------------------------|-------------------------
+:-----------:|:-----------:|:-----------:
 V200010a| V200010c| V200010d
 V200010b| V200010c| V200010d
 
-As mentioned above, we want to conduct ANES data analysis with weights to accurately represent the population. The user guide references a supplemental document called "How to Analyze ANES Survey Data"^[DeBell, Matthew. 2010. How to Analyze ANES Survey Data. ANES Technical Report Series no. nes012492. Palo Alto, CA, and Ann Arbor, MI: Stanford University and the University of Michigan] as a 'how-to guide' to help us with our analysis.
-
-Recall the "Sample Design and Respondent Recruitment" section:
+The user guide references a supplemental document called "How to Analyze ANES Survey Data" [@debell] as a 'how-to guide' to help us with our analysis. In the how to guide, we learn more about the weights including that the weights sum to the sample size and not the population. If we want to create estimates at the population level instead of the sample level, we will need to adjust the weights to the population.  Let's recall the "Sample Design and Respondent Recruitment" section:
 
 > The target population for the fresh cross-section was the 231 million non-institutional U.S. citizens aged 18 or older living in the 50 US states or the District of Columbia.
 
-We will use Current Population Survey (CPS) to find a number of the non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. The {censusapi} package allows us to run a reproducible analysis of this data.
+To weight to the population, we need to determine the total population size when the survey was conducted. We will use Current Population Survey (CPS) to find a number of the non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. in November of 2020. The {censusapi} package allows us to run a reproducible analysis of this data.
 
 ```{r}
 #| label: understand-get-cps
@@ -188,7 +203,7 @@ cps_state_in <- getCensus(
   name = "cps/basic/nov",
   vintage = 2020,
   region = "state",
-  vars = c("HRHHID", "HRMONTH", "HRYEAR4", "PRTAGE", "PRCITSHP", "PWSSWGT"),
+  vars = c("HRHHID", "HRMONTH", "HRYEAR4", "PRTAGE", "PRCITSHP", "PWSSWGT"), 
   key = Sys.getenv("CENSUS_KEY")
 )
 
@@ -197,43 +212,47 @@ cps_state <- cps_state_in %>%
   mutate(across(.cols = everything(),
                 .fns = as.numeric))
 
-# Confirm this doesn't include territories
+```
+
+Once we've pulled the data, we want to ensure that the data only includes the 50 U.S. states and D.C. to match the desigred population.
+```{r}
+#| label: understand-cps-state
 cps_state %>%
   count(state)
 ```
 
+Next, we confirm that all the data is from November (`HRMONTH == 11`) of 2020 (`HRYEAR4 == 2020`).
 ```{r}
-# Confirm this is only November 2020
+#| label: understand-cps-date
 cps_state %>%
   count(HRMONTH, HRYEAR4)
 ```
 
+We then filter to only those who are 18 years or older (`PRTAGE >= 18`) and have U.S. citizenship (`PRCITSHIP %in% (1:4)`).
 ```{r}
-# Voting age citizen population
+#| label: understand-cps-targetpop
 targetpop <- cps_state %>%
   as_tibble() %>%
   filter(PRTAGE >= 18,
-         PRCITSHP %in% (1:4)) %>%
+         PRCITSHP %in% (1:4)) %>% 
   pull(PWSSWGT) %>%
   sum()
 
 targetpop
 ```
 
-The target population in 2020 is `r scales::comma(targetpop)`. This information gives us what we need to create the post-election survey object with {srvyr}.
+The target population in 2020 is `r scales::comma(targetpop)`. This information gives us what we need to create the post-election survey object with {srvyr}. Using the raw ANES data we pulled in at the beginning of this chapter we will adjust the weighting variable (`V200010b`) using the target population we just calculated (`targetpop`).
 
 ```{r}
 #| label: understand-read-anes
-#| cache: TRUE
-library(osfr)
-source("helper-fun/helper-functions.R")
-
-anes_in <- read_osf("anes_2020.rds") %>%
-  mutate(Weight = V200010b / sum(V200010b) * targetpop)
+anes_popweights <- anes_in %>%
+  mutate(Weight = V200010b / sum(V200010b) * targetpop) 
 ```
 
+Once we have the weights adjusted to the population, we can then create the survey design using our new weight variable in the `weights` argument and use the strata and cluster variables identified in the users manual.
 ```{r}
-anes_des <- anes_in %>%
+#| label: understand-anes-des
+anes_des <- anes_popweights %>%
   as_survey_design(
     weights = Weight,
     strata = V200010d,
@@ -244,20 +263,12 @@ anes_des <- anes_in %>%
 summary(anes_des)
 ```
 
-The next section of the survey documentation is the codebook. As mentioned above, the codebook provides information about the variables in a survey dataset. We can use it to select the variables for our analysis later on.
+Now that we have the survey design object, we can continue to reference the ANES documentation including the questionnaire and the codebook as we select variables for analysis and gain insights into the findings.
 
-## Searching for public-use survey data
-<!--I feel like I put this in here after one of our meetings, don't 100% remember, let me know if it's not worth adding-->
-A common question for aspiring survey analysts is, "What are some examples of public-use survey data?". When writing this book, we asked ourselves this question to find relevant, engaging, and high-quality examples for our readers.
+## Searching for public-use survey data 
+Throughout this book we use different public-use datasets from surveys.  Above, we provided an example from the American National Election Survey (ANES) and we will continue to use this dataset throughout the book.  Additionally, we use the Residential Energy Consumption Survey (RECS), the National Crime Victimization Survey (NCVS), and the AmericasBarometer surveys.  
 
-We considered whether a survey had continuous and discrete data, how difficult it was to analyze, and how recently the survey collection happened. We also investigated the accessibility and licensing agreements of the data. Finally, we wanted to expand our examples beyond North American surveys.
+As we mentioned in Chapter \@ref(c02-overview-surveys), instead of creating a new survey researchers should look for existing data that can provide insights into their research questions. One of the greatest sources of data is the government. For example, in the U.S., you can get data directly from the various statistical agencies as we have with RECS and NCVS.  Other countries often have data available through their official statistics offices such as the Office for National Statistics in the U.K. 
 
-Here are a few public-use survey resources that we recommend:
+In addition to government data, many researchers will make their data publicly available through repositories such as the [Inter-university Consortium for Political and Social Research (ICPSR) variable search](https://www.icpsr.umich.edu/web/pages/ICPSR/ssvd/) or the [Odum Institute Data Archive](https://odum.unc.edu/archive/). Searching these repositories or other compiled lists (e.g., [Analyze Survey Data for Free - asdfree.com](https://asdfree.com) can be efficient ways to identify surveys with questions related to the researcher's topic of interest.  
 
-* Analyze Survey Data for Free - [asdfree.com](https://asdfree.com)
-* Residential Energy Consumption Survey (RECS) - [https://www.eia.gov/consumption/residential/](https://www.eia.gov/consumption/residential/)
-* The National Crime Victimization Survey (NCVS) - [https://bjs.ojp.gov/data-collection/ncvs](https://bjs.ojp.gov/data-collection/ncvs)
-* Afrobarometer - [https://www.afrobarometer.org/](https://www.afrobarometer.org/)
-* Latin American Public Opinion Project Research Institute - [https://www.vanderbilt.edu/lapop/](https://www.vanderbilt.edu/lapop/)
-
-<!--TODO: citations-->
