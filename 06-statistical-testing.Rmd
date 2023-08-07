@@ -1,6 +1,54 @@
 # Statistical testing {#c06-statistical-testing}
 
-<!-- author review -->
+::: {.prereqbox-header}
+`r if (knitr:::is_html_output()) '### Prerequisites {- #prereq}'`
+:::
+
+::: {.prereqbox data-latex="{Prerequisites}"}
+For this chapter, here are the libraries and helper functions we will need:
+```{r}
+#| label: stattest-setup
+#| error: FALSE
+#| warning: FALSE
+#| message: FALSE
+library(tidyverse)
+library(survey) 
+library(srvyr) 
+library(broom)
+library(gt)
+library(osfr)
+source("helper-fun/helper-functions.R")
+```
+
+We will be using data from ANES and RECS. Here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-understanding-survey-data-documentation) for more information).
+```{r}
+#| label: stattest-anes-des
+#| eval: FALSE
+anes_in <- read_osf("anes_2020.rds") %>%
+  mutate(Weight = Weight / sum(Weight) * targetpop)
+anes_des <- anes_in %>%
+  as_survey_design(
+    weights = Weight,
+    strata = Stratum,
+    ids = VarUnit,
+    nest = TRUE)
+```
+
+For RECS, details are included in the RECS documentation and Chapter \@ref(c03-specifying-sample-designs).
+```{r}
+#| label: stattest-recs-des
+#| eval: FALSE
+recs_in <-read_osf("recs_2015.rds")
+recs_des <- recs_in %>%
+  as_survey_rep(weights = NWEIGHT,
+                repweights = starts_with("BRRWT"),
+                type = "Fay",
+                rho = 0.5,
+                mse = TRUE)
+```
+:::
+
+## Introduction
 
 When analyzing results from a survey, the point estimates described in Chapter \@ref(c05-descriptive-analysis) help us understand the data at a high level. Still, researchers and the public often want to make comparisons between different groups. These comparisons are calculated through statistical testing. 
 
@@ -39,60 +87,6 @@ Alternatively, named arguments could be used to place the dot first, as in the f
 ```r
 svydata_des %>%
  svyttest(design = ., x ~ y)
-```
-
-## Chapter Set-Up {#stattest-setup}
-
-For this chapter, we use the same RECS data as in Chapter \@ref(c05-descriptive-analysis) along with the ANES survey data introduced in Chapter \@ref(c04-understanding-survey-data-documentation). As a reminder, we need to create survey design objects to work with. These design objects ensure that the variance estimation is calculated accurately; thus, we can accurately determine statistical significance.
-
-First, make sure to install and load the following packages:
-
-```{r stattest-pkgs}
-#| error: FALSE
-#| warning: FALSE
-#| message: FALSE
-
-library(tidyverse)
-library(survey)
-library(srvyr)
-library(readr)
-library(gt)
-library(osfr)
-source("helper-fun/helper-functions.R")
-```
-
-Second, we need to read in the data and create the design objects.
-
-Here is how to create the design object for the ANES data. As we showed in Chapter \@ref(c04-understanding-survey-data-documentation), we need to adjust the weight so it sums to the population instead of the sample. We do that by multiplying the weights by the target population count (see the ANES methodology documentation for more information).
-
-```{r stattest-anesdes}
-#| eval: FALSE
-anes_in <- read_osf("anes_2020.rds") %>%
- mutate(Weight = Weight / sum(Weight) * targetpop)
-
-anes_des <- anes_in %>%
-  as_survey_design(
-    weights = Weight,
-    strata = Stratum,
-    ids = VarUnit,
-    nest = TRUE
-  )
-```
-
-Here is how to create the design object for the RECS data:
-
-```{r stattest-recsdes}
-#| eval: FALSE
-recs_in <- read_osf("recs_2015.rds")
-
-recs_des <- recs_in %>%
-  as_survey_rep(
-    weights = NWEIGHT,
-    repweights = starts_with("BRRWT"),
-    type = "Fay",
-    rho = 0.5,
-    mse = TRUE
-  )
 ```
 
 ## Comparison of Proportions and Means {#stattest-ttest}
@@ -145,7 +139,9 @@ In R, `I()` is a special function that isolates its content from R's parsing cod
 
 Additionally, the `na.rm` argument defaults to `FALSE`, which means if any data is missing, the t-test will not compute. Throughout this chapter we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c04-understanding-survey-data-documentation) to better understand how to handle missing data. Finally, the `level` argument is $1-\alpha$, or the amount of type 1 error. The default is $0.95$.
 
-Let's walk through a few examples using the ANES and RECS data. See Section \@ref(stattest-setup) above to set up the design objects.
+Let's walk through a few examples using the ANES and RECS data.
+
+### Examples {#stattest-ttest-examples}
 
 #### Example 1: One-sample t-test {.unnumbered #stattest-ttest-ex1}  
 
@@ -347,7 +343,7 @@ Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()`
 
 ### Examples {#stattest-chi-examples}
 
-Let's walk through a few examples using the ANES data. See Section \@ref(stattest-setup) above to set up the design object.
+Let's walk through a few examples using the ANES data.
 
 #### Example 1: Goodness of Fit Test {.unnumbered #stattest-chi-ex1}
 

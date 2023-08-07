@@ -1,5 +1,45 @@
 # Communicating Results {#c08-communicating-results}
 
+::: {.prereqbox-header}
+`r if (knitr:::is_html_output()) '### Prerequisites {- #prereq}'`
+:::
+
+::: {.prereqbox data-latex="{Prerequisites}"}
+For this chapter, here are the libraries and helper functions we will need:
+```{r}
+#| label: results-setup
+#| error: FALSE
+#| warning: FALSE
+#| message: FALSE
+library(tidyverse)
+library(survey) 
+library(srvyr) 
+library(broom)
+library(gt)
+library(gtsummary)
+library(BrailleR)
+library(osfr)
+source("helper-fun/helper-functions.R")
+```
+
+We will be using data from ANES. Here is the code to create the ANES design object that will be used throughout the chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-understanding-survey-data-documentation) for more information).
+```{r}
+#| label: results-anes-des
+#| eval: FALSE
+anes_in <- read_osf("anes_2020.rds") %>%
+  mutate(Weight = Weight / sum(Weight) * targetpop)
+
+anes_des <- anes_in %>%
+  as_survey_design(
+    weights = Weight,
+    strata = Stratum,
+    ids = VarUnit,
+    nest = TRUE)
+```
+:::
+
+## Introduction
+
 One of the most important aspects of data analysis is communicating the results to others. This could include other researchers familiar with our survey data or others who will be seeing this data and results for the first time. Ensuring that we are accurately discussing the methodology, analysis, and displaying results is crucial to making sure our audience comprehends what the results are saying. It is our responsibility to discuss and present the results carefully.
 
 Before beginning any dissemination of results, it is important to understand the audience. Some questions we might consider about our audience include:
@@ -79,7 +119,6 @@ Looking at the output from `trust_gov`, there are a couple of items that are pro
 
 ```{r}
 #| label: results-table-gt1
-library(gt)
 trust_gov_gt <- 
   trust_gov %>%
   gt(rowname_col = "TrustGovernment") %>%
@@ -134,8 +173,6 @@ In the following example, we will build up a table using {gtsummary} which will 
 
 ```{r}
 #| label: results-gts-ex-1
-library(gtsummary)
-
 anes_des %>%
   tbl_svysummary(
     include=TrustGovernment,
@@ -210,7 +247,6 @@ The {gtsummary} also allows calculating statistics by different groups  easily. 
 ```{r}
 #| label: results-gts-ex-5
 #| messages: FALSE
-
 anes_des %>%
   tbl_svysummary(
     include=TrustGovernment,
@@ -267,9 +303,6 @@ Now, we can begin creating our chart with {ggplot2}. First, we set up our plot w
 #| label: results-plot1
 #| fig.cap: "Bar chart of trust in government by chosen 2020 presidential candidate"
 #| fig.alt: !expr str_c(BrailleR::VI(p)$text, collapse=" ")
-library(ggplot2)
-library(BrailleR)
-
 p <- anes_des_der %>%
   ggplot(aes(x = VotedPres2020_selection,
              y = pct_trust)) +
