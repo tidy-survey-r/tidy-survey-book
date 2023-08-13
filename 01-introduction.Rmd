@@ -22,7 +22,7 @@ In 2003, the {survey} package was released on CRAN and has been continuously dev
 - Variances by Taylor linearization or by replicate weights (BRR, jackknife, bootstrap, multistage bootstrap, or user-supplied)
 - Hypothesis testing for means, proportions, and more
 
-The {srvyr} package in R builds on the {survey} package. It provides wrappers for functions that align with the tidyverse philosophy, which is our motivation for using and recommending this package. We believe it is easy to use for R users who already use {tidyverse} packages. For example, variables to many functions in the {survey} package are passed as formulas, but in the {srvyr} package, variable names are passed using tidy select^[https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] (a common feature in the tidyverse). Users of the tidyverse are most likely familiar with the magittr pipe (`%>%`) which will seemlessly work with functions from the {srvyr} package. Additionally, several common functions from {dplyr} can be applied to survey objects including `filter()`, `mutate()`, and `summarize()`. 
+The {srvyr} package in R builds on the {survey} package. It provides wrappers for functions that align with the tidyverse philosophy, which is our motivation for using and recommending this package. We believe the {srvyr} package is easy to learn for R users who already use {tidyverse} packages. For example, variables to many functions in the {survey} package are passed as formulas, but in the {srvyr} package, variable names are passed using tidy select^[https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] (a common feature in the tidyverse). Users of the tidyverse are most likely familiar with the magittr pipe (`%>%`) which will seamlessly work with functions from the {srvyr} package. Additionally, several common functions from {dplyr} can be applied to survey objects including `filter()`, `mutate()`, and `summarize()`. 
 
 There is one limitation to the {srvyr} package, the modeling functionality of the {survey} package is not ported over to tidy versions in the {srvyr} package. This book will use the {survey} package when discussing modeling and hypothesis testing, however, we will provide information on how to still pipe together the functions to make analyses that are easy to follow.  This book will cover all aspects of survey research, from understanding how to create the design effects, to conducing descriptive analysis, statistical testing, and modeling.  Additionally, we include best practices in coding and how to present results. Throughout this book we use real data and provide realistic examples to help you gain proficiency in survey analysis. While we do provide a brief overview of survey methodology and statistical theory, this book is not intended to be a sole resource for these topics.  We provide other references throughout the book and encourage readers who are interested to seek those out for more information. Here is an overview of each chapter:
 
@@ -50,10 +50,18 @@ library(survey)
 library(srvyr)
 library(osfr)
 source("helper-fun/helper-functions.R")
+```
 
+```{r}
+#| label: intro-setup-readin
+#| error: FALSE
+#| warning: FALSE
+#| message: FALSE
+#| cache: TRUE
 recs_in <- read_osf("recs_2015.rds")
 anes_in <- read_osf("anes_2020.rds")
 ```
+
 
 RECS is a household study of energy consumption in the U.S. which provides energy consumption and expenditures data. RECS funded by Energy Information Administration and collects information through energy suppliers through in-person, phone, and web interviews. It has been fielded 14 times between 1950 and 2020 and includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.  Here is an overview of the data we just read in `recs_in`:
 
@@ -62,13 +70,14 @@ RECS is a household study of energy consumption in the U.S. which provides energ
 recs_in
 ```
 
-From this ouput we can see that there are 5,686 rows and 141 variables.  We can see that there are variables containing an ID (`DOEID`), regional information (e.g., `Region`, `MSAStatus`), along with information about the house including the type of house (`HousingUnitType`) and when the house was built (`YearMade`). Additionally, there are a long list of weighting variables that will be used in the analysis (e.g., `NWEIGHT`, `BRRWT1`).  We will discuss how to use these weighting variables in chapter \@ref(c03-specifying-sample-designs).
+From this output we can see that there are `r nrow(recs_in) %>% formatC(big.mark = ",")` rows and `r ncol(recs_in) %>% formatC(big.mark = ",")` variables.  We can see that there are variables containing an ID (`DOEID`), regional information (e.g., `Region`, `MSAStatus`), along with information about the house including the type of house (`HousingUnitType`) and when the house was built (`YearMade`). Additionally, there are a long list of weighting variables that will be used in the analysis (e.g., `NWEIGHT`, `BRRWT1`).  We will discuss how to use these weighting variables in Chapter \@ref(c03-specifying-sample-designs).
 
-The ANES is a times series study that has been collecting data from election surveys since 1948. These surveys contain data on public opinion and voting behavior in U.S. presidential elections. The 2020 survey (the data we will be using) was fielded in three modes (web, live video interviewing, or CATI) and asks respondents questions such as what their party affiliation is, who they voted for in the election, and their level of trust with the government. Here is an overview of the data we just read in `anes_in`:
+The ANES is a times series study that has been collecting data from election surveys since 1948. These surveys contain data on public opinion and voting behavior in U.S. presidential elections. The 2020 survey (the data we will be using) was fielded in three modes (web, live video interviewing, or CATI) and asks respondents questions such as what their party affiliation is, who they voted for in the election, and their level of trust with the government. Here is an overview of the data we just read in `anes_in`, first showing the variables starting with "V" and a number which are the raw variables and then the remaining variables which we constructed:
 
 ```{r}
 #| label: intro-anes
-anes_in
+anes_in %>% select(matches("^V\\d"))
+anes_in %>% select(-matches("^V\\d"))
 ```
 
-From this ouput we can see that there are 7,543 rows and 42 variables.  Most of the variables start with V20, so referencing the documentation for survey will be crucial (see Chapter \@ref(c04-understanding-survey-data-documentation)).  We have created some more descriptive variables for you to use throughout this book such as the age (`Age`) and gender (`Gender`) of the respondent, along with variables that represent their party affiliation (`PartyID`). Additionally, there is a variable called `Weight` and a variable called `Stratum` that will be needed to accurately analyize this data.  We will discuss how to use these weighting variables in Chapters \@ref(c03-specifying-sample-designs) and \@ref(c04-understanding-survey-data-documentation).
+From this output we can see that there are `r nrow(anes_in) %>% formatC(big.mark = ",")` rows and `r ncol(anes_in) %>% formatC(big.mark = ",")` variables.  Most of the variables start with V20, so referencing the documentation for survey will be crucial (see Chapter \@ref(c04-understanding-survey-data-documentation)).  We have created some more descriptive variables for you to use throughout this book such as the age (`Age`) and gender (`Gender`) of the respondent, along with variables that represent their party affiliation (`PartyID`). Additionally, there is a variable called `Weight` and a variable called `Stratum` that will be needed to accurately analyze this data.  We will discuss how to use these weighting variables in Chapters \@ref(c03-specifying-sample-designs) and \@ref(c04-understanding-survey-data-documentation).
