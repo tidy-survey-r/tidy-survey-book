@@ -14,9 +14,9 @@ For this chapter, here are the libraries and helper functions we will need:
 library(tidyverse)
 library(survey) 
 library(srvyr) 
-library(broom)
 library(osfr)
 source("helper-fun/helper-functions.R")
+library(broom)
 ```
 
 We will be using data from ANES and RECS. Here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-understanding-survey-data-documentation) for more information).
@@ -59,7 +59,7 @@ When modeling data, it is helpful to first create an equation that provides an o
 
 $$y_i=\beta_0 +\sum_{i=1}^p \beta_i x_i + \epsilon_i$$
 
-where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_n$ are the predictors with $\beta_1, \cdots, \beta_p$ as the associated coefficients, and $\epsilon_i$ is the error.  Different models may not include an intercept, have interactions between different independent variables ($x_i$), or may have different underlying structures for the dependent variable ($y_i$).  However, all linear models have the independent variables related to the dependent variable in a linear form.
+where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_p$ are the predictors with $\beta_1, \cdots, \beta_p$ as the associated coefficients, and $\epsilon_i$ is the error.  Different models may not include an intercept, have interactions between different independent variables ($x_i$), or may have different underlying structures for the dependent variable ($y_i$).  However, all linear models have the independent variables related to the dependent variable in a linear form.
 
 To specify these models in R, the formulas are the same with both raw data and survey data. The left side of the formula is the response/dependent variable, and the right side of the formula has the predictor/independent variable(s). There are many symbols used in R to specify the formula.
 
@@ -68,7 +68,7 @@ For example, a linear formula mathematically specified as
 $$Y_i=\beta_0+\beta_1 X_i+\epsilon_i$$ would be specified in R as `y~x` where the intercept is not explicitly included. To fit a model with no intercept, that is,
 
 $$Y_i=\beta_1 X_i+\epsilon_i$$
-it can be specified as `y~x-1`. Formula notation details in R can be found in the help file for formula^[Use `help(formula)` in R or find the documentation online at <https://stat.ethz.ch/R-manual/R-devel/library/stats/html/formula.html>]. A quick overview of the common formula notation is in the following table:
+it can be specified as `y~x-1`. Formula notation details in R can be found in the help file for formula^[Use `help(formula)` or `?formula` in R or find the documentation online at <https://stat.ethz.ch/R-manual/R-devel/library/stats/html/formula.html>]. A quick overview of the common formula notation is in the following table:
 
 Table: Common symbols in formula notation
 
@@ -78,7 +78,7 @@ Table: Common symbols in formula notation
 |   \-   |    `-X`     | delete this variable                                                     |
 |   :    |    `X:Z`    | include the interaction between these variables                          |
 |   \*   |    `X*Z`    | include these variables and the interactions between them                |
-|  \^n   | `(X+Z+Y)^3` | include these variables and all interactions up to n way                 |
+|  `^n`  | `(X+Z+Y)^3` | include these variables and all interactions up to n-way                 |
 |   I    |  `I(X-Z)`   | as-as: include a new variable which is the difference of these variables |
 
 There are often multiple ways to specify the same formula. For example, consider the following equation using the mtcars data
@@ -125,7 +125,7 @@ des_obj %>%
   )
 ```
 
-where `des_obj` is a design object, `outcomevar` is the outcome variable, `groupvar` is the group variable, and `na.action=na.omit` is set so that records with missing data in the outcome or group variable are removed for prediction^[See `help(na.omit)` for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c04-understanding-survey-data-documentation).]. The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details).
+where `des_obj` is a design object, `outcomevar` is the outcome variable, `groupvar` is the group variable, and `na.action=na.omit` is set so that records with missing data in the outcome or group variable are removed for prediction^[See `help(na.omit)` or `?na.omit` for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c04-understanding-survey-data-documentation).]. The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details).
 
 ### Example
 
@@ -157,7 +157,7 @@ tidy(anova_out)
 
 In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In this output, the intercept represents the reference value of the Northeast region^[To change the reference level, reorder the factor before modeling using the function `relevel()` from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`]. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, `r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(estimate) %>% signif(3)` degrees higher than in the Northeast during summer nights.
 
-## Gaussian Linear regression
+## Gaussian Linear Regression
 
 Gaussian linear regression is a more generalized method than ANOVA where we fit a model of a continuous outcome with any number of categorical or continuous predictors, such that
 
@@ -173,7 +173,7 @@ Assumptions in Gaussian linear regression using survey data include:
 
 ### Syntax
 
-The syntax for linear regression uses the same function as ANOVA, but can have more than one variable listed on the right-hand side of the formula:
+The syntax for this regression uses the same function as ANOVA, but can have more than one variable listed on the right-hand side of the formula:
 
 ``` r
 des_obj %>%
@@ -189,7 +189,8 @@ As discussed at the beginning of the chapter, the formula on the right-hand side
 
 ### Example
 
-On RECS, we can obtain information on the square footage of homes and the electric bills. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to determine whether it is reasonable to assume a linear relationship. In the plot below, each hexagon represents the weighted count of households in the bin and we can see a general positive linear trend (as the square footage increases so does the amount of money spent on electricity).
+#### Example 1: Linear Regression with Single Variable {.unnumbered}
+On RECS, we can obtain information on the square footage of homes and the electric bills. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to determine whether it is reasonable to assume a linear relationship. In Figure \@ref(fig:model-plot-sf-elbill), each hexagon represents the weighted count of households in the bin and we can see a general positive linear trend (as the square footage increases so does the amount of money spent on electricity).
 
 ```{r}
 #| label: model-plot-sf-elbill
@@ -226,8 +227,11 @@ m_electric_sqft <- recs_des %>%
 tidy(m_electric_sqft)
 ```
 
-In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% signif(3))*100` cents and that square footage is significantly associated with electricity expenditure. This is a very simple model, and there are likely many more factors in electricity expenditure, including the type of cooling, number of appliances, location, and more. However, often starting with one variable models can help researchers understand what potential relationships there are between variables before fitting more complex models.  Often researchers start with known relationships before building models to determine what impact additional variables have on the model.
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% signif(3))*100` cents and that square footage is significantly associated with electricity expenditure. 
 
+This is a very simple model, and there are likely many more factors in electricity expenditure, including the type of cooling, number of appliances, location, and more. However, often starting with one variable models can help researchers understand what potential relationships there are between variables before fitting more complex models.  Often researchers start with known relationships before building models to determine what impact additional variables have on the model.
+
+#### Example 2: Linear Regression with Additional Variables and Interactions {.unnumbered}
 In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning is used (logical/categorical) with all two-way interactions also included.  As a reminder, using `-1` means that we are fitting this model without an intercept.
 
 ```{r}
@@ -251,12 +255,13 @@ urb_reg_test <- regTermTest(m_electric_multi, ~Urbanicity:Region)
 urb_reg_test
 ```
 
-As demonstrated above, there is a significant interaction between urbanicity and region (p-value=`r signif(urb_reg_test$p, 3)`).
+This output indicates there is a significant interaction between urbanicity and region (p-value=`r signif(urb_reg_test$p, 3)`).
 
 To examine the predictions, residuals and more from the model, the function `augment()` from {broom} can be used. The `augment()` function will return a tibble with the independent and dependent variables and other fit statistics. The `augment()` function has not been specifically written for objects of class `svyglm`, and as such, a warning will be displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using augment to get the predicted (`.fitted`) and standard error (`.se.fit`) values. To obtain the standard error of the fitted values we need to use the `attr()` function on the `.fitted` values created by `augment()`. 
 
 ```{r}
 #| label: model-aug-examp-se
+#| warning: false
 fitstats <-
   augment(m_electric_multi) %>%
   mutate(.se.fit = sqrt(attr(.fitted, "var")), 
@@ -265,7 +270,7 @@ fitstats <-
 fitstats
 ```
 
-These results can then be used in a variety of ways, including examining residual plots as illustrated below:
+These results can then be used in a variety of ways, including examining residual plots as illustrated in the code below and Figure \@ref(fig:model-aug-examp-plot).
 
 ```{r}
 #| label: model-aug-examp-plot
@@ -279,7 +284,7 @@ fitstats %>%
   ylab("Residual of model")
 ```
 
-Additionally, `augment()` can be used to predict outcomes for data not used in modeling. Perhaps, we would like to predict the energy expenditure for a home in an urban area in the south that uses air-conditioning and is 2,500 square feet. First, make a tibble including that additional data and then use the `newdata` argument in the augment function.  As before, to obtain the standard error of the predicted values we need to use the `attr()` function.
+Additionally, `augment()` can be used to predict outcomes for data not used in modeling. Perhaps, we would like to predict the energy expenditure for a home in an urban area in the south that uses air-conditioning and is 2,500 square feet. To do this, we first make a tibble including that additional data and then use the `newdata` argument in the `augment()` function.  As before, to obtain the standard error of the predicted values we need to use the `attr()` function.
 
 ```{r}
 #| label: model-predict-new-dat
@@ -311,9 +316,9 @@ pred_data
 
 In the above example, it is predicted that the energy expenditure would be \$`r pred_data %>% slice_tail(n=1) %>% pull(.fitted) %>% round(2)`.
 
-## Logistic regression
+## Logistic Regression
 
-Logistic regression is used to model a binary outcome and is a specific generalized linear model (GLM). A GLM uses a link function to link the response variable to the linear model. In logistic regression, the link model is the logit function. Specifically, the model is specified as follows:
+Logistic regression is used to model a binary outcome and is a specific case of the generalized linear model (GLM). A GLM uses a link function to link the response variable to the linear model. In logistic regression, the link model is the logit function. Specifically, the model is specified as follows:
 
 $$ y_i \sim \text{Bernoulli}(\pi_i)$$
 
@@ -344,23 +349,24 @@ des_obj %>%
     outcomevar ~ x1 + x2 + x3,
     na.action = na.omit,
     df.resid = degf(.),
-    family = quasibinomial  #use this to avoid warning about non-integers
+    family = quasibinomial
   )
 ```
 
 Note `svyglm()` is the same function used in both ANOVA and linear regression. However, we've added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of two ways with survey data:
 
-  - A factor variable where not being the first level of the factor indicates a "success"
+  - A two level factor variable where the first level of the factor indicates a "failure" and the second level indicates a "success"
   - A numeric variable which is 1 or 0 where 1 indicates a success
   - A logical variable where TRUE indicates a success
 
 ### Example
 
-In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. We first create a binary outcome for trusting in the government and plot the data. A scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data.
+In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for president in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. We first create a binary outcome for trusting in the government and plot the data. A scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data.
 
 ```{r}
 #| label: model-logisticexamp-plot
 #| fig.cap: "Relationship between candidate selection and trust in government, ANES 2020"
+#| warning: false
 anes_des_der <- anes_des %>%
   mutate(TrustGovernmentUsually = case_when(
     is.na(TrustGovernment) ~ NA,
@@ -369,15 +375,11 @@ anes_des_der <- anes_des %>%
 
 anes_des_der %>%
   group_by(VotedPres2020_selection) %>%
-  summarise(
-    pct_trust = survey_mean(
-      TrustGovernmentUsually,
-      na.rm = TRUE,
-      proportion = TRUE,
-      vartype = "ci"
-    ),
-    .groups = "drop"
-  ) %>%
+  summarise(pct_trust = survey_mean(TrustGovernmentUsually,
+                                    na.rm = TRUE,
+                                    proportion = TRUE,
+                                    vartype = "ci"),
+    .groups = "drop") %>%
   filter(complete.cases(.)) %>%
   ggplot(aes(x = VotedPres2020_selection, y = pct_trust, 
              fill = VotedPres2020_selection)) +
@@ -392,19 +394,24 @@ anes_des_der %>%
   theme_minimal()
 ```
 
-Next, we fit the model.
+By looking at Figure \@ref(fig:model-logisticexamp-plot) it appears that people who voted for Trump are more likely to say that they usually have trust in the government compared to those who voted for Biden and Other candidates. To determine if this insight is accurate, we next we fit the model.
 
 ```{r}
 #| label: model-logisticexamp-model
 logistic_trust_vote <- anes_des_der %>%
-  svyglm(
-    design = .,
-    formula = TrustGovernmentUsually ~ VotedPres2020_selection ,
-    family = quasibinomial
-  ) 
+  svyglm(design = .,
+         formula = TrustGovernmentUsually ~ VotedPres2020_selection,
+         family = quasibinomial) 
 
 tidy(logistic_trust_vote)
-tidy(logistic_trust_vote, exponentiate = TRUE) %>% select(term, estimate)
+```
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient.  This output indicates that respondents who voted for Trump are `r signif(logistic_trust_vote$coefficients[2],3)` times more likely to usually have trust in the government compared to those who voted for Biden (the reference level). 
+
+Sometimes it is easier to talk about the odds instead of the likelihood.  In this case, we can also see the exponentiated coefficients which illustrates the odds:
+```{r}
+#| label: model-logisticexamp-model-odds
+tidy(logistic_trust_vote, exponentiate = TRUE) %>% 
+  select(term, estimate)
 ```
 
 ```{r}
@@ -420,15 +427,16 @@ or_other <-
   pull(estimate)
 ```
 
-In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient when the `tidy()` function is run the first time. The second time the `tidy` function is used, the coefficients are exponentiated, which illustrates the odds. In this example, we can interpret this as saying that the odds of trusting in government for someone who voted for Trump is `r signif(or_trump*100, 3)`% as likely to trust the government compared to a person who voted for Biden (the reference level). In comparison, a person who voted for neither Biden nor Trump is `r signif(or_other*100, 3)`% as likely to trust the government as someone who voted for Biden.
+We can interpret this as saying that the odds of usually trusting the government for someone who voted for Trump is `r signif(or_trump*100, 3)`% as likely to trust the government compared to a person who voted for Biden (the reference level). In comparison, a person who voted for neither Biden nor Trump is `r signif(or_other*100, 3)`% as likely to trust the government as someone who voted for Biden.
 
 As with linear regression, the `augment()` can be used to predict values. By default, the prediction is the link function and not the probability. To predict the probability, add an argument of `type.predict="response"` as demonstrated below:
 
 ```{r}
 #| label: model-logistic-aug
+#| warning: false
 logistic_trust_vote %>%
   augment(type.predict = "response") %>%
-  mutate(.se.fit = sqrt(attr(.fitted, "var")), # extract the variance of the fitted value 
+  mutate(.se.fit = sqrt(attr(.fitted, "var")), 
          .fitted = as.numeric(.fitted)) %>%
   select(TrustGovernmentUsually,
          VotedPres2020_selection,
