@@ -76,7 +76,7 @@ Given the variety in how the survey information is presented in documentation, i
 
 ### Codebooks
 
-While a questionnaire provides information about the questions asked to respondents, the codebook explains how the survey data was coded and recorded. The codebook lists details such as variable names, variable labels, variable meanings, codes for missing data, values labels, and value types (whether categorical or continuous, etc.). In particular, the codebook often includes information on missing data (as opposed to the questionnaire). The codebook enables us to understand and use the variables appropriately in our analysis.
+While a questionnaire provides information about the questions asked to respondents, the codebook explains how the survey data was coded and recorded. The codebook lists details such as variable names, variable labels, variable meanings, codes for missing data, values labels, and value types (whether categorical or continuous, etc.). In particular, the codebook often includes information on missing data (as opposed to the questionnaire). The codebook enables us to understand and use the variables appropriately in our analysis. Note that some studies use the terminology data dictionary rather than codebook.
 
 Figure \@ref(fig:understand-codebook-examp) is a question from the ANES 2020 codebook [@anes-cb]. This part indicates a particular variable's name (`V202066`), question wording, value labels, universe, and associated survey question (`POSTVOTE_RVOTE`).
 
@@ -99,7 +99,7 @@ For example, if a survey questionnaire contains an error, such as a typo or conf
 
 ### Additional Resources
 
-Surveys may have additional resources, such as interviewer instructions or "show cards" provided to respondents during interviewer administed surveys to help respondents answer questions. Explore the survey website to find out what resources were used and in what contexts.
+Surveys may have additional resources, such as interviewer instructions or "show cards" provided to respondents during interviewer administered surveys to help respondents answer questions. Explore the survey website to find out what resources were used and in what contexts.
 
 ## Working with Missing Data
 
@@ -107,7 +107,7 @@ Missing data in surveys refers to situations where participants do not provide c
 
 Missing data can be a significant problem in survey analysis, as it can introduce bias and reduce the representativeness of the data. Missing data typically falls into two main categories, either missing by design or unintentional missing mechanisms.
 
-1. **Missing by design/questionnaire skip logic**: This type of missingness occurs when certain respondents are intentionally directed to skip specific questions based on their previous responses or characteristics. For example, in a survey about employment, if a respondent indicates that they are not employed, they may be directed to skip questions related to their job responsibilities.
+1. **Missing by design/questionnaire skip logic**: This type of missingness occurs when certain respondents are intentionally directed to skip specific questions based on their previous responses or characteristics. For example, in a survey about employment, if a respondent indicates that they are not employed, they may be directed to skip questions related to their job responsibilities. Additionally, some surveys randomize questions or modules so that not all participants respond to all questions. In these instances, respondents would have missing data for the modules not randomly assigned to them.
 
 2. **Unintentional missing data**: This type of missingness occurs when researchers did not intend for there to be missing data on a particular question.  For example, respondents did not finish the survey or refused to answer individual questions.  There are 3 main types of unintentional missing data that each should be considered and may need to be handled differently [@mack; @Schafer2002]:   
 
@@ -145,12 +145,23 @@ dat <- tibble::tribble(~ col1, ~ col2, ~ col3,
 dat
 ```
 
-If we use the `tidyr::drop_na()` funtion, only the first case will remain as the other two cases have at least one missing value.
+If we use the `tidyr::drop_na()` function, only the first case will remain as the other two cases have at least one missing value.
 ```{r}
 #| label: understand-dropna-example2
 dat %>%
   tidyr::drop_na()
 ```
+
+However, if we want to only remove rows that have missing values in `col3`, we can specify this as an argument in `drop_na()` as follows:
+
+```{r}
+#| label: understand-dropna-example3
+dat %>%
+  tidyr::drop_na(col3)
+```
+
+The `drop_na` function works on `tbl_svy` objects as well and should only be applied after creating the design object.
+
 
 If the data is not missing completely at random (MCAR), then listwise deletion may produce biased estimates if there is a pattern of respondents who do not respond to specific questions. In these circumstances, we should explore other options, such as multiple imputation or weighted estimation. However, imputation is not always appropriate and can introduce its own sources of bias. See @allison for more detail.
 
@@ -191,18 +202,18 @@ The user guide references a supplemental document called "How to Analyze ANES Su
 
 > The target population for the fresh cross-section was the 231 million non-institutional U.S. citizens aged 18 or older living in the 50 US states or the District of Columbia.
 
-To weight to the population, we need to determine the total population size when the survey was conducted. We will use Current Population Survey (CPS) to find a number of the non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. in November of 2020. The {censusapi} package allows us to run a reproducible analysis of this data.
+To weight to the population, we need to determine the total population size when the survey was conducted. We will use Current Population Survey (CPS) to find a number of the non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. in March of 2020 as this is what the ANES methodology mentions using. The {censusapi} package allows us to run a reproducible analysis of this data. A census API key is necessary and is included in our R environment and not directly in the code as this is best practice. We extract several variables including month of interview (`HRMONTH`), year of interview (`HRYEAR4`), age (`PRTAGE`), citizenship status (`PRCITSHP`), and final person-level weight (`PWSSWGT`), and detailed information for these variables can be found in the data dictionary^[https://www2.census.gov/programs-surveys/cps/datasets/2020/basic/2020_Basic_CPS_Public_Use_Record_Layout_plus_IO_Code_list.txt].
+
 
 ```{r}
 #| label: understand-get-cps
 #| message: false
 #| cache: TRUE
 
-# Note that we need a Census key to access the Census API
-cps_state_in <- getCensus(name = "cps/basic/nov",
+cps_state_in <- getCensus(name = "cps/basic/mar",
                           vintage = 2020,
                           region = "state",
-                          vars = c("HRHHID", "HRMONTH", "HRYEAR4", 
+                          vars = c("HRMONTH", "HRYEAR4", 
                                    "PRTAGE", "PRCITSHP", "PWSSWGT"), 
                           key = Sys.getenv("CENSUS_KEY"))
 
@@ -213,21 +224,14 @@ cps_state <- cps_state_in %>%
 
 ```
 
-Once we've pulled the data, we want to ensure that the data only includes the 50 U.S. states and D.C. to match the desigred population.
-```{r}
-#| label: understand-cps-state
-cps_state %>%
-  count(state) 
-```
-
-Next, we confirm that all the data is from November (`HRMONTH == 11`) of 2020 (`HRYEAR4 == 2020`).
+We confirm that all the data is from March (`HRMONTH == 3`) of 2020 (`HRYEAR4 == 2020`).
 ```{r}
 #| label: understand-cps-date
 cps_state %>%
-  count(HRMONTH, HRYEAR4)
+  distinct(HRMONTH, HRYEAR4)
 ```
 
-We then filter to only those who are 18 years or older (`PRTAGE >= 18`) and have U.S. citizenship (`PRCITSHIP %in% (1:4)`).
+We then filter to only those who are 18 years or older (`PRTAGE >= 18`) and have U.S. citizenship (`PRCITSHIP %in% (1:4)`) and calculate the sum of the weights to obtain the size of the target population.
 ```{r}
 #| label: understand-cps-targetpop
 targetpop <- cps_state %>%
