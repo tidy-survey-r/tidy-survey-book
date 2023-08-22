@@ -23,7 +23,7 @@
 <meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
 
 
-<meta name="date" content="2023-08-07" />
+<meta name="date" content="2023-08-22" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -163,7 +163,11 @@ div.csl-indent {
 
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a></li>
-<li class="chapter" data-level="1" data-path="c01-intro.html"><a href="c01-intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="1" data-path="c01-intro.html"><a href="c01-intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="c01-intro.html"><a href="c01-intro.html#what-to-expect"><i class="fa fa-check"></i><b>1.1</b> What to expect</a></li>
+<li class="chapter" data-level="1.2" data-path="c01-intro.html"><a href="c01-intro.html#book-datasets"><i class="fa fa-check"></i><b>1.2</b> Datasets used in this book</a></li>
+</ul></li>
 <li class="chapter" data-level="2" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html"><i class="fa fa-check"></i><b>2</b> Overview of Surveys</a>
 <ul>
 <li class="chapter" data-level="2.1" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html#pre-survey-planning"><i class="fa fa-check"></i><b>2.1</b> Pre-Survey Planning</a></li>
@@ -378,45 +382,132 @@ div.csl-indent {
             <section class="normal" id="section-">
 <div id="c01-intro" class="section level1 hasAnchor" number="1">
 <h1><span class="header-section-number">Chapter 1</span> Introduction<a href="c01-intro.html#c01-intro" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Surveys are used to gather information about a population. These are often used by researchers, government agencies, and companies to better understand public opinion and behavior. For example, researchers at a non-profit might be interested in public opinion on a given topic, government agencies may be interested in behaviors to inform policy, or companies may survey potential consumers about their interests in a given product. Developing and fielding a survey is one way that organizations can gather information on their interests.</p>
-<p>This book focuses on how to analyze the data collected from a survey. Our aim is to provide a comprehensive guide for individuals new to survey analysis but already have some background in statistics and R programming. In this book, we will discuss descriptive analysis, statistical testing, and modeling, as well as some best practices in coding and how to present results. We use real data and provide realistic examples to help you gain proficiency in survey analysis.</p>
+<p>Surveys are used to gather information about a population. They are frequently used by researchers, governments, and businesses to better understand public opinion and behavior. For example, a non-profit group might be interested in public opinion on a given topic, government agencies may be interested in behaviors to inform policy, or companies may survey potential consumers about what they want from their products. Developing and fielding a survey is a method to gather information about topics that interest us.</p>
 <!--Consider pulling out definitions into call out boxes or a glossary-->
-<p>Specially, for the purposes of this book, we assume that you have survey data that has already been collected and weighted, with the most common scenario being that you are using a public use microdata file. Microdata is data that has been released and includes individual responses to surveys. Most survey microdata distributed publicly includes analysis weights and design variables. These variables are included with the data to correctly calculate estimates. Using these weights is necessary for results to be unbiased. Accounting for the sampling design is also required to calculate correct variance estimates and test statistics. However, as we will discuss in Chapter <a href="c03-specifying-sample-designs.html#c03-specifying-sample-designs">3</a>, these calculations can be complex. Several general-purpose statistical software have functions to correctly account for these features in analysis, including SAS, Stata, SUDAAN, and R. This book will use R and a combination of both the {survey} and {srvyr} packages and is meant for people who already have experience in R, namely in using the tidyverse.</p>
-<p>In 2003, the {survey} package was released on CRAN and has been continuously developed over time<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. This package, primarily developed by Thomas Lumley, is extensive and includes the following features:</p>
+<p>This book focuses on how to <strong>analyze</strong> the data collected from a survey. We assume that you have conducted a survey or obtained a microdata file. Microdata, also known as respondent-level or row-level data, contains individual survey responses, analysis weights, and design variables (as opposed to opposed to summarized data in tables). For the purposes of this book, you need the weights and design variables for your survey data. These are required to accurately calculate unbiased estimates<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. Understanding the concepts and techniques discussed in this book will help you to extract meaningful insights from your survey data.</p>
+<p>To account for the weights and study design, researchers rely on statistical software such as SAS, Stata, SUDAAN, and R. In this book, we will use R to provide an overview to survey analysis. Our goal is to provide a comprehensive guide for individuals new to survey analysis but have some statistics and R programming background. We will use a combination of both the {survey} and {srvyr} packages and present the code following best practices from the tidyverse.</p>
+<p>In 2003, the {survey} package was released on CRAN and has been continuously developed over time<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>. This package, primarily developed by Thomas Lumley, is extensive and includes the following features:</p>
 <ul>
 <li>Estimates of point estimates and their associated variances, including means, totals, ratios, quantiles, and proportions</li>
 <li>Estimation of regression models, including generalized linear models, log-linear models, and survival curves</li>
-<li>Variances by Taylor linearization or by replicate weights (BRR, jackknife, bootstrap, multistage bootstrap, or user-supplied)</li>
+<li>Variances by Taylor linearization or by replicate weights (balance repeated replication, jackknife, bootstrap, multistage bootstrap, or user-supplied)</li>
 <li>Hypothesis testing for means, proportions, and more</li>
 </ul>
-<p>The {srvyr} package in R builds on the {survey} package. It provides wrappers for functions that align with the tidyverse philosophy, which is our motivation for using and recommending this package. We believe it is easy to use for R users who already use {tidyverse} packages. For example, variables to many functions in the {survey} package are passed as formulas, but in the {srvyr} package, variable names are passed using tidy select<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> (a common feature in the tidyverse). Users of the tidyverse are most likely familiar with the magittr pipe (<code>%&gt;%</code>) which will seemlessly work with functions from the {srvyr} package. Additionally, several common functions from {dplyr} can be applied to survey objects including <code>filter()</code>, <code>mutate()</code>, and <code>summarize()</code>.</p>
-<p>There is one limitation to the {srvyr} package, the modeling functionality of the {survey} package is not ported over to tidy versions in the {srvyr} package. This book will use the {survey} package when discussing modeling and hypothesis testing, however, we will provide information on how to still pipe together the functions to make analyses that are easy to follow.</p>
-<p>What not to expect in this book:</p>
+<p>The {srvyr} package in R builds on the {survey} package. It provides wrappers for functions that align with the tidyverse philosophy, which is our motivation for using and recommending this package. We find that the {srvyr} package is user-friendly for those familiar with tidyverse packages in R. For example, while many functions in the {survey} package use variables as formulas, the {srvyr} package uses tidy selection to pass variable names<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> (a common feature in the tidyverse). Users of the tidyverse are most likely familiar with the magittr pipe (<code>%&gt;%</code>), which seamlessly works with functions from the {srvyr} package. Moreover, several common functions from {dplyr}, such as including <code>filter()</code>, <code>mutate()</code>, and <code>summarize()</code>, can be applied to survey objects. Users can streamline their analysis workflow and capitalize on the benefits of both the {srvyr} and tidyverse packages.</p>
+<p>There is one limitation to the {srvyr} package: it doesn’t fully incorporate the modeling capabilities of the {survey} package into its tidy versions. This book will use the {survey} package when discussing modeling and hypothesis testing. However, we will guide you on how to apply the pipe to these functions to ensure clarity in your analyses.</p>
+<div id="what-to-expect" class="section level2 hasAnchor" number="1.1">
+<h2><span class="header-section-number">1.1</span> What to expect<a href="c01-intro.html#what-to-expect" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>This book will cover all aspects of survey research, from understanding how to create design effects to conducting descriptive analysis, statistical tests, and models. Additionally, we emphasize best practices in coding and presenting results. Throughout this book, we use real-world data and present practical examples to help you gain proficiency in survey analysis. While we provide a brief overview of survey methodology and statistical theory, this book is not intended to be the sole resource for these topics. We reference other materials throughout the book and encourage readers to seek those out for more information. Below is a summary of each chapter:</p>
 <ul>
-<li>Survey methodology - we only provide a primer on methodology</li>
-<li>Statistical theory - we only provide basic formulas throughout</li>
-<li>Weighting - we assume you are using an analysis-ready data file with weights</li>
-</ul>
-<p>What to expect in this book:</p>
-<ul>
-<li><strong>Chapter <a href="c02-overview-surveys.html#c02-overview-surveys">2</a></strong>: An overview of surveys and the process of designing surveys. This is only an overview, and we include many references to get more in-depth knowledge.</li>
+<li><strong>Chapter <a href="c02-overview-surveys.html#c02-overview-surveys">2</a></strong>: An overview of surveys and the process of designing surveys. This is only an overview, and we include many references for more in-depth knowledge.</li>
 <li><strong>Chapter <a href="c03-specifying-sample-designs.html#c03-specifying-sample-designs">3</a></strong>: Specifying sampling designs. Descriptions of common sampling designs, when they are used, the math behind the mean and standard error estimates, how to specify the designs in R, and examples using real data.</li>
 <li><strong>Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a></strong>: Understanding survey documentation. How to read the various components of survey documentation, working with missing data, and finding the documentation.</li>
 <li><strong>Chapter <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a></strong>: Descriptive analyses. Calculating point estimates along with their standard errors, confidence intervals, and design effects.</li>
 <li><strong>Chapter <a href="c06-statistical-testing.html#c06-statistical-testing">6</a></strong>: Statistical testing. Testing for differences between groups, including comparisons of means and proportions as well as goodness of fit tests, tests of independence, and tests of homogeneity.</li>
 <li><strong>Chapter <a href="c07-modeling.html#c07-modeling">7</a></strong>: Modeling. Linear regression, ANOVA, and logistic regression.</li>
 <li><strong>Chapter <a href="c08-communicating-results.html#c08-communicating-results">8</a></strong>: Communicating results. Describing results, reproducibility, making publishable tables and graphs, and helpful functions.</li>
-<li><strong>Chapter <a href="c09-ncvs-vignette.html#c09-ncvs-vignette">9</a></strong>: National Crime Victimization Survey Vignette. A vignette on how to analyze data from the NCVS, a survey in the US that collects information on crimes and their characteristics. This illustrates an analysis that requires multiple files to calculate victimization rates.</li>
+<li><strong>Chapter <a href="c09-ncvs-vignette.html#c09-ncvs-vignette">9</a></strong>: National Crime Victimization Survey Vignette. A vignette on how to analyze data from the NCVS, a survey in the U.S. that collects information on crimes and their characteristics. This illustrates an analysis that requires multiple files to calculate victimization rates.</li>
 <li><strong>Chapter <a href="c10-ambarom-vignette.html#c10-ambarom-vignette">10</a></strong>: AmericasBarometer Vignette. A vignette on how to analyze data from the AmericasBarometer, a survey of attitudes, evaluations, experiences, and behavior in countries in the Western Hemisphere. This includes how to make choropleth maps with survey estimates.</li>
 </ul>
-<p>Most chapters include code to follow along with. Each chapter with this code will start with a set-up section. This will include all of the code needed to load packages and datasets to use in the chapter. We then provide an overview of the topic along with examples on how to use the functions. Most chapters end with exercises to work through. Solutions to these exercises can be found online at [XX].</p>
+<p>In most chapters, you’ll find code that you can follow. Each of these chapters starts with a “set-up” section. This section will include the code needed to load the necessary packages and datasets in the chapter. We then provide the main idea of the chapter and examples on how to use the functions. Most chapters end with exercises to work through. Solutions to the exercises can be found in the Appendix.</p>
+</div>
+<div id="book-datasets" class="section level2 hasAnchor" number="1.2">
+<h2><span class="header-section-number">1.2</span> Datasets used in this book<a href="c01-intro.html#book-datasets" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>We work with two key datasets throughout the book: the Residential Energy Consumption Survey <span class="citation">(RECS – <a href="#ref-recs-2015-micro" role="doc-biblioref">U.S. Energy Information Administration 2017</a>)</span> and the American National Election Studies <span class="citation">(ANES – <a href="#ref-debell" role="doc-biblioref">DeBell 2010</a>)</span>. To ensure that all readers can follow the examples, we have provided analytic datasets available on OSF<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>. If there is any data you need from the book that isn’t part of existing packages, we have created a helper function, <code>read_osf()</code>, to help you load it. Here’s how to use the code to read in the RECS and ANES datasets:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="c01-intro.html#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="c01-intro.html#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
+<span id="cb1-3"><a href="c01-intro.html#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
+<span id="cb1-4"><a href="c01-intro.html#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osfr)</span>
+<span id="cb1-5"><a href="c01-intro.html#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;helper-fun/helper-functions.R&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="c01-intro.html#cb2-1" aria-hidden="true" tabindex="-1"></a>recs_in <span class="ot">&lt;-</span> <span class="fu">read_osf</span>(<span class="st">&quot;recs_2015.rds&quot;</span>)</span>
+<span id="cb2-2"><a href="c01-intro.html#cb2-2" aria-hidden="true" tabindex="-1"></a>anes_in <span class="ot">&lt;-</span> <span class="fu">read_osf</span>(<span class="st">&quot;anes_2020.rds&quot;</span>)</span></code></pre></div>
+<p>RECS is a study that provides energy consumption and expenditures data in American households. The Energy Information Administration funds RECS, and the data is collected through interviews with energy suppliers. These interviews happen in person, over the phone, and on the web. It has been fielded 14 times between 1950 and 2020. The survey includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance. Below is an overview of the <code>recs_in</code> data:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="c01-intro.html#cb3-1" aria-hidden="true" tabindex="-1"></a>recs_in</span></code></pre></div>
+<pre><code>## # A tibble: 5,686 × 141
+##    DOEID REGIONC Region    Division MSAStatus Urbanicity HousingUnitType
+##    &lt;dbl&gt;   &lt;dbl&gt; &lt;fct&gt;     &lt;fct&gt;    &lt;fct&gt;     &lt;fct&gt;      &lt;fct&gt;          
+##  1 10001       4 West      Pacific  Metropol… Urban Area Single-family …
+##  2 10002       3 South     West So… None      Rural      Single-family …
+##  3 10003       3 South     East So… Metropol… Urban Area Single-family …
+##  4 10004       2 Midwest   West No… Micropol… Urban Clu… Single-family …
+##  5 10005       1 Northeast Middle … Metropol… Urban Area Single-family …
+##  6 10006       1 Northeast New Eng… None      Urban Clu… Apartment: 5 o…
+##  7 10007       3 South     South A… Metropol… Urban Area Apartment: 2-4…
+##  8 10008       2 Midwest   East No… Metropol… Rural      Single-family …
+##  9 10009       1 Northeast Middle … Metropol… Urban Area Single-family …
+## 10 10010       3 South     West So… Metropol… Urban Area Single-family …
+## # ℹ 5,676 more rows
+## # ℹ 134 more variables: YearMade &lt;ord&gt;, SpaceHeatingUsed &lt;lgl&gt;,
+## #   HeatingBehavior &lt;fct&gt;, WinterTempDay &lt;dbl&gt;, WinterTempAway &lt;dbl&gt;,
+## #   WinterTempNight &lt;dbl&gt;, ACUsed &lt;lgl&gt;, ACBehavior &lt;fct&gt;,
+## #   SummerTempDay &lt;dbl&gt;, SummerTempAway &lt;dbl&gt;, SummerTempNight &lt;dbl&gt;,
+## #   TOTCSQFT &lt;dbl&gt;, TOTHSQFT &lt;dbl&gt;, TOTSQFT_EN &lt;dbl&gt;, TOTUCSQFT &lt;dbl&gt;,
+## #   TOTUSQFT &lt;dbl&gt;, NWEIGHT &lt;dbl&gt;, BRRWT1 &lt;dbl&gt;, BRRWT2 &lt;dbl&gt;, …</code></pre>
+<p>From this output, we can see that there are 5,686 rows and 141 variables. We can see that there are variables containing an ID (<code>DOEID</code>), regional information (e.g., <code>Region</code>, <code>MSAStatus</code>), along with information about the house, including the type of house (<code>HousingUnitType</code>) and when the house was built (<code>YearMade</code>). Additionally, there is a long list of weighting variables that we will use in the analysis (e.g., <code>NWEIGHT</code>, <code>BRRWT1</code>). We will discuss using these weighting variables in Chapter <a href="c03-specifying-sample-designs.html#c03-specifying-sample-designs">3</a>.</p>
+<p>The ANES is a series study that has collected data from election surveys since 1948. These surveys contain data on public opinion and voting behavior in U.S. presidential elections. The 2020 survey (the data we will be using) was fielded to individuals over the web, through live video interviewing, or over with computer-assisted telephone interviewing (CATI). The survey includes questions on party affiliation, voting choice, and level of trust with the government. Here is an overview of the <code>anes_in</code> data. First, we show the variables starting with “V” followed by a number; these are the original variables. Then, we show you the remaining variables that we created based on the original data:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="c01-intro.html#cb5-1" aria-hidden="true" tabindex="-1"></a>anes_in <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">matches</span>(<span class="st">&quot;^V</span><span class="sc">\\</span><span class="st">d&quot;</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 7,453 × 22
+##    V200010b V200010d V200010c    V200002 V201006 V201102 V201101 V201103
+##       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;hvn_lbll&gt; &lt;hvn_l&gt; &lt;hvn_l&gt; &lt;hvn_l&gt; &lt;hvn_l&gt;
+##  1    1.01         9        2          3       2       1      -1       2
+##  2    1.16        26        2          3       3       1      -1       5
+##  3    0.769       41        1          3       2       1      -1       1
+##  4    0.521       29        2          3       3       1      -1       1
+##  5    0.966       23        1          3       2       1      -1       2
+##  6    0.235       37        2          3       1       2      -1      -1
+##  7    0.441        7        1          3       2       1      -1       5
+##  8    0.769       37        2          3       3       2      -1      -1
+##  9    1.42        32        2          3       2      -1       1       1
+## 10    1.84        41        2          3       2      -1       1       1
+## # ℹ 7,443 more rows
+## # ℹ 14 more variables: V201025x &lt;hvn_lbll&gt;, V201231x &lt;hvn_lbll&gt;,
+## #   V201233 &lt;hvn_lbll&gt;, V201237 &lt;hvn_lbll&gt;, V201507x &lt;hvn_lbll&gt;,
+## #   V201510 &lt;hvn_lbll&gt;, V201549x &lt;hvn_lbll&gt;, V201600 &lt;hvn_lbll&gt;,
+## #   V201617x &lt;hvn_lbll&gt;, V202066 &lt;hvn_lbll&gt;, V202109x &lt;hvn_lbll&gt;,
+## #   V202072 &lt;hvn_lbll&gt;, V202073 &lt;hvn_lbll&gt;, V202110x &lt;hvn_lbll&gt;</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="c01-intro.html#cb7-1" aria-hidden="true" tabindex="-1"></a>anes_in <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">matches</span>(<span class="st">&quot;^V</span><span class="sc">\\</span><span class="st">d&quot;</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 7,453 × 20
+##    InterviewMode Weight Stratum VarUnit   Age AgeGroup    Gender RaceEth
+##    &lt;fct&gt;          &lt;dbl&gt; &lt;fct&gt;   &lt;fct&gt;   &lt;dbl&gt; &lt;fct&gt;       &lt;fct&gt;  &lt;fct&gt;  
+##  1 Web            1.01  9       2          46 40-49       Male   Hispan…
+##  2 Web            1.16  26      2          37 30-39       Female Asian,…
+##  3 Web            0.769 41      1          40 40-49       Female White  
+##  4 Web            0.521 29      2          41 40-49       Male   Asian,…
+##  5 Web            0.966 23      1          72 70 or older Male   AI/AN  
+##  6 Web            0.235 37      2          71 70 or older Female White  
+##  7 Web            0.441 7       1          37 30-39       Female White  
+##  8 Web            0.769 37      2          45 40-49       Female White  
+##  9 Web            1.42  32      2          70 70 or older Female White  
+## 10 Web            1.84  41      2          43 40-49       Male   Hispan…
+## # ℹ 7,443 more rows
+## # ℹ 12 more variables: PartyID &lt;fct&gt;, Education &lt;fct&gt;, Income &lt;fct&gt;,
+## #   Income7 &lt;fct&gt;, CampaignInterest &lt;fct&gt;, TrustGovernment &lt;fct&gt;,
+## #   TrustPeople &lt;fct&gt;, VotedPres2016 &lt;fct&gt;,
+## #   VotedPres2016_selection &lt;fct&gt;, VotedPres2020 &lt;fct&gt;,
+## #   VotedPres2020_selection &lt;fct&gt;, EarlyVote2020 &lt;fct&gt;</code></pre>
+<p>From this output we can see that there are 7,453 rows and 42 variables. Most of the variables start with V20, so referencing the documentation for survey will be crucial to not get lost (see Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a>). We have created some more descriptive variables for you to use throughout this book, such as the age (<code>Age</code>) and gender (<code>Gender</code>) of the respondent, along with variables that represent their party affiliation (<code>PartyID</code>). Additionally, we need the variables <code>Weight</code> and <code>Stratum</code> to analyze this data accurately. We will discuss how to use these weighting variables in Chapters <a href="c03-specifying-sample-designs.html#c03-specifying-sample-designs">3</a> and <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a>.</p>
 
+</div>
+</div>
+<h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-debell" class="csl-entry">
+DeBell, Matthew. 2010. <span>“How to Analyze ANES Survey Data.”</span> ANES Technical Report Series nes012492. Palo Alto, CA: Stanford University; Ann Arbor, MI: the University of Michigan. <a href="https://electionstudies.org/wp-content/uploads/2018/05/HowToAnalyzeANESData.pdf">https://electionstudies.org/wp-content/uploads/2018/05/HowToAnalyzeANESData.pdf</a>.
+</div>
+<div id="ref-recs-2015-micro" class="csl-entry">
+U.S. Energy Information Administration. 2017. <span>“Residential Energy Consumption Survey (RECS): Using the 2015 Microdata File to Compute Estimates and Standard Errors (RSEs).”</span> <a href="https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf">https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf</a>.
+</div>
+<div id="ref-Valliant2018weights" class="csl-entry">
+Valliant, Richard, and Jill A. Dever. 2018. <em>Survey Weights: A Step-by-Step Guide to Calculation</em>. Stata Press.
+</div>
 </div>
 <div class="footnotes">
 <hr />
 <ol start="1">
-<li id="fn1"><p><a href="https://cran.r-project.org/src/contrib/Archive/survey/" class="uri">https://cran.r-project.org/src/contrib/Archive/survey/</a><a href="c01-intro.html#fnref1" class="footnote-back">↩︎</a></p></li>
-<li id="fn2"><p><a href="https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html" class="uri">https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html</a><a href="c01-intro.html#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn1"><p>If you do not already have weights created for the survey data you are using, we recommend reviewing other resources focused on weight creation such as <span class="citation">Valliant and Dever (<a href="#ref-Valliant2018weights" role="doc-biblioref">2018</a>)</span><a href="c01-intro.html#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p><a href="https://cran.r-project.org/src/contrib/Archive/survey/" class="uri">https://cran.r-project.org/src/contrib/Archive/survey/</a><a href="c01-intro.html#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p><a href="https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html" class="uri">https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html</a><a href="c01-intro.html#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p><a href="https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957" class="uri">https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957</a><a href="c01-intro.html#fnref4" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
             </section>
