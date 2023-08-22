@@ -25,6 +25,7 @@ To help explain the similarities between {dplyr} functions and {srvyr} functions
 ```{r}
 #| label: desc-setup-surveydata
 data(api)
+
 dstrata <- apistrat %>%
   as_survey_design(strata = stype, weights = pw)
 ```
@@ -33,9 +34,12 @@ We will be using data from ANES and RECS. Here is the code to create the design 
 ```{r}
 #| label: desc-anes-des
 #| eval: FALSE
-anes_in <- read_osf("anes_2020.rds") %>%
+anes_in <- read_osf("anes_2020.rds") 
+
+anes_adjwgt <- anes_in %>%
   mutate(Weight = Weight / sum(Weight) * targetpop)
-anes_des <- anes_in %>%
+
+anes_des <- anes_adjwgt %>%
   as_survey_design(
     weights = Weight,
     strata = Stratum,
@@ -48,6 +52,7 @@ For RECS, details are included in the RECS documentation and Chapter \@ref(c03-s
 #| label: desc-recs-des
 #| eval: FALSE
 recs_in <-read_osf("recs_2015.rds")
+
 recs_des <- recs_in %>%
   as_survey_rep(weights = NWEIGHT,
                 repweights = starts_with("BRRWT"),
@@ -232,7 +237,7 @@ We will discuss `vartype` in Section \@ref(Var-types) as this option occurs in a
 
 #### Examples {-}
 
-For an example, let's use the Residential Energy Consumption Survey (RECS), which provides energy consumption and expenditures data. RECS funded by Energy Information Administration and collects information through energy suppliers through in-person, phone, and web interviews. It has been fielded 14 times between 1950 and 2020 and includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.  The survey targets primarily occupied housing units in the US.
+For an example, let's use the Residential Energy Consumption Survey (RECS).
 
 If we wanted to obtain the estimated number of households in the U.S. (the target population) using the RECS data we could use `survey_count()`. If we do not specify any variables in the `survey_count()` function, it will output the estimated population count (n) and standard error (n_se).
 
