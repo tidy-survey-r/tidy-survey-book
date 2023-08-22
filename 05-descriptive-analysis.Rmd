@@ -64,16 +64,16 @@ recs_des <- recs_in %>%
 
 ## Introduction
 
-Descriptive analyses, such as reviewing basic counts, cross-tabulations, or means, is generally considered to be one of the first steps a researcher takes before conducting statistical tests and models. Reviewing findings from descriptive analyses can help researchers glean insight into the data, the underlying population, and any potential unique aspects of the data or population.  For example, if the proportion of males is only 10% in the data, this could indicate either a unique population or a potential error in the data.  Additionally, researchers can use descriptive analyses to provide means, proportions, or other measures to summarize the data and make estimates about the population. 
+Descriptive analyses, such as reviewing basic counts, cross-tabulations, or means, is generally considered to be one of the first steps a researcher takes before conducting statistical tests or developing models. Reviewing findings from descriptive analyses can help researchers glean insight into the data, the underlying population, and any potential unique aspects of the data or population.  For example, if the proportion of males is only 10% in the data, this could indicate either a unique population or a potential error in the data.  Additionally, researchers can use descriptive analyses to provide means, proportions, or other measures to summarize the data and make estimates about the population. 
 
 There are many different types of descriptive analyses that we will discuss in this chapter, but it is important to know what type of data you have and what statistics should be used for that types of data. In survey data, we typically consider data to be one of these four main data types:  
 
   * Categorical/nominal data: variables with levels or descriptions that cannot be ordered, such as the region of the country (North, South, East, and West)
   * Ordinal data: variables that can be ordered, such as those from a Likert scale (strongly disagree, disagree, agree, and strongly agree)
-  * Discrete data: variables that are counted or measured, such as a count of children
+  * Discrete data: variables that are counted or measured, such as a number of children
   * Continuous data, variables that are measured and whose values can lie anywhere on an interval, such as weight
   
-When we pull the data from surveys into R, the data will be listed as character, factor, interval, numeric, or logical/boolean and will not clearly indicate the type of survey data (e.g., ordinal). When working with survey data, researchers need to clearly use the questionnaire and codebook along with the data (see Chapter \@ref(c04-understanding-survey-data-documentation)) to understand what the values for each variable represent. For example, our survey data may represent categorical variables (e.g., the North, South, East, and West regions of the United States) using numeric codes (e.g., 1, 2, 3, and 4). Though this is a categorical variable from the survey, this variable might be automatically read as numeric values when we import our data into R. This can lead to the common mistake of applying a mean function to categorical values instead of a proportion function. Choosing appropriate measures is important to reach valid conclusions. Different variable types have distinct properties and levels of measurement, and we cannot apply all measures to all variables.
+When we pull the data from surveys into R, the data will be listed as character, factor, numeric, or logical/Boolean and will not clearly indicate the type of survey data (e.g., ordinal). When working with survey data, researchers need to clearly use the questionnaire and codebook along with the data (see Chapter \@ref(c04-understanding-survey-data-documentation)) to understand what the values for each variable represent. For example, our survey data may represent categorical variables (e.g., the North, South, East, and West regions of the United States) using numeric codes (e.g., 1, 2, 3, and 4). Though this is a categorical variable from the survey, this variable might be automatically read as numeric values when we import our data into R. This can lead to the common mistake of applying a mean function to categorical values instead of a proportion function. Choosing appropriate measures is important to reach valid conclusions. Different variable types have distinct properties and levels of measurement, and we cannot apply all measures to all variables.
 
 This chapter will discuss how to analyze measures of distribution (e.g., cross-tabulations), central tendency (e.g., means), relationship (e.g., ratios), and dispersion (e.g., standard). Measures of distribution describe how often an event or response occurs. These measures include counts and totals. Measures of central tendency find the central (or average) responses. These measures include means and medians. Measures of relationship describe how variables relate to each other. These measures include correlations and ratios. Measures of dispersion describe how data spreads around the central tendency for continuous variables. These measures include standard deviations and variances. Specifically, we will cover the following functions from the {srvyr} package:
 
@@ -207,7 +207,7 @@ The arguments are:
 * `sort`: how to sort the variables, defaults to `FALSE`
 * `name`: the name of the count variable, defaults to `n`
 * `.drop`: whether to drop empty groups
-* `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error)
+* `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var", "cv")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
 
 To capture a count or crosstabs by different variables, we include them in the (`...`) argument.  This argument can take any number of variables and will breakdown the counts by all combinations of variables included.  This is the same as with `dplyr::count()`.  We can also obtain an estimate of the overall population by not including any variables in the (`...`) argument, or by using the `survey_tally()` function.  The `survey_tally()` function has similar syntax to the `survey_count()` function, just does not include the (`...`) or the `.drop` arguments:
 
@@ -236,7 +236,6 @@ Both functions include the `vartype` argument with 4 different values:
 * `cv`: coefficient of variation
     * A ratio of the standard error and the estimate
     * Output has a column with the variable name specified in the `name` argument with a suffix of "_cv"
-    * Not an option available for `survey_var()`
 
 The confidence intervals are always calculated using a symmetric t-distribution based confidence interval as follows:
 
@@ -291,7 +290,7 @@ recs_des %>%
 
 .est_pop_div <- recs_des %>%
   survey_count(Region, Division, name = "N")  %>%
-  mutate(N=prettyNum(N, big.mark=",", digits=20))
+  mutate(N=formatC(N, big.mark=",", format="f", digits=0))
 ```
 
 When we run the crosstab, we see there are an estimated `r .est_pop_div %>% filter(Division=="New England") %>% pull(N)` housing units in the New England Division. 
@@ -338,7 +337,7 @@ The arguments are:
 
 * `x`: a variable, expression, or empty
 * `na.rm`: an indicator of whether missing values should be dropped, defaults to `FALSE`
-* `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
+* `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var", "cv")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
 * `level`: a number or a vector indicating the confidence level, defaults to 0.95
 * `deff`: a logical value stating whether the design effect should be returned, defaults to FALSE (this is described in more detail in Section \@ref(desc-deff))
 * `df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution
@@ -372,7 +371,7 @@ recs_des %>%
 #| echo: FALSE
 .elbill <- recs_des %>%
   summarize(elec_bill = survey_total(DOLLAREL)) %>%
-  mutate(across(starts_with("elec"), \(x) str_c("$", prettyNum(x, big.mark=",", digits=20))))
+  mutate(across(starts_with("elec"), \(x) str_c("$", formatC(x, big.mark=",", format="f", digits=0))))
 ```
 
 It is estimated that American residential households spent a total of `r .elbill %>% pull(elec_bill)` on electricity in 2015 and the estimate has a standard error of `r .elbill %>% pull(elec_bill_se)`.
@@ -399,11 +398,11 @@ recs_des %>%
   mutate(across(starts_with("elec"), \(x) str_c("$", prettyNum(round(x, 0), big.mark=",", digits=20))))
 ```
 
-It's estimated that households in the Northeast spent `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`,`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_upp)`) on electricity in 2015 while households in the South spent an estimated `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`,`r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill_upp)`).
+It's estimated that households in the Northeast spent `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_upp)`) on electricity in 2015 while households in the South spent an estimated `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill_upp)`).
 
 ## Means and Proportions {#desc-meanprop}
 
-Means and proportions are the backbone of most research.  The estimates calculated are often the first things that readers look for when reviewing research on a given topic. The `survey_mean()` and `survey_prop()` functions calculate those means and proportions while incorporating the survey design elements. The `survey_mean()` function should be used on continuous variables of survey data, while the `survey_prop()` function should be used on categorical variables. 
+Means and proportions are the backbone of most research.  The estimates calculated are often the first things that readers look for when reviewing research on a given topic. The `survey_mean()` and `survey_prop()` functions calculate those means and proportions while incorporating the survey design elements. The `survey_mean()` function should be used on continuous variables of survey data, while the `survey_prop()` function should be used on categorical variables. These topics are grouped together because a proportion is simply a mean of a logical (Boolean) variable.
 
 ### Syntax {#desc-meanprop-syntax}
 
@@ -435,7 +434,7 @@ survey_prop(
 Both functions have the following arguments and defaults:
 
   * `na.rm`: an indicator of whether missing values should be dropped, defaults to `FALSE`
-  * `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error)
+  * `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var", "cv")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
   * `level`: a number or a vector indicating the confidence level, defaults to 0.95
   * `prop_method`: Method to calculate confidence interval for confidence intervals. 
   * `deff`: a logical value stating whether the design effect should be returned, defaults to FALSE (this is described in more detail in Section \@ref(desc-deff))
@@ -734,7 +733,7 @@ The arguments are:
   * `numerator`: The numerator of the ratio
   * `denominator`: The denominator of the ratio
   * `na.rm`: A logical value to indicate whether missing values should be dropped
-  * `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
+  * `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var", "cv")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
   * `level`: A single number or vector of numbers indicating the confidence level
   * `deff`: A logical value to indicate whether the design effect should be returned (this is described in more detail in Section \@ref(desc-deff))
   * `df`: (For vartype = "ci" only) A numeric value indicating the degrees of freedom for t-distribution
@@ -749,8 +748,8 @@ Suppose we wanted to find the ratio of dollars spent on liquid propane per unit 
 #| label: desc-ratio-1
 
 recs_des %>%
-  summarize(DOLLARLP_Tot=survey_total(DOLLARLP),
-            BTULP_Tot=survey_total(BTULP),
+  summarize(DOLLARLP_Tot=survey_total(DOLLARLP, vartype=NULL),
+            BTULP_Tot=survey_total(BTULP, vartype=NULL),
             DOL_BTU_Rat=survey_ratio(DOLLARLP, BTULP),
             DOL_BTU_Avg=survey_mean(DOLLARLP/BTULP, na.rm=TRUE))
 ```
@@ -769,7 +768,7 @@ recs_des %>%
 num <- pull(.rat_out, DOLLARLP_Tot) %>% formatC(big.mark=",", digits=0, format="f")
 den <- pull(.rat_out, BTULP_Tot) %>% formatC(big.mark=",", digits=0, format="f")
 rat <- pull(.rat_out, DOL_BTU_Rat) %>% signif(3)
-avg <- pull(.rat_out, DOL_BTU_Rat) %>% signif(3)
+avg <- pull(.rat_out, DOL_BTU_Avg) %>% signif(3)
 ```
 
 The ratio of the total spent on liquid propane to the total consumption was `r rat` but the average rate was `r avg`. With a little calculation, it can be shown that the ratio is the ratio of the totals DOLLARLP_Tot/BTULP_Tot=`r num`/`r den`=`r rat`. While the ratio could be calculated manually in this manner, the standard error requires usage of the `survey_ratio()` function. The average can be interpreted as the average rate a household pays. 
@@ -816,7 +815,7 @@ The arguments are:
   * `x`: A variable or expression
   * `y`: A variable or expression
   * `na.rm`: A logical value to indicate whether missing values should be dropped
-  * `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
+  * `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var", "cv")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
   * `level`: (For vartype = "ci" only) A single number or vector of numbers indicating the confidence level
   * `df`: (For vartype = "ci" only) A numeric value indicating the degrees of freedom for t-distribution
 
@@ -827,6 +826,7 @@ We can calculate the correlation between total square footage (`TOTSQFT_EN`)^[Qu
 
 ```{r}
 #| label: desc-corr-1
+#| warning: FALSE
 
 recs_des %>%
   summarize(SQFT_Elec_Corr=survey_corr(TOTSQFT_EN, BTUEL))
@@ -837,6 +837,7 @@ Like with other statistics, we can do this by subgroups. For example, we can exa
 
 ```{r}
 #| label: desc-corr-2
+#| warning: FALSE
 
 recs_des %>%
   group_by(ACUsed) %>%
@@ -871,7 +872,7 @@ The arguments are:
 
   * `x`: A variable or expression, or empty
   * `na.rm`: A logical value to indicate whether missing values should be dropped
-  * `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
+  * `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
   * `level`: (For vartype = "ci" only) A single number or vector of numbers indicating the confidence level.
   * `df`: (For vartype = "ci" only) A numeric value indicating the degrees of freedom for t-distribution
 
@@ -924,10 +925,10 @@ recs_des %>%
 .elbill_mn_unwgt <- recs_des %>%
   summarize(elec_bill = survey_mean(DOLLAREL),
             elec_unweight = unweighted(mean(DOLLAREL))) %>%
-  mutate(across(starts_with("elec"), \(x) str_c("$", prettyNum(round(x, 0), big.mark=",", digits=6))))
+  mutate(across(starts_with("elec"), \(x) str_c("$", formatC(x, big.mark=",", format="f", digits=0))))
 ```
 
-It is estimated that American residential households spent an average of `r .elbill %>% pull(elec_bill)` on electricity in 2015 and the estimate has a standard error of `r .elbill %>% pull(elec_bill_se)`. The unweighted function calculates unweighted average and illustrates the average amount of money the *respondents* spent on electricity in 2015 which was `r .elbill_mn_unwgt %>% pull(elec_unweight)`. 
+It is estimated that American residential households spent an average of `r .elbill_mn_unwgt %>% pull(elec_bill)` on electricity in 2015 and the estimate has a standard error of `r .elbill_mn_unwgt %>% pull(elec_bill_se)`. The unweighted function calculates unweighted average and illustrates the average amount of money the *respondents* spent on electricity in 2015 which was `r .elbill_mn_unwgt %>% pull(elec_unweight)`. 
 
 ### Subpopulation Analysis
 
