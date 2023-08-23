@@ -14,10 +14,10 @@ For this chapter, here are the libraries and helper functions we will need:
 library(tidyverse)
 library(survey) 
 library(srvyr) 
-library(broom)
-library(gt)
 library(osfr)
 source("helper-fun/helper-functions.R")
+library(broom)
+library(gt)
 ```
 
 We will be using data from ANES and RECS. Here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-understanding-survey-data-documentation) for more information).
@@ -66,9 +66,11 @@ The functions in the {survey} packages allow for the correct estimation of the v
 * Tests of independence `svychisq()`
 * Tests of homogeneity `svychisq()`
 
+## Dot Notation
+
 Up to this point, we've shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument and to use these functions with the magrittr pipe `%>%` and tidyverse syntax, we will need to use dot (`.`) notation.
 
-Functions that work with the magrittr pipe `%>%` have the data as the first argument. When we run a function with the pipe, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to cars with six cylinders, we can write the code in at least four different ways:
+Functions that work with the magrittr pipe (`%>%`) have the data as the first argument. When we run a function with the pipe, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to cars with six cylinders, we can write the code in at least four different ways:
 
 1. `filter(mtcars, cyl == 6)`
 2. `mtcars %>% filter(cyl == 6)`
@@ -95,7 +97,7 @@ svydata_des %>%
 
 ## Comparison of Proportions and Means {#stattest-ttest}
 
-We use t-tests to compare two proportions or means. T-tests allow us to determine if one proportion or mean is statistically different from the other. They are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., North versus South). Comparing a single estimate to a known value is called a *one sample t-test*, and we can set up the hypothesis test as follows:  
+We use t-tests to compare two proportions or means. T-tests allow us to determine if one proportion or mean is statistically different from another. They are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., North versus South). Comparing a single estimate to a known value is called a *one sample t-test*, and we can set up the hypothesis test as follows:  
 
   - $H_0: \mu = 0$ where $\mu$ is the mean outcome and $0$ is the value we are comparing it to
   - $H_A: \mu \neq 0$
@@ -150,9 +152,9 @@ Let's walk through a few examples using the ANES and RECS data.
 
 ### Examples {#stattest-ttest-examples}
 
-#### Example 1: One-sample t-test {.unnumbered #stattest-ttest-ex1}  
+#### Example 1: One-sample t-test for Mean {.unnumbered #stattest-ttest-ex1}  
 
-RECS asks respondents to indicate what temperature they set their house to during the summer at night. In our data, we've called this variable `SummerTempNight`. If we want to see if the average U.S. household sets their temperature at a value different from 68$^\circ$F, we could set up the hypothesis as follows: 
+RECS asks respondents to indicate what temperature they set their house to during the summer at night.^[During the summer, what is your home’s typical indoor temperature inside your home at night?] In our data, we've called this variable `SummerTempNight`. If we want to see if the average U.S. household sets their temperature at a value different from 68$^\circ$F, we could set up the hypothesis as follows: 
 
 - $H_0: \mu = 68$ where $\mu$ is the average temperature U.S. households set their thermostat to in the summer at night
 - $H_A: \mu \neq 68$
@@ -180,7 +182,7 @@ If we want the average, we take our t-test estimate and add it to 68:
 ttest_ex1$estimate + 68
 ```
 
-Or, we can do the following:
+Or, we can use the `survey_mean()` function described in Chapter \@ref(c05-descriptive-analysis):
 
 ```{r}
 #| label: stattest-ttest-ex1-svymean
@@ -200,13 +202,9 @@ confint(ttest_ex1, level = 0.8)
 ```
 
 
-#### Example 2: One-sample t-test {.unnumbered #stattest-ttest-ex2}
+#### Example 2: One-sample t-test for Proportion {.unnumbered #stattest-ttest-ex2}
 
-<!--Would love to do a comparison to 0 for this example, but have changed it for now. Thoughts? IV: I think this is a great example! 
-Testing against 0 is really rare unless it's a difference. p can't be 0 (binomial is between but not including 0 and 1)
--->
-
-ANES asked respondents if they voted for president in the 2020 election. In our data, we call this variable `VotedPres2020`. Let's look at the proportion of the U.S. voting-eligible population that voted for president in 2020 using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis).
+ANES asked respondents if they voted for president in the 2020 election.^[This question is not about the primary elections and caucuses that were held a few months ago. Instead, we'd like to ask you about the election for President to be held on November 3, in which (Donald Trump / Joe Biden) is running against (Joe Biden / Donald Trump). Have you already voted in that election, or have you not voted?] In our data, we call this variable `VotedPres2020`. Let's look at the proportion of the U.S. voting-eligible population that voted for president in 2020 using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis).
 
 ```{r}
 #| label: stattest-ttest-voteprop
@@ -247,7 +245,7 @@ The estimate differs from example one in that the estimate is not displaying \(\
 
 #### Example 3: Unpaired two-sample t-test {.unnumbered #stattest-ttest-ex3}
 
-Two additional variables in the RECS data are the electric bill cost (`DOLLAREL`) and whether the house used AC or not (`ACUsed`). If we want to know if the U.S. households that used AC had higher electrical bills compared to those that did not, we could set up the hypothesis as follows:
+Two additional variables in the RECS data are the electric bill cost (`DOLLAREL`) and whether the house used AC or not (`ACUsed`).^[Is any air conditioning equipment used in your home?] If we want to know if the U.S. households that used AC had higher electrical bills compared to those that did not, we could set up the hypothesis as follows:
 
 - $H_0: \mu_{AC} = \mu_{noAC}$ where $\mu_{AC}$ is the electrical bill cost for U.S. households that used AC and $\mu_{noAC}$ is the electrical bill cost for U.S. households that did not use AC
 - $H_A: \mu_{AC} \neq \mu_{noAC}$
@@ -277,7 +275,7 @@ The results indicate that the difference in electrical bills for those that used
 
 #### Example 4: Paired two-sample t-test {.unnumbered #stattest-ttest-ex4}
 
-Let's say we want to test whether the temperature that U.S. households set their thermostat at night differs depending on the season (comparing summer and winter temperatures). We could set up the hypothesis as follows:
+Let's say we want to test whether the temperature that U.S. households set their thermostat at night differs depending on the season (comparing summer^[During the summer, what is your home’s typical indoor temperature inside your home at night?] and winter^[During the winter, what is your home’s typical indoor temperature inside your home at night?] temperatures). We could set up the hypothesis as follows:
 
 - $H_0: \mu_{summer} = \mu_{winter}$ where $\mu_{summer}$ is the temperature that U.S. households set their thermostat to during summer nights, and $\mu_{winter}$ is the temperature that U.S. households set their thermostat to during winter nights
 - $H_A: \mu_{summer} \neq \mu_{winter}$
@@ -365,9 +363,9 @@ The arguments are:
 * `statistic`: Type of test statistic to use in test (details below)
 * `na.rm`: Remove missing values
 
-There are six statistics that are accepted in this formula. For tests of homogeneity (when comparing cross-tabulations), the `F` or `Chisq` statistics should be used.^[These two statistics can also be used for goodness of fit tests, if the `svygofchisq()` function is not used.] The `F` statistic is the default and uses the Rao-Scott second-order correction. This correction is designed to assist with complicated sampling designs (i.e., those other than a simple random sample) (CITE)^[http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf]. The `Chisq` statistic is an adjusted version of the Pearson $\chi^2$ statistic. The version of this statistic in the `svychisq()` function compares the design effect estimate from the provided survey data to what the $\chi^2$ distribution would have been if the data came from a simple random sampling.
+There are six statistics that are accepted in this formula. For tests of homogeneity (when comparing cross-tabulations), the `F` or `Chisq` statistics should be used.^[These two statistics can also be used for goodness of fit tests, if the `svygofchisq()` function is not used.] The `F` statistic is the default and uses the Rao-Scott second-order correction. This correction is designed to assist with complicated sampling designs (i.e., those other than a simple random sample) [@Scott2007]. The `Chisq` statistic is an adjusted version of the Pearson $\chi^2$ statistic. The version of this statistic in the `svychisq()` function compares the design effect estimate from the provided survey data to what the $\chi^2$ distribution would have been if the data came from a simple random sampling.
 
-For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons (@lumley2010complex). If the data has a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this. The `lincom` and `saddlepoint` statistics are available for more complicated data structures.<!--I'm struggling to find a lot of information around these last two statistics, any thoughts/suggestions?--> 
+For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons [@lumley2010complex]. If the data has a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this. The `lincom` and `saddlepoint` statistics are available for more complicated data structures.
 
 The formula argument will always be one-sided, unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula = ~ var_1 + var_2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
 
@@ -379,7 +377,8 @@ Let's walk through a few examples using the ANES data.
 
 #### Example 1: Goodness of Fit Test {.unnumbered #stattest-chi-ex1}
 
-ANES asked respondents about their highest education level. Based on the data from the 2020 American Community Survey (ACS) 5-year estimates^[Data was pulled from data.census.gov using the S1501 Education Attainment 2020: ACS 5-Year Estimates Subject Tables], the education distribution of those 18+ in the U.S. is as follows:
+ANES asked respondents about their highest education level.^[What is the highest level of school you have completed or the highest degree you have received?] Based on the data from the 2020 American Community Survey (ACS) 5-year estimates^[Data was pulled from data.census.gov using the S1501 Education Attainment 2020: ACS 5-Year Estimates Subject Tables], the education distribution of those 18+ in the U.S. is as follows:
+
   - 11% had less than High School degree
   - 27% had a High School degree
   - 29% had some college or associate's degree
@@ -401,7 +400,7 @@ anes_des %>%
   summarize(p = survey_mean())
 ```
 
-Based on this output, we can see that we have different levels than the ACS data provides. Specifically, the education data from ANES has two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, we can use the {forcats} package from the tidyverse. The package's `fct_collapse()` function creates a new variable. Then we will use the `svygofchisq()` function to compare the ANES data to the ACS data:
+Based on this output, we can see that we have different levels than the ACS data provides. Specifically, the education data from ANES has two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, we can use the {forcats} package from the tidyverse. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then we will use the `svygofchisq()` function to compare the ANES data to the ACS data:
 
 ```{r}
 #| label: stattest-chi-ex1
@@ -427,7 +426,7 @@ chi_ex1 <- anes_des_educ %>%
 chi_ex1
 ```
 
-The output from the `svygofchisq()` indicates that at least one proportion from ANES does not match the ACS data ( $\chi^2= `r chi_ex1$statistic`$; p-value= $`r signif(chi_ex1$p.value,3)`$). To get a better idea of the differences, we can use the `expected` output along with `survey_mean()` to create a comparison table:  
+The output from the `svygofchisq()` indicates that at least one proportion from ANES does not match the ACS data ($\chi^2 =$ `r chi_ex1$statistic`; $p-value =$ `r signif(chi_ex1$p.value,3)`). To get a better idea of the differences, we can use the `expected` output along with `survey_mean()` to create a comparison table:  
 
 ```{r}
 #| label: stattest-chi-ex1-table
@@ -443,7 +442,7 @@ ex1_table <- anes_des_educ %>%
 ex1_table
 ```
 
-This output includes our expected proportions from the ACS that we provided the `svygofchisq()` function along with the output of the observed proportions and their confidence intervals. From this table, we can see that the "High school" and "Post HS" categories have nearly identical proportions but that the other two categories are slightly different. Looking at the confidence intervals, we can see that the ANES data skews to include fewer people in the "Less than HS" category and more people in the "Bachelor or Higher" category. This may be easier to see in graphical form:
+This output includes our expected proportions from the ACS that we provided the `svygofchisq()` function along with the output of the observed proportions and their confidence intervals. From this table, we can see that the "High school" and "Post HS" categories have nearly identical proportions but that the other two categories are slightly different. Looking at the confidence intervals, we can see that the ANES data skews to include fewer people in the "Less than HS" category and more people in the "Bachelor or Higher" category. This may be easier to see if we plot this (see Figure \@ref(stattest-chi-ex1-graph)).
 <!--Will want to remove the legend title...need to look this up. -->
 ```{r}
 #| label: stattest-chi-ex1-graph
@@ -574,7 +573,7 @@ Researchers and politicians often look at specific demographics each election cy
 
 If we want to see if there is a difference in how each age group voted for the 2020 candidates, this would be a test of homogeneity, and the hypothesis could be set up as follows:
 
-- \begin{align*}
+\begin{align*}
 H_0: p_{1_{Biden}} &= p_{1_{Trump}} = p_{1_{Other}},\\
     p_{2_{Biden}} &= p_{2_{Trump}} = p_{2_{Other}},\\
     p_{3_{Biden}} &= p_{3_{Trump}} = p_{3_{Other}},\\
@@ -583,6 +582,7 @@ H_0: p_{1_{Biden}} &= p_{1_{Trump}} = p_{1_{Other}},\\
     p_{6_{Biden}} &= p_{6_{Trump}} = p_{6_{Other}}
   \end{align*}
     where $p_{i_{Biden}}$ is the observed proportion of each age group ($i$) that voted for Biden, $p_{i_{Trump}}$ is the observed proportion of each age group ($i$) that voted for Trump, and $p_{i_{Other}}$ is the observed proportion of each age group ($i$) that voted for another candidate
+    
 - $H_A:$ at least one category of $p_{i_{Biden}}$ does not match $p_{i_{Trump}}$ or $p_{i_{Other}}$
 
 To conduct this in R, we use the `svychisq()` function to compare the two variables:
@@ -591,12 +591,10 @@ To conduct this in R, we use the `svychisq()` function to compare the two variab
 #| label: stattest-chi-ex3
 chi_ex3 <- anes_des %>%
   drop_na(VotedPres2020_selection, AgeGroup) %>%
-  svychisq(
-    formula =  ~ AgeGroup + VotedPres2020_selection,
-    design = .,
-    statistic = "Chisq",
-    na.rm = TRUE
-  )
+  svychisq(formula =  ~ AgeGroup + VotedPres2020_selection,
+           design = .,
+           statistic = "Chisq",
+           na.rm = TRUE)
 
 chi_ex3
 ```
@@ -668,9 +666,7 @@ ttest_solution3 <- anes_des %>%
 ttest_solution3
 ```
 
-Here are some exercises for practicing conducting chi-squared tests using `svygofchisq()` and `svychisq()`:
-
-1. If you wanted to determine if the political party affiliation differed for males and females, what test would you use?
+4. If you wanted to determine if the political party affiliation differed for males and females, what test would you use?
   a. Goodness of fit test (`svygofchisq()`)
   b. Test of independence (`svychisq()`)
   c. Test of homogeneity (`svychisq()`)
@@ -681,7 +677,7 @@ chisq_solution1 <- "c. Test of homogeneity (`svychisq()`)"
 chisq_solution1
 ```
 
-2. In the RECS data, is there a relationship between the type of housing unit (`HousingUnitType`) and the year the house was built (`YearMade`)?
+5. In the RECS data, is there a relationship between the type of housing unit (`HousingUnitType`) and the year the house was built (`YearMade`)?
 
 ```{r}
 #| label: stattest-chisq-solution2
@@ -696,7 +692,7 @@ chisq_solution2 <- recs_des %>%
 chisq_solution2
 ```
 
-3. In the ANES data, is there a difference in the distribution of gender (`Gender`) across early voting status in 2020 (`EarlyVote2020`)?
+6. In the ANES data, is there a difference in the distribution of gender (`Gender`) across early voting status in 2020 (`EarlyVote2020`)?
 
 ```{r}
 #| label: stattest-chisq-solution3
