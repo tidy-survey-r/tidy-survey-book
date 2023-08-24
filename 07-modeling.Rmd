@@ -118,14 +118,22 @@ To perform this type of test in R, the general syntax is as follows:
 ``` r
 des_obj %>%
   svyglm(
+    formula = outcome ~ group,
     design = .,
-    outcomevar ~ groupvar,
     na.action = na.omit,
     df.resid = degf(.)
   )
 ```
 
-where `des_obj` is a design object, `outcomevar` is the outcome variable, `groupvar` is the group variable, and `na.action=na.omit` is set so that records with missing data in the outcome or group variable are removed for prediction^[See `help(na.omit)` or `?na.omit` for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c04-understanding-survey-data-documentation).]. The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details).
+The arguments are:
+
+* `formula`: Formula in the form of `outcome~group`. The group variable must be a factor or character.
+* `design`: a `tbl_svy` object created by `as_survey`
+* `na.action`: handling of missing data
+* `df.resid`: degrees of freedom for Wald tests (optional)
+
+
+The default for missing data is `na.omit`, this means that we are removing all data from analyses.  There are other options for handling missing data and we recommend looking at the help documentation for `na.omit` (run `help(na.omit)` or `?na.omit`) for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c04-understanding-survey-data-documentation). The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details).
 
 ### Example
 
@@ -178,16 +186,23 @@ The syntax for this regression uses the same function as ANOVA, but can have mor
 ``` r
 des_obj %>%
   svyglm(
+    formula = outcomevar ~ x1 + x2 + x3,
     design = .,
-    outcomevar ~ x1 + x2 + x3,
     na.action = na.omit,
     df.resid = degf(.)
   )
 ```
 
+The arguments are:
+
+* `formula`: Formula in the form of `y~x`
+* `design`: a `tbl_svy` object created by `as_survey`
+* `na.action`: handling of missing data
+* `df.resid`: degrees of freedom for Wald tests (optional)
+
 As discussed at the beginning of the chapter, the formula on the right-hand side can be specified in many ways, whether interactions are desired or not, for example. 
 
-### Example
+### Examples
 
 #### Example 1: Linear Regression with Single Variable {.unnumbered}
 On RECS, we can obtain information on the square footage of homes and the electric bills. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to determine whether it is reasonable to assume a linear relationship. In Figure \@ref(fig:model-plot-sf-elbill), each hexagon represents the weighted count of households in the bin and we can see a general positive linear trend (as the square footage increases so does the amount of money spent on electricity).
@@ -345,13 +360,21 @@ The syntax for logistic regression is as follows:
 ``` r
 des_obj %>%
   svyglm(
+    formula = outcomevar ~ x1 + x2 + x3,
     design = .,
-    outcomevar ~ x1 + x2 + x3,
     na.action = na.omit,
     df.resid = degf(.),
     family = quasibinomial
   )
 ```
+
+he arguments are:
+
+* `formula`: Formula in the form of `y~x`
+* `design`: a `tbl_svy` object created by `as_survey`
+* `na.action`: handling of missing data
+* `df.resid`: degrees of freedom for Wald tests (optional)
+* `family`: the error distribution/link function to be used in the model
 
 Note `svyglm()` is the same function used in both ANOVA and linear regression. However, we've added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of two ways with survey data:
 
@@ -359,8 +382,9 @@ Note `svyglm()` is the same function used in both ANOVA and linear regression. H
   - A numeric variable which is 1 or 0 where 1 indicates a success
   - A logical variable where TRUE indicates a success
 
-### Example
+### Examples
 
+#### Example 1: Logistic Regression with Single Variable {.unnumbered}
 In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for president in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. We first create a binary outcome for trusting in the government and plot the data. A scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data.
 
 ```{r}
@@ -443,6 +467,80 @@ logistic_trust_vote %>%
          .fitted,
          .se.fit) 
 ```
+
+#### Example 2: Interaction Effects {.unnumbered}
+Let's look at another example with interaction effects.  If we're interested in understanding the demographics of people who voted for Biden, we could include `Gender` and `Education` in our model.  
+
+First we need to create an indicator for voted for Biden:
+```{r}
+#| label: model-logisticexamp-biden-ind
+anes_des_ind <- anes_des %>% 
+  mutate(VoteBiden = case_when(VotedPres2020_selection == "Biden"~1,
+                               TRUE ~ 0))
+```
+
+Let's first look at the main effects of gender and education.
+```{r}
+#| label: model-logisticexamp-biden-main
+log_biden_main <- anes_des_ind %>%
+  svyglm(design = .,
+         formula = VoteBiden ~ Gender + Education,
+         family = quasibinomial) 
+
+tidy(log_biden_main)
+```
+
+This main effect model indicates that respondents with a graduate degree are `r signif(log_biden_main$coefficients[6],3)` times more likely to vote for Biden compared to respondents with less than a high school degree. However, we see that gender is not significant. 
+
+It is possible that there is an interaction between gender and education. To determine this we can create a model that includes the interaction effects:
+```{r}
+#| label: model-logisticexamp-biden-int
+log_biden_int <- anes_des_ind %>%
+  svyglm(design = .,
+         formula = VoteBiden ~ (Gender + Education)^2,
+         family = quasibinomial) 
+
+tidy(log_biden_int)
+```
+
+The results from the interaction model show a single interaction effect that is significant.  To better understand what this interaction means, we will want to plot the predicted probabilities.  Let's first obtain the predicted probabilities for each possible combination of variables using the `augment()` function.
+```{r}
+#| label: model-logisticexamp-biden-aug
+#| warning: false
+log_biden_pred<-log_biden_int %>%
+  augment(type.predict = "response") %>%
+  mutate(.se.fit = sqrt(attr(.fitted, "var")), 
+         .fitted = as.numeric(.fitted)) %>%
+  select(VoteBiden,Gender,Education,
+         .fitted,.se.fit) 
+```
+
+We can then use this information to plot the predicted probabilities to better understand the interaction effects. To create an interaction plot, the y-axis will be the predicted probabilities, and one of our x-variables will be on the x-axis and the other will be represented by multiple lines. Figure \@ref(fig:model-logisticexamp-biden-plot) shows the interaction plot with the gender variable on the x-axis and education represented by the lines.
+```{r}
+#| label: model-logisticexamp-biden-plot
+#| fig.cap: Interaction Plot of Gender and Education Predicting the Probability of Voting for Biden
+#| fig.alt: !expr str_c(BrailleR::VI(biden_int_plot)$text, collapse=" ")
+
+biden_int_plot<-log_biden_pred %>% 
+  filter(VoteBiden==1) %>% 
+  distinct() %>% 
+  arrange(Gender,Education) %>% 
+  ggplot(aes(x=Gender,y=.fitted,group=Education,color=Education,linetype=Education)) +
+  geom_line() +
+  geom_point() + 
+  scale_color_manual(values = book_colors) +
+  xlab("Gender") +
+  ylab("Predicted Probability of Voting for Biden") +
+  guides(fill = "none") +
+  theme_minimal()
+  
+biden_int_plot
+```
+
+From this plot we can see that respondents who indicated a male gender and had less than a high school education were more likely to vote for Biden than females with less than a high school education.  Additionally, females with a graduate degree were more likely to vote for Biden than males with a graduate degree.
+
+Interactions in models can be difficult to understand from the coefficients alone. Using these interaction plots can help others understand the nuances of the results.
+
 
 ## Exercises
 
