@@ -61,7 +61,7 @@ $$y_i=\beta_0 +\sum_{i=1}^p \beta_i x_i + \epsilon_i$$
 
 where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_p$ are the predictors with $\beta_1, \cdots, \beta_p$ as the associated coefficients, and $\epsilon_i$ is the error.  Different models may not include an intercept, have interactions between different independent variables ($x_i$), or may have different underlying structures for the dependent variable ($y_i$).  However, all linear models have the independent variables related to the dependent variable in a linear form.
 
-To specify these models in R, the formulas are the same with both raw data and survey data. The left side of the formula is the response/dependent variable, and the right side of the formula has the predictor/independent variable(s). There are many symbols used in R to specify the formula.
+To specify these models in R, the formulas are the same with both survey data and other data. The left side of the formula is the response/dependent variable, and the right side of the formula has the predictor/independent variable(s). There are many symbols used in R to specify the formula.
 
 For example, a linear formula mathematically specified as
 
@@ -96,7 +96,7 @@ Note that the following two specifications are not the same:
   - `mpg~cyl:disp:hp` this only has the interactions and not the main effect
   - `mpg~cyl*disp*hp` this also has the 3-way interaction in addition to the main effects and 2-way interactions
 
-When using raw data, researchers will use the `glm()` function.  With survey data, however, we use `svyglm()` from the {survey} package to ensure that we account for the survey design and weights in modeling^[There is some debate about whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg]. However, for the purposes of providing complete information on how to analyze complex survey data, this chapter will include weights.].  This allows us to generalize a model to the target population and accounts for the fact that the observations in the survey data may not be independent.  As discussed in Chapter \@ref(c06-statistical-testing), modeling survey data cannot be directly done in {srvyr}, but can be done in the {survey} [@lumley2010complex; @R-survey] package. In this chapter, we will provide syntax and examples for linear models, including ANOVA, Gaussian linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book.
+When using non-survey data such as experimental or observational data, researchers will use the `glm()` function for linear models.  With survey data, however, we use `svyglm()` from the {survey} package to ensure that we account for the survey design and weights in modeling^[There is some debate about whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg]. However, for the purposes of providing complete information on how to analyze complex survey data, this chapter will include weights.].  This allows us to generalize a model to the target population and accounts for the fact that the observations in the survey data may not be independent.  As discussed in Chapter \@ref(c06-statistical-testing), modeling survey data cannot be directly done in {srvyr}, but can be done in the {survey} [@lumley2010complex; @R-survey] package. In this chapter, we will provide syntax and examples for linear models, including ANOVA, Gaussian linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book.
 
 ## Analysis of Variance (ANOVA)
 
@@ -113,7 +113,7 @@ Some assumptions when using ANOVA on survey data include:
 
 ### Syntax
 
-To perform this type of test in R, the general syntax is as follows:
+To perform this type of analysis in R, the general syntax is as follows:
 
 ``` r
 des_obj %>%
@@ -121,7 +121,7 @@ des_obj %>%
     formula = outcome ~ group,
     design = .,
     na.action = na.omit,
-    df.resid = degf(.)
+    df.resid = NULL
   )
 ```
 
@@ -130,10 +130,9 @@ The arguments are:
 * `formula`: Formula in the form of `outcome~group`. The group variable must be a factor or character.
 * `design`: a `tbl_svy` object created by `as_survey`
 * `na.action`: handling of missing data
-* `df.resid`: degrees of freedom for Wald tests (optional)
+* `df.resid`: degrees of freedom for Wald tests (optional) - defaults to using `degf(design)-(g-1)` where $g$ is the number of groups
 
-
-The default for missing data is `na.omit`, this means that we are removing all data from analyses.  There are other options for handling missing data and we recommend looking at the help documentation for `na.omit` (run `help(na.omit)` or `?na.omit`) for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c04-understanding-survey-data-documentation). The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details).
+The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details). The default for missing data is `na.omit`, this means that we are removing all records with any missing data in either predictors or outcomes from analyses.  There are other options for handling missing data and we recommend looking at the help documentation for `na.omit` (run `help(na.omit)` or `?na.omit`) for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c04-understanding-survey-data-documentation). 
 
 ### Example
 
@@ -189,7 +188,7 @@ des_obj %>%
     formula = outcomevar ~ x1 + x2 + x3,
     design = .,
     na.action = na.omit,
-    df.resid = degf(.)
+    df.resid = NULL
   )
 ```
 
@@ -198,7 +197,7 @@ The arguments are:
 * `formula`: Formula in the form of `y~x`
 * `design`: a `tbl_svy` object created by `as_survey`
 * `na.action`: handling of missing data
-* `df.resid`: degrees of freedom for Wald tests (optional)
+* `df.resid`: degrees of freedom for Wald tests (optional) - defaults to using `degf(design)-p` where $p$ is the rank of the design matrix
 
 As discussed at the beginning of the chapter, the formula on the right-hand side can be specified in many ways, whether interactions are desired or not, for example. 
 
@@ -209,7 +208,8 @@ On RECS, we can obtain information on the square footage of homes and the electr
 
 ```{r}
 #| label: model-plot-sf-elbill
-#| fig.cap: "Relationship between square footage and dollars spent on electricity, RECS 2015"
+#| fig.cap: Relationship between square footage and dollars spent on electricity, RECS 2015
+#| fig.alt: Hex chart where each hexagon represents a number of housing units at a point. x-axis is 'Total square footage' ranging from 0 to 7,500 and y-axis is 'Amount spent on electricity' ranging from $0 to 8,000. The trend is relatively linear and positve. A high concentration of points have square footage between 0 and 2,500 square feet as well as between electricity expenditure between $0 and 2,000
 #| echo: FALSE
 #| warning: FALSE
 recs_in %>%
@@ -270,7 +270,7 @@ urb_reg_test <- regTermTest(m_electric_multi, ~Urbanicity:Region)
 urb_reg_test
 ```
 
-This output indicates there is a significant interaction between urbanicity and region (p-value=`r signif(urb_reg_test$p, 3)`).
+This output indicates there is a significant interaction between urbanicity and region (p-value=$`r signif(urb_reg_test[["p"]], 3)`$).
 
 To examine the predictions, residuals and more from the model, the function `augment()` from {broom} can be used. The `augment()` function will return a tibble with the independent and dependent variables and other fit statistics. The `augment()` function has not been specifically written for objects of class `svyglm`, and as such, a warning will be displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using augment to get the predicted (`.fitted`) and standard error (`.se.fit`) values. To obtain the standard error of the fitted values we need to use the `attr()` function on the `.fitted` values created by `augment()`. 
 
@@ -289,14 +289,18 @@ These results can then be used in a variety of ways, including examining residua
 
 ```{r}
 #| label: model-aug-examp-plot
-#| fig.cap: "Residual plot of electric cost model with covariates Region, Urbanicity, TOTSQFT_EN, and ACUsed"
+#| fig.cap: Residual plot of electric cost model with covariates Region, Urbanicity, TOTSQFT_EN, and ACUsed
+#| fig.alt: Residual scatter plot with a x-axis of 'Fitted value of electricity cost' ranging between approximately $0 and $4,000 and a y-axis with the 'Residual of model' ranging from approximatley -$3,000 to $5,000. The points create a slight megaphone shape with largest residuals in the middle of the x-range. A red line is drawn horizontally at y=0.
 fitstats %>%
   ggplot(aes(x = .fitted, .resid)) +
   geom_point() +
   geom_hline(yintercept = 0, colour = "red") +
   theme_minimal() +
   xlab("Fitted value of electricity cost") +
-  ylab("Residual of model")
+  ylab("Residual of model") +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  scale_x_continuous(labels = scales::dollar_format()) 
+
 ```
 
 Additionally, `augment()` can be used to predict outcomes for data not used in modeling. Perhaps, we would like to predict the energy expenditure for a home in an urban area in the south that uses air-conditioning and is 2,500 square feet. To do this, we first make a tibble including that additional data and then use the `newdata` argument in the `augment()` function.  As before, to obtain the standard error of the predicted values we need to use the `attr()` function.
@@ -331,6 +335,7 @@ pred_data
 
 In the above example, it is predicted that the energy expenditure would be \$`r pred_data %>% slice_tail(n=1) %>% pull(.fitted) %>% round(2)`.
 
+
 ## Logistic Regression
 
 Logistic regression is used to model a binary outcome and is a specific case of the generalized linear model (GLM). A GLM uses a link function to link the response variable to the linear model. In logistic regression, the link model is the logit function. Specifically, the model is specified as follows:
@@ -363,7 +368,7 @@ des_obj %>%
     formula = outcomevar ~ x1 + x2 + x3,
     design = .,
     na.action = na.omit,
-    df.resid = degf(.),
+    df.resid = NULL,
     family = quasibinomial
   )
 ```
@@ -373,7 +378,7 @@ he arguments are:
 * `formula`: Formula in the form of `y~x`
 * `design`: a `tbl_svy` object created by `as_survey`
 * `na.action`: handling of missing data
-* `df.resid`: degrees of freedom for Wald tests (optional)
+* `df.resid`: degrees of freedom for Wald tests (optional) - defaults to using `degf(design)-p` where $p$ is the rank of the design matrix
 * `family`: the error distribution/link function to be used in the model
 
 Note `svyglm()` is the same function used in both ANOVA and linear regression. However, we've added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of two ways with survey data:
@@ -389,7 +394,8 @@ In the following example, the ANES data is used, and we are modeling whether som
 
 ```{r}
 #| label: model-logisticexamp-plot
-#| fig.cap: "Relationship between candidate selection and trust in government, ANES 2020"
+#| fig.cap: Relationship between candidate selection and trust in government, ANES 2020
+#| fig.alt: Bar chart with x-axis of election choice with levels of Biden, Trump, and Other and y-axis of 'Usually trust the government' ranging from 0% to 20%. Bar 1 is centered at 1, and length is from 0 to 0.12 with fill colour dark blue which maps to VotedPres2020_selection = Biden. Bar 2 is centered at 2, and length is from 0 to 0.17 with fill colour very pale blue which maps to VotedPres2020_selection = Trump. Bar 3 is centered at 3, and length is from 0 to 0.06 with fill colour moderate purple which maps to VotedPres2020_selection = Other. Error bars are drawn as well with the width of the Biden and Trump error bars being similar and the error bar for Other being significantly wider.
 #| warning: false
 anes_des_der <- anes_des %>%
   mutate(TrustGovernmentUsually = case_when(
@@ -468,10 +474,11 @@ logistic_trust_vote %>%
          .se.fit) 
 ```
 
+
 #### Example 2: Interaction Effects {.unnumbered}
 Let's look at another example with interaction effects.  If we're interested in understanding the demographics of people who voted for Biden, we could include `Gender` and `Education` in our model.  
 
-First we need to create an indicator for voted for Biden:
+First we need to create an indicator for voted for Biden. Note that this indicator places anyone who did not vote at all into `VoteBiden = 0`.
 ```{r}
 #| label: model-logisticexamp-biden-ind
 anes_des_ind <- anes_des %>% 
@@ -504,32 +511,33 @@ tidy(log_biden_int)
 ```
 
 The results from the interaction model show a single interaction effect that is significant.  To better understand what this interaction means, we will want to plot the predicted probabilities.  Let's first obtain the predicted probabilities for each possible combination of variables using the `augment()` function.
+
 ```{r}
 #| label: model-logisticexamp-biden-aug
 #| warning: false
-log_biden_pred<-log_biden_int %>%
+log_biden_pred <- log_biden_int %>%
   augment(type.predict = "response") %>%
   mutate(.se.fit = sqrt(attr(.fitted, "var")), 
          .fitted = as.numeric(.fitted)) %>%
-  select(VoteBiden,Gender,Education,
-         .fitted,.se.fit) 
+  select(VoteBiden, Gender, Education, .fitted, .se.fit) 
 ```
 
 We can then use this information to plot the predicted probabilities to better understand the interaction effects. To create an interaction plot, the y-axis will be the predicted probabilities, and one of our x-variables will be on the x-axis and the other will be represented by multiple lines. Figure \@ref(fig:model-logisticexamp-biden-plot) shows the interaction plot with the gender variable on the x-axis and education represented by the lines.
+
 ```{r}
 #| label: model-logisticexamp-biden-plot
 #| fig.cap: Interaction Plot of Gender and Education Predicting the Probability of Voting for Biden
-#| fig.alt: !expr str_c(BrailleR::VI(biden_int_plot)$text, collapse=" ")
+#| fig.alt: "Line plot with x-axis as Male and Female (left to right) and y-axis as 'Predicted Probability of Voting for Biden'. There are five lines for education levels with lines being from top to bottom: Graduate, Bachelor's, Post HS, High school, and Less than HS. Most lines are roughly parallel with similar predicted probabilities between males and females of the same education except for those with graduate and less than HS educations. For those with a graduate degree, females have higher predicted probability of voting for Biden than males. For those with less than a HS degree, females have lower predicted probability of voting for Biden than males with HS education."
 
-biden_int_plot<-log_biden_pred %>% 
+biden_int_plot <- log_biden_pred %>% 
   filter(VoteBiden==1) %>% 
   distinct() %>% 
-  arrange(Gender,Education) %>% 
-  ggplot(aes(x=Gender,y=.fitted,group=Education,color=Education,linetype=Education)) +
-  geom_line() +
-  geom_point() + 
+  arrange(Gender, Education) %>% 
+  mutate(Education = fct_reorder2(Education, Gender, .fitted)) %>%
+  ggplot(aes(x = Gender, y = .fitted, group = Education,
+             color = Education, linetype = Education)) +
+  geom_line(linewidth = 1.1) +
   scale_color_manual(values = book_colors) +
-  xlab("Gender") +
   ylab("Predicted Probability of Voting for Biden") +
   guides(fill = "none") +
   theme_minimal()
@@ -537,7 +545,7 @@ biden_int_plot<-log_biden_pred %>%
 biden_int_plot
 ```
 
-From this plot we can see that respondents who indicated a male gender and had less than a high school education were more likely to vote for Biden than females with less than a high school education.  Additionally, females with a graduate degree were more likely to vote for Biden than males with a graduate degree.
+From this plot we can see that respondents who indicated a male gender and had less than a high school education were more likely to vote for Biden than females among those with less than a high school education.  Additionally, females with a graduate degree were more likely to vote for Biden than males with a graduate degree.
 
 Interactions in models can be difficult to understand from the coefficients alone. Using these interaction plots can help others understand the nuances of the results.
 
