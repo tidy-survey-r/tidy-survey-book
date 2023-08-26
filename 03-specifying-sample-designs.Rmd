@@ -278,7 +278,7 @@ Let $\bar{y}_h$ be the sample mean for stratum $h$, $N_h$ be the population size
 $$\bar{y}=\frac{1}{N}\sum_{h=1}^H N_h\bar{y}_h$$ 
 and the estimate of the standard error of $\bar{y}$ is:
 
-$$se(\bar{y})=\sqrt{\frac{1}{N^2} \sum_{h=1}^H N_h^2 s_h^2\left(1-\frac{n_h}{N_h}\right)} $$ 
+$$se(\bar{y})=\sqrt{\frac{1}{N^2} \sum_{h=1}^H N_h^2 \frac{s_h^2}{n_h}\left(1-\frac{n_h}{N_h}\right)} $$ 
 
 where 
 $$s_h^2=\frac{1}{n_h-1}\sum_{i=1}^{n_h}\left(y_{i,h}-\bar{y}_h\right)^2.$$
@@ -289,7 +289,7 @@ $$\hat{p}= \frac{1}{N}\sum_{h=1}^H N_h \hat{p}_h$$
 
 where $H$ is the total number of clusters. The standard error of the proportion is:
 
-$$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_h)}{n_h-1} \left(1-\frac{n_h}{N_h}\right)}$$
+$$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_h)}{n_h} \left(1-\frac{n_h}{N_h}\right)}$$
 
 #### The syntax {-} 
 
@@ -353,25 +353,19 @@ Clustered sampling occurs when a population is divided into mutually exclusive s
 
 #### The math {-}
 
-Consider a population where there are $N$ clusters and $n$ clusters are sampled via SRS. Units within each sampled cluster are sampled via SRS as well. Let $M_i$ be the number of units in cluster $i$ and $\bar{y}_i$ be the sample mean of cluster $i$. Then, a ratio estimator of the population mean is:
+Consider a population where there are $A$ clusters and $a$ clusters are sampled via SRS. Units within each sampled cluster are sampled via SRS as well. Let $B_i$ be the number of units in cluster $i$ and $\bar{y}_i$ be the sample mean of cluster $i$. Then, a ratio estimator of the population mean is:
 
-$$\bar{y}=\frac{\sum_{i=1}^n M_i \bar{y}_i}{ \sum_{i=1}^n M_i}$$
+$$\bar{y}=\frac{\sum_{i=1}^a B_i \bar{y}_i}{ \sum_{i=1}^a B_i}$$
 Note this is a consistent but biased estimator. Often the population size is not known, so this is a method to estimate a mean without knowing the population size. The estimated standard error of the mean is:
 
-$$se(\bar{y})=\frac{1}{\hat{N}_{pop} } \sqrt{\frac{N^2 (1-\frac{n}{N})}{n}\frac{1}{n-1} \sum_{i=1}^n \left(M_i\bar{y}_i -\frac{\hat{t}}{N}\right)^2 + \frac{N}{n} \sum_{i=1}^n \frac{M_i^2}{m_i}\left(1-\frac{m_i}{M_i}\right)s^2_i }$$
-where $\hat{N}_{pop}$ is the estimated population size, $\hat{t}$ is the estimated total, and $s_i^2$ is the sample variance of cluster $i$.
+$$se(\bar{y})=\sqrt{\left(1-\frac{a}{A}\right)\frac{s_a^2}{a} + \frac{a}{A}\left(1-\frac{b}{B}\right) \frac{s_b^2}{ab}}$$
+where $s_a^2$ is the between-cluster variance: 
 
-For estimates of proportions, the estimated proportion is:
+$$s_a^2=\frac{1}{(a-1)b^2}\left(\sum_{\alpha=1}^a y_\alpha^2 - \frac{y^2}{a}\right)$$
 
-$$\hat{p}=\frac{\sum_{i=1}^n M_i \hat{p}_i}{ \sum_{i=1}^n M_i}$$
+and $s_b^2$ is the within-cluster variance:
 
-and the associated standard error estimate is:
-
-$$se(\hat{p})=\frac{1}{\hat{N}_{pop}} \sqrt{\frac{N^2 (1-\frac{n}{N})}{n}\frac{1}{n-1} \sum_{i=1}^n \left(M_i\hat{p}_i -\frac{\hat{t}}{N}\right)^2 + \frac{N}{n} \sum_{i=1}^n \frac{M_i^2}{m_i}\left(1-\frac{m_i}{M_i}\right)s^2_i }$$
-
-where $s^2_i$ is defined as:
-
-$$s^2_i = \frac{m_hp_h(1-p_h)}{m_h-1}$$.
+$$s_b^2=\frac{1}{a(b-1)} \sum_{\alpha=1}^a \sum_{\beta=1}^b \left(y_{\alpha\beta}-\frac{y^2}{a}\right)$$
 
 #### The syntax {-} 
 
@@ -381,10 +375,10 @@ To specify a two-stage clustered design without replacement, use the following s
 clus2_des <- dat %>%
  as_survey_design(weights = wtvar, 
                   ids = c(PSU, SSU), 
-                  fpc = c(N, M))
+                  fpc = c(A, B))
 ```
 
-where `PSU` and `SSU` are the variables indicating the PSU and SSU identifiers, and `N` and `M` are the variables indicating the population sizes for each level (i.e., `N` is the number of clusters, and `M` is the number of units within each cluster). Note that `N` will be the same for all records (within a strata), and `M` will be the same for all records within the same cluster.
+where `PSU` and `SSU` are the variables indicating the PSU and SSU identifiers, and `A` and `B` are the variables indicating the population sizes for each level (i.e., `A` is the number of clusters, and `B` is the number of units within each cluster). Note that `A` will be the same for all records (within a strata), and `B` will be the same for all records within the same cluster.
 
 If clusters were sampled with replacement or from a very large population, a FPC is unnecessary. Additionally, only the first stage of selection is necessary regardless of whether the units were selected with replacement at any stage. The subsequent stages of selection are ignored in computation as their contribution to the variance is overpowered by the first stage (see @sarndal2003model or @wolter2007introduction for a more in-depth discussion). Therefore, the syntax below will yield the same estimates in the end:
 
@@ -401,7 +395,7 @@ clus2wrb_des <- dat %>%
 
 #### Example {-} 
 
-The `survey` package includes a two-stage cluster sample data, `apiclus2`, in which school districts were sampled, and then a random sample of five schools was selected within each district. For districts with fewer than five schools, all schools were sampled. School districts are identified by `dnum`, and schools are identified by `snum`. The variable `fpc1` indicates how many districts there are in California (`N`), and `fpc2` indicates how many schools were in a given district with at least 100 students (`M`). The data has a row for each school. In the data printed below, there are 757 school districts, as indicated by `fpc1`, and there are nine schools in District 731, one school in District 742, two schools in District 768, and so on as indicated by `fpc2`. For illustration purposes, the object `apiclus2_slim` has been created from `apiclus2`, which subsets the data to only the necessary columns and sorts data.
+The `survey` package includes a two-stage cluster sample data, `apiclus2`, in which school districts were sampled, and then a random sample of five schools was selected within each district. For districts with fewer than five schools, all schools were sampled. School districts are identified by `dnum`, and schools are identified by `snum`. The variable `fpc1` indicates how many districts there are in California (`A`), and `fpc2` indicates how many schools were in a given district with at least 100 students (`B`). The data has a row for each school. In the data printed below, there are 757 school districts, as indicated by `fpc1`, and there are nine schools in District 731, one school in District 742, two schools in District 768, and so on as indicated by `fpc2`. For illustration purposes, the object `apiclus2_slim` has been created from `apiclus2`, which subsets the data to only the necessary columns and sorts data.
 
 ```{r}
 #| label: samp-des-api2clus-dis
