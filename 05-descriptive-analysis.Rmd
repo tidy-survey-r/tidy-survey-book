@@ -17,7 +17,11 @@ library(srvyr)
 library(osfr)
 source("helper-fun/helper-functions.R")
 library(broom)
+```
 
+
+```{r}
+#| include: false
 knitr::opts_chunk$set(tidy = TRUE)
 ```
 
@@ -71,7 +75,7 @@ recs_des <- recs_in %>%
 
 ## Introduction
 
-Descriptive analyses, such as basic counts, cross-tabulations, or means, are one of the first steps a researcher takes before conducting statistical tests or developing models. Reviewing findings from descriptive analyses can help researchers glean insight into the data, the underlying population, and any potential unique aspects of the data or population.  For example, if the proportion of males is only 10% in the data, this could indicate either a unique population or a potential error in the data.  Additionally, researchers can use descriptive analyses to provide means, proportions, or other measures to summarize the data and make estimates about the population.
+Descriptive analyses, such as basic counts, cross-tabulations, or means, are one of the first steps a researcher takes before conducting statistical tests or developing models. Reviewing findings from descriptive analyses can help researchers glean insight into the data, the underlying population, and any unique aspects of the data or population.  For example, if the data shows a proportion of males of only 10% in the data, this could indicate either a unique population or a potential error in the data.  Additionally, researchers can use descriptive analyses to provide means, proportions, or other measures to summarize the data and make estimates about the population.
 
 We will discuss many different types of descriptive analyses in this chapter, but it is important to know what type of data we have and what statistics to use for that type of data. In survey data, we typically consider data to be one of these four main data types:  
 
@@ -99,7 +103,7 @@ To incorporate each of these survey functions, recall the general process for su
 3. Specify domains of analysis using `srvyr::group_by()`, if needed.
 4. Analyze the data with survey-specific functions.
 
-We have already discussed how to create the survey design objects in Chapter \@ref(c03-specifying-sample-designs), and the code for creating these for the two datasets used in this chapter is provided in the Prerequisites box at the beginning of this chapter. We will apply the survey functions covered in this chapter in Step 4. To look at the data by different subgroups, we can choose to filter and/or group the data. It is very important that we only filter and group the data *after* creating the design object. This is necessary to ensure that the results accurately account for the survey design. Removing any data before creating the survey design object means that the data for those cases is not included in the survey design information and estimations of the variance. 
+We have already discussed how to create the survey design objects in Chapter \@ref(c03-specifying-sample-designs), and the code for creating these for the two datasets used in this chapter is provided in the Prerequisites box at the beginning of this chapter. We will apply the survey functions covered in this chapter in Step 4. To look at the data by different subgroups, we can choose to filter and/or group the data. It is very important that we filter and group the data only *after* creating the design object. This is necessary to ensure that the results accurately account for the survey design. Removing any data before creating the survey design object means that the data for those cases is not included in the survey design information and estimations of the variance. 
 
 ## Similarities Between {dplyr} and {srvyr} Functions
 
@@ -112,7 +116,7 @@ mtcars %>%
             mpg_median = median(mpg))
 ```
 
-Similarly, in the next example, the variance and standard deviation of the variable `api00` are calculated for the tbl_svy object `dstrata`. Note how similarity in the syntax. When we dig into the functions later, we will show that the results output are similar in that one row is output for each group (if there are groups), but there will be more columns output. Specifically, by default, the standard error of the statistic is calculated in addition to the statistic.
+Similarly, in the next example, the variance and standard deviation of the variable `api00` are calculated for the tbl_svy object `dstrata`. Note the similarity in the syntax. When we dig into the functions later, we will show that the results output are similar in that one row is output for each group (if there are groups), but there will be more columns output. Specifically, by default, the standard error of the statistic is calculated in addition to the statistic.
 
 ```{r}
 #| label: desc-srvyr-examp
@@ -237,7 +241,7 @@ Both functions include the `vartype` argument with four different values:
 * `ci`: confidence interval
     * The lower and upper limits of a confidence interval
     * Output has a column with the variable name specified in the `name` argument with a suffix of "_low" and "_upp"
-    * By default, this is a 95% confidence interval but can be changed by using the argument level and specifying a number between 0 and 1. For example, `level=0.8` would produce a 80% confidence interval
+    * By default, this is a 95% confidence interval but can be changed by using the argument level and specifying a number between 0 and 1. For example, `level=0.8` would produce a 80% confidence interval.
 * `var`: variance
     * The estimated variance of the estimate
     * Output has a column with the variable name specified in the `name` argument with a suffix of "_var"
@@ -248,7 +252,7 @@ Both functions include the `vartype` argument with four different values:
 The confidence intervals are always calculated using a symmetric t-distribution based confidence interval as follows:
 
 $$ \text{estimate} \pm t^*_{df}\times SE$$
-where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are calculated based on the design or number of replicates, but they can be specified using the argument `df`. For survey design objects, the degrees of freedom are calculated as the number of PSUs minus the number of strata. For-replicate based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval. These variability types are the same for most of the survey functions, and we will provide examples using different types of variability throughout this chapter.
+where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are calculated based on the design or number of replicates, but they can be specified using the argument `df`. For survey design objects, the degrees of freedom are calculated as the number of PSUs minus the number of strata. For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval. These variability types are the same for most of the survey functions, and we will provide examples using different types of variability throughout this chapter.
 
 ### Examples
 
@@ -271,7 +275,7 @@ recs_des %>%
   prettyNum(big.mark = ",", digits = 20)
 ```
 
-Thus, the estimated number of households in the U.S. is `r .est_pop`. 
+Thus, the estimated number of households in the U.S. is `r sub("\\..*", "", .est_pop)`. 
 
 We could also use the `survey_tally()` function and the example below yields the same results as using `survey_count()` previously.
 
@@ -416,7 +420,7 @@ The survey results estimate that households in the Northeast spent `r .elbil_reg
 
 ## Means and Proportions {#desc-meanprop}
 
-Means and proportions are the backbone of most research.  The estimates calculated are often the first things we look for when reviewing research on a given topic. The `survey_mean()` and `survey_prop()` functions calculate those means and proportions while incorporating the survey design elements. The `survey_mean()` function should be used on continuous variables of survey data, while the `survey_prop()` function should be used on categorical variables. These topics are grouped together because a proportion is simply a mean of a logical (Boolean) variable.
+Means and proportions are the backbone of most research.  The estimates calculated are often the first things we look for when reviewing research on a given topic. The `survey_mean()` and `survey_prop()` functions calculate means and proportions while incorporating the survey design elements. The `survey_mean()` function should be used on continuous variables of survey data, while the `survey_prop()` function should be used on categorical variables. These topics are grouped together because a proportion is simply a mean of a logical (Boolean) variable.
 
 ### Syntax {#desc-meanprop-syntax}
 
@@ -454,7 +458,7 @@ Both functions have the following arguments and defaults:
   * `deff`: a logical value stating whether the design effect should be returned, defaults to FALSE (this is described in more detail in Section \@ref(desc-deff))
   * `df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution
 
-There are two main differences in the syntax.  The `survey_mean()` function includes the first argument of `x`, while `survey_prop()` does not.  The `x` argument includes the variable or expression on which the mean should be calculated. There is no argument to include variables in the `survey_prop()` function. Instead, prior to `summarize()`, we need to use the `group_by()` function to specify the variables of interest. For `survey_mean()`, including a `group_by()` function prior will allow us to obtain the means by the different groups.
+There are two main differences in the syntax.  The `survey_mean()` function includes the first argument of `x`, while `survey_prop()` does not.  The `x` argument includes the variable or expression on which the mean should be calculated. There is no argument to include variables in the `survey_prop()` function. Instead, prior to `summarize()`, we need to use the `group_by()` function to specify the variables of interest. For `survey_mean()`, including a `group_by()` function will allow us to obtain the means by the different groups.
 
 The other main difference is with the `proportion` argument.  In the `survey_mean()` function, this defaults to `FALSE`, while in the `survey_prop()` function, this defaults to `TRUE`.  This is because the `survey_mean()` function can be used to calculate both means and proportions.  If we wish to calculate a proportion using this function, we will need to set the `proportion` argument to `TRUE`.
 
@@ -513,7 +517,8 @@ recs_des %>%
   summarize(p = survey_prop())
 ```
 
-When specifying multiple variables, the proportions are conditional. In the results above, notice that the proportions sum to 1 within each region. This can be interpreted as the proportion of housing units with air conditioning WITHIN each region. 
+When specifying multiple variables, the proportions are conditional. In the results above, notice that the proportions sum to 1 within each region. This can be interpreted as the proportion of housing units with air conditioning 
+*within* each region. 
 
 #### Example 3: Joint Proportions {.unnumbered}
 
@@ -881,7 +886,7 @@ recs_des %>%
 
 ## Standard Deviation and Variance
 
-All survey functions produce an estimate of the variability of a given estimate.  No additional function is needed when dealing with variable estimates. However, if estimates of the population variance and population standard deviation are needed, then the `survey_var()` and `survey_sd()` functions can be used. In our experience, most researchers will not use these functions. These are sometimes used when designing a future study, as understanding the variability in the population can help inform the precision of a future sampling design.
+All survey functions produce an estimate of the variability of a given estimate.  No additional function is needed when dealing with variable estimates. However, if estimates of the population variance and population standard deviation are needed, we can use the `survey_var()` and `survey_sd()` functions. In our experience, most researchers will not use these functions. These are sometimes used when designing a future study, as understanding the variability in the population can help inform the precision of a future sampling design.
 
 ### Syntax
 
@@ -1176,7 +1181,7 @@ cool_heat_tab %>%
          se = `_se`)
 ```
 
-#### Example 3: `map()` {.unnumbered}
+#### Example 3: `purrr::map()` {.unnumbered}
 
 Loops are a common tool if we want to calculate the same thing for many elements. The {purrr} package has the `map()` functions. Like a loop, they allow you to do something in the same way many times. In our case, we may want to calculate proportions from the same design multiple times. An easy way to do this is to think about how we would do it for one outcome, build a function from there, and then iterate.
 
@@ -1236,10 +1241,11 @@ The exercises use the design objects `anes_des` and `recs_des` as provided in th
 ```{r}
 #| label: desc-solution1
 # Option 1:
-
 femgd_option1 <- anes_des %>%
   filter(Gender == "Female", Education == "Graduate") %>%
   survey_count(name = "n")
+
+femgd_option1
 
 # Option 2:
 femgd_option2 <- anes_des %>%
@@ -1345,7 +1351,7 @@ med_summertempnight <- recs_des %>%
 
 med_summertempnight
 
-# Alternatively, could use `survey_quantile()` as shown below:
+# Alternatively, could use `survey_quantile()` as shown below for WinterTempNight:
 
 quant_wintertemp <- recs_des %>%
   summarize(wnt_quant = survey_quantile(
@@ -1373,7 +1379,7 @@ corr_summer_temp
 9. What is the 1st, 2nd, and 3rd quartile of the amount of money spent on energy by Building America (BA) climate zone? Hint: `TOTALDOL` indicates the total amount spent on electricity, and `ClimateRegion_BA` indicates the BA climate zones.
 
 ```{r}
-#| label: desc-solution8
+#| label: desc-solution9    
 quant_baenergyexp <- recs_des %>%
   group_by(ClimateRegion_BA) %>%
   summarize(dol_quant = survey_quantile(
