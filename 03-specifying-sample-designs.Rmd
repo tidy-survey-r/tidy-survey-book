@@ -287,9 +287,9 @@ For estimates of proportions, let $\hat{p}_h$ be the estimated proportion in str
 
 $$\hat{p}= \frac{1}{N}\sum_{h=1}^H N_h \hat{p}_h$$
 
-where $H$ is the total number of clusters. The standard error of the proportion is:
+where $H$ is the total number of strata. The standard error of the proportion is:
 
-$$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_h)}{n_h} \left(1-\frac{n_h}{N_h}\right)}$$
+$$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_h)}{n_h-1} \left(1-\frac{n_h}{N_h}\right)}$$
 
 #### The syntax {-} 
 
@@ -353,19 +353,21 @@ Clustered sampling occurs when a population is divided into mutually exclusive s
 
 #### The math {-}
 
-Consider a population where there are $A$ clusters and $a$ clusters are sampled via SRS. Units within each sampled cluster are sampled via SRS as well. Let $B_i$ be the number of units in cluster $i$ and $\bar{y}_i$ be the sample mean of cluster $i$. Then, a ratio estimator of the population mean is:
+Consider a survey where a sample of $a$ clusters are sampled from a population of $A$ clusters via SRS. Units within each sampled cluster are sampled via SRS as well. Within each sampled cluster, $i$, there are $B_i$ units and $b_i$ units are sampled via SRS. Let $\bar{y}_{i}$ be the sample mean of cluster $i$. Then, a ratio estimator of the population mean is:
 
-$$\bar{y}=\frac{\sum_{i=1}^a B_i \bar{y}_i}{ \sum_{i=1}^a B_i}$$
+$$\bar{y}=\frac{\sum_{i=1}^a B_i \bar{y}_{i}}{ \sum_{i=1}^a B_i}$$
 Note this is a consistent but biased estimator. Often the population size is not known, so this is a method to estimate a mean without knowing the population size. The estimated standard error of the mean is:
 
-$$se(\bar{y})=\sqrt{\left(1-\frac{a}{A}\right)\frac{s_a^2}{a} + \frac{a}{A}\left(1-\frac{b}{B}\right) \frac{s_b^2}{ab}}$$
+$$se(\bar{y})= \frac{1}{\hat{N}}\sqrt{\left(1-\frac{a}{A}\right)\frac{s_a^2}{a} + \frac{A}{a} \sum_{i=1}^a \left(1-\frac{b_i}{B_i}\right) \frac{s_i^2}{b_i} }$$
 where $s_a^2$ is the between-cluster variance: 
 
-$$s_a^2=\frac{1}{(a-1)b^2}\left(\sum_{\alpha=1}^a y_\alpha^2 - \frac{y^2}{a}\right)$$
+$$s_a^2=\frac{1}{a-1}\sum_{i=1}^a \left( \hat{y}_i - \frac{\sum_{i=1}^a \hat{y}_{i} }{a}\right)^2$$
 
-and $s_b^2$ is the within-cluster variance:
+and $s_i^2$ is the within-cluster variance:
 
-$$s_b^2=\frac{1}{a(b-1)} \sum_{\alpha=1}^a \sum_{\beta=1}^b \left(y_{\alpha\beta}-\frac{y^2}{a}\right)$$
+$$s_b^2=\frac{1}{a(b_i-1)} \sum_{j=1}^{b_i} \left(y_{ij}-\bar{y}_i\right)^2$$
+
+and $\hat{y}_i =B_i\bar{y_i}$ and $\hat{N}$ is the estimated population size.
 
 #### The syntax {-} 
 
