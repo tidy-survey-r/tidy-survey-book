@@ -197,7 +197,7 @@ div.csl-indent {
 <li class="chapter" data-level="3.2.1" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#simple-random-sample-without-replacement"><i class="fa fa-check"></i><b>3.2.1</b> Simple random sample without replacement</a></li>
 <li class="chapter" data-level="3.2.2" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#simple-random-sample-with-replacement"><i class="fa fa-check"></i><b>3.2.2</b> Simple random sample with replacement</a></li>
 <li class="chapter" data-level="3.2.3" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#stratified-sampling"><i class="fa fa-check"></i><b>3.2.3</b> Stratified sampling</a></li>
-<li class="chapter" data-level="3.2.4" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#clustered-sampling"><i class="fa fa-check"></i><b>3.2.4</b> Clustered sampling</a></li>
+<li class="chapter" data-level="3.2.4" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#samp-cluster"><i class="fa fa-check"></i><b>3.2.4</b> Clustered sampling</a></li>
 </ul></li>
 <li class="chapter" data-level="3.3" data-path="c03-specifying-sample-designs.html"><a href="c03-specifying-sample-designs.html#replicate-weights"><i class="fa fa-check"></i><b>3.3</b> Replicate weights</a>
 <ul>
@@ -405,9 +405,9 @@ div.csl-indent {
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="c03-specifying-sample-designs.html#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb9-2"><a href="c03-specifying-sample-designs.html#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
 <span id="cb9-3"><a href="c03-specifying-sample-designs.html#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
-<span id="cb9-4"><a href="c03-specifying-sample-designs.html#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidycensus)</span>
-<span id="cb9-5"><a href="c03-specifying-sample-designs.html#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osfr)</span>
-<span id="cb9-6"><a href="c03-specifying-sample-designs.html#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;helper-fun/helper-functions.R&quot;</span>)</span></code></pre></div>
+<span id="cb9-4"><a href="c03-specifying-sample-designs.html#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osfr)</span>
+<span id="cb9-5"><a href="c03-specifying-sample-designs.html#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;helper-fun/helper-functions.R&quot;</span>)</span>
+<span id="cb9-6"><a href="c03-specifying-sample-designs.html#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidycensus)</span></code></pre></div>
 <p>To help explain the different types of sample designs, this chapter will use the <code>api</code> and <code>scd</code> data that comes in the {survey} package:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="c03-specifying-sample-designs.html#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(api)</span>
 <span id="cb10-2"><a href="c03-specifying-sample-designs.html#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(scd)</span></code></pre></div>
@@ -417,7 +417,7 @@ div.csl-indent {
 <div id="introduction-1" class="section level2 hasAnchor" number="3.1">
 <h2><span class="header-section-number">3.1</span> Introduction<a href="c03-specifying-sample-designs.html#introduction-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The primary reason for using packages like {survey} and {srvyr} is to incorporate the sampling design or replicate weights into estimates. By incorporating the sampling design or replicate weights, precision estimates (e.g., standard errors and confidence intervals) are appropriately calculated.</p>
-<p>In this chapter, we will introduce common sampling designs and common types of replicate weights, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design or replicate weights. While we will show the math behind the estimates, the functions in these packages will do the calculation. To deeply understand the math and the derivation, refer to <span class="citation">Särndal, Swensson, and Wretman (<a href="#ref-sarndal2003model" role="doc-biblioref">2003</a>)</span>, <span class="citation">Wolter (<a href="#ref-wolter2007introduction" role="doc-biblioref">2007</a>)</span>, or <span class="citation">Fuller (<a href="#ref-fuller2011sampling" role="doc-biblioref">2011</a>)</span>.</p>
+<p>In this chapter, we will introduce common sampling designs and common types of replicate weights, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design or replicate weights. While we will show the math behind the estimates, the functions in these packages will do the calculation. To deeply understand the math and the derivation, refer to <span class="citation">Penn State (<a href="#ref-pennstate506" role="doc-biblioref">2019</a>)</span>, <span class="citation">Särndal, Swensson, and Wretman (<a href="#ref-sarndal2003model" role="doc-biblioref">2003</a>)</span>, <span class="citation">Wolter (<a href="#ref-wolter2007introduction" role="doc-biblioref">2007</a>)</span>, or <span class="citation">Fuller (<a href="#ref-fuller2011sampling" role="doc-biblioref">2011</a>)</span>.</p>
 <p>The general process for estimation in the {srvyr} package is to:</p>
 <ol style="list-style-type: decimal">
 <li><p>Create a <code>tbl_svy</code> object (a survey object) using: <code>as_survey_design()</code> or <code>as_survey_rep()</code></p></li>
@@ -425,11 +425,11 @@ div.csl-indent {
 <li><p>Specify domains of analysis using <code>group_by()</code></p></li>
 <li><p>Within <code>summarize()</code>, specify variables to calculate, including means, totals, proportions, quantiles, and more</p></li>
 </ol>
-<p>This chapter includes details on the first step - creating the survey object. The other steps are detailed in the next several chapters.</p>
+<p>This chapter includes details on the first step - creating the survey object. The other steps are detailed in chapters <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a> through <a href="c07-modeling.html#c07-modeling">7</a>.</p>
 </div>
 <div id="common-sampling-designs" class="section level2 hasAnchor" number="3.2">
 <h2><span class="header-section-number">3.2</span> Common sampling designs<a href="c03-specifying-sample-designs.html#common-sampling-designs" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>A sampling design is the method used to draw a sample. Both logistical and statistical elements are considered when developing a sampling design. When specifying a sampling design in R, the levels of sampling are specified along with the weights. Each record of a weight is constructed so that the particular record represents that many units in the population. For example, in a survey of 6th-grade students in the United States, the weight associated with each responding student reflects how many students that record represents. Generally, the sum of the weights corresponds to the total population size, although some studies may have the sum of the weights equal to the number of respondent records.</p>
+<p>A sampling design is the method used to draw a sample. Both logistical and statistical elements are considered when developing a sampling design. When specifying a sampling design in R, the levels of sampling are specified along with the weights. The weight for each record is constructed so that the particular record represents that many units in the population. For example, in a survey of 6th-grade students in the United States, the weight associated with each responding student reflects how many students that record represents. Generally, the sum of the weights corresponds to the total population size, although some studies may have the sum of the weights equal to the number of respondent records.</p>
 <p>Some common terminology across the designs are:</p>
 <ul>
 <li><strong>sample size</strong>, generally denoted as <span class="math inline">\(n\)</span>, is the number of units selected to be sampled</li>
@@ -453,8 +453,8 @@ where <span class="math inline">\(\bar{y}\)</span> represents the sample mean, <
 <p>The estimate of the standard error of the mean is:</p>
 <p><span class="math display">\[se(\bar{y})=\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}\]</span> where</p>
 <p><span class="math display">\[s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.\]</span></p>
-<p>and <span class="math inline">\(N\)</span> is the population total. This standard error estimate might look very similar to equations in other applications except for the part on the right side of the equation: <span class="math inline">\(1-\frac{n}{N}\)</span>. This is called the finite population correction factor (FPC), and if the size of the frame, <span class="math inline">\(N\)</span>, is very large, the FPC is negligible, so it is often ignored.</p>
-<p>To estimate proportions, we define <span class="math inline">\(x_i\)</span> as the indicator if the outcome is observed. That is, <span class="math inline">\(x_i=1\)</span> if the outcome is observed, and <span class="math inline">\(x_i=0\)</span> if the outcome is not observed. Then the estimated proportion from an SRS design is:</p>
+<p>and <span class="math inline">\(N\)</span> is the population size. This standard error estimate might look very similar to equations in other applications except for the part on the right side of the equation: <span class="math inline">\(1-\frac{n}{N}\)</span>. This is called the finite population correction (FPC) factor, and if the size of the frame, <span class="math inline">\(N\)</span>, is very large, the FPC is negligible, so it is often ignored.</p>
+<p>To estimate proportions, we define <span class="math inline">\(x_i\)</span> as the indicator if the outcome is observed. That is, <span class="math inline">\(x_i=1\)</span> if the outcome is observed, and <span class="math inline">\(x_i=0\)</span> if the outcome is not observed for respondent <span class="math inline">\(i\)</span>. Then the estimated proportion from an SRS design is:</p>
 <p><span class="math display">\[\hat{p}=\frac{1}{n}\sum_{i=1}^n x_i \]</span>
 and the estimated standard error of the proportion is:</p>
 <p><span class="math display">\[se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} \]</span></p>
@@ -469,7 +469,8 @@ and the estimated standard error of the proportion is:</p>
 <span id="cb13-2"><a href="c03-specifying-sample-designs.html#cb13-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>()</span></code></pre></div>
 <p>If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="c03-specifying-sample-designs.html#cb14-1" aria-hidden="true" tabindex="-1"></a>srs3_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb14-2"><a href="c03-specifying-sample-designs.html#cb14-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, <span class="at">fpc =</span> fpcvar)</span></code></pre></div>
+<span id="cb14-2"><a href="c03-specifying-sample-designs.html#cb14-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, </span>
+<span id="cb14-3"><a href="c03-specifying-sample-designs.html#cb14-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">fpc =</span> fpcvar)</span></code></pre></div>
 <p>where <code>wtvar</code> is the variable for the weight on the data. Again, the FPC can be omitted if it is unnecessary because the frame is large.</p>
 </div>
 <div id="example" class="section level4 unnumbered hasAnchor">
@@ -501,46 +502,47 @@ and the estimated standard error of the proportion is:</p>
 <caption><span id="tab:apidata">TABLE 3.1: </span> Overview of Variables in <code>api</code> Data</caption>
 <thead>
 <tr class="header">
-<th>Variable Name</th>
+<th align="center">Variable Name</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>cds</code></td>
+<td align="center"><code>cds</code></td>
 <td>Unique identifier for each school</td>
 </tr>
 <tr class="even">
-<td><code>dnum</code></td>
+<td align="center"><code>dnum</code></td>
 <td>School district identifier within county</td>
 </tr>
 <tr class="odd">
-<td><code>snum</code></td>
+<td align="center"><code>snum</code></td>
 <td>School identifier within district</td>
 </tr>
 <tr class="even">
-<td><code>dname</code></td>
+<td align="center"><code>dname</code></td>
 <td>District Name</td>
 </tr>
 <tr class="odd">
-<td><code>sname</code></td>
+<td align="center"><code>sname</code></td>
 <td>School Name</td>
 </tr>
 <tr class="even">
-<td><code>fpc</code></td>
+<td align="center"><code>fpc</code></td>
 <td>Finite population correction factor (FPC)</td>
 </tr>
 <tr class="odd">
-<td><code>pw</code></td>
+<td align="center"><code>pw</code></td>
 <td>Weight</td>
 </tr>
 </tbody>
 </table>
 <p>To create the <code>tbl_survey</code> object for this SRS data, the design should be specified as follows:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="c03-specifying-sample-designs.html#cb17-1" aria-hidden="true" tabindex="-1"></a>apisrs_des <span class="ot">&lt;-</span> apisrs_slim <span class="sc">%&gt;%</span></span>
-<span id="cb17-2"><a href="c03-specifying-sample-designs.html#cb17-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> pw, <span class="at">fpc =</span> fpc)</span>
-<span id="cb17-3"><a href="c03-specifying-sample-designs.html#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-4"><a href="c03-specifying-sample-designs.html#cb17-4" aria-hidden="true" tabindex="-1"></a>apisrs_des</span></code></pre></div>
+<span id="cb17-2"><a href="c03-specifying-sample-designs.html#cb17-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> pw, </span>
+<span id="cb17-3"><a href="c03-specifying-sample-designs.html#cb17-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">fpc =</span> fpc)</span>
+<span id="cb17-4"><a href="c03-specifying-sample-designs.html#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="c03-specifying-sample-designs.html#cb17-5" aria-hidden="true" tabindex="-1"></a>apisrs_des</span></code></pre></div>
 <pre><code>## Independent Sampling design
 ## Called via srvyr
 ## Sampling variables:
@@ -549,7 +551,7 @@ and the estimated standard error of the proportion is:</p>
 ##  - weights: pw
 ## Data variables: cds (chr), dnum (int), snum (dbl), dname (chr), sname
 ##   (chr), fpc (dbl), pw (dbl)</code></pre>
-<p>In the printed design object above, the design is described as an “Independent Sampling design,” which is another term for SRS. The ids are specified as <code>1</code>, which means there is no clustering (a topic described later in this chapter), the FPC variable is indicated, and the weights are indicated. We can also look at the summary of the design object, and see the distribution of the probabilities (inverse of the weights) along with the population size and a list of the variables in the dataset.</p>
+<p>In the printed design object above, the design is described as an “Independent Sampling design,” which is another term for SRS. The ids are specified as <code>1</code>, which means there is no clustering (a topic described in Section <a href="c03-specifying-sample-designs.html#samp-cluster">3.2.4</a>), the FPC variable is indicated, and the weights are indicated. We can also look at the summary of the design object, and see the distribution of the probabilities (inverse of the weights) along with the population size and a list of the variables in the dataset.</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="c03-specifying-sample-designs.html#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(apisrs_des)</span></code></pre></div>
 <pre><code>## Independent Sampling design
 ## Called via srvyr
@@ -567,7 +569,7 @@ and the estimated standard error of the proportion is:</p>
 <ul>
 <li><strong>Requirements</strong>: The sampling frame must include the entire population.</li>
 <li><strong>Advantages</strong>: SRSWR requires no information about the units apart from contact information.</li>
-<li><strong>Disadvantages</strong>: The sampling frame may not be available for the entire population. This design is not generally feasible for in-person data collection. Units can be selected more than once, resulting in a smaller realized sample size as receiving the duplicate information from a single respondent does not provide additional information. For small populations, SRSWR has larger standard errors than SRS designs.</li>
+<li><strong>Disadvantages</strong>: The sampling frame may not be available for the entire population. This design is not generally feasible for in-person data collection. Units can be selected more than once, resulting in a smaller realized sample size because receiving duplicate information from a single respondent does not provide additional information. For small populations, SRSWR has larger standard errors than SRS designs.</li>
 <li><strong>Example</strong>: A professor puts all students’ names on paper slips and selects them randomly to ask students questions, but the professor replaces the paper after calling on the student so they can be selected again at any time.</li>
 </ul>
 <div id="the-math-1" class="section level4 unnumbered hasAnchor">
@@ -584,10 +586,10 @@ and the estimated standard error of the proportion is:</p>
 </div>
 <div id="the-syntax-1" class="section level4 unnumbered hasAnchor">
 <h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>If you had a sample that was drawn through SRSWR and had no nonresponse or other weighting adjustments, in R, you should specify this design as:</p>
+<p>If we had a sample that was drawn through SRSWR and had no nonresponse or other weighting adjustments, in R, we should specify this design as:</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="c03-specifying-sample-designs.html#cb21-1" aria-hidden="true" tabindex="-1"></a>srswr1_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
 <span id="cb21-2"><a href="c03-specifying-sample-designs.html#cb21-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>()</span></code></pre></div>
-<p>where <code>dat</code> is a tibble or data.frame containing your survey data. This syntax is the same as a SRS design without an FPC. Therefore, with large enough samples that do not have an FPC, the underlying formulas for SRS and SRSWR designs are the same.</p>
+<p>where <code>dat</code> is a tibble or data.frame containing our survey data. This syntax is the same as a SRS design without an FPC. Therefore, with large enough samples that do not have an FPC, the underlying formulas for SRS and SRSWR designs are the same.</p>
 <p>If some post-survey adjustments were implemented and the weights are not all equal, specify the design as:</p>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="c03-specifying-sample-designs.html#cb22-1" aria-hidden="true" tabindex="-1"></a>srswr2_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
 <span id="cb22-2"><a href="c03-specifying-sample-designs.html#cb22-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar)</span></code></pre></div>
@@ -649,12 +651,12 @@ and the estimated standard error of the proportion is:</p>
 ##  0.0323  0.0323  0.0323  0.0323  0.0323  0.0323 
 ## Data variables:
 ## [1] &quot;cds&quot;    &quot;dnum&quot;   &quot;snum&quot;   &quot;dname&quot;  &quot;sname&quot;  &quot;weight&quot;</code></pre>
-<p>In the chunk above, the design object is printed, and the object summary is shown. Both note that the sampling is done “with replacement” because no FPC was specified. The probabilities, which are derived from the weights, are summarized in the summary.</p>
+<p>In the output above, the design object and the object summary are shown. Both note that the sampling is done “with replacement” because no FPC was specified. The probabilities, which are derived from the weights, are summarized in the summary.</p>
 </div>
 </div>
 <div id="stratified-sampling" class="section level3 hasAnchor" number="3.2.3">
 <h3><span class="header-section-number">3.2.3</span> Stratified sampling<a href="c03-specifying-sample-designs.html#stratified-sampling" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>A population is divided into mutually exclusive subpopulations (strata), and then samples are selected independently within each stratum.</p>
+<p>Stratified sampling occurs when a population is divided into mutually exclusive subpopulations (strata), and then samples are selected independently within each stratum.</p>
 <ul>
 <li><strong>Requirements</strong>: The sampling frame must include the information to divide the population into groups for every unit.</li>
 <li><strong>Advantages</strong>: This design ensures sample representation in all subpopulations. If the strata are correlated with survey outcomes, a stratified sample has smaller standard errors compared to a SRS sample of the same size. Thus is a more efficient design.</li>
@@ -670,22 +672,24 @@ and the estimated standard error of the proportion is:</p>
 <p>Let <span class="math inline">\(\bar{y}_h\)</span> be the sample mean for stratum <span class="math inline">\(h\)</span>, <span class="math inline">\(N_h\)</span> be the population size of stratum <span class="math inline">\(h\)</span>, and <span class="math inline">\(n_h\)</span> be the sample size of stratum <span class="math inline">\(h\)</span>. Then the estimate for the population mean under stratified SRS sampling is:</p>
 <p><span class="math display">\[\bar{y}=\frac{1}{N}\sum_{h=1}^H N_h\bar{y}_h\]</span>
 and the estimate of the standard error of <span class="math inline">\(\bar{y}\)</span> is:</p>
-<p><span class="math display">\[se(\bar{y})=\sqrt{\frac{1}{N^2} \sum_{h=1}^H N_h^2 s_h^2\left(1-\frac{n_h}{N_h}\right)} \]</span></p>
+<p><span class="math display">\[se(\bar{y})=\sqrt{\frac{1}{N^2} \sum_{h=1}^H N_h^2 \frac{s_h^2}{n_h}\left(1-\frac{n_h}{N_h}\right)} \]</span></p>
 <p>where
 <span class="math display">\[s_h^2=\frac{1}{n_h-1}\sum_{i=1}^{n_h}\left(y_{i,h}-\bar{y}_h\right)^2.\]</span></p>
 <p>For estimates of proportions, let <span class="math inline">\(\hat{p}_h\)</span> be the estimated proportion in stratum <span class="math inline">\(h\)</span>. Then the population proportion estimate is:</p>
 <p><span class="math display">\[\hat{p}= \frac{1}{N}\sum_{h=1}^H N_h \hat{p}_h\]</span></p>
-<p>where <span class="math inline">\(H\)</span> is the total number of clusters. The standard error of the proportion is:</p>
+<p>where <span class="math inline">\(H\)</span> is the total number of strata. The standard error of the proportion is:</p>
 <p><span class="math display">\[se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_h)}{n_h-1} \left(1-\frac{n_h}{N_h}\right)}\]</span></p>
 </div>
 <div id="the-syntax-2" class="section level4 unnumbered hasAnchor">
 <h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>To specify a stratified SRS design in {srvyr} when using the FPC, that is, where the population sizes of the strata are not too large and are known, that is, you are using the FPC, specify the design as:</p>
+<p>To specify a stratified SRS design in {srvyr} when using the FPC, that is, where the population sizes of the strata are not too large and are known, specify the design as:</p>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="c03-specifying-sample-designs.html#cb31-1" aria-hidden="true" tabindex="-1"></a>stsrs1_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb31-2"><a href="c03-specifying-sample-designs.html#cb31-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">fpc =</span> fpcvar, <span class="at">strata =</span> stratvar)</span></code></pre></div>
-<p>where <code>fpcvar</code> is a variable on your data that indicates <span class="math inline">\(N_h\)</span> for each row, and <code>stratavar</code> is a variable indicating the stratum for each row. You can omit the FPC if it is not applicable. Additionally, you can indicate the weight variable if it is present where <code>wtvar</code> is a variable on your data with a numeric weight.</p>
+<span id="cb31-2"><a href="c03-specifying-sample-designs.html#cb31-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">fpc =</span> fpcvar, </span>
+<span id="cb31-3"><a href="c03-specifying-sample-designs.html#cb31-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">strata =</span> stratvar)</span></code></pre></div>
+<p>where <code>fpcvar</code> is a variable on our data that indicates <span class="math inline">\(N_h\)</span> for each row, and <code>stratavar</code> is a variable indicating the stratum for each row. You can omit the FPC if it is not applicable. Additionally, we can indicate the weight variable if it is present where <code>wtvar</code> is a variable on our data with a numeric weight.</p>
 <div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="c03-specifying-sample-designs.html#cb32-1" aria-hidden="true" tabindex="-1"></a>stsrs2_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb32-2"><a href="c03-specifying-sample-designs.html#cb32-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, <span class="at">strata =</span> stratvar)</span></code></pre></div>
+<span id="cb32-2"><a href="c03-specifying-sample-designs.html#cb32-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, </span>
+<span id="cb32-3"><a href="c03-specifying-sample-designs.html#cb32-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">strata =</span> stratvar)</span></code></pre></div>
 </div>
 <div id="example-2" class="section level4 unnumbered hasAnchor">
 <h4>Example<a href="c03-specifying-sample-designs.html#example-2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
@@ -739,12 +743,12 @@ and the estimate of the standard error of <span class="math inline">\(\bar{y}\)<
 <p>When printing the object, it is specified as a “Stratified Independent Sampling design,” also known as a stratified SRS, and the strata variable is included. Printing the summary we see a distribution of probabilities, as we saw with SRS, but we also see the sample and populations sizes by stratum.</p>
 </div>
 </div>
-<div id="clustered-sampling" class="section level3 hasAnchor" number="3.2.4">
-<h3><span class="header-section-number">3.2.4</span> Clustered sampling<a href="c03-specifying-sample-designs.html#clustered-sampling" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>A population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs). A random selection of PSUs is sampled, and then another level of sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available, or data collection involves interviewers needing direct contact with respondents.</p>
+<div id="samp-cluster" class="section level3 hasAnchor" number="3.2.4">
+<h3><span class="header-section-number">3.2.4</span> Clustered sampling<a href="c03-specifying-sample-designs.html#samp-cluster" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Clustered sampling occurs when a population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs). A random selection of PSUs is sampled, and then another level of sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available, or data collection involves interviewers needing direct contact with respondents.</p>
 <ul>
 <li><strong>Requirements</strong>: There must be a way to divide the population into clusters. Clusters are commonly structural such as institutions (e.g., schools, prisons) or geography (e.g., states, counties).</li>
-<li><strong>Advantages</strong>: Clustered sampling is advantageous when data collection is done in person, so interviewers are sent to specific sampled areas rather than completely at random across a country. With cluster sampling, a list of the entire population is not necessary. For example, if sampling students, you do not need a list of all students but only a list of all schools. Once the schools are sampled, lists of students can be obtained within the sampled schools.</li>
+<li><strong>Advantages</strong>: Clustered sampling is advantageous when data collection is done in person, so interviewers are sent to specific sampled areas rather than completely at random across a country. With cluster sampling, a list of the entire population is not necessary. For example, if sampling students, we do not need a list of all students but only a list of all schools. Once the schools are sampled, lists of students can be obtained within the sampled schools.</li>
 <li><strong>Disadvantages</strong>: Compared to a simple random sample for the same sample size, clustered samples generally have larger standard errors of estimates.</li>
 <li><strong>Examples</strong>:
 <ul>
@@ -754,34 +758,36 @@ and the estimate of the standard error of <span class="math inline">\(\bar{y}\)<
 </ul>
 <div id="the-math-3" class="section level4 unnumbered hasAnchor">
 <h4>The math<a href="c03-specifying-sample-designs.html#the-math-3" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>Consider a population where there are <span class="math inline">\(N\)</span> clusters and <span class="math inline">\(n\)</span> clusters are sampled via SRS. Units within each sampled cluster are sampled via SRS as well. Let <span class="math inline">\(M_i\)</span> be the number of units in cluster <span class="math inline">\(i\)</span> and <span class="math inline">\(\bar{y}_i\)</span> be the sample mean of cluster <span class="math inline">\(i\)</span>. Then, a ratio estimator of the population mean is:</p>
-<p><span class="math display">\[\bar{y}=\frac{\sum_{i=1}^n M_i \bar{y}_i}{ \sum_{i=1}^n M_i}\]</span>
+<p>Consider a survey where a sample of <span class="math inline">\(a\)</span> clusters are sampled from a population of <span class="math inline">\(A\)</span> clusters via SRS. Units within each sampled cluster are sampled via SRS as well. Within each sampled cluster, <span class="math inline">\(i\)</span>, there are <span class="math inline">\(B_i\)</span> units and <span class="math inline">\(b_i\)</span> units are sampled via SRS. Let <span class="math inline">\(\bar{y}_{i}\)</span> be the sample mean of cluster <span class="math inline">\(i\)</span>. Then, a ratio estimator of the population mean is:</p>
+<p><span class="math display">\[\bar{y}=\frac{\sum_{i=1}^a B_i \bar{y}_{i}}{ \sum_{i=1}^a B_i}\]</span>
 Note this is a consistent but biased estimator. Often the population size is not known, so this is a method to estimate a mean without knowing the population size. The estimated standard error of the mean is:</p>
-<p><span class="math display">\[se(\bar{y})=\frac{1}{\hat{N}_{pop} } \sqrt{\frac{N^2 (1-\frac{n}{N})}{n}\frac{1}{n-1} \sum_{i=1}^n (M_i\bar{y}_i -\hat{t}/N)^2 + \frac{N}{n} \sum_{i=1}^n \frac{M_i^2}{m_i}\left(1-\frac{m_i}{M_i}\right)s^2_i }\]</span>
-where <span class="math inline">\(\hat{N}_{pop}\)</span> is the estimated population size, <span class="math inline">\(\hat{t}\)</span> is the estimated total, and <span class="math inline">\(s_i^2\)</span> is the sample variance of cluster <span class="math inline">\(i\)</span>.</p>
-<p>For estimates of proportions, the estimated proportion is:</p>
-<p><span class="math display">\[\hat{p}=\frac{\sum_{i=1}^n M_i \hat{p}_i}{ \sum_{i=1}^n M_i}\]</span></p>
-<p>and the associated standard error estimate is:</p>
-<p><span class="math display">\[se(\hat{p})=\frac{1}{\hat{N}_{pop} } \sqrt{\frac{N^2 (1-\frac{n}{N})}{n}\frac{1}{n-1} \sum_{i=1}^n (M_i\hat{p}_i -\hat{t}/N)^2 + \frac{N}{n} \sum_{i=1}^n \frac{M_i^2}{m_i}\left(1-\frac{m_i}{M_i}\right)s^2_i }\]</span></p>
-<p>where <span class="math inline">\(s^2_i\)</span> is defined as:</p>
-<p><span class="math display">\[s^2_i = \frac{m_hp_h(1-p_h)}{m_h-1}\]</span>.</p>
+<p><span class="math display">\[se(\bar{y})= \frac{1}{\hat{N}}\sqrt{\left(1-\frac{a}{A}\right)\frac{s_a^2}{a} + \frac{A}{a} \sum_{i=1}^a \left(1-\frac{b_i}{B_i}\right) \frac{s_i^2}{b_i} }\]</span>
+where <span class="math inline">\(s_a^2\)</span> is the between-cluster variance:</p>
+<p><span class="math display">\[s_a^2=\frac{1}{a-1}\sum_{i=1}^a \left( \hat{y}_i - \frac{\sum_{i=1}^a \hat{y}_{i} }{a}\right)^2\]</span></p>
+<p>and <span class="math inline">\(s_i^2\)</span> is the within-cluster variance:</p>
+<p><span class="math display">\[s_b^2=\frac{1}{a(b_i-1)} \sum_{j=1}^{b_i} \left(y_{ij}-\bar{y}_i\right)^2\]</span></p>
+<p>and <span class="math inline">\(\hat{y}_i =B_i\bar{y_i}\)</span> and <span class="math inline">\(\hat{N}\)</span> is the estimated population size.</p>
 </div>
 <div id="the-syntax-3" class="section level4 unnumbered hasAnchor">
 <h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-3" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>To specify a two-stage clustered design without replacement, use the following syntax:</p>
 <div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="c03-specifying-sample-designs.html#cb39-1" aria-hidden="true" tabindex="-1"></a>clus2_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb39-2"><a href="c03-specifying-sample-designs.html#cb39-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, <span class="at">ids =</span> <span class="fu">c</span>(PSU, SSU), <span class="at">fpc =</span> <span class="fu">c</span>(N, M))</span></code></pre></div>
-<p>where <code>PSU</code> and <code>SSU</code> are the variables indicating the PSU and SSU identifiers, and <code>N</code> and <code>M</code> are the variables indicating the population sizes for each level (i.e., <code>N</code> is the number of clusters, and <code>M</code> is the number of units within each cluster). Note that <code>N</code> will be the same for all records (within a strata), and <code>M</code> will be the same for all records within the same cluster.</p>
+<span id="cb39-2"><a href="c03-specifying-sample-designs.html#cb39-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, </span>
+<span id="cb39-3"><a href="c03-specifying-sample-designs.html#cb39-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">ids =</span> <span class="fu">c</span>(PSU, SSU), </span>
+<span id="cb39-4"><a href="c03-specifying-sample-designs.html#cb39-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">fpc =</span> <span class="fu">c</span>(A, B))</span></code></pre></div>
+<p>where <code>PSU</code> and <code>SSU</code> are the variables indicating the PSU and SSU identifiers, and <code>A</code> and <code>B</code> are the variables indicating the population sizes for each level (i.e., <code>A</code> is the number of clusters, and <code>B</code> is the number of units within each cluster). Note that <code>A</code> will be the same for all records (within a strata), and <code>B</code> will be the same for all records within the same cluster.</p>
 <p>If clusters were sampled with replacement or from a very large population, a FPC is unnecessary. Additionally, only the first stage of selection is necessary regardless of whether the units were selected with replacement at any stage. The subsequent stages of selection are ignored in computation as their contribution to the variance is overpowered by the first stage (see <span class="citation">Särndal, Swensson, and Wretman (<a href="#ref-sarndal2003model" role="doc-biblioref">2003</a>)</span> or <span class="citation">Wolter (<a href="#ref-wolter2007introduction" role="doc-biblioref">2007</a>)</span> for a more in-depth discussion). Therefore, the syntax below will yield the same estimates in the end:</p>
 <div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="c03-specifying-sample-designs.html#cb40-1" aria-hidden="true" tabindex="-1"></a>clus2wra_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb40-2"><a href="c03-specifying-sample-designs.html#cb40-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, <span class="at">ids =</span> <span class="fu">c</span>(PSU, SSU))</span>
-<span id="cb40-3"><a href="c03-specifying-sample-designs.html#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-4"><a href="c03-specifying-sample-designs.html#cb40-4" aria-hidden="true" tabindex="-1"></a>clus2wrb_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb40-5"><a href="c03-specifying-sample-designs.html#cb40-5" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, <span class="at">ids =</span> PSU)</span></code></pre></div>
+<span id="cb40-2"><a href="c03-specifying-sample-designs.html#cb40-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, </span>
+<span id="cb40-3"><a href="c03-specifying-sample-designs.html#cb40-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">ids =</span> <span class="fu">c</span>(PSU, SSU))</span>
+<span id="cb40-4"><a href="c03-specifying-sample-designs.html#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-5"><a href="c03-specifying-sample-designs.html#cb40-5" aria-hidden="true" tabindex="-1"></a>clus2wrb_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb40-6"><a href="c03-specifying-sample-designs.html#cb40-6" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> wtvar, </span>
+<span id="cb40-7"><a href="c03-specifying-sample-designs.html#cb40-7" aria-hidden="true" tabindex="-1"></a>                  <span class="at">ids =</span> PSU)</span></code></pre></div>
 </div>
 <div id="example-3" class="section level4 unnumbered hasAnchor">
 <h4>Example<a href="c03-specifying-sample-designs.html#example-3" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>The <code>survey</code> package includes a two-stage cluster sample data, <code>apiclus2</code>, in which school districts were sampled, and then a random sample of five schools was selected within each district. For districts with fewer than five schools, all schools were sampled. School districts are identified by <code>dnum</code>, and schools are identified by <code>snum</code>. The variable <code>fpc1</code> indicates how many districts there are in California (<code>N</code>), and <code>fpc2</code> indicates how many schools were in a given district with at least 100 students (<code>M</code>). The data has a row for each school. In the data printed below, there are 757 school districts, as indicated by <code>fpc1</code>, and there are nine schools in District 731, one school in District 742, two schools in District 768, and so on as indicated by <code>fpc2</code>. For illustration purposes, the object <code>apiclus2_slim</code> has been created from <code>apiclus2</code>, which subsets the data to only the necessary columns and sorts data.</p>
+<p>The <code>survey</code> package includes a two-stage cluster sample data, <code>apiclus2</code>, in which school districts were sampled, and then a random sample of five schools was selected within each district. For districts with fewer than five schools, all schools were sampled. School districts are identified by <code>dnum</code>, and schools are identified by <code>snum</code>. The variable <code>fpc1</code> indicates how many districts there are in California (<code>A</code>), and <code>fpc2</code> indicates how many schools were in a given district with at least 100 students (<code>B</code>). The data has a row for each school. In the data printed below, there are 757 school districts, as indicated by <code>fpc1</code>, and there are nine schools in District 731, one school in District 742, two schools in District 768, and so on as indicated by <code>fpc2</code>. For illustration purposes, the object <code>apiclus2_slim</code> has been created from <code>apiclus2</code>, which subsets the data to only the necessary columns and sorts data.</p>
 <div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="c03-specifying-sample-designs.html#cb41-1" aria-hidden="true" tabindex="-1"></a>apiclus2_slim <span class="ot">&lt;-</span></span>
 <span id="cb41-2"><a href="c03-specifying-sample-designs.html#cb41-2" aria-hidden="true" tabindex="-1"></a>  apiclus2 <span class="sc">%&gt;%</span></span>
 <span id="cb41-3"><a href="c03-specifying-sample-designs.html#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
@@ -805,13 +811,11 @@ where <span class="math inline">\(\hat{N}_{pop}\)</span> is the estimated popula
 ## # ℹ 116 more rows</code></pre>
 <p>To specify this design in R, the following syntax should be used:</p>
 <div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="c03-specifying-sample-designs.html#cb43-1" aria-hidden="true" tabindex="-1"></a>apiclus2_des <span class="ot">&lt;-</span> apiclus2_slim <span class="sc">%&gt;%</span></span>
-<span id="cb43-2"><a href="c03-specifying-sample-designs.html#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
-<span id="cb43-3"><a href="c03-specifying-sample-designs.html#cb43-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">ids =</span> <span class="fu">c</span>(dnum, snum),</span>
-<span id="cb43-4"><a href="c03-specifying-sample-designs.html#cb43-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">fpc =</span> <span class="fu">c</span>(fpc1, fpc2),</span>
-<span id="cb43-5"><a href="c03-specifying-sample-designs.html#cb43-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> pw</span>
-<span id="cb43-6"><a href="c03-specifying-sample-designs.html#cb43-6" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb43-7"><a href="c03-specifying-sample-designs.html#cb43-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-8"><a href="c03-specifying-sample-designs.html#cb43-8" aria-hidden="true" tabindex="-1"></a>apiclus2_des</span></code></pre></div>
+<span id="cb43-2"><a href="c03-specifying-sample-designs.html#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">ids =</span> <span class="fu">c</span>(dnum, snum),</span>
+<span id="cb43-3"><a href="c03-specifying-sample-designs.html#cb43-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">fpc =</span> <span class="fu">c</span>(fpc1, fpc2),</span>
+<span id="cb43-4"><a href="c03-specifying-sample-designs.html#cb43-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">weights =</span> pw)</span>
+<span id="cb43-5"><a href="c03-specifying-sample-designs.html#cb43-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-6"><a href="c03-specifying-sample-designs.html#cb43-6" aria-hidden="true" tabindex="-1"></a>apiclus2_des</span></code></pre></div>
 <pre><code>## 2 - level Cluster Sampling design
 ## With (40, 126) clusters.
 ## Called via srvyr
@@ -844,17 +848,19 @@ where <span class="math inline">\(\hat{N}_{pop}\)</span> is the estimated popula
 <li>Calculate estimates for each <strong>replicate</strong> using the same method as the full-sample estimate</li>
 <li>Calculate the estimated variance, which will be proportional to the variance of the replicate estimates</li>
 </ol>
-<p>The different types of replicate weights largely differ in step 1 - how the sample is divided into subsamples, and step 4 - which multiplication factors (scales) are used to multiply the variance.</p>
+<p>The different types of replicate weights largely differ in step 1 - how the sample is divided into subsamples, and step 4 - which multiplication factors (scales) are used to multiply the variance. The general format for the standard error is:</p>
+<p><span class="math display">\[ \sqrt{\alpha \sum_{r=1}^R \alpha_r (\hat{\theta}_r - \hat{\theta})^2 }\]</span></p>
+<p>where <span class="math inline">\(R\)</span> is the number of replicates, <span class="math inline">\(\alpha\)</span> is a constant that depends on the replication method, <span class="math inline">\(\alpha_r\)</span> is a factor associated with each replicate, <span class="math inline">\(\hat{\theta}\)</span> is the weighted estimate based on the full sample, and <span class="math inline">\(\hat{\theta}_r\)</span> is the weighted estimate of <span class="math inline">\(\theta\)</span> based on the <span class="math inline">\(r^{\text{th}}\)</span> replicate.</p>
 <div id="balanced-repeated-replication-brr-method" class="section level3 hasAnchor" number="3.3.1">
 <h3><span class="header-section-number">3.3.1</span> Balanced Repeated Replication (BRR) Method<a href="c03-specifying-sample-designs.html#balanced-repeated-replication-brr-method" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by two but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have one row, two rows, or a multiple of four rows. To size of the Hadamard matrix is determined by the first multiple of 4 greater than or equal to the number of strata. For example, if a survey had 7 strata, the Hadamard matrix would be an <span class="math inline">\(8\times8\)</span> matrix. Additionally, a survey with 8 strata would also have an <span class="math inline">\(8\times8\)</span> Hadamard matrix. An example of a <span class="math inline">\(4\times4\)</span> Hadamard matrix is below:</p>
+<p>The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by two but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have one row, two rows, or a multiple of four rows. The size of the Hadamard matrix is determined by the first multiple of 4 greater than or equal to the number of strata. For example, if a survey had 7 strata, the Hadamard matrix would be an <span class="math inline">\(8\times8\)</span> matrix. Additionally, a survey with 8 strata would also have an <span class="math inline">\(8\times8\)</span> Hadamard matrix. An example of a <span class="math inline">\(4\times4\)</span> Hadamard matrix is below:</p>
 <p><span class="math display">\[ \begin{array}{rrrr} +1 &amp;+1 &amp;+1 &amp;+1\\ +1&amp;-1&amp;+1&amp;-1\\ +1&amp;+1&amp;-1&amp;-1\\ +1 &amp;-1&amp;-1&amp;+1 \end{array} \]</span>
 The columns specify the strata and the rows the replicate. In the first replicate, all the values are +1, so in each stratum, the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in stratum 1 and 3, while the second PSU would be used in stratum 2 and 4. In the third replicate, the first PSU would be used in stratum 1 and 2, while the second PSU would be used in strata 3 and 4. Finally, in the fourth replicate, the first PSU would be used in strata 1 and 4, while the second PSU would be used in strata 2 and 3.</p>
 <div id="the-math-4" class="section level4 unnumbered hasAnchor">
 <h4>The math<a href="c03-specifying-sample-designs.html#the-math-4" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>A weighted estimate for the full sample is calculated as <span class="math inline">\(\hat{\theta}\)</span>, and then a weighted estimate for each replicate is calculated as <span class="math inline">\(\hat{\theta}_r\)</span> for <span class="math inline">\(R\)</span> replicates. The standard error of the estimate is calculated as follows:</p>
-<p><span class="math display">\[se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}\]</span>
-Specifying replicate weights in R requires specifying the type of replicate weights, the main weight variable, the replicate weight variables, and other options. One of the key options is for <code>mse</code>. If <code>mse=TRUE</code>, variances are computed around the point estimate <span class="math inline">\((\hat{\theta})\)</span>, whereas if <code>mse=FALSE</code>, variances are computed around the mean of the replicates <span class="math inline">\((\bar{\theta})\)</span> instead which looks like this:</p>
+<p>A weighted estimate for the full sample is calculated as <span class="math inline">\(\hat{\theta}\)</span>, and then a weighted estimate for each replicate is calculated as <span class="math inline">\(\hat{\theta}_r\)</span> for <span class="math inline">\(R\)</span> replicates. Using the generic notation above, <span class="math inline">\(\alpha=\frac{1}{R}\)</span> and <span class="math inline">\(\alpha_r=1\)</span> for each <span class="math inline">\(r\)</span>. The standard error of the estimate is calculated as follows:</p>
+<p><span class="math display">\[se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}\]</span></p>
+<p>Specifying replicate weights in R requires specifying the type of replicate weights, the main weight variable, the replicate weight variables, and other options. One of the key options is for <code>mse</code>. If <code>mse=TRUE</code>, variances are computed around the point estimate <span class="math inline">\((\hat{\theta})\)</span>, whereas if <code>mse=FALSE</code>, variances are computed around the mean of the replicates <span class="math inline">\((\bar{\theta})\)</span> instead which looks like this:</p>
 <p><span class="math display">\[se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\bar{\theta}\right)^2}\]</span> where <span class="math display">\[\bar{\theta}=\frac{1}{R}\sum_{r=1}^R \hat{\theta}_r\]</span></p>
 <p>The default option for <code>mse</code> is to use the global option of “survey.replicates.mse” which is set to <code>FALSE</code> initially unless a user changes it. To determine if <code>mse</code> should be set to <code>TRUE</code> or <code>FALSE</code>, read the survey documentation. If there is no indication in the survey documentation, for BRR, set <code>mse</code> to <code>TRUE</code>.</p>
 </div>
@@ -862,68 +868,54 @@ Specifying replicate weights in R requires specifying the type of replicate weig
 <h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-4" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, …, PWGTP80 for the person weights in the American Community Survey (ACS) <span class="citation">(<a href="#ref-acs-pums-2021" role="doc-biblioref">U.S. Census Bureau 2021</a>)</span> or BRRWT1, BRRWT2, …, BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS) <span class="citation">(<a href="#ref-recs-2015-micro" role="doc-biblioref">U.S. Energy Information Administration 2017</a>)</span>. This makes it easy to use some of the tidy selection<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a> functions in R. For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, …, WT20, we can use the following syntax (both are equivalent):</p>
 <div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="c03-specifying-sample-designs.html#cb47-1" aria-hidden="true" tabindex="-1"></a>brr_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb47-2"><a href="c03-specifying-sample-designs.html#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb47-3"><a href="c03-specifying-sample-designs.html#cb47-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> WT0,</span>
-<span id="cb47-4"><a href="c03-specifying-sample-designs.html#cb47-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">all_of</span>(<span class="fu">str_c</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>)), </span>
-<span id="cb47-5"><a href="c03-specifying-sample-designs.html#cb47-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
-<span id="cb47-6"><a href="c03-specifying-sample-designs.html#cb47-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
-<span id="cb47-7"><a href="c03-specifying-sample-designs.html#cb47-7" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb47-8"><a href="c03-specifying-sample-designs.html#cb47-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-9"><a href="c03-specifying-sample-designs.html#cb47-9" aria-hidden="true" tabindex="-1"></a>brr_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb47-10"><a href="c03-specifying-sample-designs.html#cb47-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb47-11"><a href="c03-specifying-sample-designs.html#cb47-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> WT0,</span>
-<span id="cb47-12"><a href="c03-specifying-sample-designs.html#cb47-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
-<span id="cb47-13"><a href="c03-specifying-sample-designs.html#cb47-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
-<span id="cb47-14"><a href="c03-specifying-sample-designs.html#cb47-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
-<span id="cb47-15"><a href="c03-specifying-sample-designs.html#cb47-15" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<span id="cb47-2"><a href="c03-specifying-sample-designs.html#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0,</span>
+<span id="cb47-3"><a href="c03-specifying-sample-designs.html#cb47-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> <span class="fu">all_of</span>(<span class="fu">str_c</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>)), </span>
+<span id="cb47-4"><a href="c03-specifying-sample-designs.html#cb47-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
+<span id="cb47-5"><a href="c03-specifying-sample-designs.html#cb47-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb47-6"><a href="c03-specifying-sample-designs.html#cb47-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-7"><a href="c03-specifying-sample-designs.html#cb47-7" aria-hidden="true" tabindex="-1"></a>brr_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb47-8"><a href="c03-specifying-sample-designs.html#cb47-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0,</span>
+<span id="cb47-9"><a href="c03-specifying-sample-designs.html#cb47-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
+<span id="cb47-10"><a href="c03-specifying-sample-designs.html#cb47-10" aria-hidden="true" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
+<span id="cb47-11"><a href="c03-specifying-sample-designs.html#cb47-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p>If a dataset had WT for the main weight and had 20 BRR weights indicated REPWT1, REPWT2, …, REPWT20, the following syntax could be used (both are equivalent):</p>
 <div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="c03-specifying-sample-designs.html#cb48-1" aria-hidden="true" tabindex="-1"></a>brr_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb48-2"><a href="c03-specifying-sample-designs.html#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb48-3"><a href="c03-specifying-sample-designs.html#cb48-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> WT,</span>
-<span id="cb48-4"><a href="c03-specifying-sample-designs.html#cb48-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">all_of</span>(<span class="fu">str_c</span>(<span class="st">&quot;REPWT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>)),</span>
-<span id="cb48-5"><a href="c03-specifying-sample-designs.html#cb48-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
-<span id="cb48-6"><a href="c03-specifying-sample-designs.html#cb48-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
-<span id="cb48-7"><a href="c03-specifying-sample-designs.html#cb48-7" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb48-8"><a href="c03-specifying-sample-designs.html#cb48-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-9"><a href="c03-specifying-sample-designs.html#cb48-9" aria-hidden="true" tabindex="-1"></a>brr_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb48-10"><a href="c03-specifying-sample-designs.html#cb48-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb48-11"><a href="c03-specifying-sample-designs.html#cb48-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> WT,</span>
-<span id="cb48-12"><a href="c03-specifying-sample-designs.html#cb48-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;REPWT&quot;</span>),</span>
-<span id="cb48-13"><a href="c03-specifying-sample-designs.html#cb48-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
-<span id="cb48-14"><a href="c03-specifying-sample-designs.html#cb48-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
-<span id="cb48-15"><a href="c03-specifying-sample-designs.html#cb48-15" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<span id="cb48-2"><a href="c03-specifying-sample-designs.html#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT,</span>
+<span id="cb48-3"><a href="c03-specifying-sample-designs.html#cb48-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> <span class="fu">all_of</span>(<span class="fu">str_c</span>(<span class="st">&quot;REPWT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>)),</span>
+<span id="cb48-4"><a href="c03-specifying-sample-designs.html#cb48-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
+<span id="cb48-5"><a href="c03-specifying-sample-designs.html#cb48-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb48-6"><a href="c03-specifying-sample-designs.html#cb48-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-7"><a href="c03-specifying-sample-designs.html#cb48-7" aria-hidden="true" tabindex="-1"></a>brr_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb48-8"><a href="c03-specifying-sample-designs.html#cb48-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT,</span>
+<span id="cb48-9"><a href="c03-specifying-sample-designs.html#cb48-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;REPWT&quot;</span>),</span>
+<span id="cb48-10"><a href="c03-specifying-sample-designs.html#cb48-10" aria-hidden="true" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
+<span id="cb48-11"><a href="c03-specifying-sample-designs.html#cb48-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p>If the replicate weight variables are in the file consecutively, the following syntax can also be used:</p>
 <div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="c03-specifying-sample-designs.html#cb49-1" aria-hidden="true" tabindex="-1"></a>brr_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb49-2"><a href="c03-specifying-sample-designs.html#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb49-3"><a href="c03-specifying-sample-designs.html#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> WT,</span>
-<span id="cb49-4"><a href="c03-specifying-sample-designs.html#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> REPWT1<span class="sc">:</span>REPWT20,</span>
-<span id="cb49-5"><a href="c03-specifying-sample-designs.html#cb49-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
-<span id="cb49-6"><a href="c03-specifying-sample-designs.html#cb49-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
-<span id="cb49-7"><a href="c03-specifying-sample-designs.html#cb49-7" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
-<p>Typically, the replicate weights sum to a value similar to the main weight, as they are both supposed to provide population estimates. Rarely an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. This would be indicated in the documentation, and Section <a href="c03-specifying-sample-designs.html#und-surv-doc">3.4</a> and Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a> discuss how to understand documentation. In this case, the replicate weights are not combined, and the option <code>combined_weights = FALSE</code> should be indicated, as the default value for this argument is TRUE. This specific syntax is shown below:</p>
+<span id="cb49-2"><a href="c03-specifying-sample-designs.html#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT,</span>
+<span id="cb49-3"><a href="c03-specifying-sample-designs.html#cb49-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> REPWT1<span class="sc">:</span>REPWT20,</span>
+<span id="cb49-4"><a href="c03-specifying-sample-designs.html#cb49-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
+<span id="cb49-5"><a href="c03-specifying-sample-designs.html#cb49-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Typically, the replicate weights sum to a value similar to the main weight, as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. This would be indicated in the documentation (see Section <a href="c03-specifying-sample-designs.html#und-surv-doc">3.4</a> and Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a> for more information on how to understand the provided documentation). In this case, the replicate weights are not combined, and the option <code>combined_weights = FALSE</code> should be indicated, as the default value for this argument is TRUE. This specific syntax is shown below:</p>
 <div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="c03-specifying-sample-designs.html#cb50-1" aria-hidden="true" tabindex="-1"></a>brr_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb50-2"><a href="c03-specifying-sample-designs.html#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb50-3"><a href="c03-specifying-sample-designs.html#cb50-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> WT,</span>
-<span id="cb50-4"><a href="c03-specifying-sample-designs.html#cb50-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;REPWT&quot;</span>),</span>
-<span id="cb50-5"><a href="c03-specifying-sample-designs.html#cb50-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
-<span id="cb50-6"><a href="c03-specifying-sample-designs.html#cb50-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">combined_weights =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb50-7"><a href="c03-specifying-sample-designs.html#cb50-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
-<span id="cb50-8"><a href="c03-specifying-sample-designs.html#cb50-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<span id="cb50-2"><a href="c03-specifying-sample-designs.html#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT,</span>
+<span id="cb50-3"><a href="c03-specifying-sample-designs.html#cb50-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;REPWT&quot;</span>),</span>
+<span id="cb50-4"><a href="c03-specifying-sample-designs.html#cb50-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
+<span id="cb50-5"><a href="c03-specifying-sample-designs.html#cb50-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">combined_weights =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb50-6"><a href="c03-specifying-sample-designs.html#cb50-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 </div>
 <div id="example-4" class="section level4 unnumbered hasAnchor">
 <h4>Example<a href="c03-specifying-sample-designs.html#example-4" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>The {survey} package includes a data example from Section 12.2 of <span class="citation">Levy and Lemeshow (<a href="#ref-levy2013sampling" role="doc-biblioref">2013</a>)</span>. In this fictional data, two out of five ambulance stations were sampled from each of three emergency service areas (ESAs), thus BRR weights are appropriate with 2 PSUs (stations) sampled in each stratum (ESA). In the code below, BRR weights are created as was done by <span class="citation">Levy and Lemeshow (<a href="#ref-levy2013sampling" role="doc-biblioref">2013</a>)</span>.</p>
 <div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="c03-specifying-sample-designs.html#cb51-1" aria-hidden="true" tabindex="-1"></a>scdbrr <span class="ot">&lt;-</span> scd <span class="sc">%&gt;%</span></span>
 <span id="cb51-2"><a href="c03-specifying-sample-designs.html#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb51-3"><a href="c03-specifying-sample-designs.html#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb51-4"><a href="c03-specifying-sample-designs.html#cb51-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">wt =</span> <span class="dv">5</span> <span class="sc">/</span> <span class="dv">2</span>,</span>
-<span id="cb51-5"><a href="c03-specifying-sample-designs.html#cb51-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">rep1 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb51-6"><a href="c03-specifying-sample-designs.html#cb51-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">rep2 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
-<span id="cb51-7"><a href="c03-specifying-sample-designs.html#cb51-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">rep3 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
-<span id="cb51-8"><a href="c03-specifying-sample-designs.html#cb51-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">rep4 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb51-9"><a href="c03-specifying-sample-designs.html#cb51-9" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb51-10"><a href="c03-specifying-sample-designs.html#cb51-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-11"><a href="c03-specifying-sample-designs.html#cb51-11" aria-hidden="true" tabindex="-1"></a>scdbrr</span></code></pre></div>
+<span id="cb51-3"><a href="c03-specifying-sample-designs.html#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">wt =</span> <span class="dv">5</span> <span class="sc">/</span> <span class="dv">2</span>,</span>
+<span id="cb51-4"><a href="c03-specifying-sample-designs.html#cb51-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">rep1 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb51-5"><a href="c03-specifying-sample-designs.html#cb51-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">rep2 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb51-6"><a href="c03-specifying-sample-designs.html#cb51-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">rep3 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb51-7"><a href="c03-specifying-sample-designs.html#cb51-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">rep4 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
+<span id="cb51-8"><a href="c03-specifying-sample-designs.html#cb51-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-9"><a href="c03-specifying-sample-designs.html#cb51-9" aria-hidden="true" tabindex="-1"></a>scdbrr</span></code></pre></div>
 <pre><code>## # A tibble: 6 × 9
 ##     ESA ambulance arrests alive    wt  rep1  rep2  rep3  rep4
 ##   &lt;int&gt;     &lt;int&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
@@ -935,14 +927,12 @@ Specifying replicate weights in R requires specifying the type of replicate weig
 ## 6     3         2     530    70   2.5     0     2     2     0</code></pre>
 <p>To specify the BRR weights, the following syntax is used:</p>
 <div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="c03-specifying-sample-designs.html#cb53-1" aria-hidden="true" tabindex="-1"></a>scdbrr_des <span class="ot">&lt;-</span> scdbrr <span class="sc">%&gt;%</span></span>
-<span id="cb53-2"><a href="c03-specifying-sample-designs.html#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb53-3"><a href="c03-specifying-sample-designs.html#cb53-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
-<span id="cb53-4"><a href="c03-specifying-sample-designs.html#cb53-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;rep&quot;</span>),</span>
-<span id="cb53-5"><a href="c03-specifying-sample-designs.html#cb53-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">combined_weights =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb53-6"><a href="c03-specifying-sample-designs.html#cb53-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">weight =</span> wt</span>
-<span id="cb53-7"><a href="c03-specifying-sample-designs.html#cb53-7" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb53-8"><a href="c03-specifying-sample-designs.html#cb53-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb53-9"><a href="c03-specifying-sample-designs.html#cb53-9" aria-hidden="true" tabindex="-1"></a>scdbrr_des</span></code></pre></div>
+<span id="cb53-2"><a href="c03-specifying-sample-designs.html#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
+<span id="cb53-3"><a href="c03-specifying-sample-designs.html#cb53-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;rep&quot;</span>),</span>
+<span id="cb53-4"><a href="c03-specifying-sample-designs.html#cb53-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">combined_weights =</span> <span class="cn">FALSE</span>,  </span>
+<span id="cb53-5"><a href="c03-specifying-sample-designs.html#cb53-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">weight =</span> wt)</span>
+<span id="cb53-6"><a href="c03-specifying-sample-designs.html#cb53-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-7"><a href="c03-specifying-sample-designs.html#cb53-7" aria-hidden="true" tabindex="-1"></a>scdbrr_des</span></code></pre></div>
 <pre><code>## Call: Called via srvyr
 ## Balanced Repeated Replicates with 4 replicates.
 ## Sampling variables:
@@ -966,39 +956,35 @@ Specifying replicate weights in R requires specifying the type of replicate weig
 </div>
 <div id="fays-brr-method" class="section level3 hasAnchor" number="3.3.2">
 <h3><span class="header-section-number">3.3.2</span> Fay’s BRR Method<a href="c03-specifying-sample-designs.html#fays-brr-method" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Fay’s BRR method for replicate weights is similar to the BRR method in that it uses a Hadamard matrix to construct replicate weights. However, rather than deleting PSUs for each replicate, with Fay’s BRR half of the PSUs have a replicate weight which is the main weight multiplied by <span class="math inline">\(\rho\)</span>, and the other half have the main weight multiplied by <span class="math inline">\((2-\rho)\)</span> where <span class="math inline">\(0 \le \rho &lt; 1\)</span>. Note that when <span class="math inline">\(\rho=0\)</span>, this is equivalent to the standard BRR weights, and as <span class="math inline">\(\rho\)</span> becomes closer to 1, this method is more similar to jackknife discussed in the next section. To obtain the value of <span class="math inline">\(\rho\)</span>, it is necessary to read the documentation as discussed in Section <a href="c03-specifying-sample-designs.html#und-surv-doc">3.4</a> and Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a>.</p>
+<p>Fay’s BRR method for replicate weights is similar to the BRR method in that it uses a Hadamard matrix to construct replicate weights. However, rather than deleting PSUs for each replicate, with Fay’s BRR half of the PSUs have a replicate weight which is the main weight multiplied by <span class="math inline">\(\rho\)</span>, and the other half have the main weight multiplied by <span class="math inline">\((2-\rho)\)</span> where <span class="math inline">\(0 \le \rho &lt; 1\)</span>. Note that when <span class="math inline">\(\rho=0\)</span>, this is equivalent to the standard BRR weights, and as <span class="math inline">\(\rho\)</span> becomes closer to 1, this method is more similar to jackknife discussed in the next section. To obtain the value of <span class="math inline">\(\rho\)</span>, it is necessary to read the documentation (see Section <a href="c03-specifying-sample-designs.html#und-surv-doc">3.4</a> and Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a>).</p>
 <div id="the-math-5" class="section level4 unnumbered hasAnchor">
 <h4>The math<a href="c03-specifying-sample-designs.html#the-math-5" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>The standard error estimate for <span class="math inline">\(\hat{\theta}\)</span> is slightly different than the BRR, due to the addtion of the multipler of , and is calculated as:</p>
+<p>The standard error estimate for <span class="math inline">\(\hat{\theta}\)</span> is slightly different than the BRR, due to the addition of the multiplier of <span class="math inline">\(\rho\)</span>. Using the generic notation above, <span class="math inline">\(\alpha=\frac{1}{R \left(1-\rho\right)^2}\)</span> and <span class="math inline">\(\alpha_r=1 \forall r\)</span>. The standard error is calculated as:</p>
 <p><span class="math display">\[se(\hat{\theta})=\sqrt{\frac{1}{R (1-\rho)^2} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}\]</span></p>
 </div>
 <div id="the-syntax-5" class="section level4 unnumbered hasAnchor">
 <h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-5" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>The syntax is very similar for BRR and Fay’s BRR. If a dataset had WT0 for the main weight and had 20 BRR weights indicated as WT1, WT2, …, WT20, and Fay’s multiplier is 0.5, use the following syntax:</p>
 <div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="c03-specifying-sample-designs.html#cb57-1" aria-hidden="true" tabindex="-1"></a>fay_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb57-2"><a href="c03-specifying-sample-designs.html#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb57-3"><a href="c03-specifying-sample-designs.html#cb57-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> WT0,</span>
-<span id="cb57-4"><a href="c03-specifying-sample-designs.html#cb57-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
-<span id="cb57-5"><a href="c03-specifying-sample-designs.html#cb57-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;Fay&quot;</span>,</span>
-<span id="cb57-6"><a href="c03-specifying-sample-designs.html#cb57-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb57-7"><a href="c03-specifying-sample-designs.html#cb57-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">rho =</span> <span class="fl">0.5</span></span>
-<span id="cb57-8"><a href="c03-specifying-sample-designs.html#cb57-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<span id="cb57-2"><a href="c03-specifying-sample-designs.html#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0,</span>
+<span id="cb57-3"><a href="c03-specifying-sample-designs.html#cb57-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
+<span id="cb57-4"><a href="c03-specifying-sample-designs.html#cb57-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;Fay&quot;</span>,</span>
+<span id="cb57-5"><a href="c03-specifying-sample-designs.html#cb57-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb57-6"><a href="c03-specifying-sample-designs.html#cb57-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">rho =</span> <span class="fl">0.5</span>)</span></code></pre></div>
 </div>
 <div id="example-5" class="section level4 unnumbered hasAnchor">
 <h4>Example<a href="c03-specifying-sample-designs.html#example-5" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>The 2015 RECS <span class="citation">(<a href="#ref-recs-2015-micro" role="doc-biblioref">U.S. Energy Information Administration 2017</a>)</span> uses Fay’s BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with <span class="math inline">\(\rho=0.5\)</span>. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. We have already read in the RECS data and created a dataset called <code>recs_in</code> above in the prerequisites.</p>
 <p>To specify this design, use the following syntax:</p>
 <div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="c03-specifying-sample-designs.html#cb58-1" aria-hidden="true" tabindex="-1"></a>recs_des <span class="ot">&lt;-</span> recs_in <span class="sc">%&gt;%</span></span>
-<span id="cb58-2"><a href="c03-specifying-sample-designs.html#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb58-3"><a href="c03-specifying-sample-designs.html#cb58-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
-<span id="cb58-4"><a href="c03-specifying-sample-designs.html#cb58-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> BRRWT1<span class="sc">:</span>BRRWT96,</span>
-<span id="cb58-5"><a href="c03-specifying-sample-designs.html#cb58-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;Fay&quot;</span>,</span>
-<span id="cb58-6"><a href="c03-specifying-sample-designs.html#cb58-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">rho =</span> <span class="fl">0.5</span>,</span>
-<span id="cb58-7"><a href="c03-specifying-sample-designs.html#cb58-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb58-8"><a href="c03-specifying-sample-designs.html#cb58-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">variables =</span> <span class="fu">c</span>(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC)</span>
-<span id="cb58-9"><a href="c03-specifying-sample-designs.html#cb58-9" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb58-10"><a href="c03-specifying-sample-designs.html#cb58-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-11"><a href="c03-specifying-sample-designs.html#cb58-11" aria-hidden="true" tabindex="-1"></a>recs_des </span></code></pre></div>
+<span id="cb58-2"><a href="c03-specifying-sample-designs.html#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> NWEIGHT,</span>
+<span id="cb58-3"><a href="c03-specifying-sample-designs.html#cb58-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> BRRWT1<span class="sc">:</span>BRRWT96,</span>
+<span id="cb58-4"><a href="c03-specifying-sample-designs.html#cb58-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;Fay&quot;</span>,</span>
+<span id="cb58-5"><a href="c03-specifying-sample-designs.html#cb58-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">rho =</span> <span class="fl">0.5</span>,</span>
+<span id="cb58-6"><a href="c03-specifying-sample-designs.html#cb58-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb58-7"><a href="c03-specifying-sample-designs.html#cb58-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">variables =</span> <span class="fu">c</span>(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC))</span>
+<span id="cb58-8"><a href="c03-specifying-sample-designs.html#cb58-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-9"><a href="c03-specifying-sample-designs.html#cb58-9" aria-hidden="true" tabindex="-1"></a>recs_des </span></code></pre></div>
 <pre><code>## Call: Called via srvyr
 ## Fay&#39;s variance method (rho= 0.5 ) with 96 replicates and MSE variances.
 ## Sampling variables:
@@ -1016,59 +1002,63 @@ Specifying replicate weights in R requires specifying the type of replicate weig
 ##   (dbl)
 ## Variables: 
 ## [1] &quot;DOEID&quot;      &quot;TOTALDOL&quot;   &quot;TOTSQFT_EN&quot; &quot;REGIONC&quot;</code></pre>
-<p>In specifying the design, the <code>variables</code> option was also used to include which variables might be used in analyses. This is optional but can make your object smaller. When printing the design object or looking at the summary, the replicate weight type is re-iterated as <code>Fay's variance method (rho= 0.5) with 96 replicates and MSE variances</code>, and the variables are included. No weight or probability summary is included in this output as we have seen in some other design objects.</p>
+<p>In specifying the design, the <code>variables</code> option was also used to include which variables might be used in analyses. This is optional but can make our object smaller. When printing the design object or looking at the summary, the replicate weight type is re-iterated as <code>Fay's variance method (rho= 0.5) with 96 replicates and MSE variances</code>, and the variables are included. No weight or probability summary is included in this output as we have seen in some other design objects.</p>
 </div>
 </div>
 <div id="jackknife-method" class="section level3 hasAnchor" number="3.3.3">
 <h3><span class="header-section-number">3.3.3</span> Jackknife method<a href="c03-specifying-sample-designs.html#jackknife-method" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>There are three jackknife estimators implemented in {srvyr} - Jackknife 1 (JK1), Jackknife n (JKn), and Jackknife 2 (JK2). The JK1 method can be used for unstratified designs, and replicates are created by removing one PSU at a time so the number of replicates is the same as the number of PSUs. If there is no clustering, then the PSU is the ultimate sampling unit (e.g., unit).</p>
-<p>The JKn method is used for stratified designs and requires two or more PSUs per stratum. In this case, each replicate is created by deleting one PSU from one stratum, so the number of replicates is the number of total PSUs across all strata. The JK2 method is a special case of JKn when there are exactly 2 PSUs sampled per stratum. For variance estimation, scaling constants must also be specified.</p>
+<p>The JKn method is used for stratified designs and requires two or more PSUs per stratum. In this case, each replicate is created by deleting one PSU from a single stratum, so the number of replicates is the number of total PSUs across all strata. The JK2 method is a special case of JKn when there are exactly 2 PSUs sampled per stratum. For variance estimation, scaling constants must also be specified.</p>
 <div id="the-math-6" class="section level4 unnumbered hasAnchor">
 <h4>The math<a href="c03-specifying-sample-designs.html#the-math-6" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>For the JK1 method, the standard error estimate for <span class="math inline">\(\hat{\theta}\)</span> is calculated as:</p>
+<p>Using the generic notation above, <span class="math inline">\(\alpha=\frac{R-1}{R}\)</span> and <span class="math inline">\(\alpha_r=1 \forall r\)</span>. For the JK1 method, the standard error estimate for <span class="math inline">\(\hat{\theta}\)</span> is calculated as:</p>
 <p><span class="math display">\[se(\hat{\theta})=\sqrt{\frac{R-1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}\]</span>
-The JKn method is a bit more complex, but the coefficients are generally provided with restricted and public-use files. For each replicate, one stratum has a PSU removed, and the weights are adjusted by <span class="math inline">\(n_h/(n_h-1)\)</span> where <span class="math inline">\(n_h\)</span> is the number of PSUs in the stratum. The coefficients in other strata are set to 1. Denote the coefficient that results from this process for replicate <span class="math inline">\(r\)</span> as <span class="math inline">\(\alpha_r\)</span>, then the standard error estimate for <span class="math inline">\(\hat{\theta}\)</span> is calculated as:</p>
-<p><span class="math display">\[se(\hat{\theta})=\sqrt{\sum_{r=1}^R \left(\alpha_r \hat{\theta}_r-\hat{\theta}\right)^2}\]</span></p>
+The JKn method is a bit more complex, but the coefficients are generally provided with restricted and public-use files. For each replicate, one stratum has a PSU removed, and the weights are adjusted by <span class="math inline">\(n_h/(n_h-1)\)</span> where <span class="math inline">\(n_h\)</span> is the number of PSUs in stratum <span class="math inline">\(h\)</span>. The coefficients in other strata are set to 1. Denote the coefficient that results from this process for replicate <span class="math inline">\(r\)</span> as <span class="math inline">\(\alpha_r\)</span>, then the standard error estimate for <span class="math inline">\(\hat{\theta}\)</span> is calculated as:</p>
+<p><span class="math display">\[se(\hat{\theta})=\sqrt{\sum_{r=1}^R \alpha_r \left( \hat{\theta}_r-\hat{\theta}\right)^2}\]</span></p>
 </div>
 <div id="the-syntax-6" class="section level4 unnumbered hasAnchor">
 <h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-6" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>To specify the Jackknife method, the type would be <code>JK1</code>, <code>JKn</code>, or <code>JK2</code>. Additionally, the overall multiplier for JK1 is specified with the scale argument, whereas the replicate-specific multiplier (<span class="math inline">\(\alpha_r\)</span>) is specified with the scales argument.</p>
 <p>Consider a case for the JK1 method where the multiplier, <span class="math inline">\((R-1)/R=19/20=0.95\)</span> and the dataset had WT0 for the main weight and had 20 JK1 weights indicated WT1, WT2, …, WT20, then the syntax would be</p>
 <div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="c03-specifying-sample-designs.html#cb62-1" aria-hidden="true" tabindex="-1"></a>jk1_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb62-2"><a href="c03-specifying-sample-designs.html#cb62-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
-<span id="cb62-3"><a href="c03-specifying-sample-designs.html#cb62-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type=</span><span class="st">&quot;JK1&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>, <span class="at">scale=</span><span class="fl">0.95</span>)</span></code></pre></div>
+<span id="cb62-2"><a href="c03-specifying-sample-designs.html#cb62-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, </span>
+<span id="cb62-3"><a href="c03-specifying-sample-designs.html#cb62-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
+<span id="cb62-4"><a href="c03-specifying-sample-designs.html#cb62-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">type=</span><span class="st">&quot;JK1&quot;</span>, </span>
+<span id="cb62-5"><a href="c03-specifying-sample-designs.html#cb62-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">mse=</span><span class="cn">TRUE</span>, </span>
+<span id="cb62-6"><a href="c03-specifying-sample-designs.html#cb62-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale=</span><span class="fl">0.95</span>)</span></code></pre></div>
 <p>Consider a case for the JKn method where <span class="math inline">\(\alpha_r=0.1\)</span> for all replicates and the dataset had WT0 for the main weight and had 20 JK1 weights indicated as WT1, WT2, …, WT20, then the syntax would be:</p>
 <div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="c03-specifying-sample-designs.html#cb63-1" aria-hidden="true" tabindex="-1"></a>jkn_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb63-2"><a href="c03-specifying-sample-designs.html#cb63-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
-<span id="cb63-3"><a href="c03-specifying-sample-designs.html#cb63-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type=</span><span class="st">&quot;JKN&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>, <span class="at">rscales=</span><span class="fu">rep</span>(<span class="fl">0.1</span>, <span class="dv">20</span>))</span></code></pre></div>
+<span id="cb63-2"><a href="c03-specifying-sample-designs.html#cb63-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, </span>
+<span id="cb63-3"><a href="c03-specifying-sample-designs.html#cb63-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
+<span id="cb63-4"><a href="c03-specifying-sample-designs.html#cb63-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">type=</span><span class="st">&quot;JKN&quot;</span>, </span>
+<span id="cb63-5"><a href="c03-specifying-sample-designs.html#cb63-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">mse=</span><span class="cn">TRUE</span>, </span>
+<span id="cb63-6"><a href="c03-specifying-sample-designs.html#cb63-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">rscales=</span><span class="fu">rep</span>(<span class="fl">0.1</span>, <span class="dv">20</span>))</span></code></pre></div>
 </div>
 <div id="example-6" class="section level4 unnumbered hasAnchor">
 <h4>Example<a href="c03-specifying-sample-designs.html#example-6" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>The American Community Survey releases public use microdata with JK1 weights at the person and household level. This example includes data at the household level where the replicate weights are specified as WGTP1, …, WGTP80, and the main weight is WGTP <span class="citation">(<a href="#ref-acs-5yr-doc" role="doc-biblioref">U.S. Census Bureau 2023</a>)</span>. Using the {tidycensus} package<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a>, data is downloaded from the Census API. For example, the code below has a request to obtain data for each person in each household in two Public Use Microdata Areas (PUMAs) in Durham County, NC<a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a>. The variables requested are NP (number of persons in the household), BDSP (number of bedrooms), HINCP (household income), and TYPEHUGQ (type of household). By default, several other variables will come along, including SERIALNO (a unique identifier for each household), SPORDER (a unique identifier for each person within each household), PUMA, ST (state), person weight (PWGTP), and the household weights (WGTP, WGTP1, …, WGTP80). Filtering to records where SPORDER=1 yields only one record per household and TYPEHUGQ=1 filters to only households and not group quarters.</p>
-<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="c03-specifying-sample-designs.html#cb64-1" aria-hidden="true" tabindex="-1"></a>pums_in <span class="ot">&lt;-</span> <span class="fu">get_pums</span>(</span>
-<span id="cb64-2"><a href="c03-specifying-sample-designs.html#cb64-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">variables =</span> <span class="fu">c</span>(<span class="st">&quot;NP&quot;</span>, <span class="st">&quot;BDSP&quot;</span>, <span class="st">&quot;HINCP&quot;</span>),</span>
-<span id="cb64-3"><a href="c03-specifying-sample-designs.html#cb64-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">state =</span> <span class="st">&quot;37&quot;</span>, </span>
-<span id="cb64-4"><a href="c03-specifying-sample-designs.html#cb64-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">puma =</span> <span class="fu">c</span>(<span class="st">&quot;01301&quot;</span>, <span class="st">&quot;01302&quot;</span>), </span>
-<span id="cb64-5"><a href="c03-specifying-sample-designs.html#cb64-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">rep_weights =</span> <span class="st">&quot;housing&quot;</span>,</span>
-<span id="cb64-6"><a href="c03-specifying-sample-designs.html#cb64-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2021</span>,</span>
-<span id="cb64-7"><a href="c03-specifying-sample-designs.html#cb64-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">survey =</span> <span class="st">&quot;acs5&quot;</span>,</span>
-<span id="cb64-8"><a href="c03-specifying-sample-designs.html#cb64-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">variables_filter =</span> <span class="fu">list</span>(<span class="at">SPORDER =</span> <span class="dv">1</span>, <span class="at">TYPEHUGQ =</span> <span class="dv">1</span>)</span>
-<span id="cb64-9"><a href="c03-specifying-sample-designs.html#cb64-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="c03-specifying-sample-designs.html#cb64-1" aria-hidden="true" tabindex="-1"></a>pums_in <span class="ot">&lt;-</span> <span class="fu">get_pums</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">&quot;NP&quot;</span>, <span class="st">&quot;BDSP&quot;</span>, <span class="st">&quot;HINCP&quot;</span>),</span>
+<span id="cb64-2"><a href="c03-specifying-sample-designs.html#cb64-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">state =</span> <span class="st">&quot;37&quot;</span>, </span>
+<span id="cb64-3"><a href="c03-specifying-sample-designs.html#cb64-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">puma =</span> <span class="fu">c</span>(<span class="st">&quot;01301&quot;</span>, <span class="st">&quot;01302&quot;</span>), </span>
+<span id="cb64-4"><a href="c03-specifying-sample-designs.html#cb64-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">rep_weights =</span> <span class="st">&quot;housing&quot;</span>,</span>
+<span id="cb64-5"><a href="c03-specifying-sample-designs.html#cb64-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">year =</span> <span class="dv">2021</span>,</span>
+<span id="cb64-6"><a href="c03-specifying-sample-designs.html#cb64-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">survey =</span> <span class="st">&quot;acs5&quot;</span>,</span>
+<span id="cb64-7"><a href="c03-specifying-sample-designs.html#cb64-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">variables_filter =</span> <span class="fu">list</span>(<span class="at">SPORDER =</span> <span class="dv">1</span>, <span class="at">TYPEHUGQ =</span> <span class="dv">1</span>))</span></code></pre></div>
 <pre><code>## Getting data from the 2017-2021 5-year ACS Public Use Microdata Sample</code></pre>
 <div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="c03-specifying-sample-designs.html#cb66-1" aria-hidden="true" tabindex="-1"></a>pums_in</span></code></pre></div>
 <pre><code>## # A tibble: 5,017 × 90
 ##    SERIALNO  SPORDER    NP  BDSP  HINCP PUMA  ST    TYPEHUGQ  WGTP PWGTP
 ##    &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;dbl&gt;
-##  1 20170000…       1     2     1  37000 01301 37    1           15    15
-##  2 20170000…       1     3     3  81500 01302 37    1           18    19
-##  3 20170000…       1     3     3 104000 01301 37    1           21    21
-##  4 20170000…       1     1     3   8400 01302 37    1           48    48
-##  5 20170000…       1     4     4 139000 01302 37    1           22    23
-##  6 20170000…       1     1     1  18900 01302 37    1           33    34
-##  7 20170000…       1     1     0   8800 01302 37    1           54    54
-##  8 20170000…       1     1     2  24700 01302 37    1            9     9
-##  9 20170000…       1     3     4 227000 01301 37    1           11    11
-## 10 20170000…       1     2     2  87000 01302 37    1           14    13
+##  1 2018HU08…       1     2     4  25560 01302 37    1           41    42
+##  2 2018HU08…       1     3     3 163000 01301 37    1           38    39
+##  3 2018HU08…       1     2     3 135000 01302 37    1           24    25
+##  4 2018HU08…       1     2     3  42100 01302 37    1           11    10
+##  5 2018HU08…       1     3     3  47200 01301 37    1            8     7
+##  6 2018HU08…       1     2     1   9000 01302 37    1           20    20
+##  7 2018HU08…       1     3     3 102000 01301 37    1           20    20
+##  8 2018HU08…       1     2     2  67900 01301 37    1           11    11
+##  9 2018HU08…       1     3     3 155500 01302 37    1           25    24
+## 10 2018HU08…       1     4     3  98000 01301 37    1           36    35
 ## # ℹ 5,007 more rows
 ## # ℹ 80 more variables: WGTP1 &lt;dbl&gt;, WGTP2 &lt;dbl&gt;, WGTP3 &lt;dbl&gt;,
 ## #   WGTP4 &lt;dbl&gt;, WGTP5 &lt;dbl&gt;, WGTP6 &lt;dbl&gt;, WGTP7 &lt;dbl&gt;, WGTP8 &lt;dbl&gt;,
@@ -1077,15 +1067,13 @@ The JKn method is a bit more complex, but the coefficients are generally provide
 ## #   WGTP17 &lt;dbl&gt;, WGTP18 &lt;dbl&gt;, WGTP19 &lt;dbl&gt;, WGTP20 &lt;dbl&gt;,
 ## #   WGTP21 &lt;dbl&gt;, WGTP22 &lt;dbl&gt;, WGTP23 &lt;dbl&gt;, WGTP24 &lt;dbl&gt;, …</code></pre>
 <div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="c03-specifying-sample-designs.html#cb68-1" aria-hidden="true" tabindex="-1"></a>acs_des <span class="ot">&lt;-</span> pums_in <span class="sc">%&gt;%</span></span>
-<span id="cb68-2"><a href="c03-specifying-sample-designs.html#cb68-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb68-3"><a href="c03-specifying-sample-designs.html#cb68-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> WGTP,</span>
-<span id="cb68-4"><a href="c03-specifying-sample-designs.html#cb68-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">num_range</span>(<span class="st">&quot;WGTP&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">80</span>),</span>
-<span id="cb68-5"><a href="c03-specifying-sample-designs.html#cb68-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;JK1&quot;</span>,</span>
-<span id="cb68-6"><a href="c03-specifying-sample-designs.html#cb68-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb68-7"><a href="c03-specifying-sample-designs.html#cb68-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">4</span> <span class="sc">/</span> <span class="dv">80</span></span>
-<span id="cb68-8"><a href="c03-specifying-sample-designs.html#cb68-8" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb68-9"><a href="c03-specifying-sample-designs.html#cb68-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb68-10"><a href="c03-specifying-sample-designs.html#cb68-10" aria-hidden="true" tabindex="-1"></a>acs_des </span></code></pre></div>
+<span id="cb68-2"><a href="c03-specifying-sample-designs.html#cb68-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WGTP,</span>
+<span id="cb68-3"><a href="c03-specifying-sample-designs.html#cb68-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> <span class="fu">num_range</span>(<span class="st">&quot;WGTP&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">80</span>),</span>
+<span id="cb68-4"><a href="c03-specifying-sample-designs.html#cb68-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;JK1&quot;</span>,</span>
+<span id="cb68-5"><a href="c03-specifying-sample-designs.html#cb68-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb68-6"><a href="c03-specifying-sample-designs.html#cb68-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">scale =</span> <span class="dv">4</span> <span class="sc">/</span> <span class="dv">80</span>)</span>
+<span id="cb68-7"><a href="c03-specifying-sample-designs.html#cb68-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-8"><a href="c03-specifying-sample-designs.html#cb68-8" aria-hidden="true" tabindex="-1"></a>acs_des </span></code></pre></div>
 <pre><code>## Call: Called via srvyr
 ## Unstratified cluster jacknife (JK1) with 80 replicates and MSE variances.
 ## Sampling variables:
@@ -1161,15 +1149,18 @@ The JKn method is a bit more complex, but the coefficients are generally provide
 <h4>The math<a href="c03-specifying-sample-designs.html#the-math-7" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>A weighted estimate for the full sample is calculated as <span class="math inline">\(\hat{\theta}\)</span>, and then a weighted estimate for each replicate is calculated as <span class="math inline">\(\hat{\theta}_r\)</span> for <span class="math inline">\(R\)</span> replicates. Then the standard error of the estimate is calculated as follows:</p>
 <p><span class="math display">\[se(\hat{\theta})=\sqrt{\alpha \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}\]</span></p>
-<p>where <span class="math inline">\(\alpha\)</span> is the scaling constant.</p>
+<p>where <span class="math inline">\(\alpha\)</span> is the scaling constant. Note that the scaling constant (<span class="math inline">\(\alpha\)</span>) is provided in the documentation as there are many types of bootstrap methods which generate custom scaling constants.</p>
 </div>
 <div id="the-syntax-7" class="section level4 unnumbered hasAnchor">
 <h4>The syntax<a href="c03-specifying-sample-designs.html#the-syntax-7" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>If a dataset had WT0 for the main weight, 20 bootstrap weights indicated WT1, WT2, …, WT20, and <span class="math inline">\(\alpha=.02\)</span>, use the following syntax:</p>
 <div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="c03-specifying-sample-designs.html#cb72-1" aria-hidden="true" tabindex="-1"></a>bs_des <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb72-2"><a href="c03-specifying-sample-designs.html#cb72-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
-<span id="cb72-3"><a href="c03-specifying-sample-designs.html#cb72-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">type=</span><span class="st">&quot;bootstrap&quot;</span>, <span class="at">mse=</span><span class="cn">TRUE</span>, <span class="at">scale=</span>.<span class="dv">02</span>)</span></code></pre></div>
-<p>Note that the scale (<span class="math inline">\(\alpha\)</span>) is usually provided in the documentation and is a constant, so it is not provided as a variable in the tibble.</p>
+<span id="cb72-2"><a href="c03-specifying-sample-designs.html#cb72-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> WT0, </span>
+<span id="cb72-3"><a href="c03-specifying-sample-designs.html#cb72-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">repweights=</span> <span class="fu">num_range</span>(<span class="st">&quot;WT&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>),</span>
+<span id="cb72-4"><a href="c03-specifying-sample-designs.html#cb72-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">type=</span><span class="st">&quot;bootstrap&quot;</span>, </span>
+<span id="cb72-5"><a href="c03-specifying-sample-designs.html#cb72-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">mse=</span><span class="cn">TRUE</span>, </span>
+<span id="cb72-6"><a href="c03-specifying-sample-designs.html#cb72-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale=</span>.<span class="dv">02</span>)</span></code></pre></div>
+<p>Since <span class="math inline">\(\alpha\)</span> is a constant, it is not generally a variable on the dataset and is entered into the code as a constant.</p>
 </div>
 <div id="example-7" class="section level4 unnumbered hasAnchor">
 <h4>Example<a href="c03-specifying-sample-designs.html#example-7" class="anchor-section" aria-label="Anchor link to header"></a></h4>
@@ -1182,24 +1173,22 @@ The JKn method is a bit more complex, but the coefficients are generally provide
 <span id="cb73-6"><a href="c03-specifying-sample-designs.html#cb73-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb73-7"><a href="c03-specifying-sample-designs.html#cb73-7" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">662152</span>)</span>
 <span id="cb73-8"><a href="c03-specifying-sample-designs.html#cb73-8" aria-hidden="true" tabindex="-1"></a>apibw <span class="ot">&lt;-</span></span>
-<span id="cb73-9"><a href="c03-specifying-sample-designs.html#cb73-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bootweights</span>(</span>
-<span id="cb73-10"><a href="c03-specifying-sample-designs.html#cb73-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">psu =</span> apiclus1_slim<span class="sc">$</span>dnum,</span>
-<span id="cb73-11"><a href="c03-specifying-sample-designs.html#cb73-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata =</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(apiclus1_slim)),</span>
-<span id="cb73-12"><a href="c03-specifying-sample-designs.html#cb73-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">fpc =</span> apiclus1_slim<span class="sc">$</span>fpc,</span>
-<span id="cb73-13"><a href="c03-specifying-sample-designs.html#cb73-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">replicates =</span> <span class="dv">50</span></span>
-<span id="cb73-14"><a href="c03-specifying-sample-designs.html#cb73-14" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb73-15"><a href="c03-specifying-sample-designs.html#cb73-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb73-16"><a href="c03-specifying-sample-designs.html#cb73-16" aria-hidden="true" tabindex="-1"></a>bwmata <span class="ot">&lt;-</span></span>
-<span id="cb73-17"><a href="c03-specifying-sample-designs.html#cb73-17" aria-hidden="true" tabindex="-1"></a>  apibw<span class="sc">$</span>repweights<span class="sc">$</span>weights[apibw<span class="sc">$</span>repweights<span class="sc">$</span>index,] <span class="sc">*</span> apiclus1_slim<span class="sc">$</span>pw</span>
-<span id="cb73-18"><a href="c03-specifying-sample-designs.html#cb73-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb73-19"><a href="c03-specifying-sample-designs.html#cb73-19" aria-hidden="true" tabindex="-1"></a>apiclus1_slim <span class="ot">&lt;-</span> bwmata <span class="sc">%&gt;%</span></span>
-<span id="cb73-20"><a href="c03-specifying-sample-designs.html#cb73-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb73-21"><a href="c03-specifying-sample-designs.html#cb73-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_names</span>(<span class="fu">str_c</span>(<span class="st">&quot;pw&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb73-22"><a href="c03-specifying-sample-designs.html#cb73-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(apiclus1_slim) <span class="sc">%&gt;%</span></span>
-<span id="cb73-23"><a href="c03-specifying-sample-designs.html#cb73-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb73-24"><a href="c03-specifying-sample-designs.html#cb73-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cds, dnum, fpc, pw, <span class="fu">everything</span>())</span>
-<span id="cb73-25"><a href="c03-specifying-sample-designs.html#cb73-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb73-26"><a href="c03-specifying-sample-designs.html#cb73-26" aria-hidden="true" tabindex="-1"></a>apiclus1_slim</span></code></pre></div>
+<span id="cb73-9"><a href="c03-specifying-sample-designs.html#cb73-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bootweights</span>(<span class="at">psu =</span> apiclus1_slim<span class="sc">$</span>dnum,</span>
+<span id="cb73-10"><a href="c03-specifying-sample-designs.html#cb73-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">strata =</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(apiclus1_slim)),</span>
+<span id="cb73-11"><a href="c03-specifying-sample-designs.html#cb73-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">fpc =</span> apiclus1_slim<span class="sc">$</span>fpc,</span>
+<span id="cb73-12"><a href="c03-specifying-sample-designs.html#cb73-12" aria-hidden="true" tabindex="-1"></a>              <span class="at">replicates =</span> <span class="dv">50</span>)</span>
+<span id="cb73-13"><a href="c03-specifying-sample-designs.html#cb73-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-14"><a href="c03-specifying-sample-designs.html#cb73-14" aria-hidden="true" tabindex="-1"></a>bwmata <span class="ot">&lt;-</span></span>
+<span id="cb73-15"><a href="c03-specifying-sample-designs.html#cb73-15" aria-hidden="true" tabindex="-1"></a>  apibw<span class="sc">$</span>repweights<span class="sc">$</span>weights[apibw<span class="sc">$</span>repweights<span class="sc">$</span>index,] <span class="sc">*</span> apiclus1_slim<span class="sc">$</span>pw</span>
+<span id="cb73-16"><a href="c03-specifying-sample-designs.html#cb73-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-17"><a href="c03-specifying-sample-designs.html#cb73-17" aria-hidden="true" tabindex="-1"></a>apiclus1_slim <span class="ot">&lt;-</span> bwmata <span class="sc">%&gt;%</span></span>
+<span id="cb73-18"><a href="c03-specifying-sample-designs.html#cb73-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb73-19"><a href="c03-specifying-sample-designs.html#cb73-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_names</span>(<span class="fu">str_c</span>(<span class="st">&quot;pw&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb73-20"><a href="c03-specifying-sample-designs.html#cb73-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(apiclus1_slim) <span class="sc">%&gt;%</span></span>
+<span id="cb73-21"><a href="c03-specifying-sample-designs.html#cb73-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb73-22"><a href="c03-specifying-sample-designs.html#cb73-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cds, dnum, fpc, pw, <span class="fu">everything</span>())</span>
+<span id="cb73-23"><a href="c03-specifying-sample-designs.html#cb73-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-24"><a href="c03-specifying-sample-designs.html#cb73-24" aria-hidden="true" tabindex="-1"></a>apiclus1_slim</span></code></pre></div>
 <pre><code>## # A tibble: 183 × 54
 ##    cds        dnum   fpc    pw   pw1   pw2   pw3   pw4   pw5   pw6   pw7
 ##    &lt;chr&gt;     &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
@@ -1220,18 +1209,17 @@ The JKn method is a bit more complex, but the coefficients are generally provide
 ## #   pw22 &lt;dbl&gt;, pw23 &lt;dbl&gt;, pw24 &lt;dbl&gt;, pw25 &lt;dbl&gt;, pw26 &lt;dbl&gt;,
 ## #   pw27 &lt;dbl&gt;, pw28 &lt;dbl&gt;, pw29 &lt;dbl&gt;, pw30 &lt;dbl&gt;, pw31 &lt;dbl&gt;,
 ## #   pw32 &lt;dbl&gt;, pw33 &lt;dbl&gt;, pw34 &lt;dbl&gt;, pw35 &lt;dbl&gt;, pw36 &lt;dbl&gt;, …</code></pre>
-<p>The output of <code>apiclus1_slim</code> includes the same variables we have seen in other api examples (see Table <a href="c03-specifying-sample-designs.html#tab:apidata">3.1</a>), but now additionally includes bootstrap weights <code>pw1</code>, …, <code>pw50</code>. When creating the survey design object, we use the bootstrap weights as the replicate weights. Additionally, with replicate weights we need to include the scale (<span class="math inline">\(\alpha\)</span>). For this example we created, <span class="math inline">\(\alpha\)</span> is <span class="math inline">\(15/(14*49)=0.02186589\)</span>.
-<!-- Stephanie, I think it would be good if we could provide the original formula for bootstrap alpha.  Where do the 15, 14, and 49 come from?--></p>
+<p>The output of <code>apiclus1_slim</code> includes the same variables we have seen in other api examples (see Table <a href="c03-specifying-sample-designs.html#tab:apidata">3.1</a>), but now additionally includes bootstrap weights <code>pw1</code>, …, <code>pw50</code>. When creating the survey design object, we use the bootstrap weights as the replicate weights. Additionally, with replicate weights we need to include the scale (<span class="math inline">\(\alpha\)</span>). For this example we created,</p>
+<p><span class="math display">\[\alpha=\frac{M}{(M-1)(R-1)}=\frac{15}{(15-1)*(50-1)}=0.02186589\]</span>
+where <span class="math inline">\(M\)</span> is the average number of PSUs per strata and <span class="math inline">\(R\)</span> is the number of replicates. There is only 1 stratum and the number of clusters/PSUs is 15 so <span class="math inline">\(M=15\)</span>.</p>
 <div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="c03-specifying-sample-designs.html#cb75-1" aria-hidden="true" tabindex="-1"></a>api1_bs_des <span class="ot">&lt;-</span> apiclus1_slim <span class="sc">%&gt;%</span></span>
-<span id="cb75-2"><a href="c03-specifying-sample-designs.html#cb75-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb75-3"><a href="c03-specifying-sample-designs.html#cb75-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> pw,</span>
-<span id="cb75-4"><a href="c03-specifying-sample-designs.html#cb75-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">repweights =</span> pw1<span class="sc">:</span>pw50,</span>
-<span id="cb75-5"><a href="c03-specifying-sample-designs.html#cb75-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;bootstrap&quot;</span>,</span>
-<span id="cb75-6"><a href="c03-specifying-sample-designs.html#cb75-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">scale =</span> <span class="fl">0.02186589</span>,</span>
-<span id="cb75-7"><a href="c03-specifying-sample-designs.html#cb75-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
-<span id="cb75-8"><a href="c03-specifying-sample-designs.html#cb75-8" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb75-9"><a href="c03-specifying-sample-designs.html#cb75-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb75-10"><a href="c03-specifying-sample-designs.html#cb75-10" aria-hidden="true" tabindex="-1"></a>api1_bs_des </span></code></pre></div>
+<span id="cb75-2"><a href="c03-specifying-sample-designs.html#cb75-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> pw,</span>
+<span id="cb75-3"><a href="c03-specifying-sample-designs.html#cb75-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">repweights =</span> pw1<span class="sc">:</span>pw50,</span>
+<span id="cb75-4"><a href="c03-specifying-sample-designs.html#cb75-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;bootstrap&quot;</span>,</span>
+<span id="cb75-5"><a href="c03-specifying-sample-designs.html#cb75-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">scale =</span> <span class="fl">0.02186589</span>,</span>
+<span id="cb75-6"><a href="c03-specifying-sample-designs.html#cb75-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb75-7"><a href="c03-specifying-sample-designs.html#cb75-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-8"><a href="c03-specifying-sample-designs.html#cb75-8" aria-hidden="true" tabindex="-1"></a>api1_bs_des </span></code></pre></div>
 <pre><code>## Call: Called via srvyr
 ## Survey bootstrap with 50 replicates and MSE variances.
 ## Sampling variables:
@@ -1277,7 +1265,7 @@ The JKn method is a bit more complex, but the coefficients are generally provide
 <div id="und-surv-doc" class="section level2 hasAnchor" number="3.4">
 <h2><span class="header-section-number">3.4</span> Understanding survey design documentation<a href="c03-specifying-sample-designs.html#und-surv-doc" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>SRS, stratified, and clustered designs are the backbone of sampling designs, and the features are often combined in one design. Additionally, rather than using SRS for selection, other sampling mechanisms are commonly used, such as probability proportional to size (PPS), systematic sampling, or selection with unequal probabilities, which are briefly described here. In PPS sampling, a size measure is constructed for each unit (e.g., the population of the PSU or the number of occupied housing units) and then units with larger size measures are more likely to be sampled. Systematic sampling is commonly used to ensure representation across a population. Units are sorted by a feature and then every <span class="math inline">\(k\)</span> units are selected from a random start point so the sample is spread across the population. In addition to PPS, other unequal probabilities of selection may be used. For example, in a study of establishments (e.g., businesses or public institutions) that conducts a survey every year, an establishment that recently participated (e.g., participated last year) may have a reduced chance of selection in a subsequent round to reduce the burden on the establishment. To learn more about sampling designs, refer to <span class="citation">Valliant, Dever, and Kreuter (<a href="#ref-valliant2013practical" role="doc-biblioref">2013</a>)</span>, <span class="citation">Cox et al. (<a href="#ref-cox2011business" role="doc-biblioref">2011</a>)</span>, <span class="citation">Cochran (<a href="#ref-cochran1977sampling" role="doc-biblioref">1977</a>)</span>, and <span class="citation">Deming (<a href="#ref-deming1991sample" role="doc-biblioref">1991</a>)</span>.</p>
-<p>A common method of sampling is to stratify PSUs, select PSUs within the stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step in survey analysis to understand the design of the survey you are using and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User’s Guides, methodology, analysis guides, or technical documentation (see Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a> for more details).</p>
+<p>A common method of sampling is to stratify PSUs, select PSUs within the stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step in survey analysis to understand the design of the survey we are using and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User’s Guides, methodology, analysis guides, or technical documentation (see Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a> for more details).</p>
 <div id="example-8" class="section level4 unnumbered hasAnchor">
 <h4>Example<a href="c03-specifying-sample-designs.html#example-8" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>For example, the 2017-2019 National Survey of Family Growth (NSFG)<a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a> had a stratified multi-stage area probability sample. In the first stage, PSUs are counties or collections of counties and are stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected via PPS. In the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. In the third stage, housing units were selected within the sampled neighborhoods. In the fourth stage, a person was randomly chosen within the selected housing units among eligible persons using unequal probabilities based on the person’s age and sex. The public use file does not include all these levels of selection and instead has pseudo-strata and pseudo-clusters, which are the variables used in R to specify the design. As specified on page 4 of the documentation, the stratum variable is <code>SEST</code>, the cluster variable is <code>SECU</code>, and the weight variable is <code>WGT2017_2019</code>. Thus, to specify this design in R, use the following syntax:</p>
@@ -1322,17 +1310,20 @@ Fuller, Wayne A. 2011. <em>Sampling Statistics</em>. John Wiley &amp; Sons.
 <div id="ref-levy2013sampling" class="csl-entry">
 Levy, Paul S, and Stanley Lemeshow. 2013. <em>Sampling of Populations: Methods and Applications</em>. John Wiley &amp; Sons.
 </div>
+<div id="ref-pennstate506" class="csl-entry">
+Penn State. 2019. <span>“STAT 506: Sampling Theory and Methods [Online Course].”</span> <a href="https://online.stat.psu.edu/stat506/" class="uri">https://online.stat.psu.edu/stat506/</a>.
+</div>
 <div id="ref-sarndal2003model" class="csl-entry">
 Särndal, Carl-Erik, Bengt Swensson, and Jan Wretman. 2003. <em>Model Assisted Survey Sampling</em>. Springer Science &amp; Business Media.
 </div>
 <div id="ref-acs-pums-2021" class="csl-entry">
-U.S. Census Bureau. 2021. <span>“Understanding and Using the American Community Survey Public Use Microdata Sample Files What Data Users Need to Know.”</span> U.S. Government Printing Office. <a href="https://www.census.gov/content/dam/Census/library/publications/2021/acs/acs_pums_handbook_2021.pdf">https://www.census.gov/content/dam/Census/library/publications/2021/acs/acs_pums_handbook_2021.pdf</a>.
+U.S. Census Bureau. 2021. <span>“<span class="nocase">Understanding and Using the American Community Survey Public Use Microdata Sample Files What Data Users Need to Know</span>.”</span> U.S. Government Printing Office; <a href="https://www.census.gov/content/dam/Census/library/publications/2021/acs/acs_pums_handbook_2021.pdf" class="uri">https://www.census.gov/content/dam/Census/library/publications/2021/acs/acs_pums_handbook_2021.pdf</a>.
 </div>
 <div id="ref-acs-5yr-doc" class="csl-entry">
-———. 2023. <span>“American Community Survey 2017-2021 5-Year: PUMS User Guide and Overview.”</span> <a href="https://www2.census.gov/programs-surveys/acs/tech_docs/pums/2017_2021ACS_PUMS_User_Guide.pdf">https://www2.census.gov/programs-surveys/acs/tech_docs/pums/2017_2021ACS_PUMS_User_Guide.pdf</a>.
+———. 2023. <span>“<span class="nocase">American Community Survey 2017-2021 5-Year: PUMS User Guide and Overview</span>.”</span> <a href="https://www2.census.gov/programs-surveys/acs/tech_docs/pums/2017_2021ACS_PUMS_User_Guide.pdf" class="uri">https://www2.census.gov/programs-surveys/acs/tech_docs/pums/2017_2021ACS_PUMS_User_Guide.pdf</a>.
 </div>
 <div id="ref-recs-2015-micro" class="csl-entry">
-U.S. Energy Information Administration. 2017. <span>“Residential Energy Consumption Survey (RECS): Using the 2015 Microdata File to Compute Estimates and Standard Errors (RSEs).”</span> <a href="https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf">https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf</a>.
+U.S. Energy Information Administration. 2017. <span>“<span class="nocase">Residential Energy Consumption Survey (RECS): Using the 2015 microdata file to compute estimates and standard errors (RSEs)</span>.”</span> <a href="https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf" class="uri">https://www.eia.gov/consumption/residential/data/2015/pdf/microdata_v3.pdf</a>.
 </div>
 <div id="ref-valliant2013practical" class="csl-entry">
 Valliant, Richard, Jill A Dever, and Frauke Kreuter. 2013. <em>Practical Tools for Designing and Weighting Survey Samples</em>. Vol. 1. Springer.
