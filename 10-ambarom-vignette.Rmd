@@ -20,7 +20,7 @@ library(gt)
 library(ggpattern)
 ```
 
-In this vignette, we will be using data from the 2021 AmericasBarometer survey. Download the raw files yourself^[http://datasets.americasbarometer.org/database/index.php This book uses version 1.2] - note that each country has its own file for a total of 22 files. To read all files into R and ignore the Stata labels, we recommend running code like this:
+In this vignette, we will be using data from the 2021 AmericasBarometer survey. Download the raw files yourself from the LAPOP website at [http://datasets.americasbarometer.org/database/index.php](http://datasets.americasbarometer.org/database/index.php).  This book uses version 1.2 of the data and each country has its own file for a total of 22 files. To read all files into R and ignore the Stata labels, we recommend running code like this:
 
 ```r
 stata_files <- list.files(here("RawData", "LAPOP_2021"), "*.dta")
@@ -42,22 +42,19 @@ ambarom_in <- here("RawData", "LAPOP_2021", stata_files) %>%
 ```
 
 The code above will read all files of type `.dta` in and stack them into one tibble. We then selected a subset of variables for this vignette. 
-
-
-
 :::
 
 ## Introduction
 
-The AmericasBarometer surveys are conducted by the LAPOP Lab. These surveys are public opinion surveys of the Americas focused on democracy. The study was launched in 2004/2005 with 11 countries, with the countries growing and fluctuating over time, and creates a study with consistent methodology across many countries. In 2021, the study included 22 countries ranging from the north in Canada to the South in Chile and Argentina^[https://www.vanderbilt.edu/lapop/about-americasbarometer.php].
+The AmericasBarometer surveys are conducted by the LAPOP Lab [@lapop]. These surveys are public opinion surveys of the Americas focused on democracy. The study was launched in 2004/2005 with 11 countries, with the countries growing and fluctuating over time, and creates a study with consistent methodology across many countries. In 2021, the study included 22 countries ranging from the north in Canada to the South in Chile and Argentina [@lapop-about].
 
-Historically, surveys were administered with face-to-face household interviews, but the COVID-19 pandemic changed the study significantly to the use of random-digit dialing (RDD) of mobile phones in all countries except the United States and Canada^[https://www.vanderbilt.edu/lapop/ab2021/AB2021-Technical-Report-v1.0-FINAL-eng-030722.pdf]. In Canada, LAPOP collaborated with the Environics Institute to collect data from a panel of Canadians using a web survey^[http://datasets.americasbarometer.org/database/files/ABCAN2021-Technical-Report-v1.0-FINAL-eng-110921.pdf]. While in the United States, YouGov conducted the survey on behalf of LAPOP by conducting a web survey among their panelists^[http://datasets.americasbarometer.org/database/files/ABUSA2021-Technical-Report-v1.0-FINAL-eng-110921.pdf].
+Historically, surveys were administered with face-to-face household interviews, but the COVID-19 pandemic changed the study significantly to the use of random-digit dialing (RDD) of mobile phones in all countries except the United States and Canada [@lapop-tech]. In Canada, LAPOP collaborated with the Environics Institute to collect data from a panel of Canadians using a web survey [@lapop-can]. While in the United States, YouGov conducted the survey on behalf of LAPOP by conducting a web survey among their panelists [@lapop-usa].
 
-The survey has a core set of questions across the countries, but not all questions are asked everywhere. Additionally, some questions are only asked to half of the respondents within a country, presumably to reduce the burden as different sections are randomized to different respondents.^[https://www.vanderbilt.edu/lapop/ab2021/AB2021-Core-Questionnaire-v17.5-Eng-210514-W-v2.pdf] 
+The survey has a core set of questions across the countries, but not all questions are asked everywhere. Additionally, some questions are only asked to half of the respondents within a country, presumably to reduce the burden as different sections are randomized to different respondents [@lapop-svy]. 
 
 ## Data Structure
 
-Each country and year has its own file available in Stata format (`.dta`). In this vignette, we downloaded and stacked all the data from all 22 participating countries in 2021. We subset the data to a smaller set of columns as noted in the prerequisites box for usage in the vignette. To understand variables that are used across the several countries, the core questionnaire is useful.^[https://www.vanderbilt.edu/lapop/ab2021/AB2021-Core-Questionnaire-v17.5-Eng-210514-W-v2.pdf] 
+Each country and year has its own file available in Stata format (`.dta`). In this vignette, we downloaded and stacked all the data from all 22 participating countries in 2021. We subset the data to a smaller set of columns as noted in the prerequisites box for usage in the vignette. To understand variables that are used across the several countries, the core questionnaire is useful [@lapop-svy]. 
 
 ## Preparing files
 
@@ -115,37 +112,36 @@ ambarom <- ambarom_in %>%
                  23 ~ "Jamaica",
                  24 ~ "Guyana",
                  40 ~ "United States",
-                 41 ~ "Canada"
-      )
-    ),
+                 41 ~ "Canada")),
     CovidWorry = fct_reorder(
       case_match(covid2at,
                  1 ~ "Very worried",
                  2 ~ "Somewhat worried",
                  3 ~ "A little worried",
-                 4 ~ "Not worried at all"
-      ),
+                 4 ~ "Not worried at all"),
       covid2at,
-      .na_rm = FALSE
-    )
+      .na_rm = FALSE)
   ) %>%
-  rename(
-    Educ_NotInSchool = covidedu1_1,
-    Educ_NormalSchool = covidedu1_2,
-    Educ_VirtualSchool = covidedu1_3,
-    Educ_Hybrid = covidedu1_4,
-    Educ_NoSchool = covidedu1_5,
-    BroadbandInternet = r18n,
-    Internet = r18
-  )
+  rename(Educ_NotInSchool = covidedu1_1,
+         Educ_NormalSchool = covidedu1_2,
+         Educ_VirtualSchool = covidedu1_3,
+         Educ_Hybrid = covidedu1_4,
+         Educ_NoSchool = covidedu1_5,
+         BroadbandInternet = r18n,
+         Internet = r18)
+```
 
+At this point, it is helpful to check the cross-tabs between the original variables and the newly derived variables. By outputting these tables, we can check to make sure that we have correctly aligned the numeric data from the original data to the factored data with informative labels in the new data.
+
+```{r}
+#| label: ambarom-derive-check
 ambarom %>% count(Country, pais) %>% print(n = 22)
 ambarom %>% count(CovidWorry, covid2at)
 ```
 
 ## Survey design objects
 
-The technical report is the best source to understand how to specify the sampling design in R^[https://www.vanderbilt.edu/lapop/ab2021/AB2021-Technical-Report-v1.0-FINAL-eng-030722.pdf]. The data includes two weights: `wt` and `weight1500`. The first weight variable is country-specific and sums to the sample size but is calibrated to reflect each country's demographics, while the second weight variable sums to 1500 for each country. The second weight is indicated as the weight to use for multi-country analyses. While the documentation does not directly state this, the example Stata syntax `svyset upm [pw=weight1500], strata(strata)` indicates the variable `upm` is a clustering variable, and `strata` is the strata variable. The design object is setup as follows:
+The technical report is the best source to understand how to specify the sampling design in R [@lapop-tech]. The data includes two weights: `wt` and `weight1500`. The first weight variable is country-specific and sums to the sample size but is calibrated to reflect each country's demographics, while the second weight variable sums to 1500 for each country. The second weight is indicated as the weight to use for multi-country analyses. While the documentation does not directly state this, the example Stata syntax (`svyset upm [pw=weight1500], strata(strata)`) indicates the variable `upm` is a clustering variable, and `strata` is the strata variable. Therefore, the design object is setup in R as follows:
 
 ```{r}
 #| label: ambarom-design
@@ -157,11 +153,11 @@ ambarom_des <- ambarom %>%
 
 One interesting thing to note is that these can only give us estimates to compare countries but not multi-country estimates since the weights do not account for different sizes of countries. For example, Canada has about 10% of the population of the United States, but an estimate that uses records from both countries would weigh them equally. 
 
-## Calculating estimates and making tables
+## Calculating estimates and making tables {#ambarom-tables}
 
-This survey was administered in 2021 between March and August, varying by country^[See Table 2 in https://www.vanderbilt.edu/lapop/ab2021/AB2021-Technical-Report-v1.0-FINAL-eng-030722.pdf for dates by country]. Given the state of the pandemic at that time, several questions about COVID were included. The first question about COVID asked whether people were worried about the possibility that they or someone in their household will get sick from coronavirus in the next three months. We will calculate the percentage of people in each country who are very worried or somewhat worried. 
+This survey was administered in 2021 between March and August, varying by country^[See Table 2 in @lapop-tech for dates by country]. Given the state of the pandemic at that time, several questions about COVID were included. The first question about COVID asked whether people were worried about the possibility that they or someone in their household will get sick from coronavirus in the next three months. We will calculate the percentage of people in each country who are very worried or somewhat worried. 
 
-In the following code, estimates are calculated, and then a table of the estimates is created using the {{gt}} package.
+In the following code, we calculate estimate for each country and then create a table of the estimates for display using the {gt} package.
 
 ```{r}
 #| label: ambarom-est1
@@ -173,14 +169,16 @@ covid_worry_country_ests <-
     WorriedLo = c("A little worried", "Not worried at all")
   )) %>%
   group_by(Country) %>%
-  summarize(p = survey_mean(CovidWorry_bin == "WorriedHi", na.rm = TRUE) *
-              100) 
+  summarize(p = survey_mean(CovidWorry_bin == "WorriedHi",
+                            na.rm = TRUE) * 100) 
 
 covid_worry_country_ests %>%
   gt(rowname_col = "Country") %>%
   cols_label(p = "Percent",
              p_se = "SE") %>%
-  tab_header(title = "Proportion worried about the possibility that they or someone in their household will get sick from coronavirus in the next 3 months") %>%
+  tab_header(title = "Proportion worried about the possibility that 
+             they or someone in their household will get sick from 
+             coronavirus in the next 3 months") %>%
   fmt_number(decimals = 1)
 ```
 
@@ -188,13 +186,15 @@ Another question asked how education was affected by the pandemic. This question
 
 > Did any of these children have their school education affected due to the pandemic?
 > 
->  - No, because they are not yet school age or because they do not attend school for another reason
->  - No, their classes continued normally
->  - Yes, they went to virtual or remote classes
->  - Yes, they switched to a combination of virtual and in-person classes
->  - Yes, they cut all ties with the school
+> |   - No, because they are not yet school age or because they do not attend school for another reason
+> |   - No, their classes continued normally
+> |   - Yes, they went to virtual or remote classes
+> |   - Yes, they switched to a combination of virtual and in-person classes
+> |   - Yes, they cut all ties with the school
 
-Multiple-choice questions are interesting. If we want to look at how education was impacted only among those in school, we need to filter to the relevant responses, which is anyone that responded **no** to the first part. An unweighted cross-tab for the responses is included below, and we can see there is a wide-range of impacts and that many combinations of effects on education are possible.
+Multiple-choice questions are interesting. If we want to look at how education was impacted only among those in school, we need to filter to the relevant responses, which is anyone that responded **no** to the first part. The variable `Educ_NotInSchool` in our dataset has values of 0 and 1. A value of 1 means that the respondent selected the first option in the question (none of the children are in school) and a value of 0 means that at least one of their children are in school. Using this variable, we can filter the data to only those with a value of 0.  
+
+There are three additional variables that we can look at that correlate to the second option (`Educ_NormalSchool`), third option (`Educ_VirtualSchool`), and fourth option (`Educ_Hybrid`). An unweighted cross-tab for the responses is included below, and we can see there is a wide-range of impacts and that many combinations of effects on education are possible.
 
 ```{r}
 #| label: ambarom-covid-ed-skip
@@ -210,17 +210,17 @@ We might create multiple outcomes for a table as follows:
 - Indicator that school continued as normal with no virtual or hybrid option
 - Indicator that the education medium was changed - either virtual or hybrid
 
-We create these variables, make national estimates, and a summary table.
+In this next code chunk, we create these indicators, make national estimates, and display a summary table of the data.
 
 ```{r}
 #| label: ambarom-covid-ed-der
 ambarom_des_educ <- ambarom_des %>%
   filter(Educ_NotInSchool == 0) %>%
-  mutate(
-    Educ_OnlyNormal = Educ_NormalSchool == 1 &
-      Educ_VirtualSchool == 0 & Educ_Hybrid == 0,
-    Educ_MediumChange = Educ_VirtualSchool == 1 | Educ_Hybrid == 1,
-  )
+  mutate(Educ_OnlyNormal = (Educ_NormalSchool == 1 &
+                              Educ_VirtualSchool == 0 & 
+                              Educ_Hybrid == 0),
+         Educ_MediumChange = (Educ_VirtualSchool == 1 | 
+                                Educ_Hybrid == 1))
 
 covid_educ_ests <-
   ambarom_des_educ %>%
@@ -233,14 +233,12 @@ covid_educ_ests <-
 
 covid_educ_ests %>%
   gt(rowname_col = "Country") %>%
-  cols_label(
-    p_onlynormal = "%",
-    p_onlynormal_se = "SE",
-    p_mediumchange = "%",
-    p_mediumchange_se = "SE",
-    p_noschool = "%",
-    p_noschool_se = "SE"
-  ) %>%
+  cols_label(p_onlynormal = "%",
+             p_onlynormal_se = "SE",
+             p_mediumchange = "%",
+             p_mediumchange_se = "SE",
+             p_noschool = "%",
+             p_noschool_se = "SE") %>%
   tab_spanner(label = "Normal school only",
               columns = c("p_onlynormal", "p_onlynormal_se")) %>%
   tab_spanner(label = "Medium change",
@@ -250,13 +248,11 @@ covid_educ_ests %>%
   fmt_number(decimals = 1)
 ```
 
-Of the countries that used this data, many had households where their children had an education medium change, except Haiti, where only 7.2% of households with students changed to virtual or hybrid learning. 
+Of the countries that used this data, many had households where their children had an education medium change, except Haiti, where only `r covid_educ_ests %>% filter(Country=="Haiti") %>% pull(p_mediumchange) %>% signif(.,2)`% of households with students changed to virtual or hybrid learning. 
 
 ## Mapping survey data
 
-While the table presents the data well, a map could also be used. To obtain maps of the countries, the package {{rnaturalearth}} is used, subsetting North and South America using the function `ne_countries()`. This returns an sf object with many columns but, most importantly `soverignt` (sovereignty), `geounit` (country or territory), and `geometry` (the shape). The United States, Puerto Rico, and the US Virgin Islands are all separate units with the same sovereignty.
-
-That map (without data) is plotted. The first map is very wide as the Aleutian islands in Alaska extend into the Eastern Hemisphere. The shape file is cropped to only the Western Hemisphere to remove some of the trailing islands of Alaska and then plotted. 
+While the table presents the data well, a map could also be used. To obtain maps of the countries, the package {rnaturalearth} is used, subsetting North and South America using the function `ne_countries()`. This returns an sf object with many columns but, most importantly `soverignt` (sovereignty), `geounit` (country or territory), and `geometry` (the shape). The United States, Puerto Rico, and the US Virgin Islands are all separate units with the same sovereignty. This map (without data) is plotted in Figure \@ref(fig:ambarom-americas-map).
 
 ```{r}
 #| label: ambarom-americas-map
@@ -274,13 +270,27 @@ country_shape %>%
   geom_sf()
 ```
 
-Then, using the `anti_join()` function, it is verified that all countries in the survey data are also in the map data. As shown below, the United States is referred to as "United States" in the survey data but "United States of America" in the map data. 
+This map in Figure \@ref(fig:ambarom-americas-map) is very wide as the Aleutian islands in Alaska extend into the Eastern Hemisphere. We can crop the shape file to only the Western Hemisphere to remove some of the trailing islands of Alaska.
+
+```{r}
+#| label: ambarom-update-map
+#| warning: false
+country_shape_crop <- country_shape %>%
+  st_crop(c(xmin = -180,
+            xmax = 0,
+            ymin = -90,
+            ymax = 90)) 
+```
+
+Now that we have the shape files we need, our next step is to match our survey data to the map. Countries can be called by different names (e.g., "U.S", "U.S.A", "United States"). To make sure we can plot our survey data on the map, we will need to make sure the country in both datasets match.  To do this, we can use the `anti_join()` function and check to see what countries are in the survey data but not in the map data. As shown below, the United States is referred to as "United States" in the survey data but "United States of America" in the map data. 
 
 ```{r}
 #| label: ambarom-map-merge-check
 survey_country_list <- ambarom %>% distinct(Country)
-survey_country_list %>% anti_join(country_shape, by = c("Country" = "geounit"))
-country_shape %>% as_tibble() %>% select(geounit, sovereignt) %>%
+survey_country_list %>% 
+  anti_join(country_shape_crop, by = c("Country" = "geounit"))
+country_shape_crop %>% as_tibble() %>% 
+  select(geounit, sovereignt) %>%
   anti_join(survey_country_list, by = c("geounit" = "Country")) %>%
   arrange(geounit) %>%
   print(n = 30)
@@ -290,25 +300,22 @@ With the mismatched names, there are several ways to remedy the data to join lat
 
 ```{r}
 #| label: ambarom-update-map-usa
-country_shape_upd <- country_shape %>%
-  mutate(geounit = if_else(geounit == "United States of America", "United States", geounit)) %>%
-  st_crop(c(
-    xmin = -180,
-    xmax = 0,
-    ymin = -90,
-    ymax = 90
-  )) 
+country_shape_upd <- country_shape_crop %>%
+  mutate(geounit = if_else(geounit == "United States of America", 
+                           "United States", geounit))
 ```
 
-To merge the data and make a map, we begin with the map file, merge the estimates data, and then plot as shown below for the outcomes we have used above in tables.
+To merge the data and make a map, we begin with the map file, merge the estimates data, and then plot.  Let's use the outcomes we created in section \@ref(ambarom-tables) for the table output (`covid_worry_country_ests` and `covid_educ_ests`).  Figures \@ref(fig:ambarom-make-maps-covid) and \@ref(fig:ambarom-make-maps-covid-ed) display the maps for each measure.
 
 ```{r}
 #| label: ambarom-make-maps-covid
 #| fig.cap: "Percent of people worried someone in their household will get COVID-19 in the next 3 months by country"
 #| error: true
 covid_sf <- country_shape_upd %>%
-  full_join(covid_worry_country_ests, by = c("geounit" = "Country")) %>%
-  full_join(covid_educ_ests, by = c("geounit" = "Country"))
+  full_join(covid_worry_country_ests, 
+            by = c("geounit" = "Country")) %>%
+  full_join(covid_educ_ests,
+            by = c("geounit" = "Country"))
 
 ggplot() +
   geom_sf(data = covid_sf, aes(fill = p, geometry = geometry)) +
@@ -324,7 +331,8 @@ ggplot() +
     pattern = "crosshatch",
     pattern_fill = "black",
     fill = NA
-  )
+  ) +
+  theme_minimal()
 ```
 
 ```{r}
@@ -345,10 +353,11 @@ ggplot() +
     pattern = "crosshatch",
     pattern_fill = "black",
     fill = NA
-  )
+  ) +
+  theme_minimal()
 ```
 
-Canada, Mexico, and the United States did not include this question, so removing North America from the map may make sense to focus on Central and South America. This is done below by restricting to Latin America and the Caribbean.
+In Figure \@ref(fig:ambarom-make-maps-covid-ed) we can see that Canada, Mexico, and the United States have missing data (the crosshatch pattern).  Reviewing the questionnaires indicate that these three countries did not include the education question in the survey. To better see the differences in the data, it may make sense to remove North America from the map and focus on Central and South America. This is done below by restricting the shape files to Latin America and the Caribbean as seen in Figure \@ref(fig:ambarom-make-maps-covid-ed-c-s)
 
 ```{r}
 #| label: ambarom-make-maps-covid-ed-c-s
@@ -372,7 +381,8 @@ ggplot() +
     pattern = "crosshatch",
     pattern_fill = "black",
     fill = NA
-  )
+  ) + 
+  theme_minimal()
 ```
 
 ## Exercises
@@ -425,5 +435,6 @@ b_int_sf %>%
     pattern = "crosshatch",
     pattern_fill = "black",
     fill = NA
-  )
+  ) +
+  theme_minimal()
 ```
