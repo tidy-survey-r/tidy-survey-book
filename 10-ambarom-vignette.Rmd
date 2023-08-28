@@ -20,7 +20,7 @@ library(gt)
 library(ggpattern)
 ```
 
-In this vignette, we will be using data from the 2021 AmericasBarometer survey. Download the raw files yourself from the LAPOP website at [http://datasets.americasbarometer.org/database/index.php](http://datasets.americasbarometer.org/database/index.php).  This book uses version 1.2 of the data and each country has its own file for a total of 22 files. To read all files into R and ignore the Stata labels, we recommend running code like this:
+In this vignette, we will be using data from the 2021 AmericasBarometer survey. Download the raw files yourself from the [LAPOP website](http://datasets.americasbarometer.org/database/index.php).  This book uses version 1.2 of the data and each country has its own file for a total of 22 files. To read all files into R and ignore the Stata labels, we recommend running code like this:
 
 ```r
 stata_files <- list.files(here("RawData", "LAPOP_2021"), "*.dta")
@@ -176,10 +176,11 @@ covid_worry_country_ests %>%
   gt(rowname_col = "Country") %>%
   cols_label(p = "Percent",
              p_se = "SE") %>%
-  tab_header(title = "Proportion worried about the possibility that 
+  tab_caption("Proportion worried about the possibility that 
              they or someone in their household will get sick from 
              coronavirus in the next 3 months") %>%
-  fmt_number(decimals = 1)
+  fmt_number(decimals = 1) %>%
+  tab_source_note("AmericasBarometer Surveys, 2021")
 ```
 
 Another question asked how education was affected by the pandemic. This question was asked among households with children under the age of 13, and respondents could select more than one option as follows:
@@ -192,14 +193,14 @@ Another question asked how education was affected by the pandemic. This question
 > |   - Yes, they switched to a combination of virtual and in-person classes
 > |   - Yes, they cut all ties with the school
 
-Multiple-choice questions are interesting. If we want to look at how education was impacted only among those in school, we need to filter to the relevant responses, which is anyone that responded **no** to the first part. The variable `Educ_NotInSchool` in our dataset has values of 0 and 1. A value of 1 means that the respondent selected the first option in the question (none of the children are in school) and a value of 0 means that at least one of their children are in school. Using this variable, we can filter the data to only those with a value of 0.  
+Multiple-choice questions are interesting. If we want to look at how education was impacted only among those in school, we need to filter to the relevant responses, which is anyone that responded **no** to the first part. The variable `Educ_NotInSchool` in the dataset has values of 0 and 1. A value of 1 means that the respondent selected the first option in the question (none of the children are in school) and a value of 0 means that at least one of their children are in school. Using this variable, we can filter the data to only those with a value of 0.  
 
 There are three additional variables that we can look at that correlate to the second option (`Educ_NormalSchool`), third option (`Educ_VirtualSchool`), and fourth option (`Educ_Hybrid`). An unweighted cross-tab for the responses is included below, and we can see there is a wide-range of impacts and that many combinations of effects on education are possible.
 
 ```{r}
 #| label: ambarom-covid-ed-skip
 ambarom %>% filter(Educ_NotInSchool == 0) %>% 
-  count(Educ_NormalSchool,
+  distinct(Educ_NormalSchool,
         Educ_VirtualSchool,
         Educ_Hybrid) %>% 
   print(n = 50)
@@ -245,14 +246,18 @@ covid_educ_ests %>%
               columns = c("p_mediumchange", "p_mediumchange_se")) %>%
   tab_spanner(label = "Cut ties with school",
               columns = c("p_noschool", "p_noschool_se")) %>%
-  fmt_number(decimals = 1)
+  fmt_number(decimals = 1) %>%
+  tab_caption("Impact on education in households with children under
+              the age of 13 who had children that would generally 
+              attend school.") %>%
+  tab_source_note("AmericasBarometer Surveys, 2021")
 ```
 
-Of the countries that used this data, many had households where their children had an education medium change, except Haiti, where only `r covid_educ_ests %>% filter(Country=="Haiti") %>% pull(p_mediumchange) %>% signif(.,2)`% of households with students changed to virtual or hybrid learning. 
+Of the countries that used this question, many had households where their children had an education medium change, except Haiti, where only `r covid_educ_ests %>% filter(Country=="Haiti") %>% pull(p_mediumchange) %>% signif(.,2)`% of households with students changed to virtual or hybrid learning. 
 
 ## Mapping survey data
 
-While the table presents the data well, a map could also be used. To obtain maps of the countries, the package {rnaturalearth} is used, subsetting North and South America using the function `ne_countries()`. This returns an sf object with many columns but, most importantly `soverignt` (sovereignty), `geounit` (country or territory), and `geometry` (the shape). The United States, Puerto Rico, and the US Virgin Islands are all separate units with the same sovereignty. This map (without data) is plotted in Figure \@ref(fig:ambarom-americas-map).
+While the table presents the data well, a map could also be used. To obtain maps of the countries, the package {rnaturalearth} is used, subsetting North and South America using the function `ne_countries()`. This returns an sf object with many columns but, most importantly `soverignt` (sovereignty), `geounit` (country or territory), and `geometry` (the shape). As an example of the difference between soverignty and country/territory, the United States, Puerto Rico, and the US Virgin Islands are all separate units with the same sovereignty. This map (without data) is plotted in Figure \@ref(fig:ambarom-americas-map).
 
 ```{r}
 #| label: ambarom-americas-map
@@ -282,13 +287,19 @@ country_shape_crop <- country_shape %>%
             ymax = 90)) 
 ```
 
-Now that we have the shape files we need, our next step is to match our survey data to the map. Countries can be called by different names (e.g., "U.S", "U.S.A", "United States"). To make sure we can plot our survey data on the map, we will need to make sure the country in both datasets match.  To do this, we can use the `anti_join()` function and check to see what countries are in the survey data but not in the map data. As shown below, the United States is referred to as "United States" in the survey data but "United States of America" in the map data. 
+Now that we have the shape files we need, our next step is to match our survey data to the map. Countries can be called by different names (e.g., "U.S", "U.S.A", "United States"). To make sure we can plot our survey data on the map, we will need to make sure the country in both datasets match.  To do this, we can use the `anti_join()` function and check to see what countries are in the survey data but not in the map data. As shown below, the United States is referred to as "United States" in the survey data but "United States of America" in the map data. The code below shows countries in the survey but not the map data.
 
 ```{r}
 #| label: ambarom-map-merge-check
 survey_country_list <- ambarom %>% distinct(Country)
 survey_country_list %>% 
   anti_join(country_shape_crop, by = c("Country" = "geounit"))
+```
+
+The code below shows countries in the map data but not hte survey data.
+
+```{r}
+#| label: ambarom-map-merge-check-2
 country_shape_crop %>% as_tibble() %>% 
   select(geounit, sovereignt) %>%
   anti_join(survey_country_list, by = c("geounit" = "Country")) %>%
