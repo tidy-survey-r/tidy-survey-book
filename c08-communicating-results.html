@@ -403,25 +403,21 @@ div.csl-indent {
 <div class="prereqbox">
 <p>For this chapter, here are the packages and helper functions we will need:</p>
 <div class="sourceCode" id="cb360"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb360-1"><a href="c08-communicating-results.html#cb360-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb360-2"><a href="c08-communicating-results.html#cb360-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey) </span>
-<span id="cb360-3"><a href="c08-communicating-results.html#cb360-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr) </span>
+<span id="cb360-2"><a href="c08-communicating-results.html#cb360-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
+<span id="cb360-3"><a href="c08-communicating-results.html#cb360-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
 <span id="cb360-4"><a href="c08-communicating-results.html#cb360-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osfr)</span>
 <span id="cb360-5"><a href="c08-communicating-results.html#cb360-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;helper-fun/helper-functions.R&quot;</span>)</span>
 <span id="cb360-6"><a href="c08-communicating-results.html#cb360-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
 <span id="cb360-7"><a href="c08-communicating-results.html#cb360-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gtsummary)</span></code></pre></div>
 <p>We will be using data from ANES. Here is the code to create the ANES design object that will be used throughout the chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter <a href="c04-understanding-survey-data-documentation.html#c04-understanding-survey-data-documentation">4</a> for more information).</p>
-<div class="sourceCode" id="cb361"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb361-1"><a href="c08-communicating-results.html#cb361-1" aria-hidden="true" tabindex="-1"></a>anes_in <span class="ot">&lt;-</span> <span class="fu">read_osf</span>(<span class="st">&quot;anes_2020.rds&quot;</span>) </span>
+<div class="sourceCode" id="cb361"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb361-1"><a href="c08-communicating-results.html#cb361-1" aria-hidden="true" tabindex="-1"></a>anes_in <span class="ot">&lt;-</span> <span class="fu">read_osf</span>(<span class="st">&quot;anes_2020.rds&quot;</span>)</span>
 <span id="cb361-2"><a href="c08-communicating-results.html#cb361-2" aria-hidden="true" tabindex="-1"></a>targetpop <span class="ot">&lt;-</span> <span class="dv">231592693</span></span>
 <span id="cb361-3"><a href="c08-communicating-results.html#cb361-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb361-4"><a href="c08-communicating-results.html#cb361-4" aria-hidden="true" tabindex="-1"></a>anes_adjwgt <span class="ot">&lt;-</span> anes_in <span class="sc">%&gt;%</span></span>
-<span id="cb361-5"><a href="c08-communicating-results.html#cb361-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Weight =</span> Weight <span class="sc">/</span> <span class="fu">sum</span>(Weight) <span class="sc">*</span> targetpop)</span>
+<span id="cb361-5"><a href="c08-communicating-results.html#cb361-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Weight =</span> Weight<span class="sc">/</span><span class="fu">sum</span>(Weight) <span class="sc">*</span> targetpop)</span>
 <span id="cb361-6"><a href="c08-communicating-results.html#cb361-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb361-7"><a href="c08-communicating-results.html#cb361-7" aria-hidden="true" tabindex="-1"></a>anes_des <span class="ot">&lt;-</span> anes_adjwgt <span class="sc">%&gt;%</span></span>
-<span id="cb361-8"><a href="c08-communicating-results.html#cb361-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
-<span id="cb361-9"><a href="c08-communicating-results.html#cb361-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> Weight,</span>
-<span id="cb361-10"><a href="c08-communicating-results.html#cb361-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata =</span> Stratum,</span>
-<span id="cb361-11"><a href="c08-communicating-results.html#cb361-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">ids =</span> VarUnit,</span>
-<span id="cb361-12"><a href="c08-communicating-results.html#cb361-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">nest =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<span id="cb361-8"><a href="c08-communicating-results.html#cb361-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> Weight, <span class="at">strata =</span> Stratum, <span class="at">ids =</span> VarUnit, <span class="at">nest =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 </div>
 <div id="introduction-7" class="section level2 hasAnchor" number="8.1">
 <h2><span class="header-section-number">8.1</span> Introduction<a href="c08-communicating-results.html#introduction-7" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -495,34 +491,32 @@ div.csl-indent {
 <p>The native output that R produces may work for initial viewing inside RStudio or when creating basic output with an R Markdown or Quarto document. However, when viewing these results in other publications, such as the print version of this book, or for more official dissemination, adjusting the display can make it easier for users to follow.</p>
 <p>Looking at the output from <code>trust_gov</code>, there are a couple of items that are probably obvious to fix: (1) use percentages instead of proportions and (2) the variable names as the column headers. The {gt} package is a good tool for implementing better labeling and creating publishable tables. Let’s walk through some code as we implement a few changes to improve the table’s usefulness.</p>
 <p>We begin with the <code>gt()</code> function to initiate the table and use the argument <code>rowname_col</code> to make the <code>TrustGovernment</code> column the labels for each row (called the table “stub”). The <code>cols_label()</code> function is used to create informative column labels instead of variable names, and the <code>tab_spanner()</code> function is applied to add a label across multiple columns. In this case, we apply the label “Trust in Government, 2020” across all the columns except the stub. Finally, the <code>fmt_percent()</code> function is used to format the proportions into percentages and reduce the number of decimals shown. Note, the <code>tab_caption()</code> function is used to add a table title for the book and allows for cross-referencing in R Markdown Quarto and bookdown, as well as adding it to the list of tables in the book.</p>
-<div class="sourceCode" id="cb364"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb364-1"><a href="c08-communicating-results.html#cb364-1" aria-hidden="true" tabindex="-1"></a>trust_gov_gt <span class="ot">&lt;-</span></span>
-<span id="cb364-2"><a href="c08-communicating-results.html#cb364-2" aria-hidden="true" tabindex="-1"></a>  trust_gov <span class="sc">%&gt;%</span></span>
-<span id="cb364-3"><a href="c08-communicating-results.html#cb364-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb364-4"><a href="c08-communicating-results.html#cb364-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="at">trust_gov_p =</span> <span class="st">&quot;%&quot;</span>,</span>
-<span id="cb364-5"><a href="c08-communicating-results.html#cb364-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">trust_gov_p_se =</span> <span class="st">&quot;s.e. (%)&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb364-6"><a href="c08-communicating-results.html#cb364-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>,</span>
-<span id="cb364-7"><a href="c08-communicating-results.html#cb364-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(trust_gov_p, trust_gov_p_se)) <span class="sc">%&gt;%</span></span>
-<span id="cb364-8"><a href="c08-communicating-results.html#cb364-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_percent</span>(<span class="at">decimals =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb364-9"><a href="c08-communicating-results.html#cb364-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of gt table with trust in government estimates.&quot;</span>)</span>
-<span id="cb364-10"><a href="c08-communicating-results.html#cb364-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb364-11"><a href="c08-communicating-results.html#cb364-11" aria-hidden="true" tabindex="-1"></a>trust_gov_gt</span></code></pre></div>
-<div id="smfkpkdnvz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#smfkpkdnvz table {
+<div class="sourceCode" id="cb364"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb364-1"><a href="c08-communicating-results.html#cb364-1" aria-hidden="true" tabindex="-1"></a>trust_gov_gt <span class="ot">&lt;-</span> trust_gov <span class="sc">%&gt;%</span></span>
+<span id="cb364-2"><a href="c08-communicating-results.html#cb364-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb364-3"><a href="c08-communicating-results.html#cb364-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="at">trust_gov_p =</span> <span class="st">&quot;%&quot;</span>, <span class="at">trust_gov_p_se =</span> <span class="st">&quot;s.e. (%)&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb364-4"><a href="c08-communicating-results.html#cb364-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>, <span class="at">columns =</span> <span class="fu">c</span>(trust_gov_p,</span>
+<span id="cb364-5"><a href="c08-communicating-results.html#cb364-5" aria-hidden="true" tabindex="-1"></a>    trust_gov_p_se)) <span class="sc">%&gt;%</span></span>
+<span id="cb364-6"><a href="c08-communicating-results.html#cb364-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_percent</span>(<span class="at">decimals =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb364-7"><a href="c08-communicating-results.html#cb364-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of gt table with trust in government estimates.&quot;</span>)</span>
+<span id="cb364-8"><a href="c08-communicating-results.html#cb364-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb364-9"><a href="c08-communicating-results.html#cb364-9" aria-hidden="true" tabindex="-1"></a>trust_gov_gt</span></code></pre></div>
+<div id="kpkdnvzpnr" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#kpkdnvzpnr table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#smfkpkdnvz thead, #smfkpkdnvz tbody, #smfkpkdnvz tfoot, #smfkpkdnvz tr, #smfkpkdnvz td, #smfkpkdnvz th {
+#kpkdnvzpnr thead, #kpkdnvzpnr tbody, #kpkdnvzpnr tfoot, #kpkdnvzpnr tr, #kpkdnvzpnr td, #kpkdnvzpnr th {
   border-style: none;
 }
 
-#smfkpkdnvz p {
+#kpkdnvzpnr p {
   margin: 0;
   padding: 0;
 }
 
-#smfkpkdnvz .gt_table {
+#kpkdnvzpnr .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -548,12 +542,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_caption {
+#kpkdnvzpnr .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#smfkpkdnvz .gt_title {
+#kpkdnvzpnr .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -565,7 +559,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#smfkpkdnvz .gt_subtitle {
+#kpkdnvzpnr .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -577,7 +571,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#smfkpkdnvz .gt_heading {
+#kpkdnvzpnr .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -589,13 +583,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_bottom_border {
+#kpkdnvzpnr .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_col_headings {
+#kpkdnvzpnr .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -610,7 +604,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_col_heading {
+#kpkdnvzpnr .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -630,7 +624,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#smfkpkdnvz .gt_column_spanner_outer {
+#kpkdnvzpnr .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -642,15 +636,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#smfkpkdnvz .gt_column_spanner_outer:first-child {
+#kpkdnvzpnr .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#smfkpkdnvz .gt_column_spanner_outer:last-child {
+#kpkdnvzpnr .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#smfkpkdnvz .gt_column_spanner {
+#kpkdnvzpnr .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -662,11 +656,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#smfkpkdnvz .gt_spanner_row {
+#kpkdnvzpnr .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#smfkpkdnvz .gt_group_heading {
+#kpkdnvzpnr .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -692,7 +686,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#smfkpkdnvz .gt_empty_group_heading {
+#kpkdnvzpnr .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -707,15 +701,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#smfkpkdnvz .gt_from_md > :first-child {
+#kpkdnvzpnr .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#smfkpkdnvz .gt_from_md > :last-child {
+#kpkdnvzpnr .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#smfkpkdnvz .gt_row {
+#kpkdnvzpnr .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -734,7 +728,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#smfkpkdnvz .gt_stub {
+#kpkdnvzpnr .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -747,7 +741,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#smfkpkdnvz .gt_stub_row_group {
+#kpkdnvzpnr .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -761,15 +755,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#smfkpkdnvz .gt_row_group_first td {
+#kpkdnvzpnr .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#smfkpkdnvz .gt_row_group_first th {
+#kpkdnvzpnr .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#smfkpkdnvz .gt_summary_row {
+#kpkdnvzpnr .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -779,16 +773,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#smfkpkdnvz .gt_first_summary_row {
+#kpkdnvzpnr .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_first_summary_row.thick {
+#kpkdnvzpnr .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#smfkpkdnvz .gt_last_summary_row {
+#kpkdnvzpnr .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -798,7 +792,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_grand_summary_row {
+#kpkdnvzpnr .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -808,7 +802,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#smfkpkdnvz .gt_first_grand_summary_row {
+#kpkdnvzpnr .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -818,7 +812,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_last_grand_summary_row_top {
+#kpkdnvzpnr .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -828,11 +822,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_striped {
+#kpkdnvzpnr .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#smfkpkdnvz .gt_table_body {
+#kpkdnvzpnr .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -841,7 +835,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_footnotes {
+#kpkdnvzpnr .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -855,7 +849,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_footnote {
+#kpkdnvzpnr .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -864,7 +858,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#smfkpkdnvz .gt_sourcenotes {
+#kpkdnvzpnr .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -878,7 +872,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#smfkpkdnvz .gt_sourcenote {
+#kpkdnvzpnr .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -886,63 +880,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#smfkpkdnvz .gt_left {
+#kpkdnvzpnr .gt_left {
   text-align: left;
 }
 
-#smfkpkdnvz .gt_center {
+#kpkdnvzpnr .gt_center {
   text-align: center;
 }
 
-#smfkpkdnvz .gt_right {
+#kpkdnvzpnr .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#smfkpkdnvz .gt_font_normal {
+#kpkdnvzpnr .gt_font_normal {
   font-weight: normal;
 }
 
-#smfkpkdnvz .gt_font_bold {
+#kpkdnvzpnr .gt_font_bold {
   font-weight: bold;
 }
 
-#smfkpkdnvz .gt_font_italic {
+#kpkdnvzpnr .gt_font_italic {
   font-style: italic;
 }
 
-#smfkpkdnvz .gt_super {
+#kpkdnvzpnr .gt_super {
   font-size: 65%;
 }
 
-#smfkpkdnvz .gt_footnote_marks {
+#kpkdnvzpnr .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#smfkpkdnvz .gt_asterisk {
+#kpkdnvzpnr .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#smfkpkdnvz .gt_indent_1 {
+#kpkdnvzpnr .gt_indent_1 {
   text-indent: 5px;
 }
 
-#smfkpkdnvz .gt_indent_2 {
+#kpkdnvzpnr .gt_indent_2 {
   text-indent: 10px;
 }
 
-#smfkpkdnvz .gt_indent_3 {
+#kpkdnvzpnr .gt_indent_3 {
   text-indent: 15px;
 }
 
-#smfkpkdnvz .gt_indent_4 {
+#kpkdnvzpnr .gt_indent_4 {
   text-indent: 20px;
 }
 
-#smfkpkdnvz .gt_indent_5 {
+#kpkdnvzpnr .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -987,29 +981,27 @@ div.csl-indent {
 <span id="cb365-2"><a href="c08-communicating-results.html#cb365-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">&quot;American voter&#39;s trust </span></span>
 <span id="cb365-3"><a href="c08-communicating-results.html#cb365-3" aria-hidden="true" tabindex="-1"></a><span class="st">             in the federal government, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb365-4"><a href="c08-communicating-results.html#cb365-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;American National Election Studies, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb365-5"><a href="c08-communicating-results.html#cb365-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
-<span id="cb365-6"><a href="c08-communicating-results.html#cb365-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Question text: How often can you trust the federal government</span></span>
-<span id="cb365-7"><a href="c08-communicating-results.html#cb365-7" aria-hidden="true" tabindex="-1"></a><span class="st">    in Washington to do what is right?&quot;</span></span>
-<span id="cb365-8"><a href="c08-communicating-results.html#cb365-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb365-9"><a href="c08-communicating-results.html#cb365-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of gt table with trust</span></span>
-<span id="cb365-10"><a href="c08-communicating-results.html#cb365-10" aria-hidden="true" tabindex="-1"></a><span class="st">              in government estimates with additional context.&quot;</span>)</span></code></pre></div>
-<div id="pnruhcqurs" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#pnruhcqurs table {
+<span id="cb365-5"><a href="c08-communicating-results.html#cb365-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(<span class="st">&quot;Question text: How often can you trust the federal government</span></span>
+<span id="cb365-6"><a href="c08-communicating-results.html#cb365-6" aria-hidden="true" tabindex="-1"></a><span class="st">    in Washington to do what is right?&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb365-7"><a href="c08-communicating-results.html#cb365-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of gt table with trust</span></span>
+<span id="cb365-8"><a href="c08-communicating-results.html#cb365-8" aria-hidden="true" tabindex="-1"></a><span class="st">              in government estimates with additional context.&quot;</span>)</span></code></pre></div>
+<div id="hcqursgxsk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hcqursgxsk table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#pnruhcqurs thead, #pnruhcqurs tbody, #pnruhcqurs tfoot, #pnruhcqurs tr, #pnruhcqurs td, #pnruhcqurs th {
+#hcqursgxsk thead, #hcqursgxsk tbody, #hcqursgxsk tfoot, #hcqursgxsk tr, #hcqursgxsk td, #hcqursgxsk th {
   border-style: none;
 }
 
-#pnruhcqurs p {
+#hcqursgxsk p {
   margin: 0;
   padding: 0;
 }
 
-#pnruhcqurs .gt_table {
+#hcqursgxsk .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1035,12 +1027,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_caption {
+#hcqursgxsk .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#pnruhcqurs .gt_title {
+#hcqursgxsk .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1052,7 +1044,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#pnruhcqurs .gt_subtitle {
+#hcqursgxsk .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1064,7 +1056,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#pnruhcqurs .gt_heading {
+#hcqursgxsk .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1076,13 +1068,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_bottom_border {
+#hcqursgxsk .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_col_headings {
+#hcqursgxsk .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1097,7 +1089,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_col_heading {
+#hcqursgxsk .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1117,7 +1109,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#pnruhcqurs .gt_column_spanner_outer {
+#hcqursgxsk .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1129,15 +1121,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#pnruhcqurs .gt_column_spanner_outer:first-child {
+#hcqursgxsk .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#pnruhcqurs .gt_column_spanner_outer:last-child {
+#hcqursgxsk .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#pnruhcqurs .gt_column_spanner {
+#hcqursgxsk .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1149,11 +1141,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#pnruhcqurs .gt_spanner_row {
+#hcqursgxsk .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#pnruhcqurs .gt_group_heading {
+#hcqursgxsk .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1179,7 +1171,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#pnruhcqurs .gt_empty_group_heading {
+#hcqursgxsk .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1194,15 +1186,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#pnruhcqurs .gt_from_md > :first-child {
+#hcqursgxsk .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#pnruhcqurs .gt_from_md > :last-child {
+#hcqursgxsk .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#pnruhcqurs .gt_row {
+#hcqursgxsk .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1221,7 +1213,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#pnruhcqurs .gt_stub {
+#hcqursgxsk .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1234,7 +1226,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#pnruhcqurs .gt_stub_row_group {
+#hcqursgxsk .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1248,15 +1240,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#pnruhcqurs .gt_row_group_first td {
+#hcqursgxsk .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#pnruhcqurs .gt_row_group_first th {
+#hcqursgxsk .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#pnruhcqurs .gt_summary_row {
+#hcqursgxsk .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1266,16 +1258,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#pnruhcqurs .gt_first_summary_row {
+#hcqursgxsk .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_first_summary_row.thick {
+#hcqursgxsk .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#pnruhcqurs .gt_last_summary_row {
+#hcqursgxsk .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1285,7 +1277,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_grand_summary_row {
+#hcqursgxsk .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1295,7 +1287,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#pnruhcqurs .gt_first_grand_summary_row {
+#hcqursgxsk .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1305,7 +1297,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_last_grand_summary_row_top {
+#hcqursgxsk .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1315,11 +1307,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_striped {
+#hcqursgxsk .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#pnruhcqurs .gt_table_body {
+#hcqursgxsk .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1328,7 +1320,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_footnotes {
+#hcqursgxsk .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1342,7 +1334,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_footnote {
+#hcqursgxsk .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1351,7 +1343,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#pnruhcqurs .gt_sourcenotes {
+#hcqursgxsk .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1365,7 +1357,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#pnruhcqurs .gt_sourcenote {
+#hcqursgxsk .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1373,63 +1365,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#pnruhcqurs .gt_left {
+#hcqursgxsk .gt_left {
   text-align: left;
 }
 
-#pnruhcqurs .gt_center {
+#hcqursgxsk .gt_center {
   text-align: center;
 }
 
-#pnruhcqurs .gt_right {
+#hcqursgxsk .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#pnruhcqurs .gt_font_normal {
+#hcqursgxsk .gt_font_normal {
   font-weight: normal;
 }
 
-#pnruhcqurs .gt_font_bold {
+#hcqursgxsk .gt_font_bold {
   font-weight: bold;
 }
 
-#pnruhcqurs .gt_font_italic {
+#hcqursgxsk .gt_font_italic {
   font-style: italic;
 }
 
-#pnruhcqurs .gt_super {
+#hcqursgxsk .gt_super {
   font-size: 65%;
 }
 
-#pnruhcqurs .gt_footnote_marks {
+#hcqursgxsk .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#pnruhcqurs .gt_asterisk {
+#hcqursgxsk .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#pnruhcqurs .gt_indent_1 {
+#hcqursgxsk .gt_indent_1 {
   text-indent: 5px;
 }
 
-#pnruhcqurs .gt_indent_2 {
+#hcqursgxsk .gt_indent_2 {
   text-indent: 10px;
 }
 
-#pnruhcqurs .gt_indent_3 {
+#hcqursgxsk .gt_indent_3 {
   text-indent: 15px;
 }
 
-#pnruhcqurs .gt_indent_4 {
+#hcqursgxsk .gt_indent_4 {
   text-indent: 20px;
 }
 
-#pnruhcqurs .gt_indent_5 {
+#hcqursgxsk .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1512,28 +1504,28 @@ div.csl-indent {
 </ul>
 <p>In the following example, we will build up a table using {gtsummary}, which will be similar to the table in the {gt} example. The main function used is <code>tbl_svysummary()</code>. In this function, the variables we want to analyze are included in the <code>include</code> argument, and the statistics we want to display are in the <code>statistic</code> argument. To specify statistics, the syntax from the {glue} package is used where variables you want to insert are included inside curly brackets. To specify that we want, the proportion followed by the standard error of the proportion in parentheses, we use “{p} ({p.std.error})”. We must specify the statistics we want using the names of the statistics in the two lists above. To print this table in all format types, we use the <code>as_gt()</code> function to maintain the {gtsummary} formatting.</p>
 <div class="sourceCode" id="cb366"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb366-1"><a href="c08-communicating-results.html#cb366-1" aria-hidden="true" tabindex="-1"></a>anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb366-2"><a href="c08-communicating-results.html#cb366-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_svysummary</span>(<span class="at">include =</span> TrustGovernment,</span>
-<span id="cb366-3"><a href="c08-communicating-results.html#cb366-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">&quot;{p} ({p.std.error})&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb366-2"><a href="c08-communicating-results.html#cb366-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_svysummary</span>(<span class="at">include =</span> TrustGovernment, <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_categorical</span>() <span class="sc">~</span></span>
+<span id="cb366-3"><a href="c08-communicating-results.html#cb366-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;{p} ({p.std.error})&quot;</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb366-4"><a href="c08-communicating-results.html#cb366-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb366-5"><a href="c08-communicating-results.html#cb366-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of gtsummary table with trust </span></span>
 <span id="cb366-6"><a href="c08-communicating-results.html#cb366-6" aria-hidden="true" tabindex="-1"></a><span class="st">              in government estimates.&quot;</span>)</span></code></pre></div>
-<div id="gxskozkogi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#gxskozkogi table {
+<div id="kogibkckwm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#kogibkckwm table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#gxskozkogi thead, #gxskozkogi tbody, #gxskozkogi tfoot, #gxskozkogi tr, #gxskozkogi td, #gxskozkogi th {
+#kogibkckwm thead, #kogibkckwm tbody, #kogibkckwm tfoot, #kogibkckwm tr, #kogibkckwm td, #kogibkckwm th {
   border-style: none;
 }
 
-#gxskozkogi p {
+#kogibkckwm p {
   margin: 0;
   padding: 0;
 }
 
-#gxskozkogi .gt_table {
+#kogibkckwm .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1559,12 +1551,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_caption {
+#kogibkckwm .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#gxskozkogi .gt_title {
+#kogibkckwm .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1576,7 +1568,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#gxskozkogi .gt_subtitle {
+#kogibkckwm .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1588,7 +1580,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#gxskozkogi .gt_heading {
+#kogibkckwm .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1600,13 +1592,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_bottom_border {
+#kogibkckwm .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_col_headings {
+#kogibkckwm .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1621,7 +1613,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_col_heading {
+#kogibkckwm .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1641,7 +1633,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#gxskozkogi .gt_column_spanner_outer {
+#kogibkckwm .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1653,15 +1645,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#gxskozkogi .gt_column_spanner_outer:first-child {
+#kogibkckwm .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#gxskozkogi .gt_column_spanner_outer:last-child {
+#kogibkckwm .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#gxskozkogi .gt_column_spanner {
+#kogibkckwm .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1673,11 +1665,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#gxskozkogi .gt_spanner_row {
+#kogibkckwm .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#gxskozkogi .gt_group_heading {
+#kogibkckwm .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1703,7 +1695,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#gxskozkogi .gt_empty_group_heading {
+#kogibkckwm .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1718,15 +1710,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#gxskozkogi .gt_from_md > :first-child {
+#kogibkckwm .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#gxskozkogi .gt_from_md > :last-child {
+#kogibkckwm .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#gxskozkogi .gt_row {
+#kogibkckwm .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1745,7 +1737,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#gxskozkogi .gt_stub {
+#kogibkckwm .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1758,7 +1750,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#gxskozkogi .gt_stub_row_group {
+#kogibkckwm .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1772,15 +1764,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#gxskozkogi .gt_row_group_first td {
+#kogibkckwm .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#gxskozkogi .gt_row_group_first th {
+#kogibkckwm .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#gxskozkogi .gt_summary_row {
+#kogibkckwm .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1790,16 +1782,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#gxskozkogi .gt_first_summary_row {
+#kogibkckwm .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_first_summary_row.thick {
+#kogibkckwm .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#gxskozkogi .gt_last_summary_row {
+#kogibkckwm .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1809,7 +1801,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_grand_summary_row {
+#kogibkckwm .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1819,7 +1811,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#gxskozkogi .gt_first_grand_summary_row {
+#kogibkckwm .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1829,7 +1821,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_last_grand_summary_row_top {
+#kogibkckwm .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1839,11 +1831,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_striped {
+#kogibkckwm .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#gxskozkogi .gt_table_body {
+#kogibkckwm .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1852,7 +1844,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_footnotes {
+#kogibkckwm .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1866,7 +1858,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_footnote {
+#kogibkckwm .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1875,7 +1867,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#gxskozkogi .gt_sourcenotes {
+#kogibkckwm .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1889,7 +1881,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#gxskozkogi .gt_sourcenote {
+#kogibkckwm .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1897,63 +1889,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#gxskozkogi .gt_left {
+#kogibkckwm .gt_left {
   text-align: left;
 }
 
-#gxskozkogi .gt_center {
+#kogibkckwm .gt_center {
   text-align: center;
 }
 
-#gxskozkogi .gt_right {
+#kogibkckwm .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#gxskozkogi .gt_font_normal {
+#kogibkckwm .gt_font_normal {
   font-weight: normal;
 }
 
-#gxskozkogi .gt_font_bold {
+#kogibkckwm .gt_font_bold {
   font-weight: bold;
 }
 
-#gxskozkogi .gt_font_italic {
+#kogibkckwm .gt_font_italic {
   font-style: italic;
 }
 
-#gxskozkogi .gt_super {
+#kogibkckwm .gt_super {
   font-size: 65%;
 }
 
-#gxskozkogi .gt_footnote_marks {
+#kogibkckwm .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#gxskozkogi .gt_asterisk {
+#kogibkckwm .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#gxskozkogi .gt_indent_1 {
+#kogibkckwm .gt_indent_1 {
   text-indent: 5px;
 }
 
-#gxskozkogi .gt_indent_2 {
+#kogibkckwm .gt_indent_2 {
   text-indent: 10px;
 }
 
-#gxskozkogi .gt_indent_3 {
+#kogibkckwm .gt_indent_3 {
   text-indent: 15px;
 }
 
-#gxskozkogi .gt_indent_4 {
+#kogibkckwm .gt_indent_4 {
   text-indent: 20px;
 }
 
-#gxskozkogi .gt_indent_5 {
+#kogibkckwm .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1993,35 +1985,29 @@ div.csl-indent {
 </div>
 <p>In this default table, the weighted number of missing (or Unknown) records is included. Additionally, the standard error is reported as a proportion while the proportion is styled as a percentage. In the next step, we remove the Unknown category by setting the missing argument to “no” and format the standard error as a percentage within the digits argument. Finally, we label the “TrustGovernment” variable to something more publication-ready using the label argument.</p>
 <div class="sourceCode" id="cb367"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb367-1"><a href="c08-communicating-results.html#cb367-1" aria-hidden="true" tabindex="-1"></a>anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb367-2"><a href="c08-communicating-results.html#cb367-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_svysummary</span>(</span>
-<span id="cb367-3"><a href="c08-communicating-results.html#cb367-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">include =</span> TrustGovernment,</span>
-<span id="cb367-4"><a href="c08-communicating-results.html#cb367-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">&quot;{p} ({p.std.error})&quot;</span>),</span>
-<span id="cb367-5"><a href="c08-communicating-results.html#cb367-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">missing =</span> <span class="st">&quot;no&quot;</span>,</span>
-<span id="cb367-6"><a href="c08-communicating-results.html#cb367-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span> style_percent),</span>
-<span id="cb367-7"><a href="c08-communicating-results.html#cb367-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>)</span>
-<span id="cb367-8"><a href="c08-communicating-results.html#cb367-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb367-9"><a href="c08-communicating-results.html#cb367-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb367-10"><a href="c08-communicating-results.html#cb367-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(</span>
-<span id="cb367-11"><a href="c08-communicating-results.html#cb367-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Example of gtsummary table with trust </span></span>
-<span id="cb367-12"><a href="c08-communicating-results.html#cb367-12" aria-hidden="true" tabindex="-1"></a><span class="st">    in government estimates with labeling and digits options.&quot;</span></span>
-<span id="cb367-13"><a href="c08-communicating-results.html#cb367-13" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
-<div id="bkckwmzsjh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#bkckwmzsjh table {
+<span id="cb367-2"><a href="c08-communicating-results.html#cb367-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_svysummary</span>(<span class="at">include =</span> TrustGovernment, <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_categorical</span>() <span class="sc">~</span></span>
+<span id="cb367-3"><a href="c08-communicating-results.html#cb367-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;{p} ({p.std.error})&quot;</span>), <span class="at">missing =</span> <span class="st">&quot;no&quot;</span>, <span class="at">digits =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span></span>
+<span id="cb367-4"><a href="c08-communicating-results.html#cb367-4" aria-hidden="true" tabindex="-1"></a>    style_percent), <span class="at">label =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb367-5"><a href="c08-communicating-results.html#cb367-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb367-6"><a href="c08-communicating-results.html#cb367-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of gtsummary table with trust </span></span>
+<span id="cb367-7"><a href="c08-communicating-results.html#cb367-7" aria-hidden="true" tabindex="-1"></a><span class="st">    in government estimates with labeling and digits options.&quot;</span>)</span></code></pre></div>
+<div id="jhrwokkyhy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jhrwokkyhy table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#bkckwmzsjh thead, #bkckwmzsjh tbody, #bkckwmzsjh tfoot, #bkckwmzsjh tr, #bkckwmzsjh td, #bkckwmzsjh th {
+#jhrwokkyhy thead, #jhrwokkyhy tbody, #jhrwokkyhy tfoot, #jhrwokkyhy tr, #jhrwokkyhy td, #jhrwokkyhy th {
   border-style: none;
 }
 
-#bkckwmzsjh p {
+#jhrwokkyhy p {
   margin: 0;
   padding: 0;
 }
 
-#bkckwmzsjh .gt_table {
+#jhrwokkyhy .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2047,12 +2033,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_caption {
+#jhrwokkyhy .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#bkckwmzsjh .gt_title {
+#jhrwokkyhy .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2064,7 +2050,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#bkckwmzsjh .gt_subtitle {
+#jhrwokkyhy .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2076,7 +2062,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#bkckwmzsjh .gt_heading {
+#jhrwokkyhy .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2088,13 +2074,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_bottom_border {
+#jhrwokkyhy .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_col_headings {
+#jhrwokkyhy .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2109,7 +2095,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_col_heading {
+#jhrwokkyhy .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2129,7 +2115,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#bkckwmzsjh .gt_column_spanner_outer {
+#jhrwokkyhy .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2141,15 +2127,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#bkckwmzsjh .gt_column_spanner_outer:first-child {
+#jhrwokkyhy .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#bkckwmzsjh .gt_column_spanner_outer:last-child {
+#jhrwokkyhy .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#bkckwmzsjh .gt_column_spanner {
+#jhrwokkyhy .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2161,11 +2147,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#bkckwmzsjh .gt_spanner_row {
+#jhrwokkyhy .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#bkckwmzsjh .gt_group_heading {
+#jhrwokkyhy .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2191,7 +2177,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#bkckwmzsjh .gt_empty_group_heading {
+#jhrwokkyhy .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2206,15 +2192,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#bkckwmzsjh .gt_from_md > :first-child {
+#jhrwokkyhy .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#bkckwmzsjh .gt_from_md > :last-child {
+#jhrwokkyhy .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#bkckwmzsjh .gt_row {
+#jhrwokkyhy .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2233,7 +2219,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#bkckwmzsjh .gt_stub {
+#jhrwokkyhy .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2246,7 +2232,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#bkckwmzsjh .gt_stub_row_group {
+#jhrwokkyhy .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2260,15 +2246,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#bkckwmzsjh .gt_row_group_first td {
+#jhrwokkyhy .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#bkckwmzsjh .gt_row_group_first th {
+#jhrwokkyhy .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#bkckwmzsjh .gt_summary_row {
+#jhrwokkyhy .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2278,16 +2264,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#bkckwmzsjh .gt_first_summary_row {
+#jhrwokkyhy .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_first_summary_row.thick {
+#jhrwokkyhy .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#bkckwmzsjh .gt_last_summary_row {
+#jhrwokkyhy .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2297,7 +2283,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_grand_summary_row {
+#jhrwokkyhy .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2307,7 +2293,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#bkckwmzsjh .gt_first_grand_summary_row {
+#jhrwokkyhy .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2317,7 +2303,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_last_grand_summary_row_top {
+#jhrwokkyhy .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2327,11 +2313,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_striped {
+#jhrwokkyhy .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#bkckwmzsjh .gt_table_body {
+#jhrwokkyhy .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2340,7 +2326,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_footnotes {
+#jhrwokkyhy .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2354,7 +2340,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_footnote {
+#jhrwokkyhy .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2363,7 +2349,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#bkckwmzsjh .gt_sourcenotes {
+#jhrwokkyhy .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2377,7 +2363,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#bkckwmzsjh .gt_sourcenote {
+#jhrwokkyhy .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2385,63 +2371,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#bkckwmzsjh .gt_left {
+#jhrwokkyhy .gt_left {
   text-align: left;
 }
 
-#bkckwmzsjh .gt_center {
+#jhrwokkyhy .gt_center {
   text-align: center;
 }
 
-#bkckwmzsjh .gt_right {
+#jhrwokkyhy .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#bkckwmzsjh .gt_font_normal {
+#jhrwokkyhy .gt_font_normal {
   font-weight: normal;
 }
 
-#bkckwmzsjh .gt_font_bold {
+#jhrwokkyhy .gt_font_bold {
   font-weight: bold;
 }
 
-#bkckwmzsjh .gt_font_italic {
+#jhrwokkyhy .gt_font_italic {
   font-style: italic;
 }
 
-#bkckwmzsjh .gt_super {
+#jhrwokkyhy .gt_super {
   font-size: 65%;
 }
 
-#bkckwmzsjh .gt_footnote_marks {
+#jhrwokkyhy .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#bkckwmzsjh .gt_asterisk {
+#jhrwokkyhy .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#bkckwmzsjh .gt_indent_1 {
+#jhrwokkyhy .gt_indent_1 {
   text-indent: 5px;
 }
 
-#bkckwmzsjh .gt_indent_2 {
+#jhrwokkyhy .gt_indent_2 {
   text-indent: 10px;
 }
 
-#bkckwmzsjh .gt_indent_3 {
+#jhrwokkyhy .gt_indent_3 {
   text-indent: 15px;
 }
 
-#bkckwmzsjh .gt_indent_4 {
+#jhrwokkyhy .gt_indent_4 {
   text-indent: 20px;
 }
 
-#bkckwmzsjh .gt_indent_5 {
+#jhrwokkyhy .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2479,47 +2465,38 @@ div.csl-indent {
 </div>
 <p>To remove the phrase “Characteristic” and the estimated population size, we can modify the header using the function <code>modify_header()</code> to update the label and stat_0. To add footnotes and a title, we do this after converting the object to a gt table using <code>as_gt()</code> and can use the same functions we did in Section <a href="c08-communicating-results.html#results-gt">8.3.1.1</a></p>
 <div class="sourceCode" id="cb368"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb368-1"><a href="c08-communicating-results.html#cb368-1" aria-hidden="true" tabindex="-1"></a>anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb368-2"><a href="c08-communicating-results.html#cb368-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_svysummary</span>(</span>
-<span id="cb368-3"><a href="c08-communicating-results.html#cb368-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">include =</span> TrustGovernment,</span>
-<span id="cb368-4"><a href="c08-communicating-results.html#cb368-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">&quot;{p} ({p.std.error})&quot;</span>),</span>
-<span id="cb368-5"><a href="c08-communicating-results.html#cb368-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">missing =</span> <span class="st">&quot;no&quot;</span>,</span>
-<span id="cb368-6"><a href="c08-communicating-results.html#cb368-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span> style_percent),</span>
-<span id="cb368-7"><a href="c08-communicating-results.html#cb368-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>)</span>
-<span id="cb368-8"><a href="c08-communicating-results.html#cb368-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb368-9"><a href="c08-communicating-results.html#cb368-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_footnote</span>(<span class="at">update =</span> <span class="fu">everything</span>() <span class="sc">~</span> <span class="cn">NA</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb368-10"><a href="c08-communicating-results.html#cb368-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(<span class="at">label =</span> <span class="st">&quot; &quot;</span>,</span>
-<span id="cb368-11"><a href="c08-communicating-results.html#cb368-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">stat_0 =</span> <span class="st">&quot;% (s.e.)&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb368-12"><a href="c08-communicating-results.html#cb368-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb368-13"><a href="c08-communicating-results.html#cb368-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">&quot;American voter&#39;s trust </span></span>
-<span id="cb368-14"><a href="c08-communicating-results.html#cb368-14" aria-hidden="true" tabindex="-1"></a><span class="st">             in the federal government, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb368-15"><a href="c08-communicating-results.html#cb368-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;American National Election Studies, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb368-16"><a href="c08-communicating-results.html#cb368-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
-<span id="cb368-17"><a href="c08-communicating-results.html#cb368-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Question text: How often can you trust </span></span>
-<span id="cb368-18"><a href="c08-communicating-results.html#cb368-18" aria-hidden="true" tabindex="-1"></a><span class="st">    the federal government in Washington </span></span>
-<span id="cb368-19"><a href="c08-communicating-results.html#cb368-19" aria-hidden="true" tabindex="-1"></a><span class="st">    to do what is right?&quot;</span></span>
-<span id="cb368-20"><a href="c08-communicating-results.html#cb368-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb368-21"><a href="c08-communicating-results.html#cb368-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(</span>
-<span id="cb368-22"><a href="c08-communicating-results.html#cb368-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Example of gtsummary table with trust </span></span>
-<span id="cb368-23"><a href="c08-communicating-results.html#cb368-23" aria-hidden="true" tabindex="-1"></a><span class="st">    in government estimates with more </span></span>
-<span id="cb368-24"><a href="c08-communicating-results.html#cb368-24" aria-hidden="true" tabindex="-1"></a><span class="st">    labeling options and context.&quot;</span></span>
-<span id="cb368-25"><a href="c08-communicating-results.html#cb368-25" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
-<div id="rwokkyhyau" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#rwokkyhyau table {
+<span id="cb368-2"><a href="c08-communicating-results.html#cb368-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_svysummary</span>(<span class="at">include =</span> TrustGovernment, <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_categorical</span>() <span class="sc">~</span></span>
+<span id="cb368-3"><a href="c08-communicating-results.html#cb368-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;{p} ({p.std.error})&quot;</span>), <span class="at">missing =</span> <span class="st">&quot;no&quot;</span>, <span class="at">digits =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span></span>
+<span id="cb368-4"><a href="c08-communicating-results.html#cb368-4" aria-hidden="true" tabindex="-1"></a>    style_percent), <span class="at">label =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb368-5"><a href="c08-communicating-results.html#cb368-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_footnote</span>(<span class="at">update =</span> <span class="fu">everything</span>() <span class="sc">~</span> <span class="cn">NA</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb368-6"><a href="c08-communicating-results.html#cb368-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(<span class="at">label =</span> <span class="st">&quot; &quot;</span>, <span class="at">stat_0 =</span> <span class="st">&quot;% (s.e.)&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb368-7"><a href="c08-communicating-results.html#cb368-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb368-8"><a href="c08-communicating-results.html#cb368-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">&quot;American voter&#39;s trust </span></span>
+<span id="cb368-9"><a href="c08-communicating-results.html#cb368-9" aria-hidden="true" tabindex="-1"></a><span class="st">             in the federal government, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb368-10"><a href="c08-communicating-results.html#cb368-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;American National Election Studies, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb368-11"><a href="c08-communicating-results.html#cb368-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(<span class="st">&quot;Question text: How often can you trust </span></span>
+<span id="cb368-12"><a href="c08-communicating-results.html#cb368-12" aria-hidden="true" tabindex="-1"></a><span class="st">    the federal government in Washington </span></span>
+<span id="cb368-13"><a href="c08-communicating-results.html#cb368-13" aria-hidden="true" tabindex="-1"></a><span class="st">    to do what is right?&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb368-14"><a href="c08-communicating-results.html#cb368-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of gtsummary table with trust </span></span>
+<span id="cb368-15"><a href="c08-communicating-results.html#cb368-15" aria-hidden="true" tabindex="-1"></a><span class="st">    in government estimates with more </span></span>
+<span id="cb368-16"><a href="c08-communicating-results.html#cb368-16" aria-hidden="true" tabindex="-1"></a><span class="st">    labeling options and context.&quot;</span>)</span></code></pre></div>
+<div id="uqkclffrjq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#uqkclffrjq table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#rwokkyhyau thead, #rwokkyhyau tbody, #rwokkyhyau tfoot, #rwokkyhyau tr, #rwokkyhyau td, #rwokkyhyau th {
+#uqkclffrjq thead, #uqkclffrjq tbody, #uqkclffrjq tfoot, #uqkclffrjq tr, #uqkclffrjq td, #uqkclffrjq th {
   border-style: none;
 }
 
-#rwokkyhyau p {
+#uqkclffrjq p {
   margin: 0;
   padding: 0;
 }
 
-#rwokkyhyau .gt_table {
+#uqkclffrjq .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2545,12 +2522,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_caption {
+#uqkclffrjq .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#rwokkyhyau .gt_title {
+#uqkclffrjq .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2562,7 +2539,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#rwokkyhyau .gt_subtitle {
+#uqkclffrjq .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2574,7 +2551,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#rwokkyhyau .gt_heading {
+#uqkclffrjq .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2586,13 +2563,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_bottom_border {
+#uqkclffrjq .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_col_headings {
+#uqkclffrjq .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2607,7 +2584,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_col_heading {
+#uqkclffrjq .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2627,7 +2604,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#rwokkyhyau .gt_column_spanner_outer {
+#uqkclffrjq .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2639,15 +2616,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#rwokkyhyau .gt_column_spanner_outer:first-child {
+#uqkclffrjq .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#rwokkyhyau .gt_column_spanner_outer:last-child {
+#uqkclffrjq .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#rwokkyhyau .gt_column_spanner {
+#uqkclffrjq .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2659,11 +2636,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#rwokkyhyau .gt_spanner_row {
+#uqkclffrjq .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#rwokkyhyau .gt_group_heading {
+#uqkclffrjq .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2689,7 +2666,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#rwokkyhyau .gt_empty_group_heading {
+#uqkclffrjq .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2704,15 +2681,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#rwokkyhyau .gt_from_md > :first-child {
+#uqkclffrjq .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#rwokkyhyau .gt_from_md > :last-child {
+#uqkclffrjq .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#rwokkyhyau .gt_row {
+#uqkclffrjq .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2731,7 +2708,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#rwokkyhyau .gt_stub {
+#uqkclffrjq .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2744,7 +2721,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#rwokkyhyau .gt_stub_row_group {
+#uqkclffrjq .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2758,15 +2735,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#rwokkyhyau .gt_row_group_first td {
+#uqkclffrjq .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#rwokkyhyau .gt_row_group_first th {
+#uqkclffrjq .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#rwokkyhyau .gt_summary_row {
+#uqkclffrjq .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2776,16 +2753,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#rwokkyhyau .gt_first_summary_row {
+#uqkclffrjq .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_first_summary_row.thick {
+#uqkclffrjq .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#rwokkyhyau .gt_last_summary_row {
+#uqkclffrjq .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2795,7 +2772,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_grand_summary_row {
+#uqkclffrjq .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2805,7 +2782,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#rwokkyhyau .gt_first_grand_summary_row {
+#uqkclffrjq .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2815,7 +2792,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_last_grand_summary_row_top {
+#uqkclffrjq .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2825,11 +2802,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_striped {
+#uqkclffrjq .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#rwokkyhyau .gt_table_body {
+#uqkclffrjq .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2838,7 +2815,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_footnotes {
+#uqkclffrjq .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2852,7 +2829,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_footnote {
+#uqkclffrjq .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2861,7 +2838,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#rwokkyhyau .gt_sourcenotes {
+#uqkclffrjq .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2875,7 +2852,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#rwokkyhyau .gt_sourcenote {
+#uqkclffrjq .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2883,63 +2860,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#rwokkyhyau .gt_left {
+#uqkclffrjq .gt_left {
   text-align: left;
 }
 
-#rwokkyhyau .gt_center {
+#uqkclffrjq .gt_center {
   text-align: center;
 }
 
-#rwokkyhyau .gt_right {
+#uqkclffrjq .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#rwokkyhyau .gt_font_normal {
+#uqkclffrjq .gt_font_normal {
   font-weight: normal;
 }
 
-#rwokkyhyau .gt_font_bold {
+#uqkclffrjq .gt_font_bold {
   font-weight: bold;
 }
 
-#rwokkyhyau .gt_font_italic {
+#uqkclffrjq .gt_font_italic {
   font-style: italic;
 }
 
-#rwokkyhyau .gt_super {
+#uqkclffrjq .gt_super {
   font-size: 65%;
 }
 
-#rwokkyhyau .gt_footnote_marks {
+#uqkclffrjq .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#rwokkyhyau .gt_asterisk {
+#uqkclffrjq .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#rwokkyhyau .gt_indent_1 {
+#uqkclffrjq .gt_indent_1 {
   text-indent: 5px;
 }
 
-#rwokkyhyau .gt_indent_2 {
+#uqkclffrjq .gt_indent_2 {
   text-indent: 10px;
 }
 
-#rwokkyhyau .gt_indent_3 {
+#uqkclffrjq .gt_indent_3 {
   text-indent: 15px;
 }
 
-#rwokkyhyau .gt_indent_4 {
+#uqkclffrjq .gt_indent_4 {
   text-indent: 20px;
 }
 
-#rwokkyhyau .gt_indent_5 {
+#uqkclffrjq .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -3009,23 +2986,23 @@ div.csl-indent {
 <span id="cb369-20"><a href="c08-communicating-results.html#cb369-20" aria-hidden="true" tabindex="-1"></a><span class="st">    in Washington to do what is right?&quot;</span></span>
 <span id="cb369-21"><a href="c08-communicating-results.html#cb369-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb369-22"><a href="c08-communicating-results.html#cb369-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of gtsummary table with trust in government estimates and average age.&quot;</span>)</span></code></pre></div>
-<div id="qkclffrjqx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#qkclffrjqx table {
+<div id="xqossclppl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#xqossclppl table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#qkclffrjqx thead, #qkclffrjqx tbody, #qkclffrjqx tfoot, #qkclffrjqx tr, #qkclffrjqx td, #qkclffrjqx th {
+#xqossclppl thead, #xqossclppl tbody, #xqossclppl tfoot, #xqossclppl tr, #xqossclppl td, #xqossclppl th {
   border-style: none;
 }
 
-#qkclffrjqx p {
+#xqossclppl p {
   margin: 0;
   padding: 0;
 }
 
-#qkclffrjqx .gt_table {
+#xqossclppl .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3051,12 +3028,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_caption {
+#xqossclppl .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#qkclffrjqx .gt_title {
+#xqossclppl .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3068,7 +3045,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#qkclffrjqx .gt_subtitle {
+#xqossclppl .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3080,7 +3057,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#qkclffrjqx .gt_heading {
+#xqossclppl .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3092,13 +3069,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_bottom_border {
+#xqossclppl .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_col_headings {
+#xqossclppl .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3113,7 +3090,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_col_heading {
+#xqossclppl .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3133,7 +3110,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#qkclffrjqx .gt_column_spanner_outer {
+#xqossclppl .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3145,15 +3122,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#qkclffrjqx .gt_column_spanner_outer:first-child {
+#xqossclppl .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#qkclffrjqx .gt_column_spanner_outer:last-child {
+#xqossclppl .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#qkclffrjqx .gt_column_spanner {
+#xqossclppl .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3165,11 +3142,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#qkclffrjqx .gt_spanner_row {
+#xqossclppl .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#qkclffrjqx .gt_group_heading {
+#xqossclppl .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3195,7 +3172,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#qkclffrjqx .gt_empty_group_heading {
+#xqossclppl .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3210,15 +3187,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#qkclffrjqx .gt_from_md > :first-child {
+#xqossclppl .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#qkclffrjqx .gt_from_md > :last-child {
+#xqossclppl .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#qkclffrjqx .gt_row {
+#xqossclppl .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3237,7 +3214,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#qkclffrjqx .gt_stub {
+#xqossclppl .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3250,7 +3227,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#qkclffrjqx .gt_stub_row_group {
+#xqossclppl .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3264,15 +3241,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#qkclffrjqx .gt_row_group_first td {
+#xqossclppl .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#qkclffrjqx .gt_row_group_first th {
+#xqossclppl .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#qkclffrjqx .gt_summary_row {
+#xqossclppl .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3282,16 +3259,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#qkclffrjqx .gt_first_summary_row {
+#xqossclppl .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_first_summary_row.thick {
+#xqossclppl .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#qkclffrjqx .gt_last_summary_row {
+#xqossclppl .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3301,7 +3278,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_grand_summary_row {
+#xqossclppl .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3311,7 +3288,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#qkclffrjqx .gt_first_grand_summary_row {
+#xqossclppl .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3321,7 +3298,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_last_grand_summary_row_top {
+#xqossclppl .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3331,11 +3308,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_striped {
+#xqossclppl .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#qkclffrjqx .gt_table_body {
+#xqossclppl .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3344,7 +3321,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_footnotes {
+#xqossclppl .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3358,7 +3335,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_footnote {
+#xqossclppl .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3367,7 +3344,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#qkclffrjqx .gt_sourcenotes {
+#xqossclppl .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3381,7 +3358,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#qkclffrjqx .gt_sourcenote {
+#xqossclppl .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3389,63 +3366,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#qkclffrjqx .gt_left {
+#xqossclppl .gt_left {
   text-align: left;
 }
 
-#qkclffrjqx .gt_center {
+#xqossclppl .gt_center {
   text-align: center;
 }
 
-#qkclffrjqx .gt_right {
+#xqossclppl .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#qkclffrjqx .gt_font_normal {
+#xqossclppl .gt_font_normal {
   font-weight: normal;
 }
 
-#qkclffrjqx .gt_font_bold {
+#xqossclppl .gt_font_bold {
   font-weight: bold;
 }
 
-#qkclffrjqx .gt_font_italic {
+#xqossclppl .gt_font_italic {
   font-style: italic;
 }
 
-#qkclffrjqx .gt_super {
+#xqossclppl .gt_super {
   font-size: 65%;
 }
 
-#qkclffrjqx .gt_footnote_marks {
+#xqossclppl .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#qkclffrjqx .gt_asterisk {
+#xqossclppl .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#qkclffrjqx .gt_indent_1 {
+#xqossclppl .gt_indent_1 {
   text-indent: 5px;
 }
 
-#qkclffrjqx .gt_indent_2 {
+#xqossclppl .gt_indent_2 {
   text-indent: 10px;
 }
 
-#qkclffrjqx .gt_indent_3 {
+#xqossclppl .gt_indent_3 {
   text-indent: 15px;
 }
 
-#qkclffrjqx .gt_indent_4 {
+#xqossclppl .gt_indent_4 {
   text-indent: 20px;
 }
 
-#qkclffrjqx .gt_indent_5 {
+#xqossclppl .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -3498,45 +3475,37 @@ gtsummary
 } also allows calculating statistics by different groups easily. Let’s adapt the prior example to perform analysis by whether the person voted for president in 2020. The argument for by is updated and the header names are updated. Finally, we update the header.</p>
 <div class="sourceCode" id="cb370"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb370-1"><a href="c08-communicating-results.html#cb370-1" aria-hidden="true" tabindex="-1"></a>anes_des <span class="sc">%&gt;%</span></span>
 <span id="cb370-2"><a href="c08-communicating-results.html#cb370-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(VotedPres2020) <span class="sc">%&gt;%</span></span>
-<span id="cb370-3"><a href="c08-communicating-results.html#cb370-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_svysummary</span>(</span>
-<span id="cb370-4"><a href="c08-communicating-results.html#cb370-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">include=</span>TrustGovernment,</span>
-<span id="cb370-5"><a href="c08-communicating-results.html#cb370-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">&quot;{p} ({p.std.error})&quot;</span>),</span>
-<span id="cb370-6"><a href="c08-communicating-results.html#cb370-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">missing=</span><span class="st">&quot;no&quot;</span>,</span>
-<span id="cb370-7"><a href="c08-communicating-results.html#cb370-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span> style_percent),</span>
-<span id="cb370-8"><a href="c08-communicating-results.html#cb370-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">label=</span><span class="fu">list</span>(TrustGovernment <span class="sc">~</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>),</span>
-<span id="cb370-9"><a href="c08-communicating-results.html#cb370-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> VotedPres2020</span>
-<span id="cb370-10"><a href="c08-communicating-results.html#cb370-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb370-11"><a href="c08-communicating-results.html#cb370-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(</span>
-<span id="cb370-12"><a href="c08-communicating-results.html#cb370-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot; &quot;</span>,</span>
-<span id="cb370-13"><a href="c08-communicating-results.html#cb370-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">stat_1 =</span> <span class="st">&quot;Voted&quot;</span>,</span>
-<span id="cb370-14"><a href="c08-communicating-results.html#cb370-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">stat_2 =</span> <span class="st">&quot;Didn&#39;t vote&quot;</span></span>
-<span id="cb370-15"><a href="c08-communicating-results.html#cb370-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb370-16"><a href="c08-communicating-results.html#cb370-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb370-17"><a href="c08-communicating-results.html#cb370-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">&quot;American voter&#39;s trust </span></span>
-<span id="cb370-18"><a href="c08-communicating-results.html#cb370-18" aria-hidden="true" tabindex="-1"></a><span class="st">             in the federal government by whether they voted </span></span>
-<span id="cb370-19"><a href="c08-communicating-results.html#cb370-19" aria-hidden="true" tabindex="-1"></a><span class="st">             in the 2020 presidential election&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb370-20"><a href="c08-communicating-results.html#cb370-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;American National Election Studies, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb370-21"><a href="c08-communicating-results.html#cb370-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(<span class="st">&quot;Question text: How often can you trust the federal government </span></span>
-<span id="cb370-22"><a href="c08-communicating-results.html#cb370-22" aria-hidden="true" tabindex="-1"></a><span class="st">               in Washington to do what is right?&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb370-23"><a href="c08-communicating-results.html#cb370-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of gtsummary table with trust </span></span>
-<span id="cb370-24"><a href="c08-communicating-results.html#cb370-24" aria-hidden="true" tabindex="-1"></a><span class="st">              in government estimates by voting status.&quot;</span>)</span></code></pre></div>
-<div id="qossclpplr" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#qossclpplr table {
+<span id="cb370-3"><a href="c08-communicating-results.html#cb370-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_svysummary</span>(<span class="at">include =</span> TrustGovernment, <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_categorical</span>() <span class="sc">~</span></span>
+<span id="cb370-4"><a href="c08-communicating-results.html#cb370-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;{p} ({p.std.error})&quot;</span>), <span class="at">missing =</span> <span class="st">&quot;no&quot;</span>, <span class="at">digits =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span></span>
+<span id="cb370-5"><a href="c08-communicating-results.html#cb370-5" aria-hidden="true" tabindex="-1"></a>    style_percent), <span class="at">label =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>),</span>
+<span id="cb370-6"><a href="c08-communicating-results.html#cb370-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> VotedPres2020) <span class="sc">%&gt;%</span></span>
+<span id="cb370-7"><a href="c08-communicating-results.html#cb370-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(<span class="at">label =</span> <span class="st">&quot; &quot;</span>, <span class="at">stat_1 =</span> <span class="st">&quot;Voted&quot;</span>, <span class="at">stat_2 =</span> <span class="st">&quot;Didn&#39;t vote&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb370-8"><a href="c08-communicating-results.html#cb370-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb370-9"><a href="c08-communicating-results.html#cb370-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">&quot;American voter&#39;s trust </span></span>
+<span id="cb370-10"><a href="c08-communicating-results.html#cb370-10" aria-hidden="true" tabindex="-1"></a><span class="st">             in the federal government by whether they voted </span></span>
+<span id="cb370-11"><a href="c08-communicating-results.html#cb370-11" aria-hidden="true" tabindex="-1"></a><span class="st">             in the 2020 presidential election&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb370-12"><a href="c08-communicating-results.html#cb370-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;American National Election Studies, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb370-13"><a href="c08-communicating-results.html#cb370-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(<span class="st">&quot;Question text: How often can you trust the federal government </span></span>
+<span id="cb370-14"><a href="c08-communicating-results.html#cb370-14" aria-hidden="true" tabindex="-1"></a><span class="st">               in Washington to do what is right?&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb370-15"><a href="c08-communicating-results.html#cb370-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of gtsummary table with trust </span></span>
+<span id="cb370-16"><a href="c08-communicating-results.html#cb370-16" aria-hidden="true" tabindex="-1"></a><span class="st">              in government estimates by voting status.&quot;</span>)</span></code></pre></div>
+<div id="vnyhqfyukq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#vnyhqfyukq table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#qossclpplr thead, #qossclpplr tbody, #qossclpplr tfoot, #qossclpplr tr, #qossclpplr td, #qossclpplr th {
+#vnyhqfyukq thead, #vnyhqfyukq tbody, #vnyhqfyukq tfoot, #vnyhqfyukq tr, #vnyhqfyukq td, #vnyhqfyukq th {
   border-style: none;
 }
 
-#qossclpplr p {
+#vnyhqfyukq p {
   margin: 0;
   padding: 0;
 }
 
-#qossclpplr .gt_table {
+#vnyhqfyukq .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3562,12 +3531,12 @@ gtsummary
   border-left-color: #D3D3D3;
 }
 
-#qossclpplr .gt_caption {
+#vnyhqfyukq .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#qossclpplr .gt_title {
+#vnyhqfyukq .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3579,7 +3548,7 @@ gtsummary
   border-bottom-width: 0;
 }
 
-#qossclpplr .gt_subtitle {
+#vnyhqfyukq .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3591,7 +3560,7 @@ gtsummary
   border-top-width: 0;
 }
 
-#qossclpplr .gt_heading {
+#vnyhqfyukq .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3603,13 +3572,13 @@ gtsummary
   border-right-color: #D3D3D3;
 }
 
-#qossclpplr .gt_bottom_border {
+#vnyhqfyukq .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#qossclpplr .gt_col_headings {
+#vnyhqfyukq .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3624,7 +3593,7 @@ gtsummary
   border-right-color: #D3D3D3;
 }
 
-#qossclpplr .gt_col_heading {
+#vnyhqfyukq .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3644,7 +3613,7 @@ gtsummary
   overflow-x: hidden;
 }
 
-#qossclpplr .gt_column_spanner_outer {
+#vnyhqfyukq .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3656,15 +3625,15 @@ gtsummary
   padding-right: 4px;
 }
 
-#qossclpplr .gt_column_spanner_outer:first-child {
+#vnyhqfyukq .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#qossclpplr .gt_column_spanner_outer:last-child {
+#vnyhqfyukq .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#qossclpplr .gt_column_spanner {
+#vnyhqfyukq .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3676,11 +3645,11 @@ gtsummary
   width: 100%;
 }
 
-#qossclpplr .gt_spanner_row {
+#vnyhqfyukq .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#qossclpplr .gt_group_heading {
+#vnyhqfyukq .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3706,7 +3675,7 @@ gtsummary
   text-align: left;
 }
 
-#qossclpplr .gt_empty_group_heading {
+#vnyhqfyukq .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3721,15 +3690,15 @@ gtsummary
   vertical-align: middle;
 }
 
-#qossclpplr .gt_from_md > :first-child {
+#vnyhqfyukq .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#qossclpplr .gt_from_md > :last-child {
+#vnyhqfyukq .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#qossclpplr .gt_row {
+#vnyhqfyukq .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3748,7 +3717,7 @@ gtsummary
   overflow-x: hidden;
 }
 
-#qossclpplr .gt_stub {
+#vnyhqfyukq .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3761,7 +3730,7 @@ gtsummary
   padding-right: 5px;
 }
 
-#qossclpplr .gt_stub_row_group {
+#vnyhqfyukq .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3775,15 +3744,15 @@ gtsummary
   vertical-align: top;
 }
 
-#qossclpplr .gt_row_group_first td {
+#vnyhqfyukq .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#qossclpplr .gt_row_group_first th {
+#vnyhqfyukq .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#qossclpplr .gt_summary_row {
+#vnyhqfyukq .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3793,16 +3762,16 @@ gtsummary
   padding-right: 5px;
 }
 
-#qossclpplr .gt_first_summary_row {
+#vnyhqfyukq .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#qossclpplr .gt_first_summary_row.thick {
+#vnyhqfyukq .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#qossclpplr .gt_last_summary_row {
+#vnyhqfyukq .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3812,7 +3781,7 @@ gtsummary
   border-bottom-color: #D3D3D3;
 }
 
-#qossclpplr .gt_grand_summary_row {
+#vnyhqfyukq .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3822,7 +3791,7 @@ gtsummary
   padding-right: 5px;
 }
 
-#qossclpplr .gt_first_grand_summary_row {
+#vnyhqfyukq .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3832,7 +3801,7 @@ gtsummary
   border-top-color: #D3D3D3;
 }
 
-#qossclpplr .gt_last_grand_summary_row_top {
+#vnyhqfyukq .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3842,11 +3811,11 @@ gtsummary
   border-bottom-color: #D3D3D3;
 }
 
-#qossclpplr .gt_striped {
+#vnyhqfyukq .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#qossclpplr .gt_table_body {
+#vnyhqfyukq .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3855,7 +3824,7 @@ gtsummary
   border-bottom-color: #D3D3D3;
 }
 
-#qossclpplr .gt_footnotes {
+#vnyhqfyukq .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3869,7 +3838,7 @@ gtsummary
   border-right-color: #D3D3D3;
 }
 
-#qossclpplr .gt_footnote {
+#vnyhqfyukq .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3878,7 +3847,7 @@ gtsummary
   padding-right: 5px;
 }
 
-#qossclpplr .gt_sourcenotes {
+#vnyhqfyukq .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3892,7 +3861,7 @@ gtsummary
   border-right-color: #D3D3D3;
 }
 
-#qossclpplr .gt_sourcenote {
+#vnyhqfyukq .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3900,63 +3869,63 @@ gtsummary
   padding-right: 5px;
 }
 
-#qossclpplr .gt_left {
+#vnyhqfyukq .gt_left {
   text-align: left;
 }
 
-#qossclpplr .gt_center {
+#vnyhqfyukq .gt_center {
   text-align: center;
 }
 
-#qossclpplr .gt_right {
+#vnyhqfyukq .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#qossclpplr .gt_font_normal {
+#vnyhqfyukq .gt_font_normal {
   font-weight: normal;
 }
 
-#qossclpplr .gt_font_bold {
+#vnyhqfyukq .gt_font_bold {
   font-weight: bold;
 }
 
-#qossclpplr .gt_font_italic {
+#vnyhqfyukq .gt_font_italic {
   font-style: italic;
 }
 
-#qossclpplr .gt_super {
+#vnyhqfyukq .gt_super {
   font-size: 65%;
 }
 
-#qossclpplr .gt_footnote_marks {
+#vnyhqfyukq .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#qossclpplr .gt_asterisk {
+#vnyhqfyukq .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#qossclpplr .gt_indent_1 {
+#vnyhqfyukq .gt_indent_1 {
   text-indent: 5px;
 }
 
-#qossclpplr .gt_indent_2 {
+#vnyhqfyukq .gt_indent_2 {
   text-indent: 10px;
 }
 
-#qossclpplr .gt_indent_3 {
+#vnyhqfyukq .gt_indent_3 {
   text-indent: 15px;
 }
 
-#qossclpplr .gt_indent_4 {
+#vnyhqfyukq .gt_indent_4 {
   text-indent: 20px;
 }
 
-#qossclpplr .gt_indent_5 {
+#vnyhqfyukq .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -4020,23 +3989,14 @@ gtsummary
 <p>R has many packages for creating compelling and insightful charts. We will focus on {ggplot2}, a member of the {tidyverse}. This package is a powerful, flexible tool for creating a wide range of data visualization.</p>
 <p>{ggplot2} follows the “grammar of graphics,” a framework that incrementally adds layers of chart components. We can customize visual elements such as scales, colors, labels, and annotations to enhance the understanding of data. After creating the design object that we’ve been using previously, we select our desired data points by modifying the existing design to add other outcomes and calculate estimates. Below, we create a binary variable <code>TrustGovernmentUsually</code>, which is TRUE when TrustGovernment is “Always” or “Most of the time” and FALSE otherwise. Then, we calculate the percentage of people who usually trust the government by who they voted for in the 2020 presidential election (<code>VotedPres2020_selection</code>). We remove the cases where people did not vote or did not indicate for whom they voted.</p>
 <div class="sourceCode" id="cb371"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb371-1"><a href="c08-communicating-results.html#cb371-1" aria-hidden="true" tabindex="-1"></a>anes_des_der <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb371-2"><a href="c08-communicating-results.html#cb371-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustGovernmentUsually =</span> <span class="fu">case_when</span>(</span>
-<span id="cb371-3"><a href="c08-communicating-results.html#cb371-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">is.na</span>(TrustGovernment) <span class="sc">~</span> <span class="cn">NA</span>,</span>
-<span id="cb371-4"><a href="c08-communicating-results.html#cb371-4" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> TrustGovernment <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Always&quot;</span>, <span class="st">&quot;Most of the time&quot;</span>)</span>
-<span id="cb371-5"><a href="c08-communicating-results.html#cb371-5" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
-<span id="cb371-6"><a href="c08-communicating-results.html#cb371-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(VotedPres2020_selection) <span class="sc">%&gt;%</span></span>
-<span id="cb371-7"><a href="c08-communicating-results.html#cb371-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection) <span class="sc">%&gt;%</span></span>
-<span id="cb371-8"><a href="c08-communicating-results.html#cb371-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb371-9"><a href="c08-communicating-results.html#cb371-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">pct_trust =</span> <span class="fu">survey_mean</span>(</span>
-<span id="cb371-10"><a href="c08-communicating-results.html#cb371-10" aria-hidden="true" tabindex="-1"></a>      TrustGovernmentUsually,</span>
-<span id="cb371-11"><a href="c08-communicating-results.html#cb371-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb371-12"><a href="c08-communicating-results.html#cb371-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">proportion =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb371-13"><a href="c08-communicating-results.html#cb371-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span></span>
-<span id="cb371-14"><a href="c08-communicating-results.html#cb371-14" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb371-15"><a href="c08-communicating-results.html#cb371-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb371-16"><a href="c08-communicating-results.html#cb371-16" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb371-17"><a href="c08-communicating-results.html#cb371-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb371-18"><a href="c08-communicating-results.html#cb371-18" aria-hidden="true" tabindex="-1"></a>anes_des_der</span></code></pre></div>
+<span id="cb371-2"><a href="c08-communicating-results.html#cb371-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustGovernmentUsually =</span> <span class="fu">case_when</span>(<span class="fu">is.na</span>(TrustGovernment) <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb371-3"><a href="c08-communicating-results.html#cb371-3" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> TrustGovernment <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Always&quot;</span>, <span class="st">&quot;Most of the time&quot;</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb371-4"><a href="c08-communicating-results.html#cb371-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(VotedPres2020_selection) <span class="sc">%&gt;%</span></span>
+<span id="cb371-5"><a href="c08-communicating-results.html#cb371-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection) <span class="sc">%&gt;%</span></span>
+<span id="cb371-6"><a href="c08-communicating-results.html#cb371-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">pct_trust =</span> <span class="fu">survey_mean</span>(TrustGovernmentUsually, <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb371-7"><a href="c08-communicating-results.html#cb371-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">proportion =</span> <span class="cn">TRUE</span>, <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span>
+<span id="cb371-8"><a href="c08-communicating-results.html#cb371-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb371-9"><a href="c08-communicating-results.html#cb371-9" aria-hidden="true" tabindex="-1"></a>anes_des_der</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 4
 ##   VotedPres2020_selection pct_trust pct_trust_low pct_trust_upp
 ##   &lt;fct&gt;                       &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;
@@ -4045,11 +4005,9 @@ gtsummary
 ## 3 Other                      0.0614        0.0249         0.144</code></pre>
 <p>Now, we can begin creating our chart with {ggplot2}. First, we set up our plot with <code>ggplot()</code>. Next, we state the data points we want to show with <code>aes</code>. Finally, we specify the type of plot with <code>geom_*()</code>, in this case, <code>geom_bar()</code>. This initial plot is displayed in Figure <a href="c08-communicating-results.html#fig:results-plot1">8.1</a>.</p>
 <div class="sourceCode" id="cb373"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb373-1"><a href="c08-communicating-results.html#cb373-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb373-2"><a href="c08-communicating-results.html#cb373-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
-<span id="cb373-3"><a href="c08-communicating-results.html#cb373-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> pct_trust)) <span class="sc">+</span></span>
-<span id="cb373-4"><a href="c08-communicating-results.html#cb373-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span>
-<span id="cb373-5"><a href="c08-communicating-results.html#cb373-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb373-6"><a href="c08-communicating-results.html#cb373-6" aria-hidden="true" tabindex="-1"></a>p</span></code></pre></div>
+<span id="cb373-2"><a href="c08-communicating-results.html#cb373-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, <span class="at">y =</span> pct_trust)) <span class="sc">+</span> <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span>
+<span id="cb373-3"><a href="c08-communicating-results.html#cb373-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb373-4"><a href="c08-communicating-results.html#cb373-4" aria-hidden="true" tabindex="-1"></a>p</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:results-plot1"></span>
 <img src="bookdown_files/figure-html/results-plot1-1.png" alt="Bar chart with x-axis of 'VotedPres2020_selection' with labels Biden, Trump and Other. It has y-axis 'pct_trust' with labels 0.00, 0.05, 0.10 and 0.15. The chart is a bar chart with 3 vertical bars. Bar 1 (Biden) has a height of 0.12. Bar 2 (Trump) has a height of 0.17. Bar 3 (Other) has a height of 0.06." width="672" />
 <p class="caption">
@@ -4058,12 +4016,10 @@ FIGURE 8.1: Bar chart of trust in government by chosen 2020 presidential candida
 </div>
 <p>This is a great starting-off point: we can see that the percentage of people saying they usually trust the government is higher for those who voted for Trump than Biden or other candidates. What if we wanted to add color to better differentiate the three groups? We can add <code>fill</code> under <code>aesthetics</code>, denoting that we want to use those data points to fill in the bars.</p>
 <div class="sourceCode" id="cb374"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb374-1"><a href="c08-communicating-results.html#cb374-1" aria-hidden="true" tabindex="-1"></a>pcolor <span class="ot">&lt;-</span> anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb374-2"><a href="c08-communicating-results.html#cb374-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
-<span id="cb374-3"><a href="c08-communicating-results.html#cb374-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> pct_trust,</span>
-<span id="cb374-4"><a href="c08-communicating-results.html#cb374-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
-<span id="cb374-5"><a href="c08-communicating-results.html#cb374-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span>
-<span id="cb374-6"><a href="c08-communicating-results.html#cb374-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb374-7"><a href="c08-communicating-results.html#cb374-7" aria-hidden="true" tabindex="-1"></a>pcolor</span></code></pre></div>
+<span id="cb374-2"><a href="c08-communicating-results.html#cb374-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, <span class="at">y =</span> pct_trust, <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
+<span id="cb374-3"><a href="c08-communicating-results.html#cb374-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span>
+<span id="cb374-4"><a href="c08-communicating-results.html#cb374-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb374-5"><a href="c08-communicating-results.html#cb374-5" aria-hidden="true" tabindex="-1"></a>pcolor</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:results-plot2"></span>
 <img src="bookdown_files/figure-html/results-plot2-1.png" alt="Bar chart with x-axis of 'VotedPres2020_selection' with labels Biden, Trump and Other. It has y-axis 'pct_trust' with labels 0.00, 0.05, 0.10 and 0.15. The chart is a bar chart with 3 vertical bars. Bar 1 (Biden) has a height of 0.12 and a color of strong reddish orange. Bar 2 (Trump) has a height of 0.17 and a color of vivid yellowish green. Bar 3 (Other) has a height of 0.06 and color of brilliant blue." width="672" />
 <p class="caption">
@@ -4072,15 +4028,11 @@ FIGURE 8.2: Bar chart of trust in government by chosen 2020 presidential candida
 </div>
 <p>Let’s say we wanted to follow good statistical analysis practice and include our variability in our plot. We can add another geom, <code>geom_errorbar()</code>, to display the confidence intervals on top of our <code>geom_bar()</code> layer using a plus sign <code>+</code>.</p>
 <div class="sourceCode" id="cb375"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb375-1"><a href="c08-communicating-results.html#cb375-1" aria-hidden="true" tabindex="-1"></a>pcol_error <span class="ot">&lt;-</span> anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb375-2"><a href="c08-communicating-results.html#cb375-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
-<span id="cb375-3"><a href="c08-communicating-results.html#cb375-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> pct_trust,</span>
-<span id="cb375-4"><a href="c08-communicating-results.html#cb375-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
-<span id="cb375-5"><a href="c08-communicating-results.html#cb375-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
-<span id="cb375-6"><a href="c08-communicating-results.html#cb375-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low,</span>
-<span id="cb375-7"><a href="c08-communicating-results.html#cb375-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">ymax =</span> pct_trust_upp),</span>
-<span id="cb375-8"><a href="c08-communicating-results.html#cb375-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">width =</span> .<span class="dv">2</span>)</span>
-<span id="cb375-9"><a href="c08-communicating-results.html#cb375-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb375-10"><a href="c08-communicating-results.html#cb375-10" aria-hidden="true" tabindex="-1"></a>pcol_error</span></code></pre></div>
+<span id="cb375-2"><a href="c08-communicating-results.html#cb375-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, <span class="at">y =</span> pct_trust, <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
+<span id="cb375-3"><a href="c08-communicating-results.html#cb375-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span> <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low,</span>
+<span id="cb375-4"><a href="c08-communicating-results.html#cb375-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">ymax =</span> pct_trust_upp), <span class="at">width =</span> <span class="fl">0.2</span>)</span>
+<span id="cb375-5"><a href="c08-communicating-results.html#cb375-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb375-6"><a href="c08-communicating-results.html#cb375-6" aria-hidden="true" tabindex="-1"></a>pcol_error</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:results-plot3"></span>
 <img src="bookdown_files/figure-html/results-plot3-1.png" alt="Bar chart with x-axis of 'VotedPres2020_selection' with labels Biden, Trump and Other. It has y-axis 'pct_trust' with labels 0.00, 0.05, 0.10 and 0.15. The chart is a bar chart with 3 vertical bars. Bar 1 (Biden) has a height of 0.12 and a color of strong reddish orange. Bar 2 (Trump) has a height of 0.17 and a color of vivid yellowish green. Bar 3 (Other) has a height of 0.06 and color of brilliant blue. Error bars are added with the Bar 1 (Biden) error ranging from 0.11 to 0.14, Bar 2 (Trump) error ranging from 0.16 to 0.19, and the Bar 3 (Other) error ranging from 0.02 to 0.14." width="672" />
 <p class="caption">
@@ -4088,25 +4040,17 @@ FIGURE 8.3: Bar chart of trust in government by chosen 2020 presidential candida
 </p>
 </div>
 <p>We can continue adding to our plot until we achieve the visualization we’d like to present.</p>
-<div class="sourceCode" id="cb376"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb376-1"><a href="c08-communicating-results.html#cb376-1" aria-hidden="true" tabindex="-1"></a>pfull <span class="ot">&lt;-</span></span>
-<span id="cb376-2"><a href="c08-communicating-results.html#cb376-2" aria-hidden="true" tabindex="-1"></a>  anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb376-3"><a href="c08-communicating-results.html#cb376-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
-<span id="cb376-4"><a href="c08-communicating-results.html#cb376-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> pct_trust,</span>
-<span id="cb376-5"><a href="c08-communicating-results.html#cb376-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
-<span id="cb376-6"><a href="c08-communicating-results.html#cb376-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
-<span id="cb376-7"><a href="c08-communicating-results.html#cb376-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low,</span>
-<span id="cb376-8"><a href="c08-communicating-results.html#cb376-8" aria-hidden="true" tabindex="-1"></a>                    <span class="at">ymax =</span> pct_trust_upp),</span>
-<span id="cb376-9"><a href="c08-communicating-results.html#cb376-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">width =</span> .<span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb376-10"><a href="c08-communicating-results.html#cb376-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#0b3954&quot;</span>, <span class="st">&quot;#bfd7ea&quot;</span>, <span class="st">&quot;#8d6b94&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb376-11"><a href="c08-communicating-results.html#cb376-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Election choice (2020)&quot;</span>) <span class="sc">+</span></span>
-<span id="cb376-12"><a href="c08-communicating-results.html#cb376-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Usually trust the government&quot;</span>) <span class="sc">+</span></span>
-<span id="cb376-13"><a href="c08-communicating-results.html#cb376-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
-<span id="cb376-14"><a href="c08-communicating-results.html#cb376-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>) <span class="sc">+</span></span>
-<span id="cb376-15"><a href="c08-communicating-results.html#cb376-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Percent of voters who usually trust the government</span></span>
-<span id="cb376-16"><a href="c08-communicating-results.html#cb376-16" aria-hidden="true" tabindex="-1"></a><span class="st">       by chosen 2020 presidential candidate&quot;</span>,</span>
-<span id="cb376-17"><a href="c08-communicating-results.html#cb376-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">&quot;Source: American National Election Studies, 2020&quot;</span>)</span>
-<span id="cb376-18"><a href="c08-communicating-results.html#cb376-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb376-19"><a href="c08-communicating-results.html#cb376-19" aria-hidden="true" tabindex="-1"></a>pfull</span></code></pre></div>
+<div class="sourceCode" id="cb376"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb376-1"><a href="c08-communicating-results.html#cb376-1" aria-hidden="true" tabindex="-1"></a>pfull <span class="ot">&lt;-</span> anes_des_der <span class="sc">%&gt;%</span></span>
+<span id="cb376-2"><a href="c08-communicating-results.html#cb376-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, <span class="at">y =</span> pct_trust, <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
+<span id="cb376-3"><a href="c08-communicating-results.html#cb376-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span> <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low,</span>
+<span id="cb376-4"><a href="c08-communicating-results.html#cb376-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">ymax =</span> pct_trust_upp), <span class="at">width =</span> <span class="fl">0.2</span>) <span class="sc">+</span> <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#0b3954&quot;</span>,</span>
+<span id="cb376-5"><a href="c08-communicating-results.html#cb376-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;#bfd7ea&quot;</span>, <span class="st">&quot;#8d6b94&quot;</span>)) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">&quot;Election choice (2020)&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Usually trust the government&quot;</span>) <span class="sc">+</span></span>
+<span id="cb376-6"><a href="c08-communicating-results.html#cb376-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span> <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>) <span class="sc">+</span></span>
+<span id="cb376-7"><a href="c08-communicating-results.html#cb376-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Percent of voters who usually trust the government</span></span>
+<span id="cb376-8"><a href="c08-communicating-results.html#cb376-8" aria-hidden="true" tabindex="-1"></a><span class="st">       by chosen 2020 presidential candidate&quot;</span>,</span>
+<span id="cb376-9"><a href="c08-communicating-results.html#cb376-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Source: American National Election Studies, 2020&quot;</span>)</span>
+<span id="cb376-10"><a href="c08-communicating-results.html#cb376-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb376-11"><a href="c08-communicating-results.html#cb376-11" aria-hidden="true" tabindex="-1"></a>pfull</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:results-plot4"></span>
 <img src="bookdown_files/figure-html/results-plot4-1.png" alt="Bar chart with x-axis of 'VotedPres2020_selection' with labels Biden, Trump and Other. It has y-axis 'pct_trust' with labels 0.00, 0.05, 0.10 and 0.15. The chart is a bar chart with 3 vertical bars. Bar 1 (Biden) has a height of 0.12 and a color of dark blue. Bar 2 (Trump) has a height of 0.17 and a color of very pale blue. Bar 3 (Other) has a height of 0.06 and color of moderate purple. Error bars are added with the Bar 1 (Biden) error ranging from 0.11 to 0.14, Bar 2 (Trump) error ranging from 0.16 to 0.19, and the Bar 3 (Other) error ranging from 0.02 to 0.14." width="672" />
 <p class="caption">
