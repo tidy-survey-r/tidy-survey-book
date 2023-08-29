@@ -1,5 +1,5 @@
 read_osf <- function(filename){
-  #' Downloads file from Tidy Survey Analysis in R
+  #' Downloads file from OSF project
   #' Reads in file
   #' Deletes file from computer
   
@@ -28,5 +28,3 @@ read_osf <- function(filename){
   
   return(out)
 }
-
-book_colors <- c("#0b3954", "#087e8b", "#bfd7ea", "#ff8484", "#8d6b94")
