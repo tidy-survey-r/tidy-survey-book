@@ -1,5 +1,5 @@
 read_osf <- function(filename){
-  #' Downloads file from Tidy Survey Analysis in R
+  #' Downloads file from OSF project
   #' Reads in file
   #' Deletes file from computer
   
