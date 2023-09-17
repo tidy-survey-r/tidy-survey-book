@@ -60,14 +60,14 @@ For RECS, details are included in the RECS documentation and Chapter \@ref(c03-s
 ```{r}
 #| label: desc-recs-des
 #| eval: FALSE
-recs_in <- read_osf("recs_2015.rds")
+recs_in <- read_osf("recs_2020.rds")
 
 recs_des <- recs_in %>%
   as_survey_rep(
     weights = NWEIGHT,
-    repweights = starts_with("BRRWT"),
-    type = "Fay",
-    rho = 0.5,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59/60,
     mse = TRUE
   )
 ```
@@ -360,7 +360,7 @@ To calculate a population count estimate with `survey_total()`, the argument `x`
 ```{r}
 #| label: desc-tot-nox
 recs_des %>%
-  summarize(survey_total())  
+  summarize(Tot=survey_total())  
 ```
 
 Note that the result from `recs_des %>% summarize(survey_total())` is equivalent to the `survey_count()` and `survey_tally()` functions. However, the `survey_total()` function is called within `summarize`, whereas `survey_count()` and `survey_tally()` are not. 
@@ -1005,13 +1005,13 @@ $$n_{eff}=\frac{n}{D_{eff}} $$
 
 where $n$ is the nominal sample size (number of survey responses) and $D_{eff}$ is the estimated design effect. The effective sample size has an interesting interpretation that a survey using an SRS design would need a sample size of $n_{eff}$ to obtain the same precision as the design at hand, which is where the efficiency interpretation comes in. Design effects are outcome-specific --- outcomes that are less clustered in the population have smaller design effects than outcomes that are clustered.
 
-In the {srvyr} package, design effects can be calculated for totals, proportions, means, and ratio estimates by setting the `deff` argument to TRUE in the corresponding functions. For example, the design effect can be calculated for the average consumption of electricity (BTUEL), natural gas (BTUNG), liquid propane (BTULP), fuel oil (BTUFO), wood (BTUWOOD), and wood pellets (BTUPELLET).
+In the {srvyr} package, design effects can be calculated for totals, proportions, means, and ratio estimates by setting the `deff` argument to TRUE in the corresponding functions. For example, the design effect can be calculated for the average consumption of electricity (BTUEL), natural gas (BTUNG), liquid propane (BTULP), fuel oil (BTUFO), and wood (BTUWOOD).
 
 ```{r}
 #| label: desc-deff
 recs_des %>%
   summarize(across(
-    c(BTUEL, BTUNG, BTULP, BTUFO, BTUWOOD, BTUPELLET),
+    c(BTUEL, BTUNG, BTULP, BTUFO, BTUWOOD),
     ~ survey_mean(.x, deff = TRUE, vartype = NULL)
   )) %>%
   select(ends_with("deff"))
@@ -1097,7 +1097,7 @@ The `across()` function allows you to apply the same function to several columns
 
 #### Example 1: `across()` {.unnumbered}
 
-Suppose we want to calculate the total consumption for each fuel type and the average consumption for each fuel type with coefficients of variation. These include the consumption of electricity (BTUEL), natural gas (BTUNG), liquid propane (BTULP), fuel oil (BTUFO), wood (BTUWOOD), and wood pellets (BTUPELLET), as illustrated in the discussion on design effects. These are the only variables that start with "BTU", so we can use that to our advantage. 
+Suppose we want to calculate the total consumption for each fuel type and the average consumption for each fuel type with coefficients of variation. These include the consumption of electricity (BTUEL), natural gas (BTUNG), liquid propane (BTULP), fuel oil (BTUFO), and wood (BTUWOOD), as illustrated in the discussion on design effects. These are the only variables that start with "BTU", so we can use that to our advantage. 
 
 ```{r}
 #| label: desc-multi-1
