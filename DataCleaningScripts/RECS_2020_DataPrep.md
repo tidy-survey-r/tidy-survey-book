@@ -5,11 +5,7 @@ Residential Energy Consumption Survey (RECS) 2020 Data Prep
 
 All data and resources were downloaded from
 <https://www.eia.gov/consumption/residential/data/2020/index.php?view=microdata>
-on June 17, 2023.
-
-``` r
-library(here) #easy relative paths
-```
+on September 17, 2023.
 
 ``` r
 library(tidyverse) #data manipulation
@@ -23,16 +19,22 @@ library(osfr)
 ``` r
 recs_file_osf_det <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
   osf_ls_files(path="RECS_2020", pattern="csv") %>%
-  osf_download(conflicts="overwrite", path=here("osf_dl"))
+  filter(str_detect(name, "v5")) %>%
+  osf_download(conflicts="overwrite", path=here::here("osf_dl"))
+```
 
+    ## filter: removed one row (50%), one row remaining
+
+``` r
 recs_in <- read_csv(pull(recs_file_osf_det, local_path))
 ```
 
-    ## Rows: 18496 Columns: 786
-    ## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────
+    ## Rows: 18496 Columns: 789
+
+    ## ── Column specification ──────────────────────────────────────────────────────────────────────────────
     ## Delimiter: ","
-    ## chr   (8): REGIONC, DIVISION, STATE_FIPS, state_postal, state_name, BA_climate, IECC_climate_code, UATYP10
-    ## dbl (778): DOEID, HDD65, CDD65, HDD30YR_PUB, CDD30YR_PUB, TYPEHUQ, CELLAR, CRAWL, CONCRETE, BASEOTH, BASEFIN, ATTIC, ATTIC...
+    ## chr   (8): REGIONC, DIVISION, STATE_FIPS, state_postal, state_name, BA_climate, IECC_climate_code,...
+    ## dbl (781): DOEID, HDD65, CDD65, HDD30YR_PUB, CDD30YR_PUB, TYPEHUQ, CELLAR, CRAWL, CONCRETE, BASEOT...
     ## 
     ## ℹ Use `spec()` to retrieve the full column specification for this data.
     ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
@@ -128,7 +130,7 @@ recs <- recs_in %>%
     )
 ```
 
-    ## select: renamed 3 variables (CDD30YR, HDD30YR, BTUWOOD) and dropped 686 variables
+    ## select: renamed 3 variables (CDD30YR, HDD30YR, BTUWOOD) and dropped 689 variables
     ## mutate: converted 'state_postal' from character to factor (0 new NA)
     ##         converted 'state_name' from character to factor (0 new NA)
     ##         new variable 'Region' (factor) with 4 unique values and 0% NA
@@ -386,179 +388,219 @@ recs_out <- recs %>%
     ## select: dropped 16 variables (DIVISION, UATYP10, TYPEHUQ, YEARMADERANGE, HEATHOME, …)
 
 ``` r
-source(here::here("helper-fun", "helper-functions.R"))
+source(here::here("helper-fun", "helper-function.R"))
 
-recs_2015 <- read_rds_tsr("recs_2015.rds")
+recs_2015 <- read_osf("recs_2015.rds")
 
 setdiff(names(recs_out), names(recs_2015)) #variables in 2020 and not 2015
 ```
 
-    ##  [1] "STATE_FIPS"   "state_postal" "state_name"   "NWEIGHT1"     "NWEIGHT2"     "NWEIGHT3"     "NWEIGHT4"     "NWEIGHT5"    
-    ##  [9] "NWEIGHT6"     "NWEIGHT7"     "NWEIGHT8"     "NWEIGHT9"     "NWEIGHT10"    "NWEIGHT11"    "NWEIGHT12"    "NWEIGHT13"   
-    ## [17] "NWEIGHT14"    "NWEIGHT15"    "NWEIGHT16"    "NWEIGHT17"    "NWEIGHT18"    "NWEIGHT19"    "NWEIGHT20"    "NWEIGHT21"   
-    ## [25] "NWEIGHT22"    "NWEIGHT23"    "NWEIGHT24"    "NWEIGHT25"    "NWEIGHT26"    "NWEIGHT27"    "NWEIGHT28"    "NWEIGHT29"   
-    ## [33] "NWEIGHT30"    "NWEIGHT31"    "NWEIGHT32"    "NWEIGHT33"    "NWEIGHT34"    "NWEIGHT35"    "NWEIGHT36"    "NWEIGHT37"   
-    ## [41] "NWEIGHT38"    "NWEIGHT39"    "NWEIGHT40"    "NWEIGHT41"    "NWEIGHT42"    "NWEIGHT43"    "NWEIGHT44"    "NWEIGHT45"   
-    ## [49] "NWEIGHT46"    "NWEIGHT47"    "NWEIGHT48"    "NWEIGHT49"    "NWEIGHT50"    "NWEIGHT51"    "NWEIGHT52"    "NWEIGHT53"   
-    ## [57] "NWEIGHT54"    "NWEIGHT55"    "NWEIGHT56"    "NWEIGHT57"    "NWEIGHT58"    "NWEIGHT59"    "NWEIGHT60"
+    ##  [1] "STATE_FIPS"   "state_postal" "state_name"   "NWEIGHT1"     "NWEIGHT2"     "NWEIGHT3"    
+    ##  [7] "NWEIGHT4"     "NWEIGHT5"     "NWEIGHT6"     "NWEIGHT7"     "NWEIGHT8"     "NWEIGHT9"    
+    ## [13] "NWEIGHT10"    "NWEIGHT11"    "NWEIGHT12"    "NWEIGHT13"    "NWEIGHT14"    "NWEIGHT15"   
+    ## [19] "NWEIGHT16"    "NWEIGHT17"    "NWEIGHT18"    "NWEIGHT19"    "NWEIGHT20"    "NWEIGHT21"   
+    ## [25] "NWEIGHT22"    "NWEIGHT23"    "NWEIGHT24"    "NWEIGHT25"    "NWEIGHT26"    "NWEIGHT27"   
+    ## [31] "NWEIGHT28"    "NWEIGHT29"    "NWEIGHT30"    "NWEIGHT31"    "NWEIGHT32"    "NWEIGHT33"   
+    ## [37] "NWEIGHT34"    "NWEIGHT35"    "NWEIGHT36"    "NWEIGHT37"    "NWEIGHT38"    "NWEIGHT39"   
+    ## [43] "NWEIGHT40"    "NWEIGHT41"    "NWEIGHT42"    "NWEIGHT43"    "NWEIGHT44"    "NWEIGHT45"   
+    ## [49] "NWEIGHT46"    "NWEIGHT47"    "NWEIGHT48"    "NWEIGHT49"    "NWEIGHT50"    "NWEIGHT51"   
+    ## [55] "NWEIGHT52"    "NWEIGHT53"    "NWEIGHT54"    "NWEIGHT55"    "NWEIGHT56"    "NWEIGHT57"   
+    ## [61] "NWEIGHT58"    "NWEIGHT59"    "NWEIGHT60"
 
 ``` r
 setdiff(names(recs_2015), names(recs_out)) #variables in 2015 and not 2020
 ```
 
-    ##   [1] "MSAStatus"          "TOTUCSQFT"          "TOTUSQFT"           "BRRWT1"             "BRRWT2"            
-    ##   [6] "BRRWT3"             "BRRWT4"             "BRRWT5"             "BRRWT6"             "BRRWT7"            
-    ##  [11] "BRRWT8"             "BRRWT9"             "BRRWT10"            "BRRWT11"            "BRRWT12"           
-    ##  [16] "BRRWT13"            "BRRWT14"            "BRRWT15"            "BRRWT16"            "BRRWT17"           
-    ##  [21] "BRRWT18"            "BRRWT19"            "BRRWT20"            "BRRWT21"            "BRRWT22"           
-    ##  [26] "BRRWT23"            "BRRWT24"            "BRRWT25"            "BRRWT26"            "BRRWT27"           
-    ##  [31] "BRRWT28"            "BRRWT29"            "BRRWT30"            "BRRWT31"            "BRRWT32"           
-    ##  [36] "BRRWT33"            "BRRWT34"            "BRRWT35"            "BRRWT36"            "BRRWT37"           
-    ##  [41] "BRRWT38"            "BRRWT39"            "BRRWT40"            "BRRWT41"            "BRRWT42"           
-    ##  [46] "BRRWT43"            "BRRWT44"            "BRRWT45"            "BRRWT46"            "BRRWT47"           
-    ##  [51] "BRRWT48"            "BRRWT49"            "BRRWT50"            "BRRWT51"            "BRRWT52"           
-    ##  [56] "BRRWT53"            "BRRWT54"            "BRRWT55"            "BRRWT56"            "BRRWT57"           
-    ##  [61] "BRRWT58"            "BRRWT59"            "BRRWT60"            "BRRWT61"            "BRRWT62"           
-    ##  [66] "BRRWT63"            "BRRWT64"            "BRRWT65"            "BRRWT66"            "BRRWT67"           
-    ##  [71] "BRRWT68"            "BRRWT69"            "BRRWT70"            "BRRWT71"            "BRRWT72"           
-    ##  [76] "BRRWT73"            "BRRWT74"            "BRRWT75"            "BRRWT76"            "BRRWT77"           
-    ##  [81] "BRRWT78"            "BRRWT79"            "BRRWT80"            "BRRWT81"            "BRRWT82"           
-    ##  [86] "BRRWT83"            "BRRWT84"            "BRRWT85"            "BRRWT86"            "BRRWT87"           
-    ##  [91] "BRRWT88"            "BRRWT89"            "BRRWT90"            "BRRWT91"            "BRRWT92"           
-    ##  [96] "BRRWT93"            "BRRWT94"            "BRRWT95"            "BRRWT96"            "CDD80"             
+    ##   [1] "MSAStatus"          "TOTUCSQFT"          "TOTUSQFT"           "BRRWT1"            
+    ##   [5] "BRRWT2"             "BRRWT3"             "BRRWT4"             "BRRWT5"            
+    ##   [9] "BRRWT6"             "BRRWT7"             "BRRWT8"             "BRRWT9"            
+    ##  [13] "BRRWT10"            "BRRWT11"            "BRRWT12"            "BRRWT13"           
+    ##  [17] "BRRWT14"            "BRRWT15"            "BRRWT16"            "BRRWT17"           
+    ##  [21] "BRRWT18"            "BRRWT19"            "BRRWT20"            "BRRWT21"           
+    ##  [25] "BRRWT22"            "BRRWT23"            "BRRWT24"            "BRRWT25"           
+    ##  [29] "BRRWT26"            "BRRWT27"            "BRRWT28"            "BRRWT29"           
+    ##  [33] "BRRWT30"            "BRRWT31"            "BRRWT32"            "BRRWT33"           
+    ##  [37] "BRRWT34"            "BRRWT35"            "BRRWT36"            "BRRWT37"           
+    ##  [41] "BRRWT38"            "BRRWT39"            "BRRWT40"            "BRRWT41"           
+    ##  [45] "BRRWT42"            "BRRWT43"            "BRRWT44"            "BRRWT45"           
+    ##  [49] "BRRWT46"            "BRRWT47"            "BRRWT48"            "BRRWT49"           
+    ##  [53] "BRRWT50"            "BRRWT51"            "BRRWT52"            "BRRWT53"           
+    ##  [57] "BRRWT54"            "BRRWT55"            "BRRWT56"            "BRRWT57"           
+    ##  [61] "BRRWT58"            "BRRWT59"            "BRRWT60"            "BRRWT61"           
+    ##  [65] "BRRWT62"            "BRRWT63"            "BRRWT64"            "BRRWT65"           
+    ##  [69] "BRRWT66"            "BRRWT67"            "BRRWT68"            "BRRWT69"           
+    ##  [73] "BRRWT70"            "BRRWT71"            "BRRWT72"            "BRRWT73"           
+    ##  [77] "BRRWT74"            "BRRWT75"            "BRRWT76"            "BRRWT77"           
+    ##  [81] "BRRWT78"            "BRRWT79"            "BRRWT80"            "BRRWT81"           
+    ##  [85] "BRRWT82"            "BRRWT83"            "BRRWT84"            "BRRWT85"           
+    ##  [89] "BRRWT86"            "BRRWT87"            "BRRWT88"            "BRRWT89"           
+    ##  [93] "BRRWT90"            "BRRWT91"            "BRRWT92"            "BRRWT93"           
+    ##  [97] "BRRWT94"            "BRRWT95"            "BRRWT96"            "CDD80"             
     ## [101] "ClimateRegion_IECC" "HDD50"              "GNDHDD65"           "BTUPELLET"
 
 ``` r
 summary(recs_out)
 ```
 
-    ##      DOEID          REGIONC                Region                   Division     STATE_FIPS         state_postal  
-    ##  Min.   :100001   Length:18496       Northeast:3657   South Atlantic    :3256   Length:18496       CA     : 1152  
-    ##  1st Qu.:104625   Class :character   Midwest  :3832   Pacific           :2497   Class :character   TX     : 1016  
-    ##  Median :109249   Mode  :character   South    :6426   East North Central:2014   Mode  :character   NY     :  904  
-    ##  Mean   :109249                      West     :4581   Middle Atlantic   :1977                      FL     :  655  
-    ##  3rd Qu.:113872                                       West South Central:1827                      PA     :  617  
-    ##  Max.   :118496                                       West North Central:1818                      MA     :  552  
-    ##                                                       (Other)           :5107                      (Other):13600  
-    ##          state_name            Urbanicity                      HousingUnitType         YearMade    SpaceHeatingUsed
-    ##  California   : 1152   Urban Area   :12395   Mobile home               :  974   1970-1979  :2817   Mode :logical   
-    ##  Texas        : 1016   Urban Cluster: 2020   Single-family detached    :12319   2000-2009  :2748   FALSE:751       
-    ##  New York     :  904   Rural        : 4081   Single-family attached    : 1751   Before 1950:2721   TRUE :17745     
-    ##  Florida      :  655                         Apartment: 2-4 Units      : 1013   1990-1999  :2451                   
-    ##  Pennsylvania :  617                         Apartment: 5 or more units: 2439   1980-1989  :2435                   
-    ##  Massachusetts:  552                                                            1960-1969  :1867                   
-    ##  (Other)      :13600                                                            (Other)    :3457                   
-    ##                                                                HeatingBehavior WinterTempDay   WinterTempAway 
-    ##  Set one temp and leave it                                             :7806   Min.   :50.00   Min.   :50.00  
-    ##  Manually adjust at night/no one home                                  :4654   1st Qu.:68.00   1st Qu.:65.00  
-    ##  Programmable or smart thermostat automatically adjusts the temperature:3310   Median :70.00   Median :68.00  
-    ##  Turn on or off as needed                                              :1491   Mean   :69.77   Mean   :67.45  
-    ##  No control                                                            : 438   3rd Qu.:72.00   3rd Qu.:70.00  
-    ##  Other                                                                 :  46   Max.   :90.00   Max.   :90.00  
-    ##  NA                                                                    : 751   NA's   :751     NA's   :751    
-    ##  WinterTempNight   ACUsed                                                                         ACBehavior  
-    ##  Min.   :50.00   Mode :logical   Set one temp and leave it                                             :6738  
-    ##  1st Qu.:65.00   FALSE:2325      Manually adjust at night/no one home                                  :3637  
-    ##  Median :68.00   TRUE :16171     Programmable or smart thermostat automatically adjusts the temperature:2638  
-    ##  Mean   :68.01                   Turn on or off as needed                                              :2746  
-    ##  3rd Qu.:70.00                   No control                                                            : 409  
-    ##  Max.   :90.00                   Other                                                                 :   3  
-    ##  NA's   :751                     NA                                                                    :2325  
-    ##  SummerTempDay   SummerTempAway  SummerTempNight    TOTCSQFT        TOTHSQFT       TOTSQFT_EN       NWEIGHT       
-    ##  Min.   :50.00   Min.   :50.00   Min.   :50.00   Min.   :    0   Min.   :    0   Min.   :  200   Min.   :  437.9  
-    ##  1st Qu.:70.00   1st Qu.:70.00   1st Qu.:68.00   1st Qu.:  460   1st Qu.: 1000   1st Qu.: 1100   1st Qu.: 4018.7  
-    ##  Median :72.00   Median :74.00   Median :72.00   Median : 1200   Median : 1520   Median : 1700   Median : 6119.4  
-    ##  Mean   :72.01   Mean   :73.45   Mean   :71.22   Mean   : 1394   Mean   : 1744   Mean   : 1960   Mean   : 6678.7  
-    ##  3rd Qu.:75.00   3rd Qu.:78.00   3rd Qu.:74.00   3rd Qu.: 2000   3rd Qu.: 2300   3rd Qu.: 2510   3rd Qu.: 8890.0  
-    ##  Max.   :90.00   Max.   :90.00   Max.   :90.00   Max.   :14600   Max.   :15000   Max.   :15000   Max.   :29279.1  
-    ##  NA's   :2325    NA's   :2325    NA's   :2325                                                                     
-    ##     NWEIGHT1        NWEIGHT2        NWEIGHT3        NWEIGHT4        NWEIGHT5        NWEIGHT6        NWEIGHT7    
-    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
-    ##  1st Qu.: 3950   1st Qu.: 3951   1st Qu.: 3954   1st Qu.: 3953   1st Qu.: 3957   1st Qu.: 3966   1st Qu.: 3944  
-    ##  Median : 6136   Median : 6151   Median : 6151   Median : 6153   Median : 6134   Median : 6147   Median : 6135  
-    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
-    ##  3rd Qu.: 8976   3rd Qu.: 8979   3rd Qu.: 8994   3rd Qu.: 8998   3rd Qu.: 8987   3rd Qu.: 8984   3rd Qu.: 8998  
-    ##  Max.   :30015   Max.   :29422   Max.   :29431   Max.   :29494   Max.   :30039   Max.   :29419   Max.   :29586  
-    ##                                                                                                                 
-    ##     NWEIGHT8        NWEIGHT9       NWEIGHT10       NWEIGHT11       NWEIGHT12       NWEIGHT13       NWEIGHT14    
-    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
-    ##  1st Qu.: 3956   1st Qu.: 3947   1st Qu.: 3961   1st Qu.: 3950   1st Qu.: 3947   1st Qu.: 3967   1st Qu.: 3962  
-    ##  Median : 6151   Median : 6139   Median : 6163   Median : 6140   Median : 6160   Median : 6142   Median : 6154  
-    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
-    ##  3rd Qu.: 8988   3rd Qu.: 8974   3rd Qu.: 8994   3rd Qu.: 8991   3rd Qu.: 8988   3rd Qu.: 8977   3rd Qu.: 8981  
-    ##  Max.   :29499   Max.   :29845   Max.   :29635   Max.   :29681   Max.   :29849   Max.   :29843   Max.   :30184  
-    ##                                                                                                                 
-    ##    NWEIGHT15       NWEIGHT16       NWEIGHT17       NWEIGHT18       NWEIGHT19       NWEIGHT20       NWEIGHT21    
-    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
-    ##  1st Qu.: 3958   1st Qu.: 3958   1st Qu.: 3958   1st Qu.: 3937   1st Qu.: 3947   1st Qu.: 3943   1st Qu.: 3960  
-    ##  Median : 6145   Median : 6133   Median : 6126   Median : 6155   Median : 6153   Median : 6139   Median : 6135  
-    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
-    ##  3rd Qu.: 8997   3rd Qu.: 8979   3rd Qu.: 8977   3rd Qu.: 8993   3rd Qu.: 8979   3rd Qu.: 8992   3rd Qu.: 8956  
-    ##  Max.   :29970   Max.   :29825   Max.   :30606   Max.   :29689   Max.   :29336   Max.   :30274   Max.   :29766  
-    ##                                                                                                                 
-    ##    NWEIGHT22       NWEIGHT23       NWEIGHT24       NWEIGHT25       NWEIGHT26       NWEIGHT27       NWEIGHT28    
-    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
-    ##  1st Qu.: 3964   1st Qu.: 3943   1st Qu.: 3946   1st Qu.: 3952   1st Qu.: 3966   1st Qu.: 3942   1st Qu.: 3956  
-    ##  Median : 6149   Median : 6148   Median : 6136   Median : 6150   Median : 6136   Median : 6125   Median : 6149  
-    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
-    ##  3rd Qu.: 8988   3rd Qu.: 8980   3rd Qu.: 8978   3rd Qu.: 8972   3rd Qu.: 8980   3rd Qu.: 8996   3rd Qu.: 8989  
-    ##  Max.   :29791   Max.   :30126   Max.   :29946   Max.   :30445   Max.   :29893   Max.   :30030   Max.   :29599  
-    ##                                                                                                                 
-    ##    NWEIGHT29       NWEIGHT30       NWEIGHT31       NWEIGHT32       NWEIGHT33       NWEIGHT34       NWEIGHT35    
-    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
-    ##  1st Qu.: 3970   1st Qu.: 3956   1st Qu.: 3944   1st Qu.: 3954   1st Qu.: 3964   1st Qu.: 3950   1st Qu.: 3967  
-    ##  Median : 6146   Median : 6149   Median : 6144   Median : 6159   Median : 6148   Median : 6139   Median : 6141  
-    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
-    ##  3rd Qu.: 8979   3rd Qu.: 8991   3rd Qu.: 8994   3rd Qu.: 8982   3rd Qu.: 8993   3rd Qu.: 8985   3rd Qu.: 8990  
-    ##  Max.   :30136   Max.   :29895   Max.   :29604   Max.   :29310   Max.   :29408   Max.   :29564   Max.   :30437  
-    ##                                                                                                                 
-    ##    NWEIGHT36       NWEIGHT37       NWEIGHT38       NWEIGHT39       NWEIGHT40       NWEIGHT41       NWEIGHT42    
-    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
-    ##  1st Qu.: 3948   1st Qu.: 3955   1st Qu.: 3954   1st Qu.: 3940   1st Qu.: 3959   1st Qu.: 3975   1st Qu.: 3949  
-    ##  Median : 6149   Median : 6133   Median : 6139   Median : 6147   Median : 6144   Median : 6153   Median : 6137  
-    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
-    ##  3rd Qu.: 8979   3rd Qu.: 8975   3rd Qu.: 8974   3rd Qu.: 8991   3rd Qu.: 8980   3rd Qu.: 8982   3rd Qu.: 8988  
-    ##  Max.   :27896   Max.   :30596   Max.   :30130   Max.   :29262   Max.   :30344   Max.   :29594   Max.   :29938  
-    ##                                                                                                                 
-    ##    NWEIGHT43       NWEIGHT44       NWEIGHT45       NWEIGHT46       NWEIGHT47       NWEIGHT48       NWEIGHT49    
-    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
-    ##  1st Qu.: 3947   1st Qu.: 3956   1st Qu.: 3952   1st Qu.: 3966   1st Qu.: 3938   1st Qu.: 3953   1st Qu.: 3947  
-    ##  Median : 6157   Median : 6148   Median : 6149   Median : 6152   Median : 6150   Median : 6139   Median : 6146  
-    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
-    ##  3rd Qu.: 9005   3rd Qu.: 8986   3rd Qu.: 8992   3rd Qu.: 8959   3rd Qu.: 8991   3rd Qu.: 8991   3rd Qu.: 8990  
-    ##  Max.   :29878   Max.   :29896   Max.   :29729   Max.   :29103   Max.   :30070   Max.   :29343   Max.   :29590  
-    ##                                                                                                                 
-    ##    NWEIGHT50       NWEIGHT51       NWEIGHT52       NWEIGHT53       NWEIGHT54       NWEIGHT55       NWEIGHT56    
-    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
-    ##  1st Qu.: 3948   1st Qu.: 3958   1st Qu.: 3938   1st Qu.: 3959   1st Qu.: 3954   1st Qu.: 3945   1st Qu.: 3957  
-    ##  Median : 6159   Median : 6150   Median : 6154   Median : 6156   Median : 6151   Median : 6143   Median : 6153  
-    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
-    ##  3rd Qu.: 8995   3rd Qu.: 8992   3rd Qu.: 9012   3rd Qu.: 8979   3rd Qu.: 8973   3rd Qu.: 8977   3rd Qu.: 8995  
-    ##  Max.   :30027   Max.   :29247   Max.   :29445   Max.   :30131   Max.   :29439   Max.   :29216   Max.   :29203  
-    ##                                                                                                                 
-    ##    NWEIGHT57       NWEIGHT58       NWEIGHT59       NWEIGHT60        CDD30YR         CDD65         ClimateRegion_BA
-    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :   0   Min.   :   0   Cold       :7116   
-    ##  1st Qu.: 3942   1st Qu.: 3962   1st Qu.: 3965   1st Qu.: 3953   1st Qu.: 601   1st Qu.: 814   Mixed-Humid:5579   
-    ##  Median : 6138   Median : 6137   Median : 6144   Median : 6140   Median :1020   Median :1179   Hot-Humid  :2545   
-    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   :1310   Mean   :1526   Hot-Dry    :1577   
-    ##  3rd Qu.: 9004   3rd Qu.: 8986   3rd Qu.: 8977   3rd Qu.: 8983   3rd Qu.:1703   3rd Qu.:1805   Marine     : 911   
-    ##  Max.   :29819   Max.   :29818   Max.   :29606   Max.   :29818   Max.   :4905   Max.   :5534   Very-Cold  : 572   
-    ##                                                                                                (Other)    : 196   
-    ##     HDD30YR          HDD65           BTUEL             DOLLAREL           BTUNG            DOLLARNG          BTULP       
-    ##  Min.   :    0   Min.   :    0   Min.   :   143.3   Min.   : -889.5   Min.   :      0   Min.   :   0.0   Min.   :     0  
-    ##  1st Qu.: 2898   1st Qu.: 2434   1st Qu.: 20205.8   1st Qu.:  836.5   1st Qu.:      0   1st Qu.:   0.0   1st Qu.:     0  
-    ##  Median : 4825   Median : 4396   Median : 31890.0   Median : 1257.9   Median :  22012   Median : 313.9   Median :     0  
-    ##  Mean   : 4679   Mean   : 4272   Mean   : 37016.2   Mean   : 1424.8   Mean   :  36961   Mean   : 396.0   Mean   :  3917  
-    ##  3rd Qu.: 6290   3rd Qu.: 5810   3rd Qu.: 48298.0   3rd Qu.: 1819.0   3rd Qu.:  62714   3rd Qu.: 644.9   3rd Qu.:     0  
-    ##  Max.   :16071   Max.   :17383   Max.   :628155.5   Max.   :15680.2   Max.   :1134709   Max.   :8155.0   Max.   :364215  
-    ##                                                                                                                          
-    ##     DOLLARLP           BTUFO           DOLLARFO          TOTALBTU          TOTALDOL          BTUWOOD      
-    ##  Min.   :   0.00   Min.   :     0   Min.   :   0.00   Min.   :   1182   Min.   : -150.5   Min.   :     0  
-    ##  1st Qu.:   0.00   1st Qu.:     0   1st Qu.:   0.00   1st Qu.:  45565   1st Qu.: 1258.3   1st Qu.:     0  
-    ##  Median :   0.00   Median :     0   Median :   0.00   Median :  74180   Median : 1793.2   Median :     0  
-    ##  Mean   :  80.89   Mean   :  5109   Mean   :  88.43   Mean   :  83002   Mean   : 1990.2   Mean   :  3596  
-    ##  3rd Qu.:   0.00   3rd Qu.:     0   3rd Qu.:   0.00   3rd Qu.: 108535   3rd Qu.: 2472.0   3rd Qu.:     0  
-    ##  Max.   :6621.44   Max.   :426269   Max.   :7003.69   Max.   :1367548   Max.   :20043.4   Max.   :500000  
+    ##      DOEID          REGIONC                Region                   Division     STATE_FIPS       
+    ##  Min.   :100001   Length:18496       Northeast:3657   South Atlantic    :3256   Length:18496      
+    ##  1st Qu.:104625   Class :character   Midwest  :3832   Pacific           :2497   Class :character  
+    ##  Median :109249   Mode  :character   South    :6426   East North Central:2014   Mode  :character  
+    ##  Mean   :109249                      West     :4581   Middle Atlantic   :1977                     
+    ##  3rd Qu.:113872                                       West South Central:1827                     
+    ##  Max.   :118496                                       West North Central:1818                     
+    ##                                                       (Other)           :5107                     
+    ##   state_postal           state_name            Urbanicity                      HousingUnitType 
+    ##  CA     : 1152   California   : 1152   Urban Area   :12395   Mobile home               :  974  
+    ##  TX     : 1016   Texas        : 1016   Urban Cluster: 2020   Single-family detached    :12319  
+    ##  NY     :  904   New York     :  904   Rural        : 4081   Single-family attached    : 1751  
+    ##  FL     :  655   Florida      :  655                         Apartment: 2-4 Units      : 1013  
+    ##  PA     :  617   Pennsylvania :  617                         Apartment: 5 or more units: 2439  
+    ##  MA     :  552   Massachusetts:  552                                                           
+    ##  (Other):13600   (Other)      :13600                                                           
+    ##         YearMade    SpaceHeatingUsed
+    ##  1970-1979  :2817   Mode :logical   
+    ##  2000-2009  :2748   FALSE:751       
+    ##  Before 1950:2721   TRUE :17745     
+    ##  1990-1999  :2451                   
+    ##  1980-1989  :2435                   
+    ##  1960-1969  :1867                   
+    ##  (Other)    :3457                   
+    ##                                                                HeatingBehavior WinterTempDay  
+    ##  Set one temp and leave it                                             :7806   Min.   :50.00  
+    ##  Manually adjust at night/no one home                                  :4654   1st Qu.:68.00  
+    ##  Programmable or smart thermostat automatically adjusts the temperature:3310   Median :70.00  
+    ##  Turn on or off as needed                                              :1491   Mean   :69.77  
+    ##  No control                                                            : 438   3rd Qu.:72.00  
+    ##  Other                                                                 :  46   Max.   :90.00  
+    ##  NA                                                                    : 751   NA's   :751    
+    ##  WinterTempAway  WinterTempNight   ACUsed       
+    ##  Min.   :50.00   Min.   :50.00   Mode :logical  
+    ##  1st Qu.:65.00   1st Qu.:65.00   FALSE:2325     
+    ##  Median :68.00   Median :68.00   TRUE :16171    
+    ##  Mean   :67.45   Mean   :68.01                  
+    ##  3rd Qu.:70.00   3rd Qu.:70.00                  
+    ##  Max.   :90.00   Max.   :90.00                  
+    ##  NA's   :751     NA's   :751                    
+    ##                                                                   ACBehavior   SummerTempDay  
+    ##  Set one temp and leave it                                             :6738   Min.   :50.00  
+    ##  Manually adjust at night/no one home                                  :3637   1st Qu.:70.00  
+    ##  Programmable or smart thermostat automatically adjusts the temperature:2638   Median :72.00  
+    ##  Turn on or off as needed                                              :2746   Mean   :72.01  
+    ##  No control                                                            : 409   3rd Qu.:75.00  
+    ##  Other                                                                 :   3   Max.   :90.00  
+    ##  NA                                                                    :2325   NA's   :2325   
+    ##  SummerTempAway  SummerTempNight    TOTCSQFT        TOTHSQFT       TOTSQFT_EN       NWEIGHT       
+    ##  Min.   :50.00   Min.   :50.00   Min.   :    0   Min.   :    0   Min.   :  200   Min.   :  437.9  
+    ##  1st Qu.:70.00   1st Qu.:68.00   1st Qu.:  460   1st Qu.: 1000   1st Qu.: 1100   1st Qu.: 4018.7  
+    ##  Median :74.00   Median :72.00   Median : 1200   Median : 1520   Median : 1700   Median : 6119.4  
+    ##  Mean   :73.45   Mean   :71.22   Mean   : 1394   Mean   : 1744   Mean   : 1960   Mean   : 6678.7  
+    ##  3rd Qu.:78.00   3rd Qu.:74.00   3rd Qu.: 2000   3rd Qu.: 2300   3rd Qu.: 2510   3rd Qu.: 8890.0  
+    ##  Max.   :90.00   Max.   :90.00   Max.   :14600   Max.   :15000   Max.   :15000   Max.   :29279.1  
+    ##  NA's   :2325    NA's   :2325                                                                     
+    ##     NWEIGHT1        NWEIGHT2        NWEIGHT3        NWEIGHT4        NWEIGHT5        NWEIGHT6    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3950   1st Qu.: 3951   1st Qu.: 3954   1st Qu.: 3953   1st Qu.: 3957   1st Qu.: 3966  
+    ##  Median : 6136   Median : 6151   Median : 6151   Median : 6153   Median : 6134   Median : 6147  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8976   3rd Qu.: 8979   3rd Qu.: 8994   3rd Qu.: 8998   3rd Qu.: 8987   3rd Qu.: 8984  
+    ##  Max.   :30015   Max.   :29422   Max.   :29431   Max.   :29494   Max.   :30039   Max.   :29419  
+    ##                                                                                                 
+    ##     NWEIGHT7        NWEIGHT8        NWEIGHT9       NWEIGHT10       NWEIGHT11       NWEIGHT12    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3944   1st Qu.: 3956   1st Qu.: 3947   1st Qu.: 3961   1st Qu.: 3950   1st Qu.: 3947  
+    ##  Median : 6135   Median : 6151   Median : 6139   Median : 6163   Median : 6140   Median : 6160  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8998   3rd Qu.: 8988   3rd Qu.: 8974   3rd Qu.: 8994   3rd Qu.: 8991   3rd Qu.: 8988  
+    ##  Max.   :29586   Max.   :29499   Max.   :29845   Max.   :29635   Max.   :29681   Max.   :29849  
+    ##                                                                                                 
+    ##    NWEIGHT13       NWEIGHT14       NWEIGHT15       NWEIGHT16       NWEIGHT17       NWEIGHT18    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3967   1st Qu.: 3962   1st Qu.: 3958   1st Qu.: 3958   1st Qu.: 3958   1st Qu.: 3937  
+    ##  Median : 6142   Median : 6154   Median : 6145   Median : 6133   Median : 6126   Median : 6155  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8977   3rd Qu.: 8981   3rd Qu.: 8997   3rd Qu.: 8979   3rd Qu.: 8977   3rd Qu.: 8993  
+    ##  Max.   :29843   Max.   :30184   Max.   :29970   Max.   :29825   Max.   :30606   Max.   :29689  
+    ##                                                                                                 
+    ##    NWEIGHT19       NWEIGHT20       NWEIGHT21       NWEIGHT22       NWEIGHT23       NWEIGHT24    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3947   1st Qu.: 3943   1st Qu.: 3960   1st Qu.: 3964   1st Qu.: 3943   1st Qu.: 3946  
+    ##  Median : 6153   Median : 6139   Median : 6135   Median : 6149   Median : 6148   Median : 6136  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8979   3rd Qu.: 8992   3rd Qu.: 8956   3rd Qu.: 8988   3rd Qu.: 8980   3rd Qu.: 8978  
+    ##  Max.   :29336   Max.   :30274   Max.   :29766   Max.   :29791   Max.   :30126   Max.   :29946  
+    ##                                                                                                 
+    ##    NWEIGHT25       NWEIGHT26       NWEIGHT27       NWEIGHT28       NWEIGHT29       NWEIGHT30    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3952   1st Qu.: 3966   1st Qu.: 3942   1st Qu.: 3956   1st Qu.: 3970   1st Qu.: 3956  
+    ##  Median : 6150   Median : 6136   Median : 6125   Median : 6149   Median : 6146   Median : 6149  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8972   3rd Qu.: 8980   3rd Qu.: 8996   3rd Qu.: 8989   3rd Qu.: 8979   3rd Qu.: 8991  
+    ##  Max.   :30445   Max.   :29893   Max.   :30030   Max.   :29599   Max.   :30136   Max.   :29895  
+    ##                                                                                                 
+    ##    NWEIGHT31       NWEIGHT32       NWEIGHT33       NWEIGHT34       NWEIGHT35       NWEIGHT36    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3944   1st Qu.: 3954   1st Qu.: 3964   1st Qu.: 3950   1st Qu.: 3967   1st Qu.: 3948  
+    ##  Median : 6144   Median : 6159   Median : 6148   Median : 6139   Median : 6141   Median : 6149  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8994   3rd Qu.: 8982   3rd Qu.: 8993   3rd Qu.: 8985   3rd Qu.: 8990   3rd Qu.: 8979  
+    ##  Max.   :29604   Max.   :29310   Max.   :29408   Max.   :29564   Max.   :30437   Max.   :27896  
+    ##                                                                                                 
+    ##    NWEIGHT37       NWEIGHT38       NWEIGHT39       NWEIGHT40       NWEIGHT41       NWEIGHT42    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3955   1st Qu.: 3954   1st Qu.: 3940   1st Qu.: 3959   1st Qu.: 3975   1st Qu.: 3949  
+    ##  Median : 6133   Median : 6139   Median : 6147   Median : 6144   Median : 6153   Median : 6137  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8975   3rd Qu.: 8974   3rd Qu.: 8991   3rd Qu.: 8980   3rd Qu.: 8982   3rd Qu.: 8988  
+    ##  Max.   :30596   Max.   :30130   Max.   :29262   Max.   :30344   Max.   :29594   Max.   :29938  
+    ##                                                                                                 
+    ##    NWEIGHT43       NWEIGHT44       NWEIGHT45       NWEIGHT46       NWEIGHT47       NWEIGHT48    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3947   1st Qu.: 3956   1st Qu.: 3952   1st Qu.: 3966   1st Qu.: 3938   1st Qu.: 3953  
+    ##  Median : 6157   Median : 6148   Median : 6149   Median : 6152   Median : 6150   Median : 6139  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 9005   3rd Qu.: 8986   3rd Qu.: 8992   3rd Qu.: 8959   3rd Qu.: 8991   3rd Qu.: 8991  
+    ##  Max.   :29878   Max.   :29896   Max.   :29729   Max.   :29103   Max.   :30070   Max.   :29343  
+    ##                                                                                                 
+    ##    NWEIGHT49       NWEIGHT50       NWEIGHT51       NWEIGHT52       NWEIGHT53       NWEIGHT54    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3947   1st Qu.: 3948   1st Qu.: 3958   1st Qu.: 3938   1st Qu.: 3959   1st Qu.: 3954  
+    ##  Median : 6146   Median : 6159   Median : 6150   Median : 6154   Median : 6156   Median : 6151  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8990   3rd Qu.: 8995   3rd Qu.: 8992   3rd Qu.: 9012   3rd Qu.: 8979   3rd Qu.: 8973  
+    ##  Max.   :29590   Max.   :30027   Max.   :29247   Max.   :29445   Max.   :30131   Max.   :29439  
+    ##                                                                                                 
+    ##    NWEIGHT55       NWEIGHT56       NWEIGHT57       NWEIGHT58       NWEIGHT59       NWEIGHT60    
+    ##  Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0   Min.   :    0  
+    ##  1st Qu.: 3945   1st Qu.: 3957   1st Qu.: 3942   1st Qu.: 3962   1st Qu.: 3965   1st Qu.: 3953  
+    ##  Median : 6143   Median : 6153   Median : 6138   Median : 6137   Median : 6144   Median : 6140  
+    ##  Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679   Mean   : 6679  
+    ##  3rd Qu.: 8977   3rd Qu.: 8995   3rd Qu.: 9004   3rd Qu.: 8986   3rd Qu.: 8977   3rd Qu.: 8983  
+    ##  Max.   :29216   Max.   :29203   Max.   :29819   Max.   :29818   Max.   :29606   Max.   :29818  
+    ##                                                                                                 
+    ##     CDD30YR         CDD65         ClimateRegion_BA    HDD30YR          HDD65           BTUEL         
+    ##  Min.   :   0   Min.   :   0   Cold       :7116    Min.   :    0   Min.   :    0   Min.   :   143.3  
+    ##  1st Qu.: 601   1st Qu.: 814   Mixed-Humid:5579    1st Qu.: 2898   1st Qu.: 2434   1st Qu.: 20205.8  
+    ##  Median :1020   Median :1179   Hot-Humid  :2545    Median : 4825   Median : 4396   Median : 31890.0  
+    ##  Mean   :1310   Mean   :1526   Hot-Dry    :1577    Mean   : 4679   Mean   : 4272   Mean   : 37016.2  
+    ##  3rd Qu.:1703   3rd Qu.:1805   Marine     : 911    3rd Qu.: 6290   3rd Qu.: 5810   3rd Qu.: 48298.0  
+    ##  Max.   :4905   Max.   :5534   Very-Cold  : 572    Max.   :16071   Max.   :17383   Max.   :628155.5  
+    ##                                (Other)    : 196                                                      
+    ##     DOLLAREL           BTUNG            DOLLARNG          BTULP           DOLLARLP      
+    ##  Min.   : -889.5   Min.   :      0   Min.   :   0.0   Min.   :     0   Min.   :   0.00  
+    ##  1st Qu.:  836.5   1st Qu.:      0   1st Qu.:   0.0   1st Qu.:     0   1st Qu.:   0.00  
+    ##  Median : 1257.9   Median :  22012   Median : 313.9   Median :     0   Median :   0.00  
+    ##  Mean   : 1424.8   Mean   :  36961   Mean   : 396.0   Mean   :  3917   Mean   :  80.89  
+    ##  3rd Qu.: 1819.0   3rd Qu.:  62714   3rd Qu.: 644.9   3rd Qu.:     0   3rd Qu.:   0.00  
+    ##  Max.   :15680.2   Max.   :1134709   Max.   :8155.0   Max.   :364215   Max.   :6621.44  
+    ##                                                                                         
+    ##      BTUFO           DOLLARFO          TOTALBTU          TOTALDOL          BTUWOOD      
+    ##  Min.   :     0   Min.   :   0.00   Min.   :   1182   Min.   : -150.5   Min.   :     0  
+    ##  1st Qu.:     0   1st Qu.:   0.00   1st Qu.:  45565   1st Qu.: 1258.3   1st Qu.:     0  
+    ##  Median :     0   Median :   0.00   Median :  74180   Median : 1793.2   Median :     0  
+    ##  Mean   :  5109   Mean   :  88.43   Mean   :  83002   Mean   : 1990.2   Mean   :  3596  
+    ##  3rd Qu.:     0   3rd Qu.:   0.00   3rd Qu.: 108535   3rd Qu.: 2472.0   3rd Qu.:     0  
+    ##  Max.   :426269   Max.   :7003.69   Max.   :1367548   Max.   :20043.4   Max.   :500000  
     ## 
 
 ``` r
@@ -568,7 +610,7 @@ nrow(recs_out)
     ## [1] 18496
 
 ``` r
-recs_der_tmp_loc <- here("osf_dl", "recs_2020.rds")
+recs_der_tmp_loc <- here::here("osf_dl", "recs_2020.rds")
 write_rds(recs_out, recs_der_tmp_loc)
 target_dir <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") 
 osf_upload(target_dir, path=recs_der_tmp_loc, conflicts="overwrite")
