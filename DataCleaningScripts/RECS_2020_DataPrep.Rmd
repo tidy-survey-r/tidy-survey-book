@@ -181,12 +181,16 @@ for (var in colnames(recs_out)) {
 
 cb_in <- readxl::read_xlsx(here::here("DataCleaningScripts", "RECS 2020 Codebook Questions.xlsx"), skip=1)
 
-cb_ord <- cb_in %>% mutate(Order=row_number())
+cb_ord <- cb_in %>% 
+  mutate(
+    Order=row_number(),
+    Section=if_else(Section=="End-use Model", "CONSUMPTION AND EXPENDITURE", Section),
+    Section=fct_reorder(Section, Order, min)) 
 
 cb_slim <- cb_ord %>% select(Variable=BookDerived, `Description and Labels`, Question, Section, Order) %>%
   filter(!is.na(Variable)) %>%
   bind_rows(select(cb_ord, Variable, `Description and Labels`, Question, Section, Order)) %>%
-  arrange(Order)
+  arrange(Section, Order)
 
 names(recs_out)[!(names(recs_out) %in% pull(cb_slim, Variable))]
 
@@ -198,10 +202,10 @@ ncol(recs_out)
 
 recs_ord <- recs_out %>% select(all_of(pull(cb_vars, Variable)))
 
-
 for (var in pull(cb_vars, Variable)) {
   vi <- cb_vars %>% filter(Variable==var)
   attr(recs_ord[[deparse(as.name(var))]], "label") <- pull(vi, `Description and Labels`)
+  attr(recs_ord[[deparse(as.name(var))]], "Section") <- pull(vi, Section) %>% as.character()
   if (!is.na(pull(vi, Question))) attr(recs_ord[[deparse(as.name(var))]], "Question") <- pull(vi, Question)
 }
 
