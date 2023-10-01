@@ -21,11 +21,7 @@ recs_file_osf_det <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
   osf_ls_files(path="RECS_2020", pattern="sas7bdat") %>%
   filter(str_detect(name, "v5")) %>%
   osf_download(conflicts="overwrite", path=here::here("osf_dl"))
-```
 
-    ## filter: no rows removed
-
-``` r
 recs_in <- haven::read_sas(pull(recs_file_osf_det, local_path))
 
 unlink(pull(recs_file_osf_det, local_path))
@@ -118,51 +114,11 @@ recs <- recs_in %>%
     )
 ```
 
-    ## select: renamed 3 variables (CDD30YR, HDD30YR, BTUWOOD) and dropped 689 variables
-
-    ## mutate: converted 'state_postal' from character to factor (0 new NA)
-
-    ##         converted 'state_name' from character to factor (0 new NA)
-
-    ##         new variable 'Region' (factor) with 4 unique values and 0% NA
-
-    ##         new variable 'Division' (factor) with 10 unique values and 0% NA
-
-    ##         new variable 'Urbanicity' (factor) with 3 unique values and 0% NA
-
-    ##         new variable 'HousingUnitType' (factor) with 5 unique values and 0% NA
-
-    ##         new variable 'YearMade' (ordered factor) with 9 unique values and 0% NA
-
-    ##         new variable 'SpaceHeatingUsed' (logical) with 2 unique values and 0% NA
-
-    ##         new variable 'HeatingBehavior' (factor) with 7 unique values and 0% NA
-
-    ##         new variable 'WinterTempDay' (double) with 38 unique values and 4% NA
-
-    ##         new variable 'WinterTempAway' (double) with 40 unique values and 4% NA
-
-    ##         new variable 'WinterTempNight' (double) with 42 unique values and 4% NA
-
-    ##         new variable 'ACUsed' (logical) with 2 unique values and 0% NA
-
-    ##         new variable 'ACBehavior' (factor) with 7 unique values and 0% NA
-
-    ##         new variable 'SummerTempDay' (double) with 42 unique values and 13% NA
-
-    ##         new variable 'SummerTempAway' (double) with 41 unique values and 13% NA
-
-    ##         new variable 'SummerTempNight' (double) with 40 unique values and 13% NA
-
-    ##         new variable 'ClimateRegion_BA' (factor) with 8 unique values and 0% NA
-
 ## Check derived variables for correct coding
 
 ``` r
 recs %>% count(Region, REGIONC)
 ```
-
-    ## count: now 4 rows and 3 columns, ungrouped
 
     ## # A tibble: 4 × 3
     ##   Region    REGIONC       n
@@ -175,8 +131,6 @@ recs %>% count(Region, REGIONC)
 ``` r
 recs %>% count(Division, DIVISION)
 ```
-
-    ## count: now 10 rows and 3 columns, ungrouped
 
     ## # A tibble: 10 × 3
     ##    Division           DIVISION               n
@@ -196,8 +150,6 @@ recs %>% count(Division, DIVISION)
 recs %>% count(Urbanicity, UATYP10)
 ```
 
-    ## count: now 3 rows and 3 columns, ungrouped
-
     ## # A tibble: 3 × 3
     ##   Urbanicity    UATYP10     n
     ##   <fct>         <chr>   <int>
@@ -208,8 +160,6 @@ recs %>% count(Urbanicity, UATYP10)
 ``` r
 recs %>% count(HousingUnitType, TYPEHUQ)
 ```
-
-    ## count: now 5 rows and 3 columns, ungrouped
 
     ## # A tibble: 5 × 3
     ##   HousingUnitType            TYPEHUQ     n
@@ -223,8 +173,6 @@ recs %>% count(HousingUnitType, TYPEHUQ)
 ``` r
 recs %>% count(YearMade, YEARMADERANGE)
 ```
-
-    ## count: now 9 rows and 3 columns, ungrouped
 
     ## # A tibble: 9 × 3
     ##   YearMade    YEARMADERANGE     n
@@ -243,8 +191,6 @@ recs %>% count(YearMade, YEARMADERANGE)
 recs %>% count(SpaceHeatingUsed, HEATHOME)
 ```
 
-    ## count: now 2 rows and 3 columns, ungrouped
-
     ## # A tibble: 2 × 3
     ##   SpaceHeatingUsed HEATHOME     n
     ##   <lgl>               <dbl> <int>
@@ -254,8 +200,6 @@ recs %>% count(SpaceHeatingUsed, HEATHOME)
 ``` r
 recs %>% count(HeatingBehavior, HEATCNTL)
 ```
-
-    ## count: now 7 rows and 3 columns, ungrouped
 
     ## # A tibble: 7 × 3
     ##   HeatingBehavior                                                        HEATCNTL     n
@@ -272,8 +216,6 @@ recs %>% count(HeatingBehavior, HEATCNTL)
 recs %>% count(ACUsed, AIRCOND)
 ```
 
-    ## count: now 2 rows and 3 columns, ungrouped
-
     ## # A tibble: 2 × 3
     ##   ACUsed AIRCOND     n
     ##   <lgl>    <dbl> <int>
@@ -283,8 +225,6 @@ recs %>% count(ACUsed, AIRCOND)
 ``` r
 recs %>% count(ACBehavior, COOLCNTL)
 ```
-
-    ## count: now 7 rows and 3 columns, ungrouped
 
     ## # A tibble: 7 × 3
     ##   ACBehavior                                                             COOLCNTL     n
@@ -301,8 +241,6 @@ recs %>% count(ACBehavior, COOLCNTL)
 recs %>% count(ClimateRegion_BA, BA_climate)
 ```
 
-    ## count: now 8 rows and 3 columns, ungrouped
-
     ## # A tibble: 8 × 3
     ##   ClimateRegion_BA BA_climate      n
     ##   <fct>            <chr>       <int>
@@ -318,8 +256,6 @@ recs %>% count(ClimateRegion_BA, BA_climate)
 ``` r
 recs %>% count(state_postal, state_name, STATE_FIPS) %>% print(n=51)
 ```
-
-    ## count: now 51 rows and 4 columns, ungrouped
 
     ## # A tibble: 51 × 4
     ##    state_postal state_name           STATE_FIPS     n
@@ -390,11 +326,10 @@ recs_out <- recs %>%
          HDD30YR, HDD65, BTUEL, 
          DOLLAREL, BTUNG, DOLLARNG, BTULP, DOLLARLP, BTUFO, DOLLARFO, 
          TOTALBTU, TOTALDOL, BTUWOOD)
-```
 
-    ## select: dropped 16 variables (DIVISION, UATYP10, TYPEHUQ, YEARMADERANGE, HEATHOME, …)
 
-``` r
+
+
 source(here::here("helper-fun", "helper-function.R"))
 
 recs_2015 <- read_osf("recs_2015.rds")
@@ -442,26 +377,12 @@ cb_ord <- cb_in %>%
     Order=row_number(),
     Section=if_else(Section=="End-use Model", "CONSUMPTION AND EXPENDITURE", Section),
     Section=fct_reorder(Section, Order, min)) 
-```
 
-    ## mutate: converted 'Section' from character to factor (0 new NA)
-
-    ##         new variable 'Order' (integer) with 789 unique values and 0% NA
-
-``` r
 cb_slim <- cb_ord %>% select(Variable=BookDerived, `Description and Labels`, Question, Section, Order) %>%
   filter(!is.na(Variable)) %>%
   bind_rows(select(cb_ord, Variable, `Description and Labels`, Question, Section, Order)) %>%
   arrange(Section, Order)
-```
 
-    ## select: dropped 3 variables (Type, Response Codes, BookDerived)
-
-    ## filter: removed 770 rows (98%), 19 rows remaining
-
-    ## select: dropped 3 variables (Type, Response Codes, BookDerived)
-
-``` r
 names(recs_out)[!(names(recs_out) %in% pull(cb_slim, Variable))]
 ```
 
@@ -470,11 +391,7 @@ names(recs_out)[!(names(recs_out) %in% pull(cb_slim, Variable))]
 ``` r
 cb_vars <- cb_slim %>%
   filter(Variable %in% c(names(recs_out)))
-```
 
-    ## filter: removed 708 rows (88%), 100 rows remaining
-
-``` r
 nrow(cb_vars)
 ```
 
@@ -488,11 +405,7 @@ ncol(recs_out)
 
 ``` r
 recs_ord <- recs_out %>% select(all_of(pull(cb_vars, Variable)))
-```
 
-    ## select: columns reordered (DOEID, ClimateRegion_BA, Urbanicity, Region, REGIONC, …)
-
-``` r
 for (var in pull(cb_vars, Variable)) {
   vi <- cb_vars %>% filter(Variable==var)
   attr(recs_ord[[deparse(as.name(var))]], "label") <- pull(vi, `Description and Labels`)
@@ -500,108 +413,6 @@ for (var in pull(cb_vars, Variable)) {
   if (!is.na(pull(vi, Question))) attr(recs_ord[[deparse(as.name(var))]], "Question") <- pull(vi, Question)
 }
 ```
-
-    ## filter: removed 99 rows (99%), one row remaining
-
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
-    ## filter: removed 99 rows (99%), one row remaining
 
 ``` r
 summary(recs_ord)
@@ -780,6 +591,7 @@ str(recs_ord)
     ##  $ ACUsed          : logi [1:18496] TRUE TRUE TRUE TRUE TRUE TRUE ...
     ##   ..- attr(*, "label")= chr "Air conditioning equipment used"
     ##   ..- attr(*, "Section")= chr "AIR CONDITIONING"
+    ##   ..- attr(*, "Question")= chr "Is any air conditioning equipment used in your home?"
     ##  $ HeatingBehavior : Factor w/ 7 levels "Set one temp and leave it",..: 1 4 1 1 1 3 2 2 1 2 ...
     ##   ..- attr(*, "label")= chr "Winter temperature control method"
     ##   ..- attr(*, "Section")= chr "THERMOSTAT"
