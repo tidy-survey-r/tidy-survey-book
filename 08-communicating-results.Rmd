@@ -119,7 +119,7 @@ The native output that R produces may work for initial viewing inside RStudio or
 
 Looking at the output from `trust_gov`, there are a couple of items that are probably obvious to fix: (1) use percentages instead of proportions and (2) the variable names as the column headers. The {gt} package is a good tool for implementing better labeling and creating publishable tables. Let's walk through some code as we implement a few changes to improve the table's usefulness. 
 
-We begin with the `gt()` function to initiate the table and use the argument `rowname_col` to make the `TrustGovernment` column the labels for each row (called the table "stub"). The `cols_label()` function is used to create informative column labels instead of variable names, and the `tab_spanner()` function is applied to add a label across multiple columns. In this case, we apply the label "Trust in Government, 2020" across all the columns except the stub. Finally, the `fmt_percent()` function is used to format the proportions into percentages and reduce the number of decimals shown. Note, the `tab_caption()` function is used to add a table title for the book and allows for cross-referencing in R Markdown Quarto and bookdown, as well as adding it to the list of tables in the book.
+We begin with the `gt()` function to initiate the table and use the argument `rowname_col` to make the `TrustGovernment` column the labels for each row (called the table "stub"). The `cols_label()` function is used to create informative column labels instead of variable names, and the `tab_spanner()` function is applied to add a label across multiple columns. In this case, we apply the label "Trust in Government, 2020" across all the columns except the stub. Finally, the `fmt_percent()` function is used to format the proportions into percentages and reduce the number of decimals shown. Note, the `tab_caption()` function is used to add a table title for the book in HTML and allows for cross-referencing in R Markdown Quarto and bookdown, as well as adding it to the list of tables in the book.
 
 ```{r}
 #| label: results-table-gt1
@@ -131,16 +131,27 @@ trust_gov_gt <-
   tab_spanner(label = "Trust in Government, 2020",
               columns = c(trust_gov_p, trust_gov_p_se)) %>%
   fmt_percent(decimals = 1) %>%
-  tab_caption("Example of gt table with trust in government estimates.")
+  tab_caption("Example of gt table with trust in government estimates")
+```
 
-trust_gov_gt
+```{r}
+#| label: results-table-gt1-out
+#| echo: FALSE
+#| warning: FALSE
+if (knitr::is_latex_output()) {
+  trust_gov_gt %>%
+    as_latex_with_caption("Example of gt table with trust in government estimates")
+}
+if (knitr::is_html_output()) {
+  trust_gov_gt
+}
 ```
 
 A few more things we can add are a title, a data source note, and a footnote with the question information using the functions `tab_header()`, `tab_source_note()`, and `tab_footnote()`.
 
 ```{r}
 #| label: results-table-gt2
-trust_gov_gt %>%
+trust_gov_gt2<-trust_gov_gt %>%
   tab_header("American voter's trust 
              in the federal government, 2020") %>%
   tab_source_note("American National Election Studies, 2020") %>%
@@ -149,9 +160,23 @@ trust_gov_gt %>%
     in Washington to do what is right?"
   ) %>%
   tab_caption("Example of gt table with trust
-              in government estimates with additional context.")
+              in government estimates with additional context")
 ```
-
+<!--
+```{r}
+#| label: results-table-gt2-out
+#| echo: FALSE
+#| warning: FALSE
+if (knitr::is_latex_output()) {
+  trust_gov_gt2 %>%
+    as_latex_with_caption("Example of gt table with trust
+              in government estimates with additional context")
+}
+if (knitr::is_html_output()) {
+  trust_gov_gt2
+}
+```
+-->
 #### Expanding Tables using {gtsummary}
 
 The {gtsummary} package simultaneously summarizes data and creates publication-ready tables. Its origins are in clinical trial data but it has been extended to include survey analysis in some limited ways. At this time, it only works with survey objects using Taylor's Series Linearization and not replicate methods. A limited set of summary statistics are available. For categorical variables, the following summary statistics are available:
@@ -182,19 +207,33 @@ In the following example, we will build up a table using {gtsummary}, which will
 
 ```{r}
 #| label: results-gts-ex-1
-anes_des %>%
+anes_des_gtsum<-anes_des %>%
   tbl_svysummary(include = TrustGovernment,
                  statistic = list(all_categorical() ~ "{p} ({p.std.error})")) %>%
   as_gt() %>%
   tab_caption("Example of gtsummary table with trust 
-              in government estimates.")
+              in government estimates")
 ```
-
+<!--
+```{r}
+#| label: results-gts-ex-1-out
+#| echo: FALSE
+#| warning: FALSE
+if (knitr::is_latex_output()) {
+  anes_des_gtsum %>%
+    as_latex_with_caption("Example of gtsummary table with trust 
+              in government estimates")
+}
+if (knitr::is_html_output()) {
+  anes_des_gtsum
+}
+```
+-->
 In this default table, the weighted number of missing (or Unknown) records is included. Additionally, the standard error is reported as a proportion while the proportion is styled as a percentage. In the next step, we remove the Unknown category by setting the missing argument to "no" and format the standard error as a percentage within the digits argument. Finally, we label the "TrustGovernment" variable to something more publication-ready using the label argument.
 
 ```{r}
 #| label: results-gts-ex-2
-anes_des %>%
+anes_des_gtsum2<-anes_des %>%
   tbl_svysummary(
     include = TrustGovernment,
     statistic = list(all_categorical() ~ "{p} ({p.std.error})"),
@@ -205,15 +244,30 @@ anes_des %>%
   as_gt() %>%
   tab_caption(
     "Example of gtsummary table with trust 
-    in government estimates with labeling and digits options."
+    in government estimates with labeling and digits options"
   )
 ```
 
+<!--
+```{r}
+#| label: results-gts-ex-2-out
+#| echo: FALSE
+#| warning: FALSE
+if (knitr::is_latex_output()) {
+  anes_des_gtsum2 %>%
+    as_latex_with_caption("Example of gtsummary table with trust 
+    in government estimates with labeling and digits options")
+}
+if (knitr::is_html_output()) {
+  anes_des_gtsum2
+}
+```
+-->
 To remove the phrase "Characteristic" and the estimated population size, we can modify the header using the function `modify_header()` to update the label and stat_0. To add footnotes and a title, we do this after converting the object to a gt table using `as_gt()` and can use the same functions we did in Section \@ref(results-gt)
 
 ```{r}
 #| label: results-gts-ex-3
-anes_des %>%
+anes_des_gtsum3<-anes_des %>%
   tbl_svysummary(
     include = TrustGovernment,
     statistic = list(all_categorical() ~ "{p} ({p.std.error})"),
@@ -236,16 +290,31 @@ anes_des %>%
   tab_caption(
     "Example of gtsummary table with trust 
     in government estimates with more 
-    labeling options and context."
+    labeling options and context"
   )
 ```
-
+<!--
+```{r}
+#| label: results-gts-ex-3-out
+#| echo: FALSE
+#| warning: FALSE
+if (knitr::is_latex_output()) {
+  anes_des_gtsum3 %>%
+    as_latex_with_caption("Example of gtsummary table with trust 
+    in government estimates with more 
+    labeling options and context")
+}
+if (knitr::is_html_output()) {
+  anes_des_gtsum3
+}
+```
+-->
 Continuous variables can also be added, and we add a summary of the age variable to the table below by updating the include, statistic, and digits argument. Adding on additional variables is a large benefit to the {gtsummary} package.
 
 ```{r}
 #| label: results-gts-ex-4
 #| tidy: FALSE
-anes_des %>%
+anes_des_gtsum4<-anes_des %>%
   tbl_svysummary(
     include = c(TrustGovernment, Age),
     statistic = list(
@@ -266,17 +335,30 @@ anes_des %>%
     "Question text: How often can you trust the federal government
     in Washington to do what is right?"
   ) %>%
-  tab_caption("Example of gtsummary table with trust in government estimates and average age.")
+  tab_caption("Example of gtsummary table with trust in government 
+              estimates and average age")
 ```
-
-The {
-gtsummary
-} also allows calculating statistics by different groups  easily. Let's adapt the prior example to perform analysis by whether the person voted for president in 2020. The argument for by is updated and the header names are updated. Finally, we update the header.
+<!--
+```{r}
+#| label: results-gts-ex-4-out
+#| echo: FALSE
+#| warning: FALSE
+if (knitr::is_latex_output()) {
+  anes_des_gtsum4 %>%
+    as_latex_with_caption("Example of gtsummary table with trust in 
+                          government estimates and average age")
+}
+if (knitr::is_html_output()) {
+  anes_des_gtsum4
+}
+```
+-->
+The {gtsummary} also allows calculating statistics by different groups  easily. Let's adapt the prior example to perform analysis by whether the person voted for president in 2020. The argument for by is updated and the header names are updated. Finally, we update the header.
 
 ```{r}
 #| label: results-gts-ex-5
 #| messages: FALSE
-anes_des %>%
+anes_des_gtsum5<-anes_des %>%
   drop_na(VotedPres2020) %>%
   tbl_svysummary(
     include=TrustGovernment,
@@ -299,9 +381,23 @@ anes_des %>%
   tab_footnote("Question text: How often can you trust the federal government 
                in Washington to do what is right?") %>%
   tab_caption("Example of gtsummary table with trust 
-              in government estimates by voting status.")
+              in government estimates by voting status")
 ```
-
+<!--
+```{r}
+#| label: results-gts-ex-5-out
+#| echo: FALSE
+#| warning: FALSE
+if (knitr::is_latex_output()) {
+  anes_des_gtsum5 %>%
+    as_latex_with_caption("Example of gtsummary table with trust 
+              in government estimates by voting status")
+}
+if (knitr::is_html_output()) {
+  anes_des_gtsum5
+}
+```
+-->
 ### Charts and Plots
 
 Survey analysis can result in an abundance of printed summary statistics and models. Even with the best analysis, the results can be overwhelming and difficult to comprehend. This is where charts and plots play a key role in our work. By transforming complex data into a visual representation, we can recognize patterns, relationships, and trends with greater ease.

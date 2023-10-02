@@ -28,3 +28,14 @@ read_osf <- function(filename){
   
   return(out)
 }
+
+as_latex_with_caption <- function(gt, chunk_label) {
+  gt <- gt::as_latex(gt)
+  caption <- paste0(
+    "\\caption{\\label{tab:", chunk_label, "}", chunk_label, "}\\\\")
+  latex <- strsplit(gt[1], split = "\n")[[1]]
+  latex <- c(latex[1], caption, latex[-1])
+  latex <- paste(latex, collapse = "\n")
+  gt[1] <- latex
+  return(gt)
+}

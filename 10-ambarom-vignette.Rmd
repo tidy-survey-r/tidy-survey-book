@@ -172,7 +172,7 @@ covid_worry_country_ests <-
   summarize(p = survey_mean(CovidWorry_bin == "WorriedHi",
                             na.rm = TRUE) * 100) 
 
-covid_worry_country_ests %>%
+covid_worry_country_ests_gt<-covid_worry_country_ests %>%
   gt(rowname_col = "Country") %>%
   cols_label(p = "Percent",
              p_se = "SE") %>%
@@ -182,7 +182,22 @@ covid_worry_country_ests %>%
   fmt_number(decimals = 1) %>%
   tab_source_note("AmericasBarometer Surveys, 2021")
 ```
-
+<!--
+```{r}
+#| label: ambarom-est1-out
+#| echo: FALSE
+#| warning: FALSE
+if (knitr::is_latex_output()) {
+  covid_worry_country_ests_gt %>%
+    as_latex_with_caption("Proportion worried about the possibility that 
+             they or someone in their household will get sick from 
+             coronavirus in the next 3 months")
+}
+if (knitr::is_html_output()) {
+  covid_worry_country_ests_gt
+}
+```
+-->
 Another question asked how education was affected by the pandemic. This question was asked among households with children under the age of 13, and respondents could select more than one option as follows:
 
 > Did any of these children have their school education affected due to the pandemic?
@@ -232,7 +247,7 @@ covid_educ_ests <-
     p_noschool = survey_mean(Educ_NoSchool, na.rm = TRUE) * 100,
   ) 
 
-covid_educ_ests %>%
+covid_educ_ests_gt<-covid_educ_ests %>%
   gt(rowname_col = "Country") %>%
   cols_label(p_onlynormal = "%",
              p_onlynormal_se = "SE",
@@ -249,10 +264,25 @@ covid_educ_ests %>%
   fmt_number(decimals = 1) %>%
   tab_caption("Impact on education in households with children under
               the age of 13 who had children that would generally 
-              attend school.") %>%
+              attend school") %>%
   tab_source_note("AmericasBarometer Surveys, 2021")
 ```
-
+<!--
+```{r}
+#| label: ambarom-covid-ed-der-out
+#| echo: FALSE
+#| warning: FALSE
+if (knitr::is_latex_output()) {
+  covid_educ_ests_gt %>%
+    as_latex_with_caption("Impact on education in households with children under
+              the age of 13 who had children that would generally 
+              attend school")
+}
+if (knitr::is_html_output()) {
+  covid_educ_ests_gt
+}
+```
+-->
 Of the countries that used this question, many had households where their children had an education medium change, except Haiti, where only `r covid_educ_ests %>% filter(Country=="Haiti") %>% pull(p_mediumchange) %>% signif(.,2)`% of households with students changed to virtual or hybrid learning. 
 
 ## Mapping survey data
@@ -420,6 +450,7 @@ int_ests %>%
 ```{r}
 #| label: ambarom-facet-map
 #| error: true
+#| fig.cap: "Percent of broadband internet and any internet usage, Central and South America"
 internet_sf <- country_shape_upd %>%
   full_join(select(int_ests, p = p_internet, geounit = Country), by = "geounit") %>%
   mutate(Type = "Internet")
