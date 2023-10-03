@@ -123,16 +123,23 @@ We begin with the `gt()` function to initiate the table and use the argument `ro
 
 ```{r}
 #| label: results-table-gt1
-trust_gov_gt <-
-  trust_gov %>%
+trust_gov_gt <- trust_gov %>%
   gt(rowname_col = "TrustGovernment") %>%
   cols_label(trust_gov_p = "%",
              trust_gov_p_se = "s.e. (%)") %>%
   tab_spanner(label = "Trust in Government, 2020",
               columns = c(trust_gov_p, trust_gov_p_se)) %>%
-  fmt_percent(decimals = 1) %>%
-  tab_caption("Example of gt table with trust in government estimates")
+  fmt_percent(decimals = 1)
 ```
+
+```{r}
+#| label: results-table-gt1-noeval
+#| eval: false
+trust_gov_gt %>% 
+  tab_caption("Example of gt table with trust in government estimate")
+```
+
+(ref:results-table-gt1-tab) Example of gt table with trust in government estimate
 
 ```{r}
 #| label: results-table-gt1-out
@@ -140,10 +147,11 @@ trust_gov_gt <-
 #| warning: FALSE
 if (knitr::is_latex_output()) {
   trust_gov_gt %>%
-    as_latex_with_caption("Example of gt table with trust in government estimates")
+    as_latex_with_caption("results-table-gt1-tab")
 }
 if (knitr::is_html_output()) {
-  trust_gov_gt
+  trust_gov_gt %>% 
+    tab_caption("(ref:results-table-gt1-tab)")
 }
 ```
 
@@ -153,31 +161,37 @@ A few more things we can add are a title, a data source note, and a footnote wit
 #| label: results-table-gt2
 trust_gov_gt2<-trust_gov_gt %>%
   tab_header("American voter's trust 
-             in the federal government, 2020") %>%
-  tab_source_note("American National Election Studies, 2020") %>%
-  tab_footnote(
-    "Question text: How often can you trust the federal government
-    in Washington to do what is right?"
-  ) %>%
-  tab_caption("Example of gt table with trust
-              in government estimates with additional context")
+             in the federal government, 2020") #%>%
+  # tab_source_note("American National Election Studies, 2020") %>%
+  # tab_footnote(
+  #   "Question text: How often can you trust the federal government
+  #   in Washington to do what is right?"
+  # )
 ```
-<!--
+
+```{r}
+#| label: results-table-gt2-noeval
+#| eval: false
+trust_gov_gt2
+```
+
+(ref:results-table-gt2-tab) Example of gt table with trust in government estimates with additional context
+
 ```{r}
 #| label: results-table-gt2-out
 #| echo: FALSE
 #| warning: FALSE
 if (knitr::is_latex_output()) {
   trust_gov_gt2 %>%
-    as_latex_with_caption("Example of gt table with trust
-              in government estimates with additional context")
+    as_latex_with_caption("results-table-gt2-tab")
 }
 if (knitr::is_html_output()) {
-  trust_gov_gt2
+  trust_gov_gt2 %>% 
+    tab_caption("(ref:results-table-gt2-tab)")
 }
 ```
--->
-#### Expanding Tables using {gtsummary}
+
+#### Expanding Tables using {gtsummary} {-}
 
 The {gtsummary} package simultaneously summarizes data and creates publication-ready tables. Its origins are in clinical trial data but it has been extended to include survey analysis in some limited ways. At this time, it only works with survey objects using Taylor's Series Linearization and not replicate methods. A limited set of summary statistics are available. For categorical variables, the following summary statistics are available:
 
@@ -210,10 +224,16 @@ In the following example, we will build up a table using {gtsummary}, which will
 anes_des_gtsum<-anes_des %>%
   tbl_svysummary(include = TrustGovernment,
                  statistic = list(all_categorical() ~ "{p} ({p.std.error})")) %>%
-  as_gt() %>%
-  tab_caption("Example of gtsummary table with trust 
-              in government estimates")
+  as_gt()
 ```
+
+```{r}
+#| label: results-table-gt3-noeval
+#| eval: false
+trust_gov_gt3
+```
+
+(ref:results-gts-ex-1-tab) Example of gtsummary table with trust in government estimates
 <!--
 ```{r}
 #| label: results-gts-ex-1-out
@@ -221,11 +241,11 @@ anes_des_gtsum<-anes_des %>%
 #| warning: FALSE
 if (knitr::is_latex_output()) {
   anes_des_gtsum %>%
-    as_latex_with_caption("Example of gtsummary table with trust 
-              in government estimates")
+    as_latex_with_caption("results-gts-ex-1-tab")
 }
 if (knitr::is_html_output()) {
-  anes_des_gtsum
+  anes_des_gtsum %>% 
+    tab_caption("(ref:results-gts-ex-1-tab)")
 }
 ```
 -->
@@ -241,13 +261,16 @@ anes_des_gtsum2<-anes_des %>%
     digits = list(TrustGovernment ~ style_percent),
     label = list(TrustGovernment ~ "Trust in Government, 2020")
   ) %>%
-  as_gt() %>%
-  tab_caption(
-    "Example of gtsummary table with trust 
-    in government estimates with labeling and digits options"
-  )
+  as_gt()
 ```
 
+```{r}
+#| label: results-gts-ex-2-noeval
+#| eval: false
+anes_des_gtsum2
+```
+
+(ref:results-gts-ex-2-tab) Example of gtsummary table with trust in government estimates with labeling and digits options
 <!--
 ```{r}
 #| label: results-gts-ex-2-out
@@ -255,11 +278,11 @@ anes_des_gtsum2<-anes_des %>%
 #| warning: FALSE
 if (knitr::is_latex_output()) {
   anes_des_gtsum2 %>%
-    as_latex_with_caption("Example of gtsummary table with trust 
-    in government estimates with labeling and digits options")
+    as_latex_with_caption("results-gts-ex-2-tab")
 }
 if (knitr::is_html_output()) {
-  anes_des_gtsum2
+  anes_des_gtsum2 %>% 
+    tab_caption("(ref:results-gts-ex-2-tab)")
 }
 ```
 -->
@@ -286,13 +309,16 @@ anes_des_gtsum3<-anes_des %>%
     "Question text: How often can you trust 
     the federal government in Washington 
     to do what is right?"
-  ) %>%
-  tab_caption(
-    "Example of gtsummary table with trust 
-    in government estimates with more 
-    labeling options and context"
   )
 ```
+
+```{r}
+#| label: results-gts-ex-3-noeval
+#| eval: false
+anes_des_gtsum3
+```
+
+(ref:results-gts-ex-3-tab) Example of gtsummary table with trust in government estimates with more labeling options and context
 <!--
 ```{r}
 #| label: results-gts-ex-3-out
@@ -300,12 +326,11 @@ anes_des_gtsum3<-anes_des %>%
 #| warning: FALSE
 if (knitr::is_latex_output()) {
   anes_des_gtsum3 %>%
-    as_latex_with_caption("Example of gtsummary table with trust 
-    in government estimates with more 
-    labeling options and context")
+    as_latex_with_caption("results-gts-ex-3-tab")
 }
 if (knitr::is_html_output()) {
-  anes_des_gtsum3
+  anes_des_gtsum3 %>% 
+    tab_caption("(ref:results-gts-ex-3-tab)")
 }
 ```
 -->
@@ -338,6 +363,14 @@ anes_des_gtsum4<-anes_des %>%
   tab_caption("Example of gtsummary table with trust in government 
               estimates and average age")
 ```
+
+```{r}
+#| label: results-gts-ex-4-noeval
+#| eval: false
+anes_des_gtsum4
+```
+
+(ref:results-gts-ex-4-tab) Example of gtsummary table with trust in government estimates and average age
 <!--
 ```{r}
 #| label: results-gts-ex-4-out
@@ -345,11 +378,11 @@ anes_des_gtsum4<-anes_des %>%
 #| warning: FALSE
 if (knitr::is_latex_output()) {
   anes_des_gtsum4 %>%
-    as_latex_with_caption("Example of gtsummary table with trust in 
-                          government estimates and average age")
+    as_latex_with_caption("results-gts-ex-4-tab")
 }
 if (knitr::is_html_output()) {
-  anes_des_gtsum4
+  anes_des_gtsum4 %>% 
+    tab_caption("(ref:results-gts-ex-4-tab)")
 }
 ```
 -->
@@ -379,10 +412,16 @@ anes_des_gtsum5<-anes_des %>%
              in the 2020 presidential election") %>%
   tab_source_note("American National Election Studies, 2020") %>%
   tab_footnote("Question text: How often can you trust the federal government 
-               in Washington to do what is right?") %>%
-  tab_caption("Example of gtsummary table with trust 
-              in government estimates by voting status")
+               in Washington to do what is right?")
 ```
+
+```{r}
+#| label: results-gts-ex-5-noeval
+#| eval: false
+anes_des_gtsum5
+```
+
+(ref:results-gts-ex-5-tab) Example of gtsummary table with trust in government estimates by voting status
 <!--
 ```{r}
 #| label: results-gts-ex-5-out
@@ -390,11 +429,11 @@ anes_des_gtsum5<-anes_des %>%
 #| warning: FALSE
 if (knitr::is_latex_output()) {
   anes_des_gtsum5 %>%
-    as_latex_with_caption("Example of gtsummary table with trust 
-              in government estimates by voting status")
+    as_latex_with_caption("results-gts-ex-5-tab")
 }
 if (knitr::is_html_output()) {
-  anes_des_gtsum5
+  anes_des_gtsum5 %>% 
+    tab_caption("(ref:results-gts-ex-5-tab)")
 }
 ```
 -->
