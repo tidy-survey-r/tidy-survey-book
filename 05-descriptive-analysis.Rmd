@@ -37,6 +37,7 @@ dstrata <- apistrat %>%
 
 We will be using data from ANES and RECS. Here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-understanding-survey-data-documentation) for more information).
 
+<!--<JM> Previous chapter had targetpop calculated from data? Can that be used here?-->
 ```{r}
 #| label: desc-anes-des
 #| eval: FALSE
@@ -75,7 +76,7 @@ recs_des <- recs_in %>%
 
 ## Introduction
 
-Descriptive analyses, such as basic counts, cross-tabulations, or means, are one of the first steps a researcher takes before conducting statistical tests or developing models. Reviewing findings from descriptive analyses can help researchers glean insight into the data, the underlying population, and any unique aspects of the data or population.  For example, if the data shows a proportion of males of only 10% in the data, this could indicate either a unique population or a potential error in the data.  Additionally, researchers can use descriptive analyses to provide means, proportions, or other measures to summarize the data and make estimates about the population.
+Descriptive analyses, such as basic counts, cross-tabulations, or means, are one of the first steps a researcher takes before conducting statistical tests or developing models. Reviewing findings from descriptive analyses can help researchers glean insight into the data, the underlying population, and any unique aspects of the data or population.  For example, if only 10% of the survey respondents are male, this could indicate either a unique population or a potential error in the data.  Additionally, researchers can use descriptive analyses to provide means, proportions, or other measures to summarize the data and make estimates about the population.
 
 We will discuss many different types of descriptive analyses in this chapter, but it is important to know what type of data we have and what statistics to use for that type of data. In survey data, we typically consider data to be one of these four main data types:  
 
@@ -86,6 +87,7 @@ We will discuss many different types of descriptive analyses in this chapter, bu
   
 When we pull the data from surveys into R, the data will be listed as character, factor, numeric, or logical/Boolean. They will not clearly indicate the type of survey data (e.g., ordinal). When working with survey data, researchers need to properly use the questionnaire and codebook along with the data (see Chapter \@ref(c04-understanding-survey-data-documentation)) to understand what the values for each variable represent. For example, our survey data may represent categorical variables (e.g., the North, South, East, and West regions of the United States) using numeric codes (e.g., 1, 2, 3, and 4). Though this is a categorical variable from the survey, this variable might be automatically read as numeric values when we import our data into R. This can lead to the common mistake of applying a mean function to categorical values instead of a proportion function. Choosing appropriate measures is crucial to reach valid conclusions. Different variable types have distinct properties and levels of measurement, and we cannot apply all measures to all variables.
 
+<!--<JM> Dispersion is e.g. standard deviation? (right now says e.g. standard)-->
 This chapter will discuss how to analyze *measures of distribution* (e.g., cross-tabulations), *central tendency* (e.g., means), *relationship* (e.g., ratios), and *dispersion* (e.g., standard). Measures of distribution describe how often an event or response occurs. These measures include counts and totals. Measures of central tendency find the central (or average) responses. These measures include means and medians. Measures of relationship describe how variables relate to each other. These measures include correlations and ratios. Measures of dispersion describe how data spreads around the central tendency for continuous variables. These measures include standard deviations and variances. Specifically, we will cover the following functions from the {srvyr} package:
 
   * Count of observations (`survey_count()` and `survey_tally()`)
@@ -116,7 +118,7 @@ mtcars %>%
             mpg_median = median(mpg))
 ```
 
-Similarly, in the next example, the variance and standard deviation of the variable `api00` are calculated for the tbl_svy object `dstrata`. Note the similarity in the syntax. When we dig into the functions later, we will show that the results output are similar in that one row is output for each group (if there are groups), but there will be more columns output. Specifically, by default, the standard error of the statistic is calculated in addition to the statistic.
+Similarly, in the next example, the variance and standard deviation of the variable `api00` are calculated for the tbl_svy object `dstrata`. Note the similarity in the syntax. <!--<JM> Don't understand the following sentence as written--> When we dig into the functions later, we will show that the results output are similar in that one row is output for each group (if there are groups), but there will be more columns output. Specifically, by default, the standard error of the statistic is calculated in addition to the statistic.
 
 ```{r}
 #| label: desc-srvyr-examp
@@ -464,6 +466,7 @@ The other main difference is with the `proportion` argument.  In the `survey_mea
 
 In section \@ref(desc-count-syntax), we provide an overview of the different variability types. The interval used in confidence intervals for most measures, such as means and counts, is referred to as a Wald-type interval. While a Wald-type interval using a symmetric t-based confidence interval is an option for proportions, this generally does not have the correct coverage rate when sample sizes are small and/or the proportion is "near" 0 or 1. Thus, other methods have been developed to calculate confidence intervals and can be specified using the `prop_method` option in `survey_prop()`. The options include:
 
+<!--<JM> xlogit requires user to have SUDAAN or SPSS installed? Not sure what is meant by it is implemented in SUDAAN and SPSS-->
   * `logit`: fits a logistic regression model and computes a Wald-type interval on the log-odds scale, which is then transformed to the probability scale. This is the default method.
   * `likelihood`: uses the (Rao-Scott) scaled chi-squared distribution for the log-likelihood from a binomial distribution.
   * `asin`: uses the variance-stabilizing transformation for the binomial distribution, the arcsine square root, and then back-transforms the interval to the probability scale
@@ -555,7 +558,7 @@ recs_des %>%
   )))
 ```
 
-Nationally, the average household spent $`r pull(.elbill_mn, elec_bill)` in 2015.
+Nationally, the average household spent `r pull(.elbill_mn, elec_bill)` in 2015.
 
 #### Example 5: Means by Subgroup {.unnumbered}
 
@@ -585,7 +588,7 @@ Households from the West spent `r .elbill_mn_reg %>% filter(Region=="West") %>% 
 
 To better understand the distribution of a continuous variable, quantiles can be calculated at specific points to help gain insight. For example, we might want estimates of the quartiles (25%, 50%, 75%) of income in a population to understand how the income is distributed. We use the `survey_quantile()` function to calculate quantiles in survey data.
 
-Medians are often used to find the midpoint of a continuous distribution when the data is considered to be skewed, as medians are less subject to outliers than means. The median in the data is the same as the 50th percentile.  In other words, it is the value where 50% of the data is higher than it and 50% is lower. Medians are a special case of quantiles that are used more often; thus, a unique function has been created for it (`survey_median()`). We can calculate the median of the data using both the `survey_median()` function and the `survey_quantile()` function with the 50% quantile provided as an argument. 
+Medians are often used to find the midpoint of a continuous distribution when the data is considered to be skewed, as medians are less subject to outliers than means. The median in the data is the same as the 50th percentile.  In other words, it is the value where 50% of the data is higher than it and 50% is lower. Medians are a special case of quantiles that are used more often; thus, a unique function has been created for it (`survey_median()`). We can calculate the median of the data using either the `survey_median()` function or the `survey_quantile()` function with the 50% quantile provided as an argument. 
 
 ### Syntax
 
@@ -633,6 +636,7 @@ In section \@ref(desc-count-syntax), we provide an overview of the different var
   * `score`: the Francisco & Fuller confidence interval based on inverting a score test (only available for design-based survey objects and not replicate-based objects)
   * `quantile`: based on the replicates of the quantile. This is not valid for jackknife-type replicates but is available for bootstrap and BRR replicates.
 
+<!--<JM> Not sure what "lower performance" means-->
 One thing of note with the `score` method is that when there are many ties in the data, this method can produce confidence intervals that do not contain the estimate. When dealing with a high propensity for ties (e.g., many respondents will have the same age), it is recommended to use another method. This is the method implemented in SUDAAN. However, SUDAAN adds noise to the values to prevent the issue with the ties, while the documentation in the {survey} package indicates this method generally has lower performance than the beta and logit intervals. 
 
 ### Examples
@@ -731,7 +735,7 @@ recs_des %>%
 Households from the West spent `r .elbill_med_reg %>% filter(Region=="West") %>% pull(elec_bill)` on electricity, and in the South, they spent an average of `r .elbill_med_reg %>% filter(Region=="South") %>% pull(elec_bill)`.
 
 ## Ratios
-
+<!--<JM> Why is it necessary to say many are not familiar with the ratio estimate?  Also, why switch to the police example when you are on a roll with energy and there is no output with the police example?-->
 Many are not familiar with the ratio estimate. The ratio is a measure of the ratio of the sum of two variables, specifically in the form of:
 
 $$ \frac{\sum x_i}{\sum y_i}.$$
@@ -772,7 +776,7 @@ The arguments are:
 ### Examples
 
 #### Example 1: Overall Ratios {.unnumbered}
-
+<!--<JM> Say more about why you'd want to find a ratio for this example-->
 Suppose we wanted to find the ratio of dollars spent on liquid propane per unit (in British thermal unit [Btu]) nationally. If we wanted to find the average cost to a household, we could use `survey_mean()`, but to find the national unit rate, we can use ratio. In the following example, we will show both methods and discuss the interpretation of each:
 
 ```{r}
@@ -816,7 +820,7 @@ The ratio of the total spent on liquid propane to the total consumption was `r r
 
 #### Example 2: Ratios by Subgroup {.unnumbered}
 
-As previously done with other estimates, we can use `group_by()` to examine whether this rate varies by region.
+As previously done with other estimates, we can use `group_by()` to examine whether this ratio varies by region.
 
 ```{r}
 #| label: desc-ratio-2
@@ -825,7 +829,7 @@ recs_des %>%
   summarize(DOL_BTU_Rat = survey_ratio(DOLLARLP, BTULP))
 ```
 
-Though not a statistical test, it does appear the cost rates in the Midwest for liquid propane are the lowest.
+Though not a statistical test, it does appear the cost ratios in the Midwest for liquid propane are the lowest.
 
 ## Correlations
 
@@ -978,7 +982,7 @@ It is estimated that American residential households spent an average of `r .elb
 
 Briefly, we mentioned using `filter()` to subset a survey object for analysis. This operation should be done after creating the design object. In rare circumstances, subsetting data before creating the object can lead to incorrect variability estimates. This can occur if subsetting removes an entire PSU.
 
-Suppose we wanted estimates of the average amount spent on natural gas among housing units that use natural gas. This could be obtained by first filtering records to only include records where `BTUNG > s0` and then finding the average amount of money spent.
+Suppose we wanted estimates of the average amount spent on natural gas among housing units that use natural gas. This could be obtained by first filtering records to only include records where `BTUNG > 0` and then finding the average amount of money spent.
 
 ```{r}
 #| label: desc-subpop
