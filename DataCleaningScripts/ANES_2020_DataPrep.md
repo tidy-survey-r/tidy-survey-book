@@ -19,6 +19,33 @@ library(here) # easy relative paths
 library(tidyverse) # data manipulation
 library(haven) # data import
 library(tidylog) # informative logging messages
+```
+
+    ## 
+    ## Attaching package: 'tidylog'
+
+    ## The following objects are masked from 'package:srvyr':
+    ## 
+    ##     anti_join, drop_na, filter, filter_all, filter_at, filter_if, group_by, group_by_all, group_by_at, group_by_if, mutate, mutate_all, mutate_at, mutate_if, rename,
+    ##     rename_all, rename_at, rename_if, rename_with, select, select_all, select_at, select_if, semi_join, summarise, summarise_all, summarise_at, summarise_if, summarize,
+    ##     summarize_all, summarize_at, summarize_if, transmute, ungroup
+
+    ## The following objects are masked from 'package:dplyr':
+    ## 
+    ##     add_count, add_tally, anti_join, count, distinct, distinct_all, distinct_at, distinct_if, filter, filter_all, filter_at, filter_if, full_join, group_by, group_by_all,
+    ##     group_by_at, group_by_if, inner_join, left_join, mutate, mutate_all, mutate_at, mutate_if, relocate, rename, rename_all, rename_at, rename_if, rename_with, right_join,
+    ##     sample_frac, sample_n, select, select_all, select_at, select_if, semi_join, slice, slice_head, slice_max, slice_min, slice_sample, slice_tail, summarise, summarise_all,
+    ##     summarise_at, summarise_if, summarize, summarize_all, summarize_at, summarize_if, tally, top_frac, top_n, transmute, transmute_all, transmute_at, transmute_if, ungroup
+
+    ## The following objects are masked from 'package:tidyr':
+    ## 
+    ##     drop_na, fill, gather, pivot_longer, pivot_wider, replace_na, spread, uncount
+
+    ## The following object is masked from 'package:stats':
+    ## 
+    ##     filter
+
+``` r
 library(osfr)
 ```
 
@@ -774,7 +801,6 @@ for (var in pull(cb_vars, Variable)) {
   vi <- cb_vars %>% filter(Variable==var)
   attr(anes_ord[[deparse(as.name(var))]], "format.spss") <- NULL
   attr(anes_ord[[deparse(as.name(var))]], "display_width") <- NULL
-  attr(anes_ord[[deparse(as.name(var))]], "labels") <- NULL
   attr(anes_ord[[deparse(as.name(var))]], "label") <- pull(vi, `Description and Labels`)
   attr(anes_ord[[deparse(as.name(var))]], "Section") <- pull(vi, Section) %>% as.character()
   if (!is.na(pull(vi, Question))) attr(anes_ord[[deparse(as.name(var))]], "Question") <- pull(vi, Question)
