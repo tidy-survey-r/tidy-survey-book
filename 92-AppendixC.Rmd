@@ -167,7 +167,7 @@ attributes(anes_dta$V200002)
 
 #### Working with labeled data in R {-}
 
-When we import a labeled dataset using {haven}, it results in a tibble containing both the data and label information. However, this is meant to be an intermediary data structure and not intended to be your final data format for analysis. Instead, we should convert it into a regular R data frame for data handling. There are two primary methods to achieve this conversion:
+When we import a labeled dataset using {haven}, it results in a tibble containing both the data and label information. However, this is meant to be an intermediary data structure and not intended to be the final data format for analysis. Instead, we should convert it into a regular R data frame for data handling. There are two primary methods to achieve this conversion:
 
 Option 1: Convert the vector into a factor 
 
@@ -215,7 +215,7 @@ anes_dta_factor %>%
 
 Option 2: Strip the labels
 
-The second option is to remove the labels altogether, converting the labeled data into a regular R data frame. To remove, or 'zap' the labels from your tibble, we can use the {haven} package's `zap_label()` and `zap_labels()` functions. This approach removes the labels but retains the data values in their original form.
+The second option is to remove the labels altogether, converting the labeled data into a regular R data frame. To remove, or 'zap' the labels from our tibble, we can use the {haven} package's `zap_label()` and `zap_labels()` functions. This approach removes the labels but retains the data values in their original form.
 
 Use `zap_label()` to remove the variable labels but retain the value labels:
 
@@ -236,12 +236,23 @@ zap_labels(anes_dta) %>%
 
 Similar to `as_factor()`, we can apply `zap_*()` to a specific column or an entire data frame.
 
-While it is important to remove labeled information from your dataset for efficiently working in R, these labels often contain information that make it so you can actually understand and use your survey. Before converting it to a regular dataframe, it may be helpful to create a data dictionary from the data. The {labelled} package provides a handy function `generate_dictionary()` for doing so directly from your dataset:
+While it is important to convert labeled datasets into regular R data frames for working in R, the labels themselves often contain valuable information that provide context and meaning to the survey variables. To aid with interpretability and documention, consider creating a data dictionary from the labeled dataset. A data dictionary is a valuable reference document that provides detailed information about the variables and values of a survey.
 
-```r
+The {labelled} package offers a convenient function, `generate_dictionary()`, that creates data dictionaries directly from a labeled dataset. This function extracts variable labels, value labels, and other metadata and organizes them into a structured document that we can browse and reference throughout our analysis. 
+
+Let's create a data dictionary from the ANES Stata dataset as an example:
+
+```{r}
 library(labelled)
 
-dictionary <- generate_dictionary(survey_data)
+dictionary <- generate_dictionary(anes_dta)
+```
+
+Once we've generated the data dictionary, we can take a look at the `V200002` variable and see the label, column type, number of missing entries, and associated values.
+
+```{r}
+dictionary %>% 
+  filter(variable == "V200002")
 ```
 
 #### Missing data
