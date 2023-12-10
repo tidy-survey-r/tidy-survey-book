@@ -14,8 +14,7 @@ For this chapter, load the following packages and the helper function:
 library(tidyverse)
 library(survey)
 library(srvyr)
-library(osfr)
-source("helper-fun/helper-function.R")
+library(srvyr.data)
 ```
 
 To help explain the different types of sample designs, this chapter will use the `api` and `scd` data that comes in the {survey} package:
@@ -25,12 +24,12 @@ data(api)
 data(scd)
 ```
 
-Additionally, we have created multiple analytic datasets for use in this book on a directory on OSF^[https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957]. To load any data used in the book that is not included in existing packages, we have created a helper function `read_osf()`. This chapter uses data from the Residential Energy Consumption Survey (RECS) - both 2015 and 2020, so we will use the following code to load the RECS data to use later in this chapter:
+Additionally, we have created multiple analytic datasets for use in this book on a directory in an R package as described in \@ref{book-datasets}. This chapter uses data from the Residential Energy Consumption Survey (RECS) - both 2015 and 2020, so we will use the following code to load the RECS data to use later in this chapter:
 ```{r}
 #| label: samp-setup-recs 
 #| eval: FALSE
-recs_2015_in <- read_osf("recs_2015.rds")
-recs_in <- read_osf("recs_2020.rds")
+data(recs_2015)
+data(recs_2020)
 ```
 :::
 
@@ -573,7 +572,7 @@ fay_des <- dat %>%
 
 #### Example {-} 
 
-The 2015 RECS [@recs-2015-micro] uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with $\rho=0.5$. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. We have already read in the RECS data and created a dataset called `recs_2015_in` above in the prerequisites.
+The 2015 RECS [@recs-2015-micro] uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with $\rho=0.5$. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. We have already read in the RECS data and created a dataset called `recs_2015` above in the prerequisites.
 
 To specify this design, use the following syntax:
 
@@ -583,14 +582,14 @@ To specify this design, use the following syntax:
 #| warning: FALSE
 #| message: FALSE
 #| cache: TRUE
-recs_2015_in <- read_osf("recs_2015.rds")
+data(recs_2015)
 ```
 
 
 ```{r}
 #| label: samp-des-recs-des
 #| eval: TRUE
-recs_2015_des <- recs_2015_in %>%
+recs_2015_des <- recs_2015 %>%
   as_survey_rep(weights = NWEIGHT,
                 repweights = BRRWT1:BRRWT96,
                 type = "Fay",
@@ -649,12 +648,13 @@ jkn_des <- dat %>%
 
 #### Example {-}
 
-The 2020 RECS [@recs-2020-micro] uses jackknife weights with the final weight as NWEIGHT and replicate weights as NWEIGHT1 - NWEIGHT60 with a scale of $(R-1)/R=59/60$. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. We have already read in the RECS data and created a dataset called `recs_in` above in the prerequisites.
+The 2020 RECS [@recs-2020-micro] uses jackknife weights with the final weight as NWEIGHT and replicate weights as NWEIGHT1 - NWEIGHT60 with a scale of $(R-1)/R=59/60$. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. We have already read in the RECS data and created a dataset called `recs_2020` above in the prerequisites.
 
 To specify this design, use the following syntax:
 
 ```{r}
-recs_des <- recs_in %>%
+#| label: samp-des-recs2020-des
+recs_des <- recs_2020 %>%
   as_survey_rep(
     weights = NWEIGHT,
     repweights = NWEIGHT1:NWEIGHT60,
@@ -673,7 +673,7 @@ summary(recs_des)
 #| label: samp-des-recs-des-full
 #| echo: FALSE
 # This is just for later use in book
-recs_des <- recs_in %>%
+recs_des <- recs_2020 %>%
   as_survey_rep(
     weights = NWEIGHT,
     repweights = NWEIGHT1:NWEIGHT60,
