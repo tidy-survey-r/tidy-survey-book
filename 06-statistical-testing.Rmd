@@ -44,14 +44,14 @@ For RECS, details are included in the RECS documentation and Chapter \@ref(c03-s
 ```{r}
 #| label: stattest-recs-des
 #| eval: FALSE
-recs_in <- read_osf("recs_2015.rds")
+recs_in <- read_osf("recs_2020.rds")
 
 recs_des <- recs_in %>%
   as_survey_rep(
     weights = NWEIGHT,
-    repweights = starts_with("BRRWT"),
-    type = "Fay",
-    rho = 0.5,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59/60,
     mse = TRUE
   )
 ```
@@ -277,7 +277,7 @@ ttest_ex3 <- recs_des %>%
 broom::tidy(ttest_ex3)
 ```
 
-The results indicate that the difference in electrical bills for those that used AC and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r signif(ttest_ex3$statistic, 3)` and the p-value is $`r signif(ttest_ex3[["p.value"]], 3)`$. Households that used AC spent, on average, $462.90 more in 2015.
+The results indicate that the difference in electrical bills for those that used AC and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r signif(ttest_ex3$statistic, 3)` and the p-value is $`r signif(ttest_ex3[["p.value"]], 3)`$. Households that used AC spent, on average, $`r round(ttest_ex3[["estimate"]], 2) %>% unname()` more in 2020 on electricity than households without AC.
 
 #### Example 4: Paired two-sample t-test {.unnumbered #stattest-ttest-ex4}
 

@@ -11,14 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Data information
 
-All data and resources were downloaded from https://www.eia.gov/consumption/residential/data/2020/index.php?view=microdata on June 17, 2023.
-
-```{r}
-#| label: loadpackageh
-#| message: FALSE
-
-library(here) #easy relative paths
-```
+All data and resources were downloaded from https://www.eia.gov/consumption/residential/data/2020/index.php?view=microdata on September 17, 2023.
 
 ```{r}
 #| label: loadpackages
@@ -35,10 +28,11 @@ library(osfr)
 #| label: derivedata
 
 recs_file_osf_det <- osf_retrieve_node("https://osf.io/z5c3m/") %>%
-  osf_ls_files(path="RECS_2020", pattern="csv") %>%
-  osf_download(conflicts="overwrite", path=here("osf_dl"))
+  osf_ls_files(path="RECS_2020", pattern="sas7bdat") %>%
+  filter(str_detect(name, "v5")) %>%
+  osf_download(conflicts="overwrite", path=here::here("osf_dl"))
 
-recs_in <- read_csv(pull(recs_file_osf_det, local_path))
+recs_in <- haven::read_sas(pull(recs_file_osf_det, local_path))
 
 unlink(pull(recs_file_osf_det, local_path))
 
@@ -155,19 +149,23 @@ recs %>% count(state_postal, state_name, STATE_FIPS) %>% print(n=51)
 
 ```{r compare-2015}
 recs_out <- recs %>%
-  select(DOEID, REGIONC, Region, Division, starts_with("state"), Urbanicity, 
+  select(DOEID, starts_with("NWEIGHT"),
+         REGIONC, Region, Division, starts_with("state"), Urbanicity, 
          HousingUnitType, YearMade, SpaceHeatingUsed, HeatingBehavior, 
          WinterTempDay, WinterTempAway, WinterTempNight, ACUsed, 
          ACBehavior, SummerTempDay, SummerTempAway, SummerTempNight, 
-         TOTCSQFT, TOTHSQFT, TOTSQFT_EN, NWEIGHT, 
-         starts_with("NWEIGHT"), CDD30YR, CDD65, ClimateRegion_BA, 
+         TOTCSQFT, TOTHSQFT, TOTSQFT_EN, 
+         CDD30YR, CDD65, ClimateRegion_BA, 
          HDD30YR, HDD65, BTUEL, 
          DOLLAREL, BTUNG, DOLLARNG, BTULP, DOLLARLP, BTUFO, DOLLARFO, 
          TOTALBTU, TOTALDOL, BTUWOOD)
 
-source(here::here("helper-fun", "helper-functions.R"))
 
-recs_2015 <- read_rds_tsr("recs_2015.rds")
+
+
+source(here::here("helper-fun", "helper-function.R"))
+
+recs_2015 <- read_osf("recs_2015.rds")
 
 setdiff(names(recs_out), names(recs_2015)) #variables in 2020 and not 2015
 setdiff(names(recs_2015), names(recs_out)) #variables in 2015 and not 2020
@@ -175,12 +173,55 @@ setdiff(names(recs_2015), names(recs_out)) #variables in 2015 and not 2020
 ```
 
 
-```{r savedat}
-summary(recs_out)
-nrow(recs_out)
+```{r}
+#| label: add-question-text
+for (var in colnames(recs_out)) {
+  attr(recs_out[[deparse(as.name(var))]], "format.sas") <- NULL
+}
 
-recs_der_tmp_loc <- here("osf_dl", "recs_2020.rds")
-write_rds(recs_out, recs_der_tmp_loc)
+cb_in <- readxl::read_xlsx(here::here("DataCleaningScripts", "RECS 2020 Codebook Questions.xlsx"), skip=1)
+
+cb_ord <- cb_in %>% 
+  mutate(
+    Order=row_number(),
+    Section=if_else(Section=="End-use Model", "CONSUMPTION AND EXPENDITURE", Section),
+    Section=fct_reorder(Section, Order, min)) 
+
+cb_slim <- cb_ord %>% select(Variable=BookDerived, `Description and Labels`, Question, Section, Order) %>%
+  filter(!is.na(Variable)) %>%
+  bind_rows(select(cb_ord, Variable, `Description and Labels`, Question, Section, Order)) %>%
+  arrange(Section, Order)
+
+names(recs_out)[!(names(recs_out) %in% pull(cb_slim, Variable))]
+
+cb_vars <- cb_slim %>%
+  filter(Variable %in% c(names(recs_out)))
+
+nrow(cb_vars)
+ncol(recs_out)
+
+recs_ord <- recs_out %>% select(all_of(pull(cb_vars, Variable)))
+
+for (var in pull(cb_vars, Variable)) {
+  vi <- cb_vars %>% filter(Variable==var)
+  attr(recs_ord[[deparse(as.name(var))]], "label") <- pull(vi, `Description and Labels`)
+  attr(recs_ord[[deparse(as.name(var))]], "Section") <- pull(vi, Section) %>% as.character()
+  if (!is.na(pull(vi, Question))) attr(recs_ord[[deparse(as.name(var))]], "Question") <- pull(vi, Question)
+}
+
+
+```
+
+
+
+
+
+```{r savedat}
+summary(recs_ord)
+str(recs_ord)
+
+recs_der_tmp_loc <- here::here("osf_dl", "recs_2020.rds")
+write_rds(recs_ord, recs_der_tmp_loc)
 target_dir <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") 
 osf_upload(target_dir, path=recs_der_tmp_loc, conflicts="overwrite")
 unlink(recs_der_tmp_loc)

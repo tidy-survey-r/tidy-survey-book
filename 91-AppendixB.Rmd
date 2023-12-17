@@ -11,484 +11,111 @@ library(janitor)
 library(kableExtra)
 library(knitr)
 
-recs <- recs_in %>% haven::zap_labels()
+recs <- recs_in
 ```
 
-The full codebook with the original variables is available at [https://www.eia.gov/consumption/residential/data/2015/index.php?view=microdata](https://www.eia.gov/consumption/residential/data/2015/index.php?view=microdata).
+The full codebook with the original variables is available at [https://www.eia.gov/consumption/residential/data/2020/index.php?view=microdata](https://www.eia.gov/consumption/residential/data/2020/index.php?view=microdata) - "Variable and response codebook". This codebook includes the variables on the dataset included for download along with this book.
 
-## Weighting variables
-
-#### DOEID {-}
-
-Unique identifier for each respondent
-
-#### NWEIGHT {-}
-
-Final sample weight
-
-#### BRRWT1-BRRWT96 {-}
-
-Replicate weights
-
-## Categorical 
-
-#### Region {-}
 
 ```{r}
-#| label: recs-cb-region
+#| label: recs-cb-prep
 #| echo: FALSE
-recs %>%
-  cb_count(Region)
-```
-Variables used: REGIONC
 
-#### Division {-}
+attrlist <- map(recs, attributes)
+
+NULL_to_NA <- function(x){
+  if (is.null(x)){
+    NA
+  }else{
+    x
+  }
+}
+
+
+recs_var_info <- tibble(
+  Vars=names(attrlist),
+  Section=map_chr(attrlist, "Section") %>% unname(),
+  Question=map(attrlist, "Question") %>% map(NULL_to_NA) %>% unlist(use.names = FALSE),
+  Description=map_chr(attrlist, "label") %>% unname(),
+  VarType=map(recs, class) ,
+) %>%
+  mutate(
+    VarType=if_else(Vars=="DOEID", list("ID"), VarType)
+  )
+
+
+cb_count <- function(dat, var){
+  t <- dat %>%
+    count(.data[[var]]) %>%
+    mutate(`Unweighted Freq` = n / sum(n)) %>%
+    janitor::adorn_totals(where="row", fill="-", na.rm=TRUE, name="Total", n, `Unweighted Freq`) %>%
+    mutate(`Unweighted Freq`= round(`Unweighted Freq`, 3)) %>%
+    kbl(position="H")
+  
+   if (knitr:::is_html_output()){
+    t %>% kable_minimal() %>% print()
+  } else{
+    t %>% print()
+  }
+}
+
+cb_continuous <- function(dat, var){
+  t <- dat %>%
+    summarize(
+      `N Missing`=sum(is.na(.data[[var]])),
+      Minimum = min(.data[[var]], na.rm = TRUE),
+      Median = median(.data[[var]], na.rm = TRUE),
+      Maximum = max(.data[[var]], na.rm = TRUE)) %>%
+    kbl(position="H") 
+  
+  if (knitr:::is_html_output()){
+    t %>% kable_minimal() %>% print()
+  } else{
+    t %>% print()
+  }
+  
+}
+
+
+make_section <- function(sec){
+  cat(str_c("## ", sec, "\n\n"))
+  
+  make_sum <- function(var){
+    cat(str_c("#### ", var, " {-} \n\n"))
+    vi <- recs_var_info %>% filter(Vars==var)
+    de <- vi %>% pull(Description)
+    cat(str_c("Description: ", de, "\n\n"))
+    qt <- vi %>% pull(Question)
+    if (!is.na(qt)) cat(str_c("Question: ", qt, "\n\n"))
+    vt <- vi %>% pull(VarType) %>% unlist()
+    
+    if (any(c("factor", "character", "logical") %in% vt)){
+      recs %>% cb_count(var)
+      cat("\n")
+    } else if ("numeric" %in% vt){
+      recs %>% cb_continuous(var)
+      cat("\n")
+    }
+    
+  }
+  
+  recs_var_info %>% filter(Section==sec) %>% pull(Vars) %>%
+    walk(make_sum)
+}
+
+
+
+
+```
+
 
 ```{r}
-#| label: recs-cb-division
+#| label: recs-cb-write
 #| echo: FALSE
-recs %>%
-  cb_count(Division)
-```
-Variables used: DIVISION
-
-#### MSAStatus {-}
-
-```{r}
-#| label: recs-cb-msastatus
-#| echo: FALSE
-recs %>%
-  cb_count(MSAStatus) 
-```
-Variables used: METROMICRO
-
-#### Urbanicity {-}
-
-```{r}
-#| label: recs-cb-urbanicity
-#| echo: FALSE
-recs %>%
-  cb_count(Urbanicity)
+#| results: asis
+recs_var_info %>%
+  distinct(Section) %>%
+  pull(Section) %>%
+  walk(make_section)
 ```
 
-Variables used: UATYP10
-
-#### HousingUnitType {-}
-
-```{r}
-#| label: recs-cb-housingunittype
-#| echo: FALSE
-recs %>%
-  cb_count(HousingUnitType) 
-```
-
-Variables used: TYPEHUQ
-
-#### YearMade {-}
-
-```{r}
-#| label: recs-cb-yearmade
-#| echo: FALSE
-recs %>%
-  cb_count(YearMade) 
-```
-
-Variables used: YEARMADERANGE
-
-#### SpaceHeatingUsed {-}
-
-```{r}
-#| label: recs-cb-spaceheadingused
-#| echo: FALSE
-recs %>%
-  cb_count(SpaceHeatingUsed)
-```
-
-Variables used: HEATHOME
-
-#### HeatingBehavior {-}
-
-```{r}
-#| label: recs-cb-heatingbehavior
-#| echo: FALSE
-recs %>%
-  cb_count(HeatingBehavior) 
-```
-
-Variables used: EQUIPMUSE
-
-#### ACUsed {-}
-
-```{r}
-#| label: recs-cb-acused
-#| echo: FALSE
-recs %>%
-  cb_count(ACUsed)
-```
-
-Variables used: AIRCOND
-
-#### ACBehavior {-}
-
-```{r}
-#| label: recs-cb-acbehavior
-#| echo: FALSE
-recs %>%
-  cb_count(ACBehavior) 
-```
-
-Variables used: USECENAC
-
-#### ClimateRegion_BA {-}
-
-```{r}
-#| label: recs-cb-climateregion-ba
-#| echo: FALSE
-recs %>%
-  cb_count(ClimateRegion_BA)
-```
-
-Variables used: CLIMATE_REGION_PUB
-
-#### ClimateRegion_IECC {-}
-
-```{r}
-#| label: recs-cb-climateregion-iecc
-#| echo: FALSE
-recs %>%
-  cb_count(ClimateRegion_IECC)
-```
-
-Variables used: IECC_CLIMATE_PUB
-
-## Continuous
-
-#### WinterTempDay {-}
-
-```{r}
-#| label: recs-cb-wintertempday
-#| echo: FALSE
-recs %>%
-  cb_continuous(WinterTempDay)
-```
-
-Variables used: TEMPHOME
-
-#### WinterTempAway {-}
-
-```{r}
-#| label: recs-cb-wintertempaway
-#| echo: FALSE
-recs %>%
-  cb_continuous(WinterTempAway)
-```
-
-Variables used: TEMPGONE
-
-#### WinterTempNight {-}
-
-```{r}
-#| label: recs-cb-wintertempnight
-#| echo: FALSE
-recs %>%
-  cb_continuous(WinterTempNight)
-```
-
-Variables used: TEMPNITE
-
-#### SummerTempDay {-}
-
-```{r}
-#| label: recs-cb-summertempday
-#| echo: FALSE
-recs %>%
-  cb_continuous(SummerTempDay)
-```
-
-Variables used: TEMPHOMEAC
-
-#### SummerTempAway {-}
-
-```{r}
-#| label: recs-cb-summertempaway
-#| echo: FALSE
-recs %>%
-  cb_continuous(SummerTempAway)
-```
-
-Variables used: TEMPGONEAC
-
-#### SummerTempNight {-}
-
-```{r}
-#| label: recs-cb-summertempnight
-#| echo: FALSE
-recs %>%
-  cb_continuous(SummerTempNight)
-```
-
-Variables used: TEMPNITEAC
-
-#### TOTCSQFT {-}
-
-Total cooled square footage
-
-```{r}
-#| label: recs-cb-totcsqft
-#| echo: FALSE
-recs %>%
-  cb_continuous(TOTCSQFT)
-```
-
-#### TOTHSQFT {-}
-
-Total heated square footage
-
-```{r}
-#| label: recs-cb-tothsqft
-#| echo: FALSE
-recs %>%
-  cb_continuous(TOTHSQFT)
-```
-
-#### TOTSQFT_EN {-}
-
-Total square footage (used for publication)
-
-```{r}
-#| label: recs-cb-totsqft
-#| echo: FALSE
-recs %>%
-  cb_continuous(TOTSQFT_EN)
-```
-
-#### TOTUCSQFT {-}
-
-Total uncooled square footage
-
-```{r}
-#| label: recs-cb-totucsqft
-#| echo: FALSE
-recs %>%
-  cb_continuous(TOTUCSQFT)
-```
-
-#### TOTUSQFT {-}
-
-Total unheated square footage
-
-```{r}
-#| label: recs-cb-totusqft
-#| echo: FALSE
-recs %>%
-  cb_continuous(TOTUSQFT)
-```
-
-#### CDD30YR {-}
-
-Cooling degree days, 30-year average 1981-2010, base temperature 65F
-
-```{r}
-#| label: recs-cb-cdd30yr
-#| echo: FALSE
-recs %>%
-  cb_continuous(CDD30YR)
-```
-
-#### CDD65 {-}
-
-Cooling degree days in 2015, base temperature 65F
-
-```{r}
-#| label: recs-cb-cdd65
-#| echo: FALSE
-recs %>%
-  cb_continuous(CDD65)
-```
-
-#### CDD80 {-}
-
-Cooling degree days in 2015, base temperature 80F (used for garage cooling load estimation only)
-
-```{r}
-#| label: recs-cb-cdd80
-#| echo: FALSE
-recs %>%
-  cb_continuous(CDD80)
-```
-
-#### HDD30YR {-}
-
-Heating degree days, 30-year average 1981-2010, base temperature 65F
-
-```{r}
-#| label: recs-cb-hdd30yr
-#| echo: FALSE
-recs %>%
-  cb_continuous(HDD30YR)
-```
-
-#### HDD65 {-}
-
-Heating degree days in 2015, base temperature 65F
-
-```{r}
-#| label: recs-cb-hdd65
-#| echo: FALSE
-recs %>%
-  cb_continuous(HDD65)
-```
-
-#### HDD50 {-}
-
-Heating degree days in 2015, base temperature 50F (used for garage heating load estimation only)
-
-```{r}
-#| label: recs-cb-hdd50
-#| echo: FALSE
-recs %>%
-  cb_continuous(HDD50)
-```
-
-#### GNDHDD65 {-}
-
-Heating degree days of ground temperature in 2015, base temperature 65F
-
-```{r}
-#| label: recs-cb-gndhdd65
-#| echo: FALSE
-recs %>%
-  cb_continuous(GNDHDD65)
-```
-
-#### BTUEL {-}
-
-Total site electricity usage, in thousand Btu, 2015
-
-```{r}
-#| label: recs-cb-btuel
-#| echo: FALSE
-recs %>%
-  cb_continuous(BTUEL)
-```
-
-#### DOLLAREL {-}
-
-Total electricity cost, in dollars, 2015
-
-```{r}
-#| label: recs-cb-dollarel
-#| echo: FALSE
-recs %>%
-  cb_continuous(DOLLAREL)
-```
-
-#### BTUNG {-}
-
-Total natural gas usage, in thousand Btu, 2015
-
-```{r}
-#| label: recs-cb-btung
-#| echo: FALSE
-recs %>%
-  cb_continuous(BTUNG)
-```
-
-#### DOLLARNG {-}
-
-Total natural gas cost, in dollars, 2015
-
-```{r}
-#| label: recs-cb-dollarng
-#| echo: FALSE
-recs %>%
-  cb_continuous(DOLLARNG)
-```
-
-#### BTULP {-}
-
-Total propane usage, in thousand Btu, 2015
-
-```{r}
-#| label: recs-cb-btulp
-#| echo: FALSE
-recs %>%
-  cb_continuous(BTULP)
-```
-
-#### DOLLARLP {-}
-
-Total cost of propane, in dollars, 2015
-
-```{r}
-#| label: recs-cb-dollarlp
-#| echo: FALSE
-recs %>%
-  cb_continuous(DOLLARLP)
-```
-
-#### BTUFO {-}
-
-Total fuel oil/kerosene usage, in thousand Btu, 2015
-
-```{r}
-#| label: recs-cb-btufo
-#| echo: FALSE
-recs %>%
-  cb_continuous(BTUFO)
-```
-
-#### DOLLARFO {-}
-
-Total cost of fuel oil/kerosene, in dollars, 2015
-
-```{r}
-#| label: recs-cb-dollarfo
-#| echo: FALSE
-recs %>%
-  cb_continuous(DOLLARFO)
-```
-
-#### TOTALBTU {-}
-
-Total usage, in thousand Btu, 2015
-
-```{r}
-#| label: recs-cb-totalbtu
-#| echo: FALSE
-recs %>%
-  cb_continuous(TOTALBTU)
-```
-
-#### TOTALDOL {-}
-
-Total usage, in thousand Btu, 2015
-
-```{r}
-#| label: recs-cb-totaldol
-#| echo: FALSE
-recs %>%
-  cb_continuous(TOTALDOL)
-```
-
-#### BTUWOOD {-}
-
-Total cordwood usage, in thousand Btu, 2015 (Wood consumption is not included in TOTALBTU or TOTALDOL)
-
-```{r}
-#| label: recs-cb-btuwood
-#| echo: FALSE
-recs %>%
-  cb_continuous(BTUWOOD)
-```
-
-#### BTUPELLET {-}
-
-Total wood pellet usage, in thousand Btu, 2015 (Wood consumption is not included in TOTALBTU or TOTALDOL)
-
-```{r}
-#| label: recs-cb-btupellet
-#| echo: FALSE
-recs %>%
-  cb_continuous(BTUPELLET)
-```
