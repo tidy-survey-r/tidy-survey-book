@@ -17,271 +17,134 @@ library(knitr)
 
 anes_2020 <- anes_2020 %>% haven::zap_labels()
 
-cb_count <- function(dat, ...){
+cb_count <- function(dat, var){
   t <- dat %>%
-    count(...) %>%
+    count(.data[[var]]) %>%
     mutate(`Unweighted Freq` = n / sum(n)) %>%
     janitor::adorn_totals(where="row", fill="-", na.rm=TRUE, name="Total", n, `Unweighted Freq`) %>%
     mutate(`Unweighted Freq`= round(`Unweighted Freq`, 3)) %>%
     kbl(position="H")
   
    if (knitr:::is_html_output()){
-    t %>% kable_minimal()
+    t %>% kable_minimal() %>% print()
   } else{
-    t 
+    t %>% print()
   }
 }
+
+cb_count_labelled <- function(dat, var){
+  dat2 <- dat %>%
+    mutate(
+      Label=as_factor(.data[[var]], levels="labels"),
+    ) %>% haven::zap_labels()
+  
+  
+  t <- dat2 %>%
+    count(.data[[var]], Label) %>%
+    mutate(`Unweighted Freq` = n / sum(n)) %>%
+    janitor::adorn_totals(where="row", fill="-", na.rm=TRUE, name="Total", n, `Unweighted Freq`) %>%
+    mutate(`Unweighted Freq`= round(`Unweighted Freq`, 3)) %>%
+    kbl(position="H")
+  
+   if (knitr:::is_html_output()){
+    t %>% kable_minimal() %>% print()
+  } else{
+    t %>% print()
+  }
+}
+
 
 cb_continuous <- function(dat, var){
   t <- dat %>%
     summarize(
-      `N Missing`=sum(is.na({{var}})),
-      Minimum = min({{var}}, na.rm = TRUE),
-      Median = median({{var}}, na.rm = TRUE),
-      Maximum = max({{var}}, na.rm = TRUE)) %>%
+      `N Missing`=sum(is.na(.data[[var]])),
+      Minimum = min(.data[[var]], na.rm = TRUE),
+      Median = median(.data[[var]], na.rm = TRUE),
+      Maximum = max(.data[[var]], na.rm = TRUE)) %>%
     kbl(position="H") 
   
   if (knitr:::is_html_output()){
-    t %>% kable_minimal()
+    t %>% kable_minimal() %>% print()
   } else{
-    t 
+    t %>% print()
   }
   
 }
 
+cb_continuous_spec <- function(dat, var){
+  dat2 <- dat %>%
+    haven::zap_labels()
+  
+  t_valid <- dat2 %>%
+    filter(.data[[var]]>0) %>%
+    summarize(
+      `N Missing`=sum(is.na(.data[[var]])),
+      Minimum = min(.data[[var]], na.rm = TRUE),
+      Median = median(.data[[var]], na.rm = TRUE),
+      Maximum = max(.data[[var]], na.rm = TRUE)) 
+  
+  t_ref <- dat2 %>%
+    filter(.data[[var]]==-9)  %>%
+    count(name="N Refused (-9)")
+  
+  t <- t_ref %>% bind_cols(t_valid) %>%
+    select(`N Missing`, `N Refused (-9)`, everything()) %>%
+    kbl(position="H") 
+    
+  if (knitr:::is_html_output()){
+    t %>% kable_minimal() %>% print()
+  } else{
+    t %>% print()
+  }
+  
+}
+
+
+make_section <- function(sec){
+  cat(str_c("## ", sec, "\n\n"))
+  
+  make_sum <- function(var){
+    cat(str_c("#### ", var, " {-} \n\n"))
+    vi <- anes_var_info %>% filter(Vars==var)
+    de <- vi %>% pull(Description)
+    cat(str_c("Description: ", de, "\n\n"))
+    qt <- vi %>% pull(Question)
+    if (!is.na(qt)) cat(str_c("Question: ", qt, "\n\n"))
+    vc <- vi %>% pull(VarClass)
+    cat(str_c("Variable class: ", vc, "\n\n"))
+    vt <- vi %>% pull(VarType) %>% unlist()
+    
+    if (any(c("factor", "character", "logical") %in% vt)){
+      anes_2020 %>% cb_count(var)
+      cat("\n")
+    } else if ("haven_labelled" %in% vt){
+      anes_2020 %>% cb_count_labelled(var)
+      cat("\n")
+    } else if ("numeric" %in% vt){
+      anes_2020 %>% cb_continuous(var)
+      cat("\n")
+    } else if ("numeric2" %in% vt){
+      anes_2020 %>% cb_continuous_spec(var)
+      cat("\n")
+    }
+    
+  }
+  
+  anes_var_info %>% filter(Section==sec) %>% pull(Vars) %>%
+    walk(make_sum)
+}
 
 ```
 
 The full codebook with the original variables is available at [https://electionstudies.org/wp-content/uploads/2022/02/anes_timeseries_2020_userguidecodebook_20220210.pdf](https://electionstudies.org/wp-content/uploads/2022/02/anes_timeseries_2020_userguidecodebook_20220210.pdf)
 
-## Weighting variables
-
-#### V200010b {-}
-
-Full sample post-election weight.
-
-#### V200010d {-}
-
-Full sample variance stratum.
-
-#### V200010c {-}
-
-Full sample variance unit.
-
-## Additional variables
-
-#### InterviewMode {-}
-
-MODE OF INTERVIEW: PRE-ELECTION INTERVIEW
 
 ```{r}
-#| label: anes-cb-interviewmode
+#| label: anes-cb-write
 #| echo: FALSE
-anes_2020 %>%
-   cb_count(V200002, InterviewMode)
+#| results: asis
+anes_var_info %>%
+  distinct(Section) %>%
+  pull(Section) %>%
+  walk(make_section)
 ```
-Variables used: V200002
-
-#### Age {-}
-
-RESPONDENT AGE
-
-```{r}
-#| label: anes-cb-age
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(AgeGroup)
-```
-
-Variables used: V201507x
-
-#### Gender {-}
-
-PRE: WHAT IS YOUR (R) SEX? [REVISED]
-
-What is your sex?
-
-```{r}
-#| label: anes-cb-gender
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201600, Gender)
-```
-
-Variables used: V201600
-
-#### RaceEth {-}
-
-PRE: SUMMARY: R SELF-IDENTIFIED RACE/ETHNICITY
-
-```{r}
-#| label: anes-cb-raceeth
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201549x, RaceEth) 
-```
-
-Variables used: V201549x
-
-#### PartyID {-}
-
-PRE: SUMMARY: PARTY ID
-
-```{r}
-#| label: anes-cb-partyid
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201231x, PartyID) 
-```
-
-Variables used: V201231x
-
-#### Education {-}
-
-What is the highest level of school you have completed or the
-highest degree you have received?
-
-```{r}
-#| label: anes-cb-education
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201510, Education) 
-```
-
-Variables used: V201510
-
-#### Income {-}
-
-PRE: SUMMARY: TOTAL (FAMILY) INCOME
-
-```{r}
-#| label: anes-cb-income
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201617x, Income)
-```
-
-```{r}
-#| label: anes-cb-income7
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201617x, Income7)
-```
-
-Variables used: V201617x
-
-#### CampaignInterest {-}
-
-PRE: HOW INTERESTED IN FOLLOWING CAMPAIGNS
-
-Some people don’t pay much attention to political campaigns. How about you? Would you say that you have been very much interested, somewhat interested or not much interested in the political campaigns so far this year?
-
-```{r}
-#| label: anes-cb-campaigninterest
-#| echo: FALSE
-anes_2020 %>% 
-   cb_count(V201006, CampaignInterest) 
-```
-
-Variables used: V201006
-
-#### TrustGovernment {-}
-
-PRE: HOW OFTEN TRUST GOVERNMENT IN WASHINGTON TO DO WHAT IS RIGHT [REVISED]
-
-How often can you trust the federal government in Washington to do what is right?
-
-```{r}
-#| label: anes-cb-trustgovernment
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201233, TrustGovernment) 
-```
-
-Variables used: V201233
-
-#### TrustPeople {-}
-
-PRE: HOW OFTEN CAN PEOPLE BE TRUSTED
-
-Generally speaking, how often can you trust other people?
-
-```{r}
-#| label: anes-cb-trustpeople
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201237, TrustPeople) 
-```
-
-Variables used: V201237
-
-#### VotedPres2016 {-}
-
-PRE: DID R VOTE FOR PRESIDENT IN 2016
-
-Four years ago, in 2016, Hillary Clinton ran on the Democratic ticket against Donald Trump for the Republicans. Do you remember for sure whether or not you voted in that election?
-
-*Revised:* Four years ago, in 2016, Hillary Clinton ran on the Democratic ticket against Donald Trump for the Republicans. We talk to many people who tell us they did not vote. And we talk to a few people who tell us they did vote, who really did not. We can tell they did not vote by checking with official government records. What about you? If we check the official government voter records, will they show that you voted in the 2016 presidential election, or that you did not vote in that election?
-
-```{r}
-#| label: anes-cb-votedpres2016
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201101, V201102, VotedPres2016) 
-```
-
-Variables used: V201101, V201102
-
-#### VotedPres2016_selection {-}
-
-PRE: RECALL OF LAST (2016) PRESIDENTIAL VOTE CHOICE
-
-Which one did you vote for?
-
-```{r}
-#| label: anes-cb-votedpres2016-selection
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201103, VotedPres2016_selection) 
-```
-
-Variables used: V201103
-
-#### VotedPres2020 {-}
-
-PRE-POST: SUMMARY: VOTER TURNOUT IN 2020
-
-```{r}
-#| label: anes-cb-votedpres2020
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V202109x, VotedPres2020)
-```
-
-Variables used: V202109x
-
-#### VotedPres2020_selection {-}
-
-POST: FOR WHOM DID R VOTE FOR PRESIDENT
-
-```{r}
-#| label: anes-cb-votedpres2020-selection
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V202073, VotedPres2020_selection)
-```
-
-Variables used: V202073
-
-#### EarlyVote2020 / VotedPres2020 {-}
-
-PRE: SUMMARY: REGISTRATION AND EARLY VOTE STATUS
-
-```{r}
-#| label: anes-cb-earlyvote2020
-#| echo: FALSE
-anes_2020 %>%
-   cb_count(V201025x, V202109x, VotedPres2020, EarlyVote2020)
-```
-
-Variables used: V201025x, V202109x
