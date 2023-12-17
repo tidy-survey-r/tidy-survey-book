@@ -60,197 +60,213 @@ anes_in_2020 %>%
 
 
 anes_2020 <- anes_in_2020 %>%
-   filter(V200004==3) %>%
-   select(
-      "V200010b", # FULL SAMPLE POST-ELECTION WEIGHT
-      "V200010d", # FULL SAMPLE VARIANCE STRATUM
-      "V200010c", # FULL SAMPLE VARIANCE UNIT
-      "V200002", # MODE OF INTERVIEW: PRE-ELECTION INTERVIEW
-      "V201006", # PRE: HOW INTERESTED IN FOLLOWING CAMPAIGNS
-      "V201102", # PRE: DID R VOTE FOR PRESIDENT IN 2016
-      "V201101", # PRE: DID R VOTE FOR PRESIDENT IN 2016 [REVISED]
-      "V201103", # PRE: RECALL OF LAST (2016) PRESIDENTIAL VOTE CHOICE)
-      "V201025x", # PRE: SUMMARY: REGISTRATION AND EARLY VOTE STATUS
-      "V201231x", # PRE: SUMMARY: PARTY ID
-      "V201233", # PRE: HOW OFTEN TRUST GOVERNMENT IN WASHINGTON TO DO WHAT IS RIGHT [REVISED]
-      "V201237", # PRE: HOW OFTEN CAN PEOPLE BE TRUSTED
-      "V201507x", # PRE: SUMMARY: RESPONDENT AGE
-      "V201510", # PRE: HIGHEST LEVEL OF EDUCATION
-      "V201549x", # PRE: SUMMARY: R SELF-IDENTIFIED RACE/ETHNICITY
-      "V201600", # PRE: WHAT IS YOUR (R) SEX? [REVISED]
-      "V201617x", # PRE: SUMMARY: TOTAL (FAMILY) INCOME
-      "V202066", # POST: DID R VOTE IN NOVEMBER 2020 ELECTION
-      "V202109x", # PRE-POST: SUMMARY: VOTER TURNOUT IN 2020
-      "V202072", # POST: DID R VOTE FOR PRESIDENT
-      "V202073", # POST: FOR WHOM DID R VOTE FOR PRESIDENT
-      "V202110x" # PRE-POST: SUMMARY: 2020 PRESIDENTIAL VOTE
-   ) %>%
-   mutate(
-      InterviewMode = fct_recode(as.character(V200002), Video = "1", Telephone = "2", Web = "3"),
-      Weight = V200010b,
-      Stratum = as.factor(V200010d),
-      VarUnit = as.factor(V200010c),
-      Age = if_else(V201507x > 0, as.numeric(V201507x), NA_real_),
-      AgeGroup = cut(Age, c(17, 29, 39, 49, 59, 69, 200),
-                     labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70 or older")
+  filter(V200004==3) %>%
+  select(
+    V200001,
+    V200001,
+    V200002, # MODE OF INTERVIEW: PRE-ELECTION INTERVIEW
+    V200010b, # FULL SAMPLE POST-ELECTION WEIGHT
+    V200010d, # FULL SAMPLE VARIANCE STRATUM
+    V200010c, # FULL SAMPLE VARIANCE UNIT
+    V201006, # PRE: HOW INTERESTED IN FOLLOWING CAMPAIGNS
+    V201102, # PRE: DID R VOTE FOR PRESIDENT IN 2016
+    V201101, # PRE: DID R VOTE FOR PRESIDENT IN 2016 [REVISED]
+    V201103, # PRE: RECALL OF LAST (2016) PRESIDENTIAL VOTE CHOICE)
+    V201025x, # PRE: SUMMARY: REGISTRATION AND EARLY VOTE STATUS
+    V201228,
+    V201229,
+    V201230,
+    V201231x, # PRE: SUMMARY: PARTY ID
+    V201233, # PRE: HOW OFTEN TRUST GOVERNMENT IN WASHINGTON TO DO WHAT IS RIGHT [REVISED]
+    V201237, # PRE: HOW OFTEN CAN PEOPLE BE TRUSTED
+    V201507x, # PRE: SUMMARY: RESPONDENT AGE
+    V201510, # PRE: HIGHEST LEVEL OF EDUCATION
+    V201546,
+    starts_with("V201547"),
+    V201549x, # PRE: SUMMARY: R SELF-IDENTIFIED RACE/ETHNICITY
+    V201600, # PRE: WHAT IS YOUR (R) SEX? [REVISED]
+    V201607,
+    V201610,
+    V201611,
+    V201613,
+    V201615,
+    V201616,
+    V201617x, # PRE: SUMMARY: TOTAL (FAMILY) INCOME
+    V202066, # POST: DID R VOTE IN NOVEMBER 2020 ELECTION
+    V201024,
+    V202066,
+    V202051,
+    V202109x, # PRE-POST: SUMMARY: VOTER TURNOUT IN 2020
+    V202072, # POST: DID R VOTE FOR PRESIDENT
+    V201029,
+    V202073, # POST: FOR WHOM DID R VOTE FOR PRESIDENT
+    V202110x # PRE-POST: SUMMARY: 2020 PRESIDENTIAL VOTE
+  ) %>%
+  mutate(
+    CaseID=V200001,
+    InterviewMode = fct_recode(as.character(V200002), Video = "1", Telephone = "2", Web = "3"),
+    Weight = V200010b,
+    Stratum = as.factor(V200010d),
+    VarUnit = as.factor(V200010c),
+    Age = if_else(V201507x > 0, as.numeric(V201507x), NA_real_),
+    AgeGroup = cut(Age, c(17, 29, 39, 49, 59, 69, 200),
+                   labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70 or older")
+    ),
+    Gender = factor(
+      case_when(
+        V201600 == 1 ~ "Male",
+        V201600 == 2 ~ "Female",
+        TRUE ~ NA_character_
       ),
-      Gender = factor(
-         case_when(
-            V201600 == 1 ~ "Male",
-            V201600 == 2 ~ "Female",
-            TRUE ~ NA_character_
-         ),
-         levels = c("Male", "Female")
+      levels = c("Male", "Female")
+    ),
+    RaceEth = factor(
+      case_when(
+        V201549x == 1 ~ "White",
+        V201549x == 2 ~ "Black",
+        V201549x == 3 ~ "Hispanic",
+        V201549x == 4 ~ "Asian, NH/PI",
+        V201549x == 5 ~ "AI/AN",
+        V201549x == 6 ~ "Other/multiple race",
+        TRUE ~ NA_character_
       ),
-      RaceEth = factor(
-         case_when(
-            V201549x == 1 ~ "White",
-            V201549x == 2 ~ "Black",
-            V201549x == 3 ~ "Hispanic",
-            V201549x == 4 ~ "Asian, NH/PI",
-            V201549x == 5 ~ "AI/AN",
-            V201549x == 6 ~ "Other/multiple race",
-            TRUE ~ NA_character_
-         ),
-         levels = c("White", "Black", "Hispanic", "Asian, NH/PI", "AI/AN", "Other/multiple race", NA_character_)
+      levels = c("White", "Black", "Hispanic", "Asian, NH/PI", "AI/AN", "Other/multiple race", NA_character_)
+    ),
+    PartyID = factor(
+      case_when(
+        V201231x == 1 ~ "Strong democrat",
+        V201231x == 2 ~ "Not very strong democrat",
+        V201231x == 3 ~ "Independent-democrat",
+        V201231x == 4 ~ "Independent",
+        V201231x == 5 ~ "Independent-republican",
+        V201231x == 6 ~ "Not very strong republican",
+        V201231x == 7 ~ "Strong republican",
+        TRUE ~ NA_character_
       ),
-      PartyID = factor(
-         case_when(
-            V201231x == 1 ~ "Strong democrat",
-            V201231x == 2 ~ "Not very strong democrat",
-            V201231x == 3 ~ "Independent-democrat",
-            V201231x == 4 ~ "Independent",
-            V201231x == 5 ~ "Independent-republican",
-            V201231x == 6 ~ "Not very strong republican",
-            V201231x == 7 ~ "Strong republican",
-            TRUE ~ NA_character_
-         ),
-         levels = c("Strong democrat", "Not very strong democrat", "Independent-democrat", "Independent", "Independent-republican", "Not very strong republican", "Strong republican")
+      levels = c("Strong democrat", "Not very strong democrat", "Independent-democrat", "Independent", "Independent-republican", "Not very strong republican", "Strong republican")
+    ),
+    Education = factor(
+      case_when(
+        V201510 <= 0 ~ NA_character_,
+        V201510 == 1 ~ "Less than HS",
+        V201510 == 2 ~ "High school",
+        V201510 <= 5 ~ "Post HS",
+        V201510 == 6 ~ "Bachelor's",
+        V201510 <= 8 ~ "Graduate",
+        TRUE ~ NA_character_
       ),
-      Education = factor(
-         case_when(
-            V201510 <= 0 ~ NA_character_,
-            V201510 == 1 ~ "Less than HS",
-            V201510 == 2 ~ "High school",
-            V201510 <= 5 ~ "Post HS",
-            V201510 == 6 ~ "Bachelor's",
-            V201510 <= 8 ~ "Graduate",
-            TRUE ~ NA_character_
-         ),
-         levels = c("Less than HS", "High school", "Post HS", "Bachelor's", "Graduate")
+      levels = c("Less than HS", "High school", "Post HS", "Bachelor's", "Graduate")
+    ),
+    Income = cut(V201617x, c(-5, 1:22),
+                 labels = c(
+                   "Under $9,999",
+                   "$10,000-14,999",
+                   "$15,000-19,999",
+                   "$20,000-24,999",
+                   "$25,000-29,999",
+                   "$30,000-34,999",
+                   "$35,000-39,999",
+                   "$40,000-44,999",
+                   "$45,000-49,999",
+                   "$50,000-59,999",
+                   "$60,000-64,999",
+                   "$65,000-69,999",
+                   "$70,000-74,999",
+                   "$75,000-79,999",
+                   "$80,000-89,999",
+                   "$90,000-99,999",
+                   "$100,000-109,999",
+                   "$110,000-124,999",
+                   "$125,000-149,999",
+                   "$150,000-174,999",
+                   "$175,000-249,999",
+                   "$250,000 or more"
+                 )
+    ),
+    Income7 = fct_collapse(
+      Income,
+      "Under $20k" = c("Under $9,999", "$10,000-14,999", "$15,000-19,999"),
+      "$20-40k" = c("$20,000-24,999", "$25,000-29,999", "$30,000-34,999", "$35,000-39,999"),
+      "$40-60k" = c("$40,000-44,999", "$45,000-49,999", "$50,000-59,999"),
+      "$60-80k" = c("$60,000-64,999", "$65,000-69,999", "$70,000-74,999", "$75,000-79,999"),
+      "$80-100k" = c("$80,000-89,999", "$90,000-99,999"),
+      "$100-125k" = c("$100,000-109,999", "$110,000-124,999"),
+      "$125k or more" = c("$125,000-149,999", "$150,000-174,999", "$175,000-249,999", "$250,000 or more")
+    ),
+    CampaignInterest = factor(
+      case_when(
+        V201006 == 1 ~ "Very much interested",
+        V201006 == 2 ~ "Somewhat interested",
+        V201006 == 3 ~ "Not much interested",
+        TRUE ~ NA_character_
       ),
-      Income = cut(V201617x, c(-5, 1:22),
-                   labels = c(
-                      "Under $9,999",
-                      "$10,000-14,999",
-                      "$15,000-19,999",
-                      "$20,000-24,999",
-                      "$25,000-29,999",
-                      "$30,000-34,999",
-                      "$35,000-39,999",
-                      "$40,000-44,999",
-                      "$45,000-49,999",
-                      "$50,000-59,999",
-                      "$60,000-64,999",
-                      "$65,000-69,999",
-                      "$70,000-74,999",
-                      "$75,000-79,999",
-                      "$80,000-89,999",
-                      "$90,000-99,999",
-                      "$100,000-109,999",
-                      "$110,000-124,999",
-                      "$125,000-149,999",
-                      "$150,000-174,999",
-                      "$175,000-249,999",
-                      "$250,000 or more"
-                   )
+      levels = c("Very much interested", "Somewhat interested", "Not much interested")
+    ),
+    TrustGovernment = factor(
+      case_when(
+        V201233 == 1 ~ "Always",
+        V201233 == 2 ~ "Most of the time",
+        V201233 == 3 ~ "About half the time",
+        V201233 == 4 ~ "Some of the time",
+        V201233 == 5 ~ "Never",
+        TRUE ~ NA_character_
       ),
-      Income7 = fct_collapse(
-         Income,
-         "Under $20k" = c("Under $9,999", "$10,000-14,999", "$15,000-19,999"),
-         "$20-40k" = c("$20,000-24,999", "$25,000-29,999", "$30,000-34,999", "$35,000-39,999"),
-         "$40-60k" = c("$40,000-44,999", "$45,000-49,999", "$50,000-59,999"),
-         "$60-80k" = c("$60,000-64,999", "$65,000-69,999", "$70,000-74,999", "$75,000-79,999"),
-         "$80-100k" = c("$80,000-89,999", "$90,000-99,999"),
-         "$100-125k" = c("$100,000-109,999", "$110,000-124,999"),
-         "$125k or more" = c("$125,000-149,999", "$150,000-174,999", "$175,000-249,999", "$250,000 or more")
+      levels = c("Always", "Most of the time", "About half the time", "Some of the time", "Never")
+    ),
+    TrustPeople = factor(
+      case_when(
+        V201237 == 1 ~ "Always",
+        V201237 == 2 ~ "Most of the time",
+        V201237 == 3 ~ "About half the time",
+        V201237 == 4 ~ "Some of the time",
+        V201237 == 5 ~ "Never",
+        TRUE ~ NA_character_
       ),
-      CampaignInterest = factor(
-         case_when(
-            V201006 == 1 ~ "Very much interested",
-            V201006 == 2 ~ "Somewhat interested",
-            V201006 == 3 ~ "Not much interested",
-            TRUE ~ NA_character_
-         ),
-         levels = c("Very much interested", "Somewhat interested", "Not much interested")
+      levels = c("Always", "Most of the time", "About half the time", "Some of the time", "Never")
+    ),
+    VotedPres2016 = factor(
+      case_when(
+        V201101 == 1 | V201102 == 1 ~ "Yes",
+        V201101 == 2 | V201102 == 2 ~ "No",
+        TRUE ~ NA_character_
       ),
-      TrustGovernment = factor(
-         case_when(
-            V201233 == 1 ~ "Always",
-            V201233 == 2 ~ "Most of the time",
-            V201233 == 3 ~ "About half the time",
-            V201233 == 4 ~ "Some of the time",
-            V201233 == 5 ~ "Never",
-            TRUE ~ NA_character_
-         ),
-         levels = c("Always", "Most of the time", "About half the time", "Some of the time", "Never")
+      levels = c("Yes", "No")
+    ),
+    VotedPres2016_selection = factor(
+      case_when(
+        V201103 == 1 ~ "Clinton",
+        V201103 == 2 ~ "Trump",
+        V201103 == 5 ~ "Other",
+        TRUE ~ NA_character_
       ),
-      TrustPeople = factor(
-         case_when(
-            V201237 == 1 ~ "Always",
-            V201237 == 2 ~ "Most of the time",
-            V201237 == 3 ~ "About half the time",
-            V201237 == 4 ~ "Some of the time",
-            V201237 == 5 ~ "Never",
-            TRUE ~ NA_character_
-         ),
-         levels = c("Always", "Most of the time", "About half the time", "Some of the time", "Never")
+      levels = c("Clinton", "Trump", "Other")
+    ),
+    VotedPres2020 = factor(
+      case_when(
+        V202072 == 1 ~ "Yes",
+        V202072 == 2 ~ "No",
+        TRUE ~ NA_character_
       ),
-      VotedPres2016 = factor(
-         case_when(
-            V201101 == 1 | V201102 == 1 ~ "Yes",
-            V201101 == 2 | V201102 == 2 ~ "No",
-            TRUE ~ NA_character_
-         ),
-         levels = c("Yes", "No")
+      levels = c("Yes", "No")
+    ),
+    VotedPres2020_selection = factor(
+      case_when(
+        V202110x == 1 ~ "Biden",
+        V202110x == 2 ~ "Trump",
+        V202110x >= 3 & V202110x <= 5~ "Other",
+        TRUE ~ NA_character_
       ),
-      VotedPres2016_selection = factor(
-         case_when(
-            V201103 == 1 ~ "Clinton",
-            V201103 == 2 ~ "Trump",
-            V201103 == 5 ~ "Other",
-            TRUE ~ NA_character_
-         ),
-         levels = c("Clinton", "Trump", "Other")
-      ),
-      VotedPres2020 = factor(
-         case_when(
-            V202109x == 1 ~ "Yes",
-            V202109x == 0 ~ "No",
-            TRUE ~ NA_character_
-         ),
-         levels = c("Yes", "No")
-      ),
-      VotedPres2020_selection = factor(
-         case_when(
-            V202073 == 1 ~ "Biden",
-            V202073 == 2 ~ "Trump",
-            V202073 >= 3 & V202073 <= 8~ "Other",
-            V202073 == 11 ~ NA_character_,
-            V202073 == 12 ~ NA_character_,
-            TRUE ~ NA_character_
-         ),
-         levels = c("Biden", "Trump", "Other")
-      ),
-      EarlyVote2020 = factor(
-         case_when(
-            V201025x < 0 ~ NA_character_,
-            V201025x == 4 ~ "Yes",
-            VotedPres2020 == "Yes" ~ "No",
-            TRUE ~ NA_character_), 
-         levels = c("Yes", "No")
-      )
-   )
+      levels = c("Biden", "Trump", "Other")
+    ),
+    EarlyVote2020 = factor(
+      case_when(
+        V201025x < 0 ~ NA_character_,
+        V201025x == 4 ~ "Yes",
+        VotedPres2020 == "Yes" ~ "No",
+        TRUE ~ NA_character_), 
+      levels = c("Yes", "No")
+    )
+  )
 
 summary(anes_2020)
 ```
@@ -292,9 +308,9 @@ anes_2020 %>% count(VotedPres2016, V201101, V201102)
 
 anes_2020 %>% count(VotedPres2016_selection, V201103)
 
-anes_2020 %>% count(VotedPres2020, V202109x)
+anes_2020 %>% count(VotedPres2020, V202072)
 
-anes_2020 %>% count(VotedPres2020_selection, V202073)
+anes_2020 %>% count(VotedPres2020_selection, V202110x)
 
 anes_2020 %>% count(EarlyVote2020, V201025x, VotedPres2020)
 
@@ -303,13 +319,75 @@ anes_2020 %>%
    pull(WtSum)
 ```
 
+
+## Label and order data
+
+```{r}
+#label: label-ord
+
+cb_in <- readxl::read_xlsx(here::here("DataCleaningScripts", "ANES Codebook Metadata.xlsx"))
+
+cb_ord <- cb_in %>%
+  mutate(
+    Type=1,
+    SectNum=case_match(
+      Section,
+      "ADMIN"~1,
+      "WEIGHTS"~2,
+      "PRE-ELECTION SURVEY QUESTIONNAIRE"~3,
+      "POST-ELECTION SURVEY QUESTIONNAIRE"~4
+    )) %>%
+  arrange(SectNum, Variable) %>%
+  mutate(
+    Order=row_number()
+  )
+
+
+
+
+cb_slim <- cb_ord %>%
+  select(Variable=BookDerived, `Description and Labels`, Question, Section, SectNum, Order) %>%
+  filter(!is.na(Variable)) %>%
+  separate_longer_delim(Variable, delim="; ") %>%
+  add_case(Variable="VotedPres2016", `Description and Labels`="PRE: Did R vote for President in 2016", Question="Derived from V201102, V201101", Section="PRE-ELECTION SURVEY QUESTIONNAIRE", SectNum=3, Order=11) %>%
+    add_case(Variable="EarlyVote2020", `Description and Labels`="PRE-POST: Voted early for president", Question="Derived from V201025x, VotedPres2020", Section="POST-ELECTION SURVEY QUESTIONNAIRE", SectNum=4, Order=44) %>%
+  mutate(Type=2) %>%
+  bind_rows(select(cb_ord, -BookDerived)) %>%
+  arrange(SectNum, Order, Type)
+
+names(anes_2020)[!(names(anes_2020) %in% pull(cb_slim, Variable))]
+
+cb_vars <- cb_slim %>%
+  filter(Variable %in% names(anes_2020))
+
+
+anes_ord <- anes_2020 %>%
+  select(all_of(pull(cb_vars, Variable)))
+
+options("tidylog.display" = list())  
+
+for (var in pull(cb_vars, Variable)) {
+  vi <- cb_vars %>% filter(Variable==var)
+  attr(anes_ord[[deparse(as.name(var))]], "format.spss") <- NULL
+  attr(anes_ord[[deparse(as.name(var))]], "display_width") <- NULL
+  attr(anes_ord[[deparse(as.name(var))]], "label") <- pull(vi, `Description and Labels`)
+  attr(anes_ord[[deparse(as.name(var))]], "Section") <- pull(vi, Section) %>% as.character()
+  if (!is.na(pull(vi, Question))) attr(anes_ord[[deparse(as.name(var))]], "Question") <- pull(vi, Question)
+}
+
+options("tidylog.display" = NULL) 
+
+```
+
+
+
 ## Save data
 
 ```{r savedat}
-summary(anes_2020)
+summary(anes_ord)
 
 anes_der_tmp_loc <- here("osf_dl", "anes_2020.rds")
-write_rds(anes_2020, anes_der_tmp_loc)
+write_rds(anes_ord, anes_der_tmp_loc)
 target_dir <- osf_retrieve_node("https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957") 
 osf_upload(target_dir, path=anes_der_tmp_loc, conflicts="overwrite")
 unlink(anes_der_tmp_loc)
