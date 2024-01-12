@@ -15,7 +15,34 @@ library(janitor)
 library(kableExtra)
 library(knitr)
 
-anes_2020 <- anes_2020 %>% haven::zap_labels()
+data(anes_2020)
+
+attrlist <- map(anes_2020, attributes)
+
+NULL_to_NA <- function(x){
+  if (is.null(x)){
+    NA
+  }else{
+    x
+  }
+}
+
+anes_var_info <- tibble(
+  Vars=names(attrlist),
+  Section=map_chr(attrlist, "Section") %>% unname(),
+  Question=map(attrlist, "Question") %>% map(NULL_to_NA) %>% unlist(use.names = FALSE),
+  Description=map_chr(attrlist, "label") %>% unname(),
+  VarType=map(anes_2020, class) ,) %>%
+  rowwise() %>%
+  mutate(
+    VarClass=str_c(VarType, collapse=", "),
+    VarType=case_when(
+      Vars%in%c("V200001", "CaseID")~ list("ID"),
+      Vars=="V201507x"~list("numeric2"),
+      TRUE~list(VarType)
+    )
+  ) %>%
+  ungroup()
 
 cb_count <- function(dat, var){
   t <- dat %>%
