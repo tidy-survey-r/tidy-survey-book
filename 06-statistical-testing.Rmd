@@ -14,8 +14,7 @@ For this chapter, load the following packages and the helper function:
 library(tidyverse)
 library(survey) 
 library(srvyr) 
-library(osfr)
-source("helper-fun/helper-function.R")
+library(srvyr.data)
 library(broom)
 library(gt)
 ```
@@ -24,10 +23,10 @@ We will be using data from ANES and RECS. Here is the code to create the design 
 ```{r}
 #| label: stattest-anes-des
 #| eval: FALSE
-anes_in <- read_osf("anes_2020.rds")
 targetpop <- 231592693
+data(anes_2020)
 
-anes_adjwgt <- anes_in %>%
+anes_adjwgt <- anes_2020 %>%
   mutate(Weight = Weight / sum(Weight) * targetpop)
 
 anes_des <- anes_adjwgt %>%
@@ -44,14 +43,14 @@ For RECS, details are included in the RECS documentation and Chapter \@ref(c03-s
 ```{r}
 #| label: stattest-recs-des
 #| eval: FALSE
-recs_in <- read_osf("recs_2015.rds")
+data(recs_2020)
 
-recs_des <- recs_in %>%
+recs_des <- recs_2020 %>%
   as_survey_rep(
     weights = NWEIGHT,
-    repweights = starts_with("BRRWT"),
-    type = "Fay",
-    rho = 0.5,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59/60,
     mse = TRUE
   )
 ```
@@ -277,7 +276,7 @@ ttest_ex3 <- recs_des %>%
 broom::tidy(ttest_ex3)
 ```
 
-The results indicate that the difference in electrical bills for those that used AC and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r signif(ttest_ex3$statistic, 3)` and the p-value is $`r signif(ttest_ex3[["p.value"]], 3)`$. Households that used AC spent, on average, $462.90 more in 2015.
+The results indicate that the difference in electrical bills for those that used AC and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r signif(ttest_ex3$statistic, 3)` and the p-value is $`r signif(ttest_ex3[["p.value"]], 3)`$. Households that used AC spent, on average, $`r round(ttest_ex3[["estimate"]], 2) %>% unname()` more in 2020 on electricity than households without AC.
 
 #### Example 4: Paired two-sample t-test {.unnumbered #stattest-ttest-ex4}
 

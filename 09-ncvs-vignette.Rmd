@@ -13,8 +13,7 @@ For this chapter, load the following packages and the helper function:
 #| message: FALSE
 library(tidyverse)
 library(srvyr) 
-library(osfr)
-source("helper-fun/helper-function.R")
+library(srvyr.data)
 library(gt)
 ```
 
@@ -22,9 +21,9 @@ We will be using data from NCVS. Here is the code to read in the three datasets 
 ```{r}
 #| label: ncvs-data
 #| cache: TRUE
-inc_in <- read_osf("ncvs_2021_incident.rds")
-hh_in <- read_osf("ncvs_2021_household.rds")
-pers_in <- read_osf("ncvs_2021_person.rds")
+data(ncvs_2021_incident)
+data(ncvs_2021_household)
+data(ncvs_2021_person)
 ```
 :::
 
@@ -119,7 +118,7 @@ We want to create four variables to indicate if an incident is a series crime.  
 #| label: ncvs-vign-incfile
 #| message: false
 #| cache: TRUE
-inc_series <- inc_in %>%
+inc_series <- ncvs_2021_incident %>%
   mutate(
     series = case_when(V4017 %in% c(1, 8) ~ 1,
                        V4018 %in% c(2, 8) ~ 1,
@@ -314,12 +313,12 @@ hh_z_list <- rep(0, ncol(inc_hh_sums) - 3) %>% as.list() %>%
 pers_z_list <- rep(0, ncol(inc_pers_sums) - 4) %>% as.list() %>%
   setNames(names(inc_pers_sums)[-(1:4)])
 
-hh_vsum <- hh_in %>%
+hh_vsum <- ncvs_2021_household %>%
   full_join(inc_hh_sums, by = c("YEARQ", "IDHH")) %>%
   replace_na(hh_z_list) %>%
   mutate(ADJINC_WT = if_else(is.na(WGTVICCY), 0, WGTVICCY / WGTHHCY))
 
-pers_vsum <- pers_in %>%
+pers_vsum <- ncvs_2021_person %>%
   full_join(inc_pers_sums, by = c("YEARQ", "IDHH", "IDPER")) %>%
   replace_na(pers_z_list) %>%
   mutate(ADJINC_WT = if_else(is.na(WGTVICCY), 0, WGTVICCY / WGTPERCY))

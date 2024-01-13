@@ -14,9 +14,7 @@ For this chapter, load the following packages and the helper function:
 library(tidyverse)
 library(survey)
 library(srvyr)
-library(osfr)
-source("helper-fun/helper-function.R")
-library(tidycensus)
+library(srvyr.data)
 ```
 
 To help explain the different types of sample designs, this chapter will use the `api` and `scd` data that comes in the {survey} package:
@@ -26,11 +24,13 @@ data(api)
 data(scd)
 ```
 
-Additionally, we have created multiple analytic datasets for use in this book on a directory on OSF^[https://osf.io/gzbkn/?view_only=8ca80573293b4e12b7f934a0f742b957]. To load any data used in the book that is not included in existing packages, we have created a helper function `read_osf()`. This chapter uses data from the Residential Energy Consumption Survey (RECS), so we will use the following code to load the RECS data to use later in this chapter:
+Additionally, we have created multiple analytic datasets for use in the {srvyr.data} package, as described in \@ref{book-datasets}. This chapter uses data from the Residential Energy Consumption Survey (RECS) - both 2015 and 2020, so we will use the following code to load the RECS data to use later in this chapter:
+
 ```{r}
-#| label: samp-setup-recs
+#| label: samp-setup-recs 
 #| eval: FALSE
-recs_in <- read_osf("recs_2015.rds")
+data(recs_2015)
+data(recs_2020)
 ```
 :::
 
@@ -461,7 +461,7 @@ The default option for `mse` is to use the global option of "survey.replicates.m
 
 #### The syntax {-} 
 
-Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 for the person weights in the American Community Survey (ACS) [@acs-pums-2021] or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS) [@recs-2015-micro]. This makes it easy to use some of the tidy selection^[dplyr documentation on tidy-select: https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] functions in R. For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, we can use the following syntax (both are equivalent):
+Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 for the person weights in the American Community Survey (ACS) [@acs-pums-2021] or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS) [@recs-2015-micro, @recs-2020-micro]. This makes it easy to use some of the tidy selection^[dplyr documentation on tidy-select: https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] functions in R. For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, we can use the following syntax (both are equivalent):
 
 ```r
 brr_des <- dat %>%
@@ -554,7 +554,7 @@ Fay's BRR method for replicate weights is similar to the BRR method in that it u
 
 #### The math {-}
 
-The standard error estimate for $\hat{\theta}$ is slightly different than the BRR, due to the addition of the multiplier of $\rho$. Using the generic notation above, $\alpha=\frac{1}{R \left(1-\rho\right)^2}$ and $\alpha_r=1 \forall r$. The standard error is calculated as:
+The standard error estimate for $\hat{\theta}$ is slightly different than the BRR, due to the addition of the multiplier of $\rho$. Using the generic notation above, $\alpha=\frac{1}{R \left(1-\rho\right)^2}$ and $\alpha_r=1 \text{ for all } r$. The standard error is calculated as:
 
 $$se(\hat{\theta})=\sqrt{\frac{1}{R (1-\rho)^2} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$
 
@@ -573,14 +573,24 @@ fay_des <- dat %>%
 
 #### Example {-} 
 
-The 2015 RECS [@recs-2015-micro] uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with $\rho=0.5$. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. We have already read in the RECS data and created a dataset called `recs_in` above in the prerequisites.
+The 2015 RECS [@recs-2015-micro] uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96 with $\rho=0.5$. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. We have already read in the RECS data and created a dataset called `recs_2015` above in the prerequisites.
 
 To specify this design, use the following syntax:
 
 ```{r}
+#| label: samp-des-recs-2015-read
+#| echo: FALSE
+#| warning: FALSE
+#| message: FALSE
+#| cache: TRUE
+data(recs_2015)
+```
+
+
+```{r}
 #| label: samp-des-recs-des
 #| eval: TRUE
-recs_des <- recs_in %>%
+recs_2015_des <- recs_2015 %>%
   as_survey_rep(weights = NWEIGHT,
                 repweights = BRRWT1:BRRWT96,
                 type = "Fay",
@@ -588,24 +598,11 @@ recs_des <- recs_in %>%
                 mse = TRUE,
                 variables = c(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC))
 
-recs_des 
+recs_2015_des 
 
-summary(recs_des) 
+summary(recs_2015_des) 
 ```
 
-```{r}
-#| label: samp-des-recs-des-full
-#| echo: FALSE
-# This is just for later use in book
-recs_des <- recs_in %>%
-  as_survey_rep(
-    weights = NWEIGHT,
-    repweights = BRRWT1:BRRWT96,
-    type = "Fay",
-    rho = 0.5,
-    mse = TRUE
-  )
-```
 
 In specifying the design, the `variables` option was also used to include which variables might be used in analyses. This is optional but can make our object smaller. When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Fay's variance method (rho= 0.5) with 96 replicates and MSE variances`, and the variables are included. No weight or probability summary is included in this output as we have seen in some other design objects.
 
@@ -617,7 +614,7 @@ The JKn method is used for stratified designs and requires two or more PSUs per 
 
 #### The math {-}
 
-Using the generic notation above, $\alpha=\frac{R-1}{R}$ and $\alpha_r=1 \forall r$. For the JK1 method, the standard error estimate for $\hat{\theta}$ is calculated as:
+Using the generic notation above, $\alpha=\frac{R-1}{R}$ and $\alpha_r=1 \text{ for all } r$. For the JK1 method, the standard error estimate for $\hat{\theta}$ is calculated as:
 
 $$se(\hat{\theta})=\sqrt{\frac{R-1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$
 The JKn method is a bit more complex, but the coefficients are generally provided with restricted and public-use files. For each replicate, one stratum has a PSU removed, and the weights are adjusted by $n_h/(n_h-1)$ where $n_h$ is the number of PSUs in stratum $h$. The coefficients in other strata are set to 1. Denote the coefficient that results from this process for replicate $r$ as $\alpha_r$, then the standard error estimate for $\hat{\theta}$ is calculated as:
@@ -652,41 +649,43 @@ jkn_des <- dat %>%
 
 #### Example {-}
 
-The American Community Survey releases public use microdata with JK1 weights at the person and household level. This example includes data at the household level where the replicate weights are specified as WGTP1, ..., WGTP80, and the main weight is WGTP [@acs-5yr-doc]. Using the {tidycensus} package^[tidycensus package: https://walker-data.com/tidycensus/], data is downloaded from the Census API. For example, the code below has a request to obtain data for each person in each household in two Public Use Microdata Areas (PUMAs) in Durham County, NC^[Public Use Microdata Areas in North Carolina: https://www.census.gov/geographies/reference-maps/2010/geo/2010-pumas/north-carolina.html]. The variables requested are NP (number of persons in the household), BDSP (number of bedrooms), HINCP (household income), and TYPEHUGQ (type of household). By default, several other variables will come along, including SERIALNO (a unique identifier for each household), SPORDER (a unique identifier for each person within each household), PUMA, ST (state), person weight (PWGTP), and the household weights (WGTP, WGTP1, ..., WGTP80). Filtering to records where SPORDER=1 yields only one record per household and TYPEHUGQ=1 filters to only households and not group quarters. 
+The 2020 RECS [@recs-2020-micro] uses jackknife weights with the final weight as NWEIGHT and replicate weights as NWEIGHT1 - NWEIGHT60 with a scale of $(R-1)/R=59/60$. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. We have already read in the RECS data and created a dataset called `recs_2020` above in the prerequisites.
+
+To specify this design, use the following syntax:
 
 ```{r}
-#| label: samp-des-acsexamp
-#| cache: TRUE
-#| results: 'hide'
-#| warning: false
-pums_in <- get_pums(variables = c("NP", "BDSP", "HINCP"),
-                    state = "37", 
-                    puma = c("01301", "01302"), 
-                    rep_weights = "housing",
-                    year = 2021,
-                    survey = "acs5",
-                    variables_filter = list(SPORDER = 1, TYPEHUGQ = 1))
+#| label: samp-des-recs2020-des
+recs_des <- recs_2020 %>%
+  as_survey_rep(
+    weights = NWEIGHT,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59/60,
+    mse = TRUE,
+    variables = c(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC)
+  )
+
+recs_des
+
+summary(recs_des)
 ```
 
 ```{r}
-#| label: samp-des-acsexampcont
-#| cache: TRUE
-#| dependson: 'acsexamp'
-pums_in
-
-acs_des <- pums_in %>%
-  as_survey_rep(weights = WGTP,
-                repweights = num_range("WGTP", 1:80),
-                type = "JK1",
-                mse = TRUE,
-                scale = 4 / 80)
-
-acs_des 
-
-summary(acs_des) 
+#| label: samp-des-recs-des-full
+#| echo: FALSE
+# This is just for later use in book
+recs_des <- recs_2020 %>%
+  as_survey_rep(
+    weights = NWEIGHT,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59/60,
+    mse = TRUE
+  )
 ```
 
-When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Unstratified cluster jacknife (JK1) with 80 replicates and MSE variances`, and the variables are included. No weight or probability summary is included.
+
+When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Unstratified cluster jacknife (JK1) with 60 replicates and MSE variances`, and the variables are included. No weight or probability summary is included.
 
 ### Bootstrap Method
 

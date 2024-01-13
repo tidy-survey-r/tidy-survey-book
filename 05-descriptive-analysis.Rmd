@@ -14,8 +14,7 @@ For this chapter, load the following packages and the helper function:
 library(tidyverse)
 library(survey)
 library(srvyr)
-library(osfr)
-source("helper-fun/helper-function.R")
+library(srvyr.data)
 library(broom)
 ```
 
@@ -40,10 +39,10 @@ We will be using data from ANES and RECS. Here is the code to create the design 
 ```{r}
 #| label: desc-anes-des
 #| eval: FALSE
-anes_in <- read_osf("anes_2020.rds")
 targetpop <- 231592693
+data(anes_2020)
 
-anes_adjwgt <- anes_in %>%
+anes_adjwgt <- anes_2020 %>%
   mutate(Weight = Weight / sum(Weight) * targetpop)
 
 anes_des <- anes_adjwgt %>%
@@ -60,14 +59,14 @@ For RECS, details are included in the RECS documentation and Chapter \@ref(c03-s
 ```{r}
 #| label: desc-recs-des
 #| eval: FALSE
-recs_in <- read_osf("recs_2015.rds")
+data(recs_2020)
 
-recs_des <- recs_in %>%
+recs_des <- recs_2020 %>%
   as_survey_rep(
     weights = NWEIGHT,
-    repweights = starts_with("BRRWT"),
-    type = "Fay",
-    rho = 0.5,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59/60,
     mse = TRUE
   )
 ```
@@ -360,14 +359,14 @@ To calculate a population count estimate with `survey_total()`, the argument `x`
 ```{r}
 #| label: desc-tot-nox
 recs_des %>%
-  summarize(survey_total())  
+  summarize(Tot=survey_total())  
 ```
 
 Note that the result from `recs_des %>% summarize(survey_total())` is equivalent to the `survey_count()` and `survey_tally()` functions. However, the `survey_total()` function is called within `summarize`, whereas `survey_count()` and `survey_tally()` are not. 
 
 #### Example 2: Overall Summation of Continuous Variables {.unnumbered}
 
-The difference between `survey_total()` and `survey_count()` is more evident when specifying continuous variables to sum. Let's compute the total cost of electricity in whole dollars from variable `DOLLAREL`^[RECS has two components: a household survey and an energy supplier survey. For each household that responds, their energy provider(s) are contacted to obtain their energy consumption and expenditure. This value reflects the dollars spent on electricity in 2015, according to the energy supplier. See https://www.eia.gov/consumption/residential/reports/2015/methodology/pdf/2015C&EMethodology.pdf for more details.]. 
+The difference between `survey_total()` and `survey_count()` is more evident when specifying continuous variables to sum. Let's compute the total cost of electricity in whole dollars from variable `DOLLAREL`^[RECS has two components: a household survey and an energy supplier survey. For each household that responds, their energy provider(s) are contacted to obtain their energy consumption and expenditure. This value reflects the dollars spent on electricity in 2020, according to the energy supplier. See https://www.eia.gov/consumption/residential/data/2020/pdf/2020%20RECS%20CE%20Methodology_Final.pdf for more details.]. 
 
 ```{r}
 #| label: desc-tot-dollarel
@@ -390,7 +389,7 @@ recs_des %>%
   )))
 ```
 
-It is estimated that American residential households spent a total of `r .elbill %>% pull(elec_bill)` on electricity in 2015, and the estimate has a standard error of `r .elbill %>% pull(elec_bill_se)`.
+It is estimated that American residential households spent a total of `r .elbill %>% pull(elec_bill)` on electricity in 2020, and the estimate has a standard error of `r .elbill %>% pull(elec_bill_se)`.
 
 #### Example 3: Summation by Groups {.unnumbered}
 
@@ -416,7 +415,7 @@ recs_des %>%
   )))
 ```
 
-The survey results estimate that households in the Northeast spent `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_upp)`) on electricity in 2015 while households in the South spent an estimated `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill_upp)`).
+The survey results estimate that households in the Northeast spent `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_upp)`) on electricity in 2020 while households in the South spent an estimated `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill_upp)`).
 
 ## Means and Proportions {#desc-meanprop}
 
@@ -508,7 +507,7 @@ recs_des %>%
 
 #### Example 2: Conditional Proportions {.unnumbered}
 
-It is possible to obtain proportions by more than one variable. In the following example, we look at the proportion of housing units by Region and whether air conditioning is used (`ACUsed`).^[Question text: Is any air condition equipment used in your home?] 
+It is possible to obtain proportions by more than one variable. In the following example, we look at the proportion of housing units by Region and whether air conditioning is used (`ACUsed`).^[Question text: Is any air conditioning equipment used in your home?] 
 
 ```{r}
 #| label: desc-pmulti-ex1
@@ -555,7 +554,7 @@ recs_des %>%
   )))
 ```
 
-Nationally, the average household spent $`r pull(.elbill_mn, elec_bill)` in 2015.
+Nationally, the average household spent $`r pull(.elbill_mn, elec_bill)` in 2020.
 
 #### Example 5: Means by Subgroup {.unnumbered}
 
@@ -704,7 +703,7 @@ recs_des %>%
   )))
 ```
 
-Nationally, the median household spent `r pull(.elbill_med, elec_bill)` in 2015. This is the same result as we obtained using the `survey_quantile()` function (`r pull(.elbill_quant, elec_bill_q50)`).  It is also interesting to note that the average electric bill for households that we calculated in section \@ref(desc-meanprop) is `r pull(.elbill_mn, elec_bill)`, but the estimated median electric bill is `r pull(.elbill_med, elec_bill)` indicating the distribution is likely right-skewed.
+Nationally, the median household spent `r pull(.elbill_med, elec_bill)` in 2020. This is the same result as we obtained using the `survey_quantile()` function (`r pull(.elbill_quant, elec_bill_q50)`).  It is also interesting to note that the average electric bill for households that we calculated in section \@ref(desc-meanprop) is `r pull(.elbill_mn, elec_bill)`, but the estimated median electric bill is `r pull(.elbill_med, elec_bill)` indicating the distribution is likely right-skewed.
 
 #### Example 5: Medians by Subgroup {.unnumbered}
 
@@ -773,7 +772,7 @@ The arguments are:
 
 #### Example 1: Overall Ratios {.unnumbered}
 
-Suppose we wanted to find the ratio of dollars spent on liquid propane per unit (in British thermal unit [Btu]) nationally. If we wanted to find the average cost to a household, we could use `survey_mean()`, but to find the national unit rate, we can use ratio. In the following example, we will show both methods and discuss the interpretation of each:
+Suppose we wanted to find the ratio of dollars spent on liquid propane per unit (in British thermal unit [Btu]) nationally^[The value of `DOLLARLP` reflects the annualized amount spent on liquid propane and `BTULP` reflects the annualized consumption in Btu of liquid propane.]. If we wanted to find the average cost to a household, we could use `survey_mean()`, but to find the national unit rate, we can use ratio. In the following example, we will show both methods and discuss the interpretation of each:
 
 ```{r}
 #| label: desc-ratio-1
@@ -972,13 +971,13 @@ recs_des %>%
   )))
 ```
 
-It is estimated that American residential households spent an average of `r .elbill_mn_unwgt %>% pull(elec_bill)` on electricity in 2015, and the estimate has a standard error of `r .elbill_mn_unwgt %>% pull(elec_bill_se)`. The unweighted function calculates the unweighted average and illustrates the average amount of money the *respondents* spent on electricity in 2015, which was `r .elbill_mn_unwgt %>% pull(elec_unweight)`. 
+It is estimated that American residential households spent an average of `r .elbill_mn_unwgt %>% pull(elec_bill)` on electricity in 2020, and the estimate has a standard error of `r .elbill_mn_unwgt %>% pull(elec_bill_se)`. The unweighted function calculates the unweighted average and illustrates the average amount of money the *respondents* spent on electricity in 2020, which was `r .elbill_mn_unwgt %>% pull(elec_unweight)`. 
 
 ### Subpopulation Analysis
 
 Briefly, we mentioned using `filter()` to subset a survey object for analysis. This operation should be done after creating the design object. In rare circumstances, subsetting data before creating the object can lead to incorrect variability estimates. This can occur if subsetting removes an entire PSU.
 
-Suppose we wanted estimates of the average amount spent on natural gas among housing units that use natural gas. This could be obtained by first filtering records to only include records where `BTUNG > s0` and then finding the average amount of money spent.
+Suppose we wanted estimates of the average amount spent on natural gas among housing units that use natural gas using the variable `BTUNG`^[`BTUNG` is derived from the supplier side component of the survey where `BTUNG` represents the natural gas consumption in British thermal units (Btus) in a year]. This could be obtained by first filtering records to only include records where `BTUNG > 0` and then finding the average amount of money spent.
 
 ```{r}
 #| label: desc-subpop
@@ -1005,13 +1004,13 @@ $$n_{eff}=\frac{n}{D_{eff}} $$
 
 where $n$ is the nominal sample size (number of survey responses) and $D_{eff}$ is the estimated design effect. The effective sample size has an interesting interpretation that a survey using an SRS design would need a sample size of $n_{eff}$ to obtain the same precision as the design at hand, which is where the efficiency interpretation comes in. Design effects are outcome-specific --- outcomes that are less clustered in the population have smaller design effects than outcomes that are clustered.
 
-In the {srvyr} package, design effects can be calculated for totals, proportions, means, and ratio estimates by setting the `deff` argument to TRUE in the corresponding functions. For example, the design effect can be calculated for the average consumption of electricity (BTUEL), natural gas (BTUNG), liquid propane (BTULP), fuel oil (BTUFO), wood (BTUWOOD), and wood pellets (BTUPELLET).
+In the {srvyr} package, design effects can be calculated for totals, proportions, means, and ratio estimates by setting the `deff` argument to TRUE in the corresponding functions. For example, the design effect can be calculated for the average consumption of electricity (BTUEL), natural gas (BTUNG), liquid propane (BTULP), fuel oil (BTUFO), and wood (BTUWOOD).
 
 ```{r}
 #| label: desc-deff
 recs_des %>%
   summarize(across(
-    c(BTUEL, BTUNG, BTULP, BTUFO, BTUWOOD, BTUPELLET),
+    c(BTUEL, BTUNG, BTULP, BTUFO, BTUWOOD),
     ~ survey_mean(.x, deff = TRUE, vartype = NULL)
   )) %>%
   select(ends_with("deff"))
@@ -1097,7 +1096,7 @@ The `across()` function allows you to apply the same function to several columns
 
 #### Example 1: `across()` {.unnumbered}
 
-Suppose we want to calculate the total consumption for each fuel type and the average consumption for each fuel type with coefficients of variation. These include the consumption of electricity (BTUEL), natural gas (BTUNG), liquid propane (BTULP), fuel oil (BTUFO), wood (BTUWOOD), and wood pellets (BTUPELLET), as illustrated in the discussion on design effects. These are the only variables that start with "BTU", so we can use that to our advantage. 
+Suppose we want to calculate the total consumption for each fuel type and the average consumption for each fuel type with coefficients of variation. These include the consumption of electricity (BTUEL), natural gas (BTUNG), liquid propane (BTULP), fuel oil (BTUFO), and wood (BTUWOOD), as illustrated in the discussion on design effects. These are the only variables that start with "BTU", so we can use that to our advantage. 
 
 ```{r}
 #| label: desc-multi-1
