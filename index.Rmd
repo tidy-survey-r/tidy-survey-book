@@ -35,15 +35,32 @@ library(formatR)
 
 book_colors <- c("#0b3954", "#087e8b", "#bfd7ea", "#ff8484", "#8d6b94")
 
-as_latex_with_caption <- function(gt, chunk_label) {
-  gt <- gt::as_latex(gt)
+as_latex_with_caption <- function(gtobj, chunk_label) {
+  gt_l <- gt::as_latex(gtobj)
   caption <- paste0(
     "\\caption{\\label{tab:", chunk_label, "}(ref:", chunk_label, ")}\\\\")
-  latex <- strsplit(gt[1], split = "\n")[[1]]
-  latex <- c(latex[1], caption, latex[-1])
-  latex <- paste(latex, collapse = "\n")
-  gt[1] <- latex
-  return(gt)
+  latex <- strsplit(gt_l[1], split = "\n")[[1]]
+  idxtable <- which(stringr::str_detect(latex, "begin") & stringr::str_detect(latex, "table"))
+  latex2 <- c(latex[1:idxtable], caption, latex[-c(1:idxtable)])
+  latex3 <- paste(latex2, collapse = "\n")
+  gt_l[1] <- latex3
+  return(gt_l)
+}
+
+print_gt_book <- function(gtobj, ref){
+  if ("gtsummary" %in% class(gtobj)){
+    gtobj <- as_gt(gtobj)
+  }
+  
+  if (knitr::is_latex_output()){
+    gtobj %>%
+      as_latex_with_caption(ref)
+  } else {
+    gtobj %>% 
+      tab_caption(glue::glue("(ref:{ref})"))
+  }
+  
+  
 }
 
 ```
