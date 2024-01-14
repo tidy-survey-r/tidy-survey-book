@@ -509,22 +509,38 @@ However, as researchers, we often want to know about the proportions and not jus
 ```{r}
 #| label: stattest-chi-ex2-prop1
 #| warning: false
-chi_ex2$observed %>% as_tibble() %>%
+chi_ex2_table<-chi_ex2$observed %>% 
+  as_tibble() %>%
   group_by(TrustPeople) %>%
   mutate(prop = round(n / sum(n), 3)) %>%
   select(-n) %>%
-  pivot_wider(names_from = TrustPeople, values_from = prop) %>%
+  pivot_wider(names_from = TrustPeople, values_from = prop) %>% 
   gt(rowname_col = "TrustGovernment") %>%
   tab_stubhead(label = "Trust in Government") %>%
   tab_spanner(label = "Trust in People",
-              columns = everything()) %>% 
+              columns = everything()) %>%
   cols_label(`Most of the time` = md("Most of<br />the time"),
              `About half the time` = md("About half<br />the time"),
-             `Some of the time` = md("Some of<br />the time")) %>%
-  tab_caption("Estimates of proportion of people 
-              by levels of trust in people and government, 
-              ANES 2020")
+             `Some of the time` = md("Some of<br />the time"))
 ```
+
+```{r}
+#| label: stattest-chi-ex2-prop1-noeval
+#| eval: false
+chi_ex2_table
+```
+
+(ref:stattest-chi-ex2-prop1-tab) Estimates of proportion of people by levels of trust in people and government, ANES 2020
+
+```{r}
+#| label: stattest-chi-ex2-prop1-out
+#| echo: FALSE
+#| warning: FALSE
+
+chi_ex2_table %>%
+    print_gt_book("stattest-chi-ex2-prop1-tab")
+```
+
 
 The second option is to use `group_by()` and `survey_mean()` functions to calculate the proportions from the ANES design object. A reminder that with more than one variable listed in the `group_by()` statement, the proportions are within the first variable listed. As mentioned above, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. 
 
@@ -536,7 +552,7 @@ chi_ex2_obs <- anes_des %>%
   summarize(Observed = round(survey_mean(vartype = "ci"), 3),
             .groups="drop") 
 
-chi_ex2_obs %>%
+chi_ex2_obs_table<-chi_ex2_obs %>%
   mutate(prop = paste0(Observed, " (", Observed_low, ", ",
                        Observed_upp, ")")) %>%
   select(TrustGovernment, TrustPeople, prop) %>%
@@ -545,11 +561,24 @@ chi_ex2_obs %>%
   tab_stubhead(label = "Trust in Government") %>%
   tab_spanner(label = "Trust in People",
               columns = everything()) %>% 
-  tab_options(page.orientation = "landscape") %>%
-  tab_caption("Estimates of proportion of people 
-              by levels of trust in people and government 
-              with confidence intervals, 
-              ANES 2020")
+  tab_options(page.orientation = "landscape")
+```
+
+```{r}
+#| label: stattest-chi-ex2-prop2-noeval
+#| eval: false
+chi_ex2_obs_table
+```
+
+(ref:stattest-chi-ex2-prop2-tab) Estimates of proportion of people by levels of trust in people and government with confidence intervals, ANES 2020
+
+```{r}
+#| label: stattest-chi-ex2-prop2-out
+#| echo: FALSE
+#| warning: FALSE
+
+chi_ex2_obs_table %>%
+    print_gt_book("stattest-chi-ex2-prop2-tab")
 ```
 
 Both methods produce the same output as the `svychisq()` function does account for the survey design. However, calculating the proportions directly from the design object means we can also obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those who never trust people, 50.3% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people. 
@@ -621,17 +650,31 @@ chi_ex3_obs <- anes_des %>%
   group_by(VotedPres2020_selection, AgeGroup) %>%
   summarize(Observed = round(survey_mean(vartype = "ci"), 3)) 
 
-chi_ex3_obs %>%
+chi_ex3_obs_table<-chi_ex3_obs %>%
   mutate(prop = paste0(Observed, " (", Observed_low, ", ",
                        Observed_upp, ")")) %>%
   select(AgeGroup, VotedPres2020_selection, prop) %>%
   pivot_wider(names_from = VotedPres2020_selection, 
               values_from = prop) %>%
   gt(rowname_col = "AgeGroup") %>%
-  tab_stubhead(label = "Age Group") %>%
-  tab_caption("Distribution of age group 
-              by presidential candidate selection 
-              with confidence intervals")
+  tab_stubhead(label = "Age Group")
+```
+
+```{r}
+#| label: stattest-chi-ex3-table-noeval
+#| eval: false
+chi_ex3_obs_table
+```
+
+(ref:stattest-chi-ex3-tab) Distribution of age group by presidential candidate selection with confidence intervals
+
+```{r}
+#| label: stattest-chi-ex3-table-out
+#| echo: FALSE
+#| warning: FALSE
+
+chi_ex3_obs_table %>%
+    print_gt_book("stattest-chi-ex3-tab")
 ```
 
 We can see that the age group distribution was younger for Biden and other candidates and older for Trump. For example, of those who voted for Biden, 20.4% were in the 18-29 age group, compared to only 11.4% of those who voted for Trump were in that age group. On the other side, 23.4% of those who voted for Trump were in the 50-59 age group compared to only 15.4% of those who voted for Biden.
