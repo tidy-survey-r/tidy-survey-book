@@ -1,31 +1,13 @@
 # Understanding Survey Data Documentation {#c03-understanding-survey-data-documentation}
 
-::: {.prereqbox-header}
-`r if (knitr:::is_html_output()) '### Prerequisites {- #prereq4}'`
-:::
-
-::: {.prereqbox data-latex="{Prerequisites}"}
-For this chapter, load the following packages and the helper function:
 ```{r}
-#| label: understand-c04-setup
+#| label: understand-pkgs
+#| echo: FALSE
 #| error: FALSE
 #| warning: FALSE
 #| message: FALSE
 library(tidyverse)
-library(survey)
-library(srvyr)
-library(srvyr.data)
-library(censusapi)
 ```
-
-We created multiple analytic datasets for use in this book in an R package as described in \@ref(datasets-used-in-this-book). For this chapter, we will be using data from ANES. Here is the code to read in the data:
-
-```{r}
-#| label: understand-anes-c04
-#| eval: FALSE
-data(anes_2020)
-```
-:::
 
 ## Introduction
 
@@ -203,73 +185,7 @@ The user guide references a supplemental document called "How to Analyze ANES Su
 
 > The target population for the fresh cross-section was the 231 million non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or the District of Columbia.
 
-To create accurate weights for the population, we need to determine the total population size when the survey was conducted. We will use Current Population Survey (CPS) to find a number of the non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. in March of 2020, as this is what the ANES methodology mentions using.
-
-The {censusapi} package allows us to run a reproducible analysis of the CPS data. Note that this package requires a census API key; more information can be found in the package documentation. Best practice is to include the census API key in our R environment and not directly in the code. We can use the {usethis} package's `edit_r_environ()` function to access the R environment (located in a file called `.Renviron`). Run `edit_r_environ()`, save the census API key as `CENSUS_KEY`, and restart RStudio. Once the census API key is saved in the R environment, we access it in our code with `Sys.getenv("CENSUS_KEY")`.
-
-We extract several variables including month of interview (`HRMONTH`), year of interview (`HRYEAR4`), age (`PRTAGE`), citizenship status (`PRCITSHP`), and final person-level weight (`PWSSWGT`). Detailed information for these variables can be found in the data dictionary^[https://www2.census.gov/programs-surveys/cps/datasets/2020/basic/2020_Basic_CPS_Public_Use_Record_Layout_plus_IO_Code_list.txt].
-
-
-```{r}
-#| label: understand-get-cps
-#| message: false
-#| cache: TRUE
-
-cps_state_in <- getCensus(name = "cps/basic/mar",
-                          vintage = 2020,
-                          region = "state",
-                          vars = c("HRMONTH", "HRYEAR4", 
-                                   "PRTAGE", "PRCITSHP", "PWSSWGT"), 
-                          key = Sys.getenv("CENSUS_KEY"))
-
-cps_state <- cps_state_in %>%
-  as_tibble() %>%
-  mutate(across(.cols = everything(),
-                .fns = as.numeric))
-```
-
-We confirm that all the data is from March (`HRMONTH == 3`) of 2020 (`HRYEAR4 == 2020`).
-```{r}
-#| label: understand-cps-date
-cps_state %>%
-  distinct(HRMONTH, HRYEAR4)
-```
-
-We then filter to only those who are 18 years or older (`PRTAGE >= 18`) and have U.S. citizenship (`PRCITSHIP %in% (1:4)`) and calculate the sum of the weights to obtain the size of the target population.
-```{r}
-#| label: understand-cps-targetpop
-targetpop <- cps_state %>%
-  as_tibble() %>%
-  filter(PRTAGE >= 18,
-         PRCITSHP %in% (1:4)) %>%
-  pull(PWSSWGT) %>%
-  sum()
-
-targetpop
-```
-
-The target population in 2020 is `r scales::comma(targetpop)`. This information gives us what we need to create the post-election survey object with {srvyr}. Using the raw ANES data we pulled in at the beginning of this chapter, we will adjust the weighting variable (`V200010b`) using the target population we just calculated (`targetpop`).
-
-```{r}
-#| label: understand-read-anes
-anes_adjwgt <- anes_2020 %>%
-  mutate(Weight = V200010b / sum(V200010b) * targetpop) 
-```
-
-Once we adjusted the weights to the population, we can then create the survey design using our new weight variable in the `weights` argument and use the strata and cluster variables identified in the user manual.
-
-```{r}
-#| label: understand-anes-des
-anes_des <- anes_adjwgt %>%
-  as_survey_design(weights = Weight,
-                   strata = V200010d,
-                   ids = V200010c,
-                   nest = TRUE)
-
-summary(anes_des)
-```
-
-Now that we have the survey design object, we can continue to reference the ANES documentation, including the questionnaire and the codebook, as we select variables for analysis and gain insights into the findings.
+To create accurate weights for the population, we need to determine the total population size when the survey was conducted. This can be determined using the Current Population Survey (CPS) for March of 2020 as stated in the ANES documentation. Chapter \@ref(c04-set-up) goes into more detail about how to calculate this value and adjust the data.
 
 ## Searching for Public-Use Survey Data 
 Throughout this book, we use public-use datasets from different surveys.  Above, we provided an example from the American National Election Survey (ANES), and we will continue to use this dataset throughout the book.  Additionally, we use the Residential Energy Consumption Survey (RECS), the National Crime Victimization Survey (NCVS), and the AmericasBarometer surveys.  
