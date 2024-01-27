@@ -1,16 +1,66 @@
 # Recommendations for Successful Survey Data Analysis {#c12-pitfalls}
 
-This book pertains to the analysis of complex surveys, which require extra considerations compared to non-random ones. Running analysis carefully and accurately, while avoiding pitfalls, is crucial for success. We've included our recommendations for successful survey data analysis throughout the book; however, this chapter summarizes a few key considerations while taking the steps shown in previous chapters. Note, this is not meant to be a comprehensive list of best practices for survey analysis but instead a curated list for survey analysts.
+The previous chapters in this book aimed to provide the technical skills and knowledge required to run survey analyses. This chapter builds upon the best practices previously mentioned to present a curated set of recommendations aimed at running a *successful* survey analysis. We hope this list equips you with practical insights that assist in producing meaningful and reliable results.
 
 ```{r}
 #| include: false
 anscombe_tidy <- anscombe %>%
-  mutate(observation = seq_len(n())) %>%
-  gather(key, value,-observation) %>%
+  mutate(observation = row_number()) %>%
+  pivot_longer(-observation, names_to = "key", values_to = "value") %>%
   separate(key, c("variable", "set"), 1, convert = TRUE) %>%
   mutate(set = c("I", "II", "III", "IV")[set]) %>%
-  spread(variable, value)
+  pivot_wider(names_from = variable, values_from = value)
 ```
+
+## Grasp the survey design
+
+Understanding complex design factors such as clustering, stratification, and weighting is the foundation of complex survey analysis. Each of these techniques impact standard errors and variance, but we cannot treat complex surveys as unweighted simple random samples if we want to produce accurate estimates. 
+
+As mentioned in Chapter \@ref(c05-descriptive-analysis), the design effect measures the impact of using a complex survey design compared to a simple random samples in the calculation of the estimates. The output below shows the estimated average cost of electricity in the U.S. by each region. The variable `elec_bill` calculates the point estimate for each region while `elec_bill_se` is the standard error when incorporating the design.
+
+```{r}
+#| warning: false
+library(survey)
+library(srvyr)
+
+data(recs_2020)
+
+recs_des <- recs_2020 %>%
+  as_survey_rep(
+    weights = NWEIGHT,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59 / 60,
+    mse = TRUE
+  )
+
+recs_des %>%
+  group_by(Region) %>%
+  summarize(wtn_mean = survey_mean(WinterTempNight, 
+                                   vartype = c("se", "var"),
+                                   na.rm = TRUE, 
+                                   deff = TRUE),
+            n = unweighted(n()))
+```
+
+The design effects are all over 1, indicating that the design is less statistically efficient than a SRS design. This might lead us to believe that we should not apply weights due to a large loss of precision.
+
+```{r}
+unweight_mod <- 
+   glm(formula = WinterTempNight ~ Region, data = recs_2020)
+
+weight_mod <- recs_des %>%
+  svyglm(design = ., formula = WinterTempNight ~ Region, na.action = na.omit)
+
+recs_2020 %>% 
+  modelr::spread_residuals(unweight_mod, weight_mod) %>% 
+  group_by(Region) %>% 
+  summarize(unweight_mse = mean(unweight_mod^2, na.rm = TRUE),
+            weight_mse = mean(weight_mod^2, na.rm = TRUE))
+```
+
+
+<!-- https://sru.soc.surrey.ac.uk/SRU43.html -->
 
 ## Begin your analysis with descriptive data analysis
 
@@ -76,11 +126,41 @@ ggplot(anscombe_tidy, aes(x, y)) +
   theme_minimal()
 ```
 
-When creating the plots, we clearly see that the distributions are very dissimilar. Each set of points results in different shapes and distributions. Imagine sharing each individual plot with a shareholder and how you would describe the data, and how different the interpretations will be.
+When creating the plots, it is apparent that the distributions are very dissimilar. Each set of points results in different shapes and distributions. Imagine sharing each individual plot with a shareholder and how you would describe the data, and how different the interpretations will be.
 
 With survey data, we might not always have continuous data that we can plot like Anscombe's Quartet. However, if the dataset does contain continuous data, or other types of data which would benefit from a visual representation, we recommend taking the time to graph distributions and correlations.
 
+## Use the appropriate variable types
+
+When we pull the data from surveys into R, the data may be listed as character, factor, numeric, or logical/Boolean. For example, here we take a `glimpse()` of ANES data:
+
+```{r}
+data(anes_2020)
+
+anes_2020 %>%
+  select(-matches("^V\\d")) %>%
+  glimpse()
+```
+
+While the output shows that `CampaignInterest` is a factor, R will not clearly indicate whether it is an ordinal variable. When working with survey data, analysts need to properly use the questionnaire and codebook along with the data (see Chapter \@ref(c03-understanding-survey-data-documentation)) to understand what the values for each variable represent.
+
+For example, our survey data may represent categorical variables (e.g., the North, South, East, and West regions of the United States) using numbers (e.g., 1, 2, 3, and 4). When importing the file, R will automatically read the column as numeric values. Without carefully reviewing the data frame, we may calculate the mean across all numeric variables:
+
+```{r}
+#| eval: false
+svy_dat %>%
+  summarize(across(where(is.numeric), ~ mean(.x, na.rm = TRUE)))
+```
+
+R will calculate the mean even if it is not appropriate, leading to the common mistake of applying an average to categorical values instead of a proportion function. If the variable name is difficult to interpret, we might accidentally report an average region of 2.2 to our stakeholders. Rather, ensuring your variables are of the appropriate type will avoid this pitfall and ensure the measures and models are appropriate for the type of variable.
+
 ## Improve your debugging skills
 
+Whether `NA` is a level or a value impacts whether `is.na()` works
+If the variable is a factor and has an `NA` as a level, and you want to remove those `NA`s, you might try using dplyr's `filter()`:
 
+```{r}
+svy_dat %>% 
+  filter(!is.na(variable))
+```
 
