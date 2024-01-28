@@ -1,6 +1,6 @@
 # Importing survey data into R
 
-Before we can begin on our research, we must first bring our survey data into our statistical analysis tool. This process can be referred to as importing, loading, or reading data. Survey files come in different formats depending on the software used to create them. One of the many advantages of R is the flexibility in handling various data formats, regardless of their file extensions. Here are examples of common public-use survey file formats we may encounter:
+The first step of any survey analysis is bringing the survey data into R. This process is often referred to as importing, loading, or reading in data. Survey files come in different formats depending on the software used to create them. One of the many advantages of R is the flexibility in handling various data formats, regardless of their file extensions. Here are examples of common public-use survey file formats we may encounter:
 
 * Delimiter-separated text files
 * Excel spreadsheets in `.xls` or `.xlsx` format
@@ -12,11 +12,11 @@ Before we can begin on our research, we must first bring our survey data into ou
 
 This appendix guides analysts through the process of importing various types of survey data into R. R also offers dedicated packages such as {googlesheets4} for Google Sheets or {qualtRics} for Qualtrics. With less common or proprietary file formats, the broader data science community can often provide guidance. Online resources like Stack Overflow and dedicated forums are valuable sources of information for importing data into R.
 
-### Importing delimiter-separated files into R
+## Importing delimiter-separated files into R
 
 Delimiter-separated files use specific characters, known as delimiters, to separate values within the file. For example, CSV (Comma-Separated Values) files use commas as delimiters, while TSV (Tab-Separated Values) files use tabs. These file formats are widely used because of their simplicity and compatibility with various software applications.
 
-The {readr} package, part of the tidyverse ecosystem, offers a efficient ways to import delimiter-separated files into R. It provides several advantages, including automatic data type detection and flexible handling of missing values, depending on one's survey research needs. The {readr} package includes functions for:
+The {readr} package, part of the tidyverse ecosystem, offers efficient ways to import delimiter-separated files into R. It provides several advantages, including automatic data type detection and flexible handling of missing values, depending on one's survey research needs. The {readr} package includes functions for:
 
 * `read_csv()`: This function is specifically designed to read CSV files.
 * `read_tsv()`: Use this function for Tab-Separated Values (TSV) files.
@@ -25,7 +25,7 @@ The {readr} package, part of the tidyverse ecosystem, offers a efficient ways to
 * `read_table()`: Use this function when dealing with whitespace-separated files, such as those with spaces or multiple spaces as delimiters.
 * `read_log()`: This function can read and parse web log files.
 
-In the example below, we use {readr} to load a CSV file named 'anes_timeseries_2020_csv_20220210.csv' into an R object called `anes_csv`. The `read_csv()` imports the file and stores the data in the `anes_csv` object. We can then use this object can for further analysis.
+In the example below, we use {readr} to load a CSV file named 'anes_timeseries_2020_csv_20220210.csv' into an R object called `anes_csv`. The `read_csv()` imports the file and stores the data in the `anes_csv` object. We can then use this object for further analysis.
 
 ```r
 library(readr)
@@ -34,7 +34,7 @@ anes_csv <-
   read_csv("data/anes_timeseries_2020_csv_20220210.csv")
 ```
 
-### Loading Excel files into R
+## Loading Excel files into R
 
 Excel, a widely used spreadsheet software program created by Microsoft, is a common file format in survey research. We can load Excel spreadsheets into the R environment using the {readxl} package. The package supports both the legacy `.xls` files and the modern `.xlsx` format. 
 
@@ -60,16 +60,16 @@ read_excel(
 The arguments are:
 
 * `path`: the path to the Excel file to import
-* `sheet`: the name or index of the sheet within the Excel file.
-* `range`: the range of cells to import.
-* `col_names`: indicates whether the first row of the dataset contains column names.
-* `col_types`: specify the data types of columns.
-* `na`: define the representation of missing values.
-* `trim_ws`: controls whether leading and trailing whitespaces should be trimmed.
-* `skip` and `n_max`: enables skipping rows and limit the number of rows imported.
-* `guess_max`: sets the maximum number of rows used for data type guessing.
-* `progress`: specifies a progress bar for large imports.
-* `.name_repair`: Determines how column names are repaired if they are not valid.
+* `sheet`: the name or index of the sheet (sometimes called tabs) within the Excel file
+* `range`: the range of cells to import (for example, "P15:T87")
+* `col_names`: indicates whether the first row of the dataset contains column names
+* `col_types`: specify the data types of columns
+* `na`: define the representation of missing values (for example, "NULL")
+* `trim_ws`: controls whether leading and trailing whitespaces should be trimmed
+* `skip` and `n_max`: enable skipping rows and limit the number of rows imported
+* `guess_max`: sets the maximum number of rows used for data type guessing
+* `progress`: specifies a progress bar for large imports
+* `.name_repair`: Determines how column names are repaired if they are not valid
 
 In the code example below, we load an Excel spreadsheet named 'anes_timeseries_2020_csv_20220210.xlsx' into R. The resulting data is saved as a tibble in the `anes_excel` object, ready for further analysis.
 
@@ -80,9 +80,11 @@ anes_excel <-
   read_excel(path = "data/anes_timeseries_2020_csv_20220210.xlsx")
 ```
 
-### Importing Stata, SAS, and SPSS files into R
+## Importing Stata, SAS, and SPSS files into R
 
 The {haven} package, also from the tidyverse ecosystem, imports various proprietary data formats: Stata `.dta` files, SAS `.sas7bdat` and `.sas7bcat` files, and SPSS `.sav` files. One of the notable strengths of the {haven} package is its ability to handle multiple proprietary formats within a unified framework. It offers dedicated functions for each supported proprietary format, making it straightforward to import data. Here, we introduce `read_dat()` for Stata files, `read_sas()` for SAS files, and `read_sav()` for SPSS files.
+
+### Syntax
 
 Let's explore the syntax for importing Stata files `.dat` files using `haven::read_dat()`:
 
@@ -110,6 +112,7 @@ In the code examples below, we demonstrate how to load Stata, SAS, and SPSS file
 Stata:
 
 ```{r}
+#| label: readr-stata
 library(haven)
 
 anes_dta <-
@@ -134,7 +137,7 @@ anes_sav <-
   read_sav(file = "data/anes_timeseries_2020_spss_20220210.sav")
 ```
 
-#### Importing labeled data
+### Working with labeled data
 
 Stata, SPSS, and SAS files often contain labeled variables and values. These labels provide descriptive information about categorical data, making it easier to understand and analyze. When importing data from Stata, SPSS, or SAS, preserving these labels is essential for maintaining data fidelity.
 
@@ -145,6 +148,7 @@ With the {haven} package, we have the capability to import and work with labeled
 We can use functions like `select()`, `glimpse()`, and `is.labelled()` to inspect the imported data and verify if variables are labeled. Take a look at the ANES SPSS file. Notice that categorical variables are marked with a type of `<dbl+lbl>`. This notation indicates that these variables are labeled.
 
 ```{r}
+#| label: readr-glimpse
 #| message: false
 library(dplyr)
 
@@ -156,24 +160,25 @@ anes_dta %>%
 We can confirm this label status using the `haven::is.labelled()` function.
 
 ```{r}
+#| label: readr-islabelled
 haven::is.labelled(anes_dta$V200002)
 ```
 
 To explore the labels further, we can use the `attributes()` function. This function provides insights into both the variable labels (`$label`) and the associated value labels (`$labels`).
 
 ```{r}
+#| label: readr-attributes
 attributes(anes_dta$V200002)
 ```
 
-#### Working with labeled data in R {-}
+When we import a labeled dataset using {haven}, it results in a tibble containing both the data and label information. However, this is meant to be an intermediary data structure and not intended to be the final data format for analysis. Instead, we should convert it into a regular R data frame before continuing our data workflow. There are two primary methods to achieve this conversion: (1) convert to factors or (2) remove the labels.
 
-When we import a labeled dataset using {haven}, it results in a tibble containing both the data and label information. However, this is meant to be an intermediary data structure and not intended to be the final data format for analysis. Instead, we should convert it into a regular R data frame before continuing our data workflow. There are two primary methods to achieve this conversion:
-
-Option 1: Convert the vector into a factor 
+#### Option 1: Convert the vector into a factor {-}
 
 Factors are native R data types for working with categorical data. They consist of integer values that correspond to character values, known as levels. Below is a dummy example of factors. Printing `factors` shows the four different levels in the data: `strongly agree`, `agree`, `disagree`, and `strongly disagree`.
 
 ```{r}
+#| label: readr-factor
 response <- 
   c("strongly agree", "agree", "agree", "disagree")
 
@@ -188,14 +193,14 @@ factors
 Factors are integer vectors, though they may look like character strings. We can confirm by looking at the vector's structure:
 
 ```{r}
-#| eval: TRUE
+#| label: readr-factor-view
 glimpse(factors)
 ```
 
 R's factors differ from Stata, SPSS, or SAS' labeled vectors. However, we can convert labeled variables into factors using the `as_factor()` function.
 
 ```{r}
-#| eval: false
+#| label: readr-factor-create
 anes_dta %>% 
   transmute(V200002 = as_factor(V200002))
 ```
@@ -203,7 +208,7 @@ anes_dta %>%
 The `as_factor()` function can be applied to all columns in a data frame or individual ones. Below, we convert all `<dbl+lbl>` columns into factors.
 
 ```{r}
-#| eval: false
+#| label: readr-factor-glimpse
 anes_dta_factor <-
   anes_dta %>% 
   as_factor()
@@ -213,13 +218,14 @@ anes_dta_factor %>%
   glimpse()
 ```
 
-Option 2: Strip the labels
+#### Option 2: Strip the labels{-}
 
 The second option is to remove the labels altogether, converting the labeled data into a regular R data frame. To remove, or 'zap' the labels from our tibble, we can use the {haven} package's `zap_label()` and `zap_labels()` functions. This approach removes the labels but retains the data values in their original form.
 
 Use `zap_label()` to remove the variable labels but retain the value labels:
 
 ```{r}
+#| label: readr-zaplabel
 zap_label(anes_dta) %>% 
   select(1:6) %>% 
   glimpse()
@@ -228,7 +234,7 @@ zap_label(anes_dta) %>%
 To remove the value labels, use `zap_labels()`. Notice the previous `<dbl+lbl>` columns are now `<dbl>`.
 
 ```{r}
-#| eval = FALSE
+#| label: readr-zaplabels
 zap_labels(anes_dta) %>% 
   select(1:6) %>% 
   glimpse()
@@ -241,6 +247,7 @@ The {labelled} package offers a convenient function, `generate_dictionary()`, th
 Let's create a data dictionary from the ANES Stata dataset as an example:
 
 ```{r}
+#| label: readr-dictionary-create
 library(labelled)
 
 dictionary <- generate_dictionary(anes_dta)
@@ -249,11 +256,12 @@ dictionary <- generate_dictionary(anes_dta)
 Once we've generated the data dictionary, we can take a look at the `V200002` variable and see the label, column type, number of missing entries, and associated values.
 
 ```{r}
+#| label: readr-dictionary-view
 dictionary %>% 
   filter(variable == "V200002")
 ```
 
-#### Missing data
+### Labeled missing data values
 
 In survey data analysis, dealing with missing values is a crucial aspect of data preparation. Stata, SPSS, and SAS files each have their own methods for handling missing values. 
 
@@ -293,12 +301,12 @@ survey_data <- fromJSON(content(response, "text"))
 
 Note that these are dummy examples; to obtain data from APIs, it is crucial to review the documentation and understand how to make requests.
 
-R offers several packages that simplify API access by providing ready-to-use functions for popular APIs. These packages are called "wrappers", as they "wrap" the API. For example, the {tidycensus} package used in this book simplifies access to U.S. Census data, allowing us to retrieve data with R commands instead of writing complex API requests. In the example below, we use the `get_acs()` function to get tract-level data for the variable `B01003_001` from 2020. Behind the scenes, `get_acs()` is making a GET request from the Census API and the tidycensus functions are converting the response into an R-friendly format.
+R offers several packages that simplify API access by providing ready-to-use functions for popular APIs. These packages are called "wrappers", as they "wrap" the API to make it easier to use. For example, the {tidycensus} package used in this book simplifies access to U.S. Census data, allowing us to retrieve data with R commands instead of writing complex API requests. For example, if we are interested in the population (`B01003_001`) of each census tract in North Carolina from the 2020 ACS, we would use the `get_acs()` function and the code below. Behind the scenes, `get_acs()` is making a GET request from the Census API and the tidycensus functions are converting the response into an R-friendly format.
 
 ```r
 library(tidycensus)
 
-census_data <- get_acs(geography = "tract", variables = "B01003_001", year = 2020)
+census_data <- get_acs(geography = "tract", variables = "B01003_001", year = 2020, state = "NC")
 ```
 
 To discover if there's an R package that directly interfaces with a specific survey or data source, search for "[survey] R wrapper" or "[data source] R package" online.
