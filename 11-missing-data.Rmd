@@ -1,6 +1,65 @@
 # Missing data {#c11-missing-data}
 
-## Working with Missing Data
+::: {.prereqbox-header}
+`r if (knitr:::is_html_output()) '### Prerequisites {- #prereq11}'`
+:::
+
+::: {.prereqbox data-latex="{Prerequisites}"}
+For this chapter, load the following packages:
+```{r}
+#| label: missing-setup
+#| error: FALSE
+#| warning: FALSE
+#| message: FALSE
+library(tidyverse)
+library(survey) 
+library(srvyr) 
+library(srvyr.data)
+library(tidycensus)
+library(visdat)
+library(haven)
+```
+
+We will be using data from ANES and RECS. Here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c03-understanding-survey-data-documentation) for more information).
+```{r}
+#| label: missing-anes-des
+#| eval: FALSE
+targetpop <- 231592693
+data(anes_2020)
+
+anes_adjwgt <- anes_2020 %>%
+  mutate(Weight = Weight / sum(Weight) * targetpop)
+
+anes_des <- anes_adjwgt %>%
+  as_survey_design(
+    weights = Weight,
+    strata = Stratum,
+    ids = VarUnit,
+    nest = TRUE
+  )
+```
+
+For RECS, details are included in the RECS documentation and Chapter \@ref(c10-specifying-sample-designs).
+
+```{r}
+#| label: missing-recs-des
+#| eval: FALSE
+data(recs_2020)
+
+recs_des <- recs_2020 %>%
+  as_survey_rep(
+    weights = NWEIGHT,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59/60,
+    mse = TRUE
+  )
+```
+:::
+
+
+
+## Missing data mechanisms
 
 Missing data in surveys refers to situations where participants do not provide complete responses to survey questions. Respondents may not have seen a question by design. Or, they may not respond to a question for various other reasons, such as not wanting to answer a particular question, not understanding the question, or simply forgetting to answer. 
 
@@ -17,49 +76,180 @@ Missing data can be a significant problem in survey analysis, as it can introduc
     c. **Missing not at random (MNAR)**: The missing data is related to unobserved data, and the probability of being missing varies for reasons we are not measuring. For example, if respondents with depression do not answer a question about depression severity.
 
 
-When running analysis in R, we must handle missing responses as missing data (i.e., `NA`) and not numeric data. If missing responses are treated as zeros or arbitrary values, they can artificially alter summary statistics or introduce spurious patterns in the analysis. Recoding these values to `NA` will allow us to handle missing data in different ways in R, such as using functions like `na.omit()`, `complete.cases()`, or specialized packages like {tidyimpute} or {mice}. These tools allow us to treat missing responses as missing data to conduct our analysis accurately and obtain valid results.
+## Assessing missing data
 
-Visualizing the missing data can also inform the types of missing data that are present.  The {naniar} package provides many valuable missing data visualizations, such as using `gg_miss_var()` to see the count or percent of missing data points by variable or `gg_miss_fct()` to see relationships in missing data across levels of a factor variable.  Investigating the relationships and nature of the missing data before running models can ensure that the missing data is accurately accounted for.
+Before beginning analysis, it is recommended to explore if there is missing data present. There are several ways to do this and this descriptive analysis can be used to inform your analysis (next section) as well as for survey designers to reconsider instrumentation. Large amounts of unexpected missing data may indicate the questions were unclear or difficult to recall.
 
-### Accounting for Questionnaire Skip Patterns
-
-Questionnaires may include skip patterns, in which specific questions are skipped based on the respondent's answers to earlier questions. For example, if a respondent answers "no" to a question on whether they voted in the last election, they may be instructed to skip a series of questions related to that election.
-
-Skip patterns are used in surveys to streamline the data collection process and avoid asking irrelevant questions to certain respondents. However, they also result in missing data, as respondents cannot respond to questions they were instructed to skip. Analyzing the data missing by design requires understanding the underlying reasons for the skip patterns. Our survey analysis must properly account for skip patterns to ensure unbiased and accurate population parameters.
-
-Dealing with missing data due to skip patterns requires careful consideration.  We can treat skipped questions as missing data. Or, we can run an analysis that accounts for the conditional dependence between the skipped and answered questions. The appropriate method depends on the nature and extent of the skip patterns, the research questions, and the methodology. For example, if we wanted to know what proportion of eligible voters voted for a particular candidate, the denominator would be all eligible voters, while if we wanted to know what proportion voted for a specific candidate among those who voted, the denominator would be those who voted. We include or exclude missing values depending on our research question.
-
-### Accounting for Unintentional Missing Data 
-
-When dealing with missing data that is MCAR, MAR, or MNAR, we must consider the implications of how we handle these missing data and avoid introducing more sources of bias. For instance, we can analyze only the respondents who answered all questions by performing listwise deletion, which drops all rows from a data frame with a missing value in any column. For example, let's say we have a dataset `dat` with one complete case and two cases with some missing data. We can use the function `tidyr::drop_na()` for listwise deletion.
+There are several ways to explore missing data. A very rudimentary first exploration is to use the `summary()` function to summarize the data which will illuminate `NA` values in the data. Let's look at some of the first analytic variables on the ANES 2020 data:
 
 ```{r}
-#| label: missing-dropna-example1
-dat <- tibble::tribble(~ col1, ~ col2, ~ col3,
-                       "a",    "d",   "e",
-                       "b",    NA,    NA,
-                       "c",    NA,    "f")
+#| label: missing-anes-summary
 
-dat
+anes_2020 %>%
+  select(V202051:EarlyVote2020) %>%
+  summary()
 ```
 
-If we use the `tidyr::drop_na()` function, only the first case will remain, as the other two cases have at least one missing value.
-```{r}
-#| label: missing-dropna-example2
-dat %>%
-  tidyr::drop_na()
-```
+We see that there are NA values in several of the derived variables (those not beginning with "V") and negative values in the original values. The ANES uses negative values for coding several types of missing data (see Appendix \@ref(anes-cb). 
 
-However, if we want to only remove rows that have missing values in `col3`, we can specify this as an argument in `drop_na()` as follows:
+The **visdat** package is very useful in exploring missing data visually. It provides quick graphics to explore the missingness patterns in the data.
+
+<!-- By default, only the `NA` value is treated as missing just like in other parts of R but `naniar` has a method for treat other values as missing using the `bind_shadow()` and `recode_shadow()` functions. We show this by example below using the same set of variables in the summary above: -->
 
 ```{r}
-#| label: missing-dropna-example3
-dat %>%
-  tidyr::drop_na(col3)
+#| label: missing-anes-bad
+#| include: false
+#| eval: false
+library(naniar)
+
+anes_2020_shadow <- anes_2020 %>%
+  select(V202051:EarlyVote2020) %>%
+  # zap_labels() %>%
+  bind_shadow() %>%
+  recode_shadow(
+    # V201006=.where(V201006==-9 ~ "Refused"),
+    V201024=.where(V201024==-9 ~ "Refused", V201024==-1~"Inapplicable"),
+    V201025x=.where(V201025x==-4~"Technical error"),
+    # V201029=.where(V201029==-9 ~ "Refused", V201029==-1~"Inapplicable"),
+    # V201101=.where(V201101==-9 ~ "Refused", V201101==-8 ~ "Don't know", V201101==-1~"Inapplicable"),
+    # V201102=.where(V201102==-9 ~ "Refused", V201102==-8 ~ "Don't know", V201102==-1~"Inapplicable"),
+    # V201103=.where(V201103==-9 ~ "Refused", V201103==-8 ~ "Don't know", V201103==-1~"Inapplicable")
+  )
+
+
 ```
 
-The `drop_na()` function works on `tbl_svy` objects as well and should only be applied after creating the design object.
 
-If the data is not missing completely at random (MCAR), then listwise deletion may produce biased estimates if there is a pattern of respondents who do not respond to specific questions. In these circumstances, we should explore other options, such as multiple imputation or weighted estimation. However, imputation is not always appropriate and can introduce its own sources of bias. See @allison for more details.
 
-In summary, we need to deeply understand the types and reasons for missing data in our survey before running any analysis. The survey documentation is an important resource for understanding how to deal with missing data. Carefully review the documentation for guidance from the researchers.
+By default, only the `NA` value is treated as missing just like in other parts of R so we first recode the negative values to missing before looking at the visualizations using the same columns as in the summary.
+
+```{r}
+#| label: missing-anes-visdat
+
+library(visdat)
+anes_2020_na <- anes_2020 %>%
+  select(V202051:EarlyVote2020) %>%
+  mutate(
+    across(starts_with("V2"), ~na_if(.x, -9)),
+    across(starts_with("V2"), ~na_if(.x, -8)),
+    across(starts_with("V2"), ~na_if(.x, -6)),
+    across(starts_with("V2"), ~na_if(.x, -2)),
+    across(starts_with("V2"), ~na_if(.x, -1)))
+  
+vis_miss(anes_2020_na, cluster= TRUE, show_perc = FALSE)
+
+```
+
+
+
+
+
+
+## Analysis with missing data
+
+### Accounting for skip patterns
+
+When questions are skipped by design in a survey, it is meaningful that the data is later missing. For example the RECS survey asks people how they control the heat in their home in the winter (`HeatingBehavior`). This is only among those who have heat in their home (`SpaceHeatingUsed`). If no there is no heating equipment used, the value of `HeatingBehavior` is missing. One has several choices when analyzing this data which include 1) only including those with a valid value of `HeatingBehavior` and specifying the universe as those with heat or 2) including those who do not have heat. It is important to speciy what population an analysis generalizes to.
+
+An example of the first analysis is below:
+
+```{r}
+#| label: missing-recs-heatcc
+
+heat_cntl_1 <- recs_des %>%
+  filter(!is.na(HeatingBehavior)) %>%
+  group_by(HeatingBehavior) %>%
+  summarize(
+    p=survey_prop()
+  )
+
+heat_cntl_1
+```
+
+whereas the second analysis would be performed by the following code:
+
+
+```{r}
+#| label: missing-recs-heatpop
+
+heat_cntl_2 <- recs_des %>%
+  group_by(interact(SpaceHeatingUsed, HeatingBehavior)) %>%
+  summarize(
+    p=survey_prop()
+  )
+
+heat_cntl_2
+```
+
+```{r}
+#| label: missing-recs-heattext
+
+pct_1 <- heat_cntl_1 %>% 
+  filter(str_detect(HeatingBehavior, "Program")) %>%
+  mutate(p=round(p*100, 1)) %>%
+  pull(p)
+
+pct_2 <- heat_cntl_2 %>% 
+  filter(str_detect(HeatingBehavior, "Program")) %>%
+  mutate(p=round(p*100, 1)) %>%
+  pull(p)
+
+```
+
+
+If we ran the first analysis, we would say that `r pct_1`% **of households with heat** use a programmable or smart thermostat for the heating of their home. While if we used the results from the second analysis, we could say that `r pct_2`% of households use a programmable or smart thermostat for the heating of their home. The distinction of the two statements is bolded for emphasis. Skip patterns often change the universe that we are talking about and need to be carefully examined.
+
+Consider another example. The American Community Survey (ACS) asks a question "How many minutes did it usually take this person to get from home to work LAST WEEK?" but it is only asked among people who 
+
+
+
+
+<!-- ## Working with Missing Data -->
+
+
+<!-- When running analysis in R, we must handle missing responses as missing data (i.e., `NA`) and not numeric data. If missing responses are treated as zeros or arbitrary values, they can artificially alter summary statistics or introduce spurious patterns in the analysis. Recoding these values to `NA` will allow us to handle missing data in different ways in R, such as using functions like `na.omit()`, `complete.cases()`, or specialized packages like {tidyimpute} or {mice}. These tools allow us to treat missing responses as missing data to conduct our analysis accurately and obtain valid results. -->
+
+<!-- Visualizing the missing data can also inform the types of missing data that are present.  The {naniar} package provides many valuable missing data visualizations, such as using `gg_miss_var()` to see the count or percent of missing data points by variable or `gg_miss_fct()` to see relationships in missing data across levels of a factor variable.  Investigating the relationships and nature of the missing data before running models can ensure that the missing data is accurately accounted for. -->
+
+<!-- ### Accounting for Questionnaire Skip Patterns -->
+
+<!-- Questionnaires may include skip patterns, in which specific questions are skipped based on the respondent's answers to earlier questions. For example, if a respondent answers "no" to a question on whether they voted in the last election, they may be instructed to skip a series of questions related to that election. -->
+
+<!-- Skip patterns are used in surveys to streamline the data collection process and avoid asking irrelevant questions to certain respondents. However, they also result in missing data, as respondents cannot respond to questions they were instructed to skip. Analyzing the data missing by design requires understanding the underlying reasons for the skip patterns. Our survey analysis must properly account for skip patterns to ensure unbiased and accurate population parameters. -->
+
+<!-- Dealing with missing data due to skip patterns requires careful consideration.  We can treat skipped questions as missing data. Or, we can run an analysis that accounts for the conditional dependence between the skipped and answered questions. The appropriate method depends on the nature and extent of the skip patterns, the research questions, and the methodology. For example, if we wanted to know what proportion of eligible voters voted for a particular candidate, the denominator would be all eligible voters, while if we wanted to know what proportion voted for a specific candidate among those who voted, the denominator would be those who voted. We include or exclude missing values depending on our research question. -->
+
+<!-- ### Accounting for Unintentional Missing Data  -->
+
+<!-- When dealing with missing data that is MCAR, MAR, or MNAR, we must consider the implications of how we handle these missing data and avoid introducing more sources of bias. For instance, we can analyze only the respondents who answered all questions by performing listwise deletion, which drops all rows from a data frame with a missing value in any column. For example, let's say we have a dataset `dat` with one complete case and two cases with some missing data. We can use the function `tidyr::drop_na()` for listwise deletion. -->
+
+<!-- ```{r} -->
+<!-- #| label: missing-dropna-example1 -->
+<!-- dat <- tibble::tribble(~ col1, ~ col2, ~ col3, -->
+<!--                        "a",    "d",   "e", -->
+<!--                        "b",    NA,    NA, -->
+<!--                        "c",    NA,    "f") -->
+
+<!-- dat -->
+<!-- ``` -->
+
+<!-- If we use the `tidyr::drop_na()` function, only the first case will remain, as the other two cases have at least one missing value. -->
+<!-- ```{r} -->
+<!-- #| label: missing-dropna-example2 -->
+<!-- dat %>% -->
+<!--   tidyr::drop_na() -->
+<!-- ``` -->
+
+<!-- However, if we want to only remove rows that have missing values in `col3`, we can specify this as an argument in `drop_na()` as follows: -->
+
+<!-- ```{r} -->
+<!-- #| label: missing-dropna-example3 -->
+<!-- dat %>% -->
+<!--   tidyr::drop_na(col3) -->
+<!-- ``` -->
+
+<!-- The `drop_na()` function works on `tbl_svy` objects as well and should only be applied after creating the design object. -->
+
+<!-- If the data is not missing completely at random (MCAR), then listwise deletion may produce biased estimates if there is a pattern of respondents who do not respond to specific questions. In these circumstances, we should explore other options, such as multiple imputation or weighted estimation. However, imputation is not always appropriate and can introduce its own sources of bias. See @allison for more details. -->
+
+<!-- In summary, we need to deeply understand the types and reasons for missing data in our survey before running any analysis. The survey documentation is an important resource for understanding how to deal with missing data. Carefully review the documentation for guidance from the researchers. -->
