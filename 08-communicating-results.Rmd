@@ -7,7 +7,7 @@
 :::
 
 ::: {.prereqbox data-latex="{Prerequisites}"}
-For this chapter, load the following packages and the helper function:
+For this chapter, load the following packages:
 ```{r}
 #| label: results-setup
 #| error: FALSE
@@ -21,7 +21,7 @@ library(gt)
 library(gtsummary)
 ```
 
-We will be using data from ANES. Here is the code to create the ANES design object that will be used throughout the chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c03-understanding-survey-data-documentation) for more information).
+We will be using data from ANES as described in Chapter \@ref(c04-set-up). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-set-up) for more information).
 
 ```{r}
 #| label: results-anes-des
@@ -37,7 +37,8 @@ anes_des <- anes_adjwgt %>%
     weights = Weight,
     strata = Stratum,
     ids = VarUnit,
-    nest = TRUE)
+    nest = TRUE
+  )
 ```
 :::
 
@@ -120,40 +121,69 @@ The native output that R produces may work for initial viewing inside RStudio or
 
 Looking at the output from `trust_gov`, there are a couple of items that are probably obvious to fix: (1) use percentages instead of proportions and (2) the variable names as the column headers. The {gt} package is a good tool for implementing better labeling and creating publishable tables. Let's walk through some code as we implement a few changes to improve the table's usefulness. 
 
-We begin with the `gt()` function to initiate the table and use the argument `rowname_col` to make the `TrustGovernment` column the labels for each row (called the table "stub"). The `cols_label()` function is used to create informative column labels instead of variable names, and the `tab_spanner()` function is applied to add a label across multiple columns. In this case, we apply the label "Trust in Government, 2020" across all the columns except the stub. Finally, the `fmt_percent()` function is used to format the proportions into percentages and reduce the number of decimals shown. Note, the `tab_caption()` function is used to add a table title for the book and allows for cross-referencing in R Markdown Quarto and bookdown, as well as adding it to the list of tables in the book.
+We begin with the `gt()` function to initiate the table and use the argument `rowname_col` to make the `TrustGovernment` column the labels for each row (called the table "stub"). The `cols_label()` function is used to create informative column labels instead of variable names, and the `tab_spanner()` function is applied to add a label across multiple columns. In this case, we apply the label "Trust in Government, 2020" across all the columns except the stub. Finally, the `fmt_percent()` function is used to format the proportions into percentages and reduce the number of decimals shown. Note, the `tab_caption()` function is used to add a table title for the book in HTML and allows for cross-referencing in R Markdown Quarto and bookdown, as well as adding it to the list of tables in the book.
 
 ```{r}
 #| label: results-table-gt1
-trust_gov_gt <-
-  trust_gov %>%
+trust_gov_gt <- trust_gov %>%
   gt(rowname_col = "TrustGovernment") %>%
   cols_label(trust_gov_p = "%",
              trust_gov_p_se = "s.e. (%)") %>%
   tab_spanner(label = "Trust in Government, 2020",
               columns = c(trust_gov_p, trust_gov_p_se)) %>%
-  fmt_percent(decimals = 1) %>%
-  tab_caption("Example of gt table with trust in government estimates.")
+  fmt_percent(decimals = 1)
+```
 
-trust_gov_gt
+```{r}
+#| label: results-table-gt1-noeval
+#| eval: false
+trust_gov_gt %>% 
+  tab_caption("Example of gt table with trust in government estimate")
+```
+
+(ref:results-table-gt1-tab) Example of gt table with trust in government estimate
+
+```{r}
+#| label: results-table-gt1-out
+#| echo: FALSE
+#| warning: FALSE
+
+trust_gov_gt %>%
+  print_gt_book("results-table-gt1-tab")
 ```
 
 A few more things we can add are a title, a data source note, and a footnote with the question information using the functions `tab_header()`, `tab_source_note()`, and `tab_footnote()`.
 
 ```{r}
 #| label: results-table-gt2
-trust_gov_gt %>%
+trust_gov_gt2<-trust_gov_gt %>%
   tab_header("American voter's trust 
              in the federal government, 2020") %>%
   tab_source_note("American National Election Studies, 2020") %>%
   tab_footnote(
     "Question text: How often can you trust the federal government
     in Washington to do what is right?"
-  ) %>%
-  tab_caption("Example of gt table with trust
-              in government estimates with additional context.")
+  )
 ```
 
-#### Expanding Tables using {gtsummary}
+```{r}
+#| label: results-table-gt2-noeval
+#| eval: false
+trust_gov_gt2
+```
+
+(ref:results-table-gt2-tab) Example of gt table with trust in government estimates with additional context
+
+```{r}
+#| label: results-table-gt2-out
+#| echo: FALSE
+#| warning: FALSE
+
+trust_gov_gt2 %>%
+  print_gt_book("results-table-gt2-tab")
+```
+
+#### Expanding Tables using {gtsummary} {-}
 
 The {gtsummary} package simultaneously summarizes data and creates publication-ready tables. Its origins are in clinical trial data but it has been extended to include survey analysis in some limited ways. At this time, it only works with survey objects using Taylor's Series Linearization and not replicate methods. A limited set of summary statistics are available. For categorical variables, the following summary statistics are available:
 
@@ -179,42 +209,68 @@ For continuous variables, the following summary statistics are available:
   - `{p##}` any integer percentile, where `##` is an integer from 0 to 100
   - `{sum}` sum
 
-In the following example, we will build up a table using {gtsummary}, which will be similar to the table in the {gt} example. The main function used is `tbl_svysummary()`. In this function, the variables we want to analyze are included in the `include` argument, and the statistics we want to display are in the `statistic` argument. To specify statistics, the syntax from the {glue} package is used where variables you want to insert are included inside curly brackets. To specify that we want, the proportion followed by the standard error of the proportion in parentheses, we use "{p} ({p.std.error})". We must specify the statistics we want using the names of the statistics in the two lists above. To print this table in all format types, we use the `as_gt()` function to maintain the {gtsummary} formatting.
+In the following example, we will build up a table using {gtsummary}, which will be similar to the table in the {gt} example. The main function used is `tbl_svysummary()`. In this function, the variables we want to analyze are included in the `include` argument, and the statistics we want to display are in the `statistic` argument. To specify statistics, the syntax from the {glue} package is used where variables you want to insert are included inside curly brackets. To specify that we want, the proportion followed by the standard error of the proportion in parentheses, we use "{p} ({p.std.error})". We must specify the statistics we want using the names of the statistics in the two lists above.
 
 ```{r}
 #| label: results-gts-ex-1
-anes_des %>%
+anes_des_gtsum<-anes_des %>%
   tbl_svysummary(include = TrustGovernment,
-                 statistic = list(all_categorical() ~ "{p} ({p.std.error})")) %>%
-  as_gt() %>%
-  tab_caption("Example of gtsummary table with trust 
-              in government estimates.")
+                 statistic = list(all_categorical() ~ "{p} ({p.std.error})")) 
+```
+
+```{r}
+#| label: results-table-gt3-noeval
+#| eval: false
+anes_des_gtsum
+```
+
+(ref:results-gts-ex-1-tab) Example of gtsummary table with trust in government estimates
+
+```{r}
+#| label: results-gts-ex-1-out
+#| echo: FALSE
+#| warning: FALSE
+
+anes_des_gtsum %>% 
+  print_gt_book("results-gts-ex-1-tab")
 ```
 
 In this default table, the weighted number of missing (or Unknown) records is included. Additionally, the standard error is reported as a proportion while the proportion is styled as a percentage. In the next step, we remove the Unknown category by setting the missing argument to "no" and format the standard error as a percentage within the digits argument. Finally, we label the "TrustGovernment" variable to something more publication-ready using the label argument.
 
 ```{r}
 #| label: results-gts-ex-2
-anes_des %>%
+anes_des_gtsum2<-anes_des %>%
   tbl_svysummary(
     include = TrustGovernment,
     statistic = list(all_categorical() ~ "{p} ({p.std.error})"),
     missing = "no",
     digits = list(TrustGovernment ~ style_percent),
     label = list(TrustGovernment ~ "Trust in Government, 2020")
-  ) %>%
-  as_gt() %>%
-  tab_caption(
-    "Example of gtsummary table with trust 
-    in government estimates with labeling and digits options."
   )
 ```
 
-To remove the phrase "Characteristic" and the estimated population size, we can modify the header using the function `modify_header()` to update the label and stat_0. To add footnotes and a title, we do this after converting the object to a gt table using `as_gt()` and can use the same functions we did in Section \@ref(results-gt)
+```{r}
+#| label: results-gts-ex-2-noeval
+#| eval: false
+anes_des_gtsum2
+```
+
+(ref:results-gts-ex-2-tab) Example of gtsummary table with trust in government estimates with labeling and digits options
+
+```{r}
+#| label: results-gts-ex-2-out
+#| echo: FALSE
+#| warning: FALSE
+
+anes_des_gtsum2 %>%
+  print_gt_book("results-gts-ex-2-tab")
+```
+
+To remove the phrase "Characteristic" and the estimated population size, we can modify the header using the function `modify_header()` to update the label and stat_0. To add footnotes and a title, we do this after converting the object to a gt table using `as_gt()` and can use the same functions we did in Section \@ref(results-gt).
 
 ```{r}
 #| label: results-gts-ex-3
-anes_des %>%
+anes_des_gtsum3<-anes_des %>%
   tbl_svysummary(
     include = TrustGovernment,
     statistic = list(all_categorical() ~ "{p} ({p.std.error})"),
@@ -233,12 +289,24 @@ anes_des %>%
     "Question text: How often can you trust 
     the federal government in Washington 
     to do what is right?"
-  ) %>%
-  tab_caption(
-    "Example of gtsummary table with trust 
-    in government estimates with more 
-    labeling options and context."
   )
+```
+
+```{r}
+#| label: results-gts-ex-3-noeval
+#| eval: false
+anes_des_gtsum3
+```
+
+(ref:results-gts-ex-3-tab) Example of gtsummary table with trust in government estimates with more labeling options and context
+
+```{r}
+#| label: results-gts-ex-3-out
+#| echo: FALSE
+#| warning: FALSE
+
+anes_des_gtsum3 %>%
+  print_gt_book("results-gts-ex-3-tab")
 ```
 
 Continuous variables can also be added, and we add a summary of the age variable to the table below by updating the include, statistic, and digits argument. Adding on additional variables is a large benefit to the {gtsummary} package.
@@ -246,7 +314,7 @@ Continuous variables can also be added, and we add a summary of the age variable
 ```{r}
 #| label: results-gts-ex-4
 #| tidy: FALSE
-anes_des %>%
+anes_des_gtsum4<-anes_des %>%
   tbl_svysummary(
     include = c(TrustGovernment, Age),
     statistic = list(
@@ -267,17 +335,33 @@ anes_des %>%
     "Question text: How often can you trust the federal government
     in Washington to do what is right?"
   ) %>%
-  tab_caption("Example of gtsummary table with trust in government estimates and average age.")
+  tab_caption("Example of gtsummary table with trust in government 
+              estimates and average age")
 ```
 
-The {
-gtsummary
-} also allows calculating statistics by different groups  easily. Let's adapt the prior example to perform analysis by whether the person voted for president in 2020. The argument for by is updated and the header names are updated. Finally, we update the header.
+```{r}
+#| label: results-gts-ex-4-noeval
+#| eval: false
+anes_des_gtsum4
+```
+
+(ref:results-gts-ex-4-tab) Example of gtsummary table with trust in government estimates and average age
+
+```{r}
+#| label: results-gts-ex-4-out
+#| echo: FALSE
+#| warning: FALSE
+
+anes_des_gtsum4 %>%
+  print_gt_book("results-gts-ex-4-tab")
+```
+
+The {gtsummary} also allows calculating statistics by different groups  easily. Let's adapt the prior example to perform analysis by whether the person voted for president in 2020. The argument for by is updated and the header names are updated. Finally, we update the header.
 
 ```{r}
 #| label: results-gts-ex-5
 #| messages: FALSE
-anes_des %>%
+anes_des_gtsum5<-anes_des %>%
   drop_na(VotedPres2020) %>%
   tbl_svysummary(
     include=TrustGovernment,
@@ -298,10 +382,26 @@ anes_des %>%
              in the 2020 presidential election") %>%
   tab_source_note("American National Election Studies, 2020") %>%
   tab_footnote("Question text: How often can you trust the federal government 
-               in Washington to do what is right?") %>%
-  tab_caption("Example of gtsummary table with trust 
-              in government estimates by voting status.")
+               in Washington to do what is right?")
 ```
+
+```{r}
+#| label: results-gts-ex-5-noeval
+#| eval: false
+anes_des_gtsum5
+```
+
+(ref:results-gts-ex-5-tab) Example of gtsummary table with trust in government estimates by voting status
+
+```{r}
+#| label: results-gts-ex-5-out
+#| echo: FALSE
+#| warning: FALSE
+
+anes_des_gtsum5 %>%
+    print_gt_book("results-gts-ex-5-tab")
+```
+
 
 ### Charts and Plots
 
