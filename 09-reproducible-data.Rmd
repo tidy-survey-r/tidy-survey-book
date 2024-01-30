@@ -15,6 +15,44 @@ In Chapter \@ref(c08-communicating-results), we briefly mention each of these is
 
 This chapter covers some of our suggestions for tools and techniques we can use in projects. This list is not comprehensive but aims to provide a starting point for teams looking to create a reproducible workflow.
 
+## Project-based workflows
+
+We recommend a project-based workflow for analysis projects as described in Hadley Wickham Mine Çetinkaya-Rundel, and Garrett Grolemund's book, R for Data Science, found at [r4ds.hadley.nz](https://r4ds.hadley.nz/). A project-based workflow maintains a "source of truth" for our analyses. It helps with file system discipline by putting everything related to a project in a designated folder. Since all associated files are in a single location, they are easy to find and organize. When we reopen the project, we can recreate the environment in which we originally ran the code to reproduce our results.
+
+The RStudio IDE has built-in support for projects. When we create a project in RStudio, it creates a `.Rproj` file that store settings specific to that project. Once we have created a project, we can create folders that help us organize our workflow. For example, a project directory could look like this:
+
+```
+| anes_analysis/
+  | anes_analysis.Rproj
+  | README.md
+  | codebooks
+    | codebook2020.pdf
+    | codebook2016.pdf
+  | rawdata
+    | anes2020_raw.csv
+    | anes2016_raw.csv
+  | scripts
+    | data-prep.R
+  | data
+    | anes2020_clean.csv
+    | anes2016_clean.csv
+  | report
+    | anes_report.Rmd
+    | anes_report.html
+    | anes_report.pdf
+```
+
+The {here} package enables easy file referencing. In a project-based workflow, all paths are relative and, by default, relative to the project’s folder. By using relative paths, others can open and run our files even if their directory configuration differs from ours. Use the `here::here()` function to build the path when we load or save data. Below, we ask R to read the CSV file `anes_2020.csv` in the project directory's `data` folder: 
+
+```{r}
+#| eval: false
+#| label: project-file-example
+anes <- 
+  read_csv(here::here("data", "anes2020_clean.csv"))
+```
+
+The combination of projects and the {here} package keep all associated files in an organized manner. This workflow makes it more likely that our analyses can be reproduced by us or our colleagues.
+
 ## Version Control: Git
 
 Often, a survey analysis project produces a lot of code. Keeping track of the latest version can become challenging as files evolve throughout a project. If a team of analysts is working on the same script, someone may use an outdated version, resulting in incorrect results or duplicative work.
@@ -43,8 +81,9 @@ The {targets} package is growing as a popular workflow manager that documents, a
 
 ## Documentation: Quarto and R Markdown
 
-Documenting and describing decisions help other researchers reproduce your work and findings. Methodology reports can be one way to do this, providing a significant document of all project decisions. Additionally, using tools like Quarto and R Markdown allow us to create documents that integrate code and text. These documents present analysis results alongside the report's narrative, so there's no need to copy and paste code output into the final documentation. By eliminating manual steps, we can reduce the chances of errors in the final output. 
-Quarto and R Markdown documents also allow users to re-execute the underlying code when needed. Therefore, another team member can easily recreate the report and obtain the same results. If outputting the file as HTML, these tools can also allow for more robust integration of interactive plots, images, videos, links, and anything else researchers might need to document for a project. 
+Tools like Quarto and R Markdown aid in reproducibility by creating documents that integrate code, text, and results. We can present analysis results alongside the report's narrative, so there's no need to copy and paste code output into the final documentation. By eliminating manual steps, we can reduce the chances of errors in the final output.
+
+Quarto and R Markdown documents also allow users to re-execute the underlying code when needed. Another team member can see the steps we took, follow the scripts, and recreate the report. We can include details about our work in one place thanks to the combination of text and code, making our work transparent and easier to verify. 
 
 ### Parameterization
 
@@ -80,4 +119,13 @@ Something else to assist with reproducible research is using descriptive variabl
 
 ### Databases
 
-Researchers may consider creating a database for projects with complex or large data structures to manage the data and any changes. Many databases will allow for a history of changes, which can be useful when recoding variables to ensure no inadvertent errors are introduced. Additionally, a database may be more accessible to pass to other researchers if existing relationships between tables and types are complex to map. 
+Researchers may consider creating a database for projects with complex or large data structures to manage the data and any changes. Many databases will allow for a history of changes, which can be useful when recoding variables to ensure no inadvertent errors are introduced. Additionally, a database may be more accessible to pass to other researchers if existing relationships between tables and types are complex to map.
+
+## Summary
+
+We can promote accuracy and verification of results by making our analysis reproducible. This chapter discussed different ways to make research reproducible. There are various tools and guides available to help you achieve reproducibility in your work. Here are additional resources to explore:
+
+* R for Data Science chapter on project-based workflows: [https://r4ds.hadley.nz/workflow-scripts.html#projects](https://r4ds.hadley.nz/workflow-scripts.html#projects)
+* Building reproducible analytical pipelines with R by Bruno Rodrigues: [https://raps-with-r.dev/](https://raps-with-r.dev/)
+* Posit Solutions Site page on reproducible environments: [https://solutions.posit.co/envs-pkgs/environments/](https://solutions.posit.co/envs-pkgs/environments/)
+
