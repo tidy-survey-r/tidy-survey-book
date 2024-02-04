@@ -5,7 +5,7 @@
 :::
 
 ::: {.prereqbox data-latex="{Prerequisites}"}
-For this chapter, load the following packages and the helper function:
+For this chapter, load the following packages:
 ```{r}
 #| label: model-setup
 #| error: FALSE
@@ -14,19 +14,19 @@ For this chapter, load the following packages and the helper function:
 library(tidyverse)
 library(survey) 
 library(srvyr) 
-library(osfr)
-source("helper-fun/helper-function.R")
+library(srvyr.data)
 library(broom)
 ```
 
-We will be using data from ANES and RECS. Here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-understanding-survey-data-documentation) for more information).
+We will be using data from ANES and RECS described in Chapter \@ref(c04-set-up). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-set-up) for more information).
+
 ```{r}
 #| label: model-anes-des
 #| eval: FALSE
-anes_in <- read_osf("anes_2020.rds") 
 targetpop <- 231592693
+data(anes_2020)
 
-anes_adjwgt <- anes_in %>%
+anes_adjwgt <- anes_2020 %>%
   mutate(Weight = Weight / sum(Weight) * targetpop)
 
 anes_des <- anes_adjwgt %>%
@@ -34,21 +34,25 @@ anes_des <- anes_adjwgt %>%
     weights = Weight,
     strata = Stratum,
     ids = VarUnit,
-    nest = TRUE)
+    nest = TRUE
+  )
 ```
 
-For RECS, details are included in the RECS documentation and Chapter \@ref(c03-specifying-sample-designs).
+For RECS, details are included in the RECS documentation and Chapters \@ref(c04-set-up) and \@ref(c10-specifying-sample-designs).
+
 ```{r}
 #| label: model-recs-des
 #| eval: FALSE
-recs_in <-read_osf("recs_2015.rds")
+data(recs_2020)
 
-recs_des <- recs_in %>%
-  as_survey_rep(weights = NWEIGHT,
-                repweights = starts_with("BRRWT"),
-                type = "Fay",
-                rho = 0.5,
-                mse = TRUE)
+recs_des <- recs_2020 %>%
+  as_survey_rep(
+    weights = NWEIGHT,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59/60,
+    mse = TRUE
+  )
 ```
 :::
 
@@ -133,7 +137,7 @@ The arguments are:
 * `na.action`: handling of missing data
 * `df.resid`: degrees of freedom for Wald tests (optional) - defaults to using `degf(design)-(g-1)` where $g$ is the number of groups
 
-The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details). The default for missing data is `na.omit`, this means that we are removing all records with any missing data in either predictors or outcomes from analyses.  There are other options for handling missing data and we recommend looking at the help documentation for `na.omit` (run `help(na.omit)` or `?na.omit`) for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c04-understanding-survey-data-documentation). 
+The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details). The default for missing data is `na.omit`, this means that we are removing all records with any missing data in either predictors or outcomes from analyses.  There are other options for handling missing data and we recommend looking at the help documentation for `na.omit` (run `help(na.omit)` or `?na.omit`) for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c03-understanding-survey-data-documentation). 
 
 ### Example
 
@@ -209,11 +213,11 @@ On RECS, we can obtain information on the square footage of homes and the electr
 
 ```{r}
 #| label: model-plot-sf-elbill
-#| fig.cap: Relationship between square footage and dollars spent on electricity, RECS 2015
+#| fig.cap: Relationship between square footage and dollars spent on electricity, RECS 2020
 #| fig.alt: Hex chart where each hexagon represents a number of housing units at a point. x-axis is 'Total square footage' ranging from 0 to 7,500 and y-axis is 'Amount spent on electricity' ranging from $0 to 8,000. The trend is relatively linear and positve. A high concentration of points have square footage between 0 and 2,500 square feet as well as between electricity expenditure between $0 and 2,000
 #| echo: FALSE
 #| warning: FALSE
-recs_in %>%
+recs_2020 %>%
   ggplot(aes(
     x = TOTSQFT_EN,
     y = DOLLAREL,
@@ -309,7 +313,7 @@ Additionally, `augment()` can be used to predict outcomes for data not used in m
 ```{r}
 #| label: model-predict-new-dat
 add_data <-
-  recs_in %>% select(DOEID,
+  recs_2020 %>% select(DOEID,
                      Region,
                      Urbanicity,
                      TOTSQFT_EN,
@@ -647,7 +651,7 @@ tidy(earlyvote_mod) %>% arrange(p.value)
 
 ```{r}
 #| label: model-ex-logistic-2
-add_vote_dat <- anes_in %>%
+add_vote_dat <- anes_2020 %>%
   select(EarlyVote2020, Age, Education, PartyID) %>%
   rbind(tibble(
     EarlyVote2020 = NA,

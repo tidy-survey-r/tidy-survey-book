@@ -1,30 +1,32 @@
-# National Crime Victimization Survey Vignette {#c09-ncvs-vignette}
+# (PART) Vignettes {-}
+
+# National Crime Victimization Survey Vignette {#c13-ncvs-vignette}
 
 ::: {.prereqbox-header}
 `r if (knitr:::is_html_output()) '### Prerequisites {- #prereq9}'`
 :::
 
 ::: {.prereqbox data-latex="{Prerequisites}"}
-For this chapter, load the following packages and the helper function:
+For this chapter, load the following packages:
 ```{r}
 #| label: ncvs-setup
 #| error: FALSE
 #| warning: FALSE
 #| message: FALSE
 library(tidyverse)
+library(survey)
 library(srvyr) 
-library(osfr)
-source("helper-fun/helper-function.R")
+library(srvyr.data)
 library(gt)
 ```
 
-We will be using data from NCVS. Here is the code to read in the three datasets that we will be working with:
+We will use data from NCVS. Here is the code to read in the three datasets from the {srvyr.data} package:
 ```{r}
 #| label: ncvs-data
 #| cache: TRUE
-inc_in <- read_osf("ncvs_2021_incident.rds")
-hh_in <- read_osf("ncvs_2021_household.rds")
-pers_in <- read_osf("ncvs_2021_person.rds")
+data(ncvs_2021_incident)
+data(ncvs_2021_household)
+data(ncvs_2021_person)
 ```
 :::
 
@@ -119,7 +121,7 @@ We want to create four variables to indicate if an incident is a series crime.  
 #| label: ncvs-vign-incfile
 #| message: false
 #| cache: TRUE
-inc_series <- inc_in %>%
+inc_series <- ncvs_2021_incident %>%
   mutate(
     series = case_when(V4017 %in% c(1, 8) ~ 1,
                        V4018 %in% c(2, 8) ~ 1,
@@ -314,12 +316,12 @@ hh_z_list <- rep(0, ncol(inc_hh_sums) - 3) %>% as.list() %>%
 pers_z_list <- rep(0, ncol(inc_pers_sums) - 4) %>% as.list() %>%
   setNames(names(inc_pers_sums)[-(1:4)])
 
-hh_vsum <- hh_in %>%
+hh_vsum <- ncvs_2021_household %>%
   full_join(inc_hh_sums, by = c("YEARQ", "IDHH")) %>%
   replace_na(hh_z_list) %>%
   mutate(ADJINC_WT = if_else(is.na(WGTVICCY), 0, WGTVICCY / WGTHHCY))
 
-pers_vsum <- pers_in %>%
+pers_vsum <- ncvs_2021_person %>%
   full_join(inc_pers_sums, by = c("YEARQ", "IDHH", "IDPER")) %>%
   replace_na(pers_z_list) %>%
   mutate(ADJINC_WT = if_else(is.na(WGTVICCY), 0, WGTVICCY / WGTPERCY))
@@ -723,7 +725,7 @@ pers_est_df <-
   c("Sex", "RaceHispOrigin", "AgeGroup", "MaritalStatus", "Income") %>%
   map_df(pers_est_by)
 
-pers_est_df %>%
+vr_gt<-pers_est_df %>%
   mutate(
     Variable = case_when(
       Variable == "RaceHispOrigin" ~ "Race/Hispanic origin",
@@ -759,9 +761,9 @@ pers_est_df %>%
   ) %>%
   tab_footnote(
     footnote = "Excludes persons of Hispanic origin",
-    locations = 
-      cells_stub(rows = Level %in% 
-                   c("White", "Black", "Asian", NHOPI, "Other"))) %>% 
+    locations =
+      cells_stub(rows = Level %in%
+                   c("White", "Black", "Asian", NHOPI, "Other"))) %>%
   tab_footnote(
     footnote = "Includes persons who identified as
     Native Hawaiian or Other Pacific Islander only.",
@@ -779,6 +781,23 @@ pers_est_df %>%
   tab_stubhead(label = "Victim demographic") %>%
   tab_caption("Rate and standard error of violent victimization,
              by type of crime and demographic characteristics, 2021")
+```
+
+```{r}
+#| label: ncvs-vign-rates-demo-noeval
+#| eval: false
+vr_gt
+```
+
+(ref:ncvs-vign-rates-demo-tab) Rate and standard error of violent victimization, by type of crime and demographic characteristics, 2021
+
+```{r}
+#| label: ncvs-vign-rates-demo-out
+#| echo: FALSE
+#| warning: FALSE
+
+vr_gt %>%
+    print_gt_book("ncvs-vign-rates-demo-tab")
 ```
 
 ### Estimation 4: Prevalence Rates {#prev-rate}
