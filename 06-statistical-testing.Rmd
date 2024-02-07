@@ -5,7 +5,7 @@
 :::
 
 ::: {.prereqbox data-latex="{Prerequisites}"}
-For this chapter, load the following packages and the helper function:
+For this chapter, load the following packages:
 ```{r}
 #| label: stattest-setup
 #| error: FALSE
@@ -19,7 +19,8 @@ library(broom)
 library(gt)
 ```
 
-We will be using data from ANES and RECS. Here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-understanding-survey-data-documentation) for more information).
+We will be using data from ANES and RECS described in Chapter \@ref(c04-set-up). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-set-up) for more information).
+
 ```{r}
 #| label: stattest-anes-des
 #| eval: FALSE
@@ -38,7 +39,7 @@ anes_des <- anes_adjwgt %>%
   )
 ```
 
-For RECS, details are included in the RECS documentation and Chapter \@ref(c03-specifying-sample-designs).
+For RECS, details are included in the RECS documentation and Chapters \@ref(c04-set-up) and \@ref(c10-specifying-sample-designs).
 
 ```{r}
 #| label: stattest-recs-des
@@ -113,7 +114,7 @@ For comparing two estimates, this is called a *two-sample t-test* and we can set
 
 Two sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., North versus South), the t-test run will be an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention).
 
-The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c03-specifying-sample-designs) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined.
+The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c10-specifying-sample-designs) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined.
 
 ### Syntax {#stattest-ttest-syntax}
 
@@ -150,7 +151,7 @@ The `formula` argument can take several different forms depending on what we are
         - **3+ level grouping variable:** `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms.
     b. **Paired:** `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course.
     
-The `na.rm` argument defaults to `FALSE`, which means if any data is missing, the t-test will not compute. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c04-understanding-survey-data-documentation) to better understand how to handle missing data.
+The `na.rm` argument defaults to `FALSE`, which means if any data is missing, the t-test will not compute. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c03-understanding-survey-data-documentation) to better understand how to handle missing data.
 
 Let's walk through a few examples using the ANES and RECS data.
 
@@ -320,7 +321,7 @@ Third, **tests of homogeneity** are used to compare two distributions to see if 
   - $H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}$ where $p_{ia}$ is the observed proportion of category $i$ for subgroup $a$, $p_{ib}$ is the observed proportion of category $i$ for subgroup $a$ and $k$ is the number of categories
   - $H_A:$ at least one category of $p_{ia}$ does not match $p_{ib}$
 
-As with t-tests, the difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c03-specifying-sample-designs).
+As with t-tests, the difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c10-specifying-sample-designs).
 
 ### Syntax {#stattest-chi-syntax}
 
@@ -375,7 +376,7 @@ For tests of independence, the `Wald` and `adjWald` are recommended as they prov
 
 The formula argument will always be one-sided, unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula = ~ var_1 + var_2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
 
-Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. If any data is missing, the $\chi^2$ tests will assume that `NA` is a category and include it in the calculation. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c04-understanding-survey-data-documentation) to better understand how to handle missing data.
+Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. If any data is missing, the $\chi^2$ tests will assume that `NA` is a category and include it in the calculation. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c03-understanding-survey-data-documentation) to better understand how to handle missing data.
 
 ### Examples {#stattest-chi-examples}
 
@@ -509,22 +510,38 @@ However, as researchers, we often want to know about the proportions and not jus
 ```{r}
 #| label: stattest-chi-ex2-prop1
 #| warning: false
-chi_ex2$observed %>% as_tibble() %>%
+chi_ex2_table<-chi_ex2$observed %>% 
+  as_tibble() %>%
   group_by(TrustPeople) %>%
   mutate(prop = round(n / sum(n), 3)) %>%
   select(-n) %>%
-  pivot_wider(names_from = TrustPeople, values_from = prop) %>%
+  pivot_wider(names_from = TrustPeople, values_from = prop) %>% 
   gt(rowname_col = "TrustGovernment") %>%
   tab_stubhead(label = "Trust in Government") %>%
   tab_spanner(label = "Trust in People",
-              columns = everything()) %>% 
+              columns = everything()) %>%
   cols_label(`Most of the time` = md("Most of<br />the time"),
              `About half the time` = md("About half<br />the time"),
-             `Some of the time` = md("Some of<br />the time")) %>%
-  tab_caption("Estimates of proportion of people 
-              by levels of trust in people and government, 
-              ANES 2020")
+             `Some of the time` = md("Some of<br />the time"))
 ```
+
+```{r}
+#| label: stattest-chi-ex2-prop1-noeval
+#| eval: false
+chi_ex2_table
+```
+
+(ref:stattest-chi-ex2-prop1-tab) Estimates of proportion of people by levels of trust in people and government, ANES 2020
+
+```{r}
+#| label: stattest-chi-ex2-prop1-out
+#| echo: FALSE
+#| warning: FALSE
+
+chi_ex2_table %>%
+    print_gt_book("stattest-chi-ex2-prop1-tab")
+```
+
 
 The second option is to use `group_by()` and `survey_mean()` functions to calculate the proportions from the ANES design object. A reminder that with more than one variable listed in the `group_by()` statement, the proportions are within the first variable listed. As mentioned above, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. 
 
@@ -536,7 +553,7 @@ chi_ex2_obs <- anes_des %>%
   summarize(Observed = round(survey_mean(vartype = "ci"), 3),
             .groups="drop") 
 
-chi_ex2_obs %>%
+chi_ex2_obs_table<-chi_ex2_obs %>%
   mutate(prop = paste0(Observed, " (", Observed_low, ", ",
                        Observed_upp, ")")) %>%
   select(TrustGovernment, TrustPeople, prop) %>%
@@ -545,11 +562,24 @@ chi_ex2_obs %>%
   tab_stubhead(label = "Trust in Government") %>%
   tab_spanner(label = "Trust in People",
               columns = everything()) %>% 
-  tab_options(page.orientation = "landscape") %>%
-  tab_caption("Estimates of proportion of people 
-              by levels of trust in people and government 
-              with confidence intervals, 
-              ANES 2020")
+  tab_options(page.orientation = "landscape")
+```
+
+```{r}
+#| label: stattest-chi-ex2-prop2-noeval
+#| eval: false
+chi_ex2_obs_table
+```
+
+(ref:stattest-chi-ex2-prop2-tab) Estimates of proportion of people by levels of trust in people and government with confidence intervals, ANES 2020
+
+```{r}
+#| label: stattest-chi-ex2-prop2-out
+#| echo: FALSE
+#| warning: FALSE
+
+chi_ex2_obs_table %>%
+    print_gt_book("stattest-chi-ex2-prop2-tab")
 ```
 
 Both methods produce the same output as the `svychisq()` function does account for the survey design. However, calculating the proportions directly from the design object means we can also obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those who never trust people, 50.3% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people. 
@@ -621,17 +651,31 @@ chi_ex3_obs <- anes_des %>%
   group_by(VotedPres2020_selection, AgeGroup) %>%
   summarize(Observed = round(survey_mean(vartype = "ci"), 3)) 
 
-chi_ex3_obs %>%
+chi_ex3_obs_table<-chi_ex3_obs %>%
   mutate(prop = paste0(Observed, " (", Observed_low, ", ",
                        Observed_upp, ")")) %>%
   select(AgeGroup, VotedPres2020_selection, prop) %>%
   pivot_wider(names_from = VotedPres2020_selection, 
               values_from = prop) %>%
   gt(rowname_col = "AgeGroup") %>%
-  tab_stubhead(label = "Age Group") %>%
-  tab_caption("Distribution of age group 
-              by presidential candidate selection 
-              with confidence intervals")
+  tab_stubhead(label = "Age Group")
+```
+
+```{r}
+#| label: stattest-chi-ex3-table-noeval
+#| eval: false
+chi_ex3_obs_table
+```
+
+(ref:stattest-chi-ex3-tab) Distribution of age group by presidential candidate selection with confidence intervals
+
+```{r}
+#| label: stattest-chi-ex3-table-out
+#| echo: FALSE
+#| warning: FALSE
+
+chi_ex3_obs_table %>%
+    print_gt_book("stattest-chi-ex3-tab")
 ```
 
 We can see that the age group distribution was younger for Biden and other candidates and older for Trump. For example, of those who voted for Biden, 20.4% were in the 18-29 age group, compared to only 11.4% of those who voted for Trump were in that age group. On the other side, 23.4% of those who voted for Trump were in the 50-59 age group compared to only 15.4% of those who voted for Biden.

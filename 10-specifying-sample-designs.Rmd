@@ -1,11 +1,13 @@
-# Specifying sample designs and replicate weights in {srvyr} {#c03-specifying-sample-designs}
+# (PART) Real life data {-}
+
+# Specifying sample designs and replicate weights in {srvyr} {#c10-specifying-sample-designs}
 
 ::: {.prereqbox-header}
 `r if (knitr:::is_html_output()) '### Prerequisites {- #prereq3}'`
 :::
 
 ::: {.prereqbox data-latex="{Prerequisites}"}
-For this chapter, load the following packages and the helper function:
+For this chapter, load the following packages:
 ```{r}
 #| label: samp-setup-libraries
 #| error: FALSE
@@ -24,7 +26,7 @@ data(api)
 data(scd)
 ```
 
-Additionally, we have created multiple analytic datasets for use in the {srvyr.data} package, as described in \@ref{book-datasets}. This chapter uses data from the Residential Energy Consumption Survey (RECS) - both 2015 and 2020, so we will use the following code to load the RECS data to use later in this chapter:
+This chapter uses data from the Residential Energy Consumption Survey (RECS) - both 2015 and 2020, so we will use the following code to load the RECS data from the {srvyr.data} package:
 
 ```{r}
 #| label: samp-setup-recs 
@@ -503,7 +505,7 @@ brr_des <- dat %>%
                 mse = TRUE)
 ```
 
-Typically, the replicate weights sum to a value similar to the main weight, as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. This would be indicated in the documentation (see Section \@ref(und-surv-doc) and Chapter \@ref(c04-understanding-survey-data-documentation) for more information on how to understand the provided documentation). In this case, the replicate weights are not combined, and the option `combined_weights = FALSE` should be indicated, as the default value for this argument is TRUE. This specific syntax is shown below:
+Typically, the replicate weights sum to a value similar to the main weight, as they are both supposed to provide population estimates. Rarely, an alternative method will be used where the replicate weights have values of 0 or 2 in the case of BRR weights. This would be indicated in the documentation (see Section \@ref(und-surv-doc) and Chapter \@ref(c03-understanding-survey-data-documentation) for more information on how to understand the provided documentation). In this case, the replicate weights are not combined, and the option `combined_weights = FALSE` should be indicated, as the default value for this argument is TRUE. This specific syntax is shown below:
 
 ```r
 brr_des <- dat %>%
@@ -550,7 +552,7 @@ Note that `combined_weights` was specified as `FALSE` because these weights are 
 
 ### Fay's BRR Method
 
-Fay's BRR method for replicate weights is similar to the BRR method in that it uses a Hadamard matrix to construct replicate weights. However, rather than deleting PSUs for each replicate, with Fay's BRR half of the PSUs have a replicate weight which is the main weight multiplied by $\rho$, and the other half have the main weight multiplied by $(2-\rho)$ where $0 \le \rho < 1$. Note that when $\rho=0$, this is equivalent to the standard BRR weights, and as $\rho$ becomes closer to 1, this method is more similar to jackknife discussed in the next section. To obtain the value of $\rho$, it is necessary to read the documentation (see Section \@ref(und-surv-doc) and Chapter \@ref(c04-understanding-survey-data-documentation)).
+Fay's BRR method for replicate weights is similar to the BRR method in that it uses a Hadamard matrix to construct replicate weights. However, rather than deleting PSUs for each replicate, with Fay's BRR half of the PSUs have a replicate weight which is the main weight multiplied by $\rho$, and the other half have the main weight multiplied by $(2-\rho)$ where $0 \le \rho < 1$. Note that when $\rho=0$, this is equivalent to the standard BRR weights, and as $\rho$ becomes closer to 1, this method is more similar to jackknife discussed in the next section. To obtain the value of $\rho$, it is necessary to read the documentation (see Section \@ref(und-surv-doc) and Chapter \@ref(c03-understanding-survey-data-documentation)).
 
 #### The math {-}
 
@@ -670,21 +672,6 @@ recs_des
 summary(recs_des)
 ```
 
-```{r}
-#| label: samp-des-recs-des-full
-#| echo: FALSE
-# This is just for later use in book
-recs_des <- recs_2020 %>%
-  as_survey_rep(
-    weights = NWEIGHT,
-    repweights = NWEIGHT1:NWEIGHT60,
-    type = "JK1",
-    scale = 59/60,
-    mse = TRUE
-  )
-```
-
-
 When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Unstratified cluster jacknife (JK1) with 60 replicates and MSE variances`, and the variables are included. No weight or probability summary is included.
 
 ### Bootstrap Method
@@ -773,7 +760,7 @@ As with other replicate design objects, when printing the object or looking at t
 
 SRS, stratified, and clustered designs are the backbone of sampling designs, and the features are often combined in one design. Additionally, rather than using SRS for selection, other sampling mechanisms are commonly used, such as probability proportional to size (PPS), systematic sampling, or selection with unequal probabilities, which are briefly described here. In PPS sampling, a size measure is constructed for each unit (e.g., the population of the PSU or the number of occupied housing units) and then units with larger size measures are more likely to be sampled. Systematic sampling is commonly used to ensure representation across a population. Units are sorted by a feature and then every $k$ units are selected from a random start point so the sample is spread across the population. In addition to PPS, other unequal probabilities of selection may be used. For example, in a study of establishments (e.g., businesses or public institutions) that conducts a survey every year, an establishment that recently participated (e.g., participated last year) may have a reduced chance of selection in a subsequent round to reduce the burden on the establishment. To learn more about sampling designs, refer to @valliant2013practical, @cox2011business, @cochran1977sampling, and @deming1991sample.
 
-A common method of sampling is to stratify PSUs, select PSUs within the stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step in survey analysis to understand the design of the survey we are using and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User's Guides, methodology, analysis guides, or technical documentation (see Chapter \@ref(c04-understanding-survey-data-documentation) for more details).
+A common method of sampling is to stratify PSUs, select PSUs within the stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step in survey analysis to understand the design of the survey we are using and variables necessary to specify the design. Good documentation will highlight the variables necessary to specify the design. This is often found in User's Guides, methodology, analysis guides, or technical documentation (see Chapter \@ref(c03-understanding-survey-data-documentation) for more details).
 
 #### Example {-}
 

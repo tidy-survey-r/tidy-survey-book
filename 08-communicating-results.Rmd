@@ -1,3 +1,5 @@
+# (PART) Reporting {-}
+
 # Communicating Results {#c08-communicating-results}
 
 ::: {.prereqbox-header}
@@ -5,7 +7,7 @@
 :::
 
 ::: {.prereqbox data-latex="{Prerequisites}"}
-For this chapter, load the following packages and the helper function:
+For this chapter, load the following packages:
 ```{r}
 #| label: results-setup
 #| error: FALSE
@@ -19,7 +21,7 @@ library(gt)
 library(gtsummary)
 ```
 
-We will be using data from ANES. Here is the code to create the ANES design object that will be used throughout the chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-understanding-survey-data-documentation) for more information).
+We will be using data from ANES as described in Chapter \@ref(c04-set-up). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-set-up) for more information).
 
 ```{r}
 #| label: results-anes-des
@@ -35,7 +37,8 @@ anes_des <- anes_adjwgt %>%
     weights = Weight,
     strata = Stratum,
     ids = VarUnit,
-    nest = TRUE)
+    nest = TRUE
+  )
 ```
 :::
 
@@ -53,7 +56,7 @@ Before beginning any dissemination of results, it is important to understand the
 
 ## Describing Results through Text
 
-As researchers, we often focus on the data itself; communicating the results effectively can be a forgotten step. However, all of the steps that we as researchers need to consider when conducting analyses must also be communicated to our audience. The first few chapters of this book (Chapters \@ref(c02-overview-surveys) through \@ref(c04-understanding-survey-data-documentation)) provided insights into what we need to consider when conducting analyses. Each of these topics should also be considered when presenting results to others. 
+As researchers, we often focus on the data itself; communicating the results effectively can be a forgotten step. However, all of the steps that we as researchers need to consider when conducting analyses must also be communicated to our audience. The first few chapters of this book (Chapters \@ref(c02-overview-surveys) through \@ref(c03-understanding-survey-data-documentation)) provided insights into what we need to consider when conducting analyses. Each of these topics should also be considered when presenting results to others. 
 
 ### Methodology
 
@@ -67,7 +70,7 @@ The inclusion of this material is especially important if no methodology report 
 
 In addition to how the survey was conducted and how weights were calculated, providing information about what data prep, cleaning, and analyses were used to obtain these results is also important. For example, in Chapter \@ref(c06-statistical-testing), we compared the distributions of education from the survey to the ACS. To do this, we needed to collapse education categories provided in the ANES data to match the ACS. Providing both the original question wording and response options and the steps taken to map to the ACS data are important for the audience to know to ensure transparency and a better understanding of the results. 
 
-This particular example may seem obvious (combining a Bachelor's Degree and a Graduate Degree into a single category). Still, there are cases where re-coding or handling missing data is more important to disclose as there could be multiple ways to handle the data, and the choice we made as researchers was just one of many. For example, many examples and exercises in this book remove missing data, as this is often the easiest way to handle missing data. However, in some cases, missing data could be a substantively important piece of information, and removing it could bias results. Disclosing how data was handled is crucial in helping the audience better understand the results.
+This particular example may seem obvious (combining a Bachelor's Degree and a Graduate Degree into a single category). Still, there are cases where re-coding or handling missing data is more important to disclose as there could be multiple ways to handle the data, and the choice we made as researchers was just one of many. For example, many examples and exercises in this book remove missing data, as this is often the easiest way to handle missing data. However, in some cases, missing data could be a substantively important piece of information, and removing it could bias results (see Chapter \@ref(c11-missing-data)). Disclosing how data was handled is crucial in helping the audience better understand the results.
 
 ### Results
 
@@ -118,40 +121,69 @@ The native output that R produces may work for initial viewing inside RStudio or
 
 Looking at the output from `trust_gov`, there are a couple of items that are probably obvious to fix: (1) use percentages instead of proportions and (2) the variable names as the column headers. The {gt} package is a good tool for implementing better labeling and creating publishable tables. Let's walk through some code as we implement a few changes to improve the table's usefulness. 
 
-We begin with the `gt()` function to initiate the table and use the argument `rowname_col` to make the `TrustGovernment` column the labels for each row (called the table "stub"). The `cols_label()` function is used to create informative column labels instead of variable names, and the `tab_spanner()` function is applied to add a label across multiple columns. In this case, we apply the label "Trust in Government, 2020" across all the columns except the stub. Finally, the `fmt_percent()` function is used to format the proportions into percentages and reduce the number of decimals shown. Note, the `tab_caption()` function is used to add a table title for the book and allows for cross-referencing in R Markdown Quarto and bookdown, as well as adding it to the list of tables in the book.
+We begin with the `gt()` function to initiate the table and use the argument `rowname_col` to make the `TrustGovernment` column the labels for each row (called the table "stub"). The `cols_label()` function is used to create informative column labels instead of variable names, and the `tab_spanner()` function is applied to add a label across multiple columns. In this case, we apply the label "Trust in Government, 2020" across all the columns except the stub. Finally, the `fmt_percent()` function is used to format the proportions into percentages and reduce the number of decimals shown. Note, the `tab_caption()` function is used to add a table title for the book in HTML and allows for cross-referencing in R Markdown Quarto and bookdown, as well as adding it to the list of tables in the book.
 
 ```{r}
 #| label: results-table-gt1
-trust_gov_gt <-
-  trust_gov %>%
+trust_gov_gt <- trust_gov %>%
   gt(rowname_col = "TrustGovernment") %>%
   cols_label(trust_gov_p = "%",
              trust_gov_p_se = "s.e. (%)") %>%
   tab_spanner(label = "Trust in Government, 2020",
               columns = c(trust_gov_p, trust_gov_p_se)) %>%
-  fmt_percent(decimals = 1) %>%
-  tab_caption("Example of gt table with trust in government estimates.")
+  fmt_percent(decimals = 1)
+```
 
-trust_gov_gt
+```{r}
+#| label: results-table-gt1-noeval
+#| eval: false
+trust_gov_gt %>% 
+  tab_caption("Example of gt table with trust in government estimate")
+```
+
+(ref:results-table-gt1-tab) Example of gt table with trust in government estimate
+
+```{r}
+#| label: results-table-gt1-out
+#| echo: FALSE
+#| warning: FALSE
+
+trust_gov_gt %>%
+  print_gt_book("results-table-gt1-tab")
 ```
 
 A few more things we can add are a title, a data source note, and a footnote with the question information using the functions `tab_header()`, `tab_source_note()`, and `tab_footnote()`.
 
 ```{r}
 #| label: results-table-gt2
-trust_gov_gt %>%
+trust_gov_gt2<-trust_gov_gt %>%
   tab_header("American voter's trust 
              in the federal government, 2020") %>%
   tab_source_note("American National Election Studies, 2020") %>%
   tab_footnote(
     "Question text: How often can you trust the federal government
     in Washington to do what is right?"
-  ) %>%
-  tab_caption("Example of gt table with trust
-              in government estimates with additional context.")
+  )
 ```
 
-#### Expanding Tables using {gtsummary}
+```{r}
+#| label: results-table-gt2-noeval
+#| eval: false
+trust_gov_gt2
+```
+
+(ref:results-table-gt2-tab) Example of gt table with trust in government estimates with additional context
+
+```{r}
+#| label: results-table-gt2-out
+#| echo: FALSE
+#| warning: FALSE
+
+trust_gov_gt2 %>%
+  print_gt_book("results-table-gt2-tab")
+```
+
+#### Expanding Tables using {gtsummary} {-}
 
 The {gtsummary} package simultaneously summarizes data and creates publication-ready tables. Its origins are in clinical trial data but it has been extended to include survey analysis in some limited ways. At this time, it only works with survey objects using Taylor's Series Linearization and not replicate methods. A limited set of summary statistics are available. For categorical variables, the following summary statistics are available:
 
@@ -177,42 +209,68 @@ For continuous variables, the following summary statistics are available:
   - `{p##}` any integer percentile, where `##` is an integer from 0 to 100
   - `{sum}` sum
 
-In the following example, we will build up a table using {gtsummary}, which will be similar to the table in the {gt} example. The main function used is `tbl_svysummary()`. In this function, the variables we want to analyze are included in the `include` argument, and the statistics we want to display are in the `statistic` argument. To specify statistics, the syntax from the {glue} package is used where variables you want to insert are included inside curly brackets. To specify that we want, the proportion followed by the standard error of the proportion in parentheses, we use "{p} ({p.std.error})". We must specify the statistics we want using the names of the statistics in the two lists above. To print this table in all format types, we use the `as_gt()` function to maintain the {gtsummary} formatting.
+In the following example, we will build up a table using {gtsummary}, which will be similar to the table in the {gt} example. The main function used is `tbl_svysummary()`. In this function, the variables we want to analyze are included in the `include` argument, and the statistics we want to display are in the `statistic` argument. To specify statistics, the syntax from the {glue} package is used where variables you want to insert are included inside curly brackets. To specify that we want, the proportion followed by the standard error of the proportion in parentheses, we use "{p} ({p.std.error})". We must specify the statistics we want using the names of the statistics in the two lists above.
 
 ```{r}
 #| label: results-gts-ex-1
-anes_des %>%
+anes_des_gtsum<-anes_des %>%
   tbl_svysummary(include = TrustGovernment,
-                 statistic = list(all_categorical() ~ "{p} ({p.std.error})")) %>%
-  as_gt() %>%
-  tab_caption("Example of gtsummary table with trust 
-              in government estimates.")
+                 statistic = list(all_categorical() ~ "{p} ({p.std.error})")) 
+```
+
+```{r}
+#| label: results-table-gt3-noeval
+#| eval: false
+anes_des_gtsum
+```
+
+(ref:results-gts-ex-1-tab) Example of gtsummary table with trust in government estimates
+
+```{r}
+#| label: results-gts-ex-1-out
+#| echo: FALSE
+#| warning: FALSE
+
+anes_des_gtsum %>% 
+  print_gt_book("results-gts-ex-1-tab")
 ```
 
 In this default table, the weighted number of missing (or Unknown) records is included. Additionally, the standard error is reported as a proportion while the proportion is styled as a percentage. In the next step, we remove the Unknown category by setting the missing argument to "no" and format the standard error as a percentage within the digits argument. Finally, we label the "TrustGovernment" variable to something more publication-ready using the label argument.
 
 ```{r}
 #| label: results-gts-ex-2
-anes_des %>%
+anes_des_gtsum2<-anes_des %>%
   tbl_svysummary(
     include = TrustGovernment,
     statistic = list(all_categorical() ~ "{p} ({p.std.error})"),
     missing = "no",
     digits = list(TrustGovernment ~ style_percent),
     label = list(TrustGovernment ~ "Trust in Government, 2020")
-  ) %>%
-  as_gt() %>%
-  tab_caption(
-    "Example of gtsummary table with trust 
-    in government estimates with labeling and digits options."
   )
 ```
 
-To remove the phrase "Characteristic" and the estimated population size, we can modify the header using the function `modify_header()` to update the label and stat_0. To add footnotes and a title, we do this after converting the object to a gt table using `as_gt()` and can use the same functions we did in Section \@ref(results-gt)
+```{r}
+#| label: results-gts-ex-2-noeval
+#| eval: false
+anes_des_gtsum2
+```
+
+(ref:results-gts-ex-2-tab) Example of gtsummary table with trust in government estimates with labeling and digits options
+
+```{r}
+#| label: results-gts-ex-2-out
+#| echo: FALSE
+#| warning: FALSE
+
+anes_des_gtsum2 %>%
+  print_gt_book("results-gts-ex-2-tab")
+```
+
+To remove the phrase "Characteristic" and the estimated population size, we can modify the header using the function `modify_header()` to update the label and stat_0. To add footnotes and a title, we do this after converting the object to a gt table using `as_gt()` and can use the same functions we did in Section \@ref(results-gt).
 
 ```{r}
 #| label: results-gts-ex-3
-anes_des %>%
+anes_des_gtsum3<-anes_des %>%
   tbl_svysummary(
     include = TrustGovernment,
     statistic = list(all_categorical() ~ "{p} ({p.std.error})"),
@@ -231,12 +289,24 @@ anes_des %>%
     "Question text: How often can you trust 
     the federal government in Washington 
     to do what is right?"
-  ) %>%
-  tab_caption(
-    "Example of gtsummary table with trust 
-    in government estimates with more 
-    labeling options and context."
   )
+```
+
+```{r}
+#| label: results-gts-ex-3-noeval
+#| eval: false
+anes_des_gtsum3
+```
+
+(ref:results-gts-ex-3-tab) Example of gtsummary table with trust in government estimates with more labeling options and context
+
+```{r}
+#| label: results-gts-ex-3-out
+#| echo: FALSE
+#| warning: FALSE
+
+anes_des_gtsum3 %>%
+  print_gt_book("results-gts-ex-3-tab")
 ```
 
 Continuous variables can also be added, and we add a summary of the age variable to the table below by updating the include, statistic, and digits argument. Adding on additional variables is a large benefit to the {gtsummary} package.
@@ -244,7 +314,7 @@ Continuous variables can also be added, and we add a summary of the age variable
 ```{r}
 #| label: results-gts-ex-4
 #| tidy: FALSE
-anes_des %>%
+anes_des_gtsum4<-anes_des %>%
   tbl_svysummary(
     include = c(TrustGovernment, Age),
     statistic = list(
@@ -265,17 +335,33 @@ anes_des %>%
     "Question text: How often can you trust the federal government
     in Washington to do what is right?"
   ) %>%
-  tab_caption("Example of gtsummary table with trust in government estimates and average age.")
+  tab_caption("Example of gtsummary table with trust in government 
+              estimates and average age")
 ```
 
-The {
-gtsummary
-} also allows calculating statistics by different groups  easily. Let's adapt the prior example to perform analysis by whether the person voted for president in 2020. The argument for by is updated and the header names are updated. Finally, we update the header.
+```{r}
+#| label: results-gts-ex-4-noeval
+#| eval: false
+anes_des_gtsum4
+```
+
+(ref:results-gts-ex-4-tab) Example of gtsummary table with trust in government estimates and average age
+
+```{r}
+#| label: results-gts-ex-4-out
+#| echo: FALSE
+#| warning: FALSE
+
+anes_des_gtsum4 %>%
+  print_gt_book("results-gts-ex-4-tab")
+```
+
+The {gtsummary} also allows calculating statistics by different groups  easily. Let's adapt the prior example to perform analysis by whether the person voted for president in 2020. The argument for by is updated and the header names are updated. Finally, we update the header.
 
 ```{r}
 #| label: results-gts-ex-5
 #| messages: FALSE
-anes_des %>%
+anes_des_gtsum5<-anes_des %>%
   drop_na(VotedPres2020) %>%
   tbl_svysummary(
     include=TrustGovernment,
@@ -296,10 +382,26 @@ anes_des %>%
              in the 2020 presidential election") %>%
   tab_source_note("American National Election Studies, 2020") %>%
   tab_footnote("Question text: How often can you trust the federal government 
-               in Washington to do what is right?") %>%
-  tab_caption("Example of gtsummary table with trust 
-              in government estimates by voting status.")
+               in Washington to do what is right?")
 ```
+
+```{r}
+#| label: results-gts-ex-5-noeval
+#| eval: false
+anes_des_gtsum5
+```
+
+(ref:results-gts-ex-5-tab) Example of gtsummary table with trust in government estimates by voting status
+
+```{r}
+#| label: results-gts-ex-5-out
+#| echo: FALSE
+#| warning: FALSE
+
+anes_des_gtsum5 %>%
+    print_gt_book("results-gts-ex-5-tab")
+```
+
 
 ### Charts and Plots
 
@@ -405,75 +507,4 @@ pfull <-
 pfull
 ```
 
-## Reproducibility
 
-Reproducibility is the ability to recreate or replicate the results of a data analysis. If we pass an analysis project to another person, they should be able to run the entire project from start to finish and obtain the same results. Reproducibility is a crucial aspect of survey research because it enables the verification of findings and ensures that the conclusions are not dependent on a particular person running the workflow. Others can review and rerun projects to build on existing work, reducing redundancy and errors.
-
-Reproducibility requires that we consider several key components:
-
-  - **Code**: The source code used for data cleaning, analysis, modeling, and reporting must be available, discoverable, documented, and shared.
-  - **Data**: The raw data used in the workflow must be available, discoverable, documented, and shared. If the raw data is sensitive or proprietary, we should strive to provide as much data as possible that would allow others to run our workflow or direct others to where they can access a restricted use file (RUF).
-  - **Environment**: The environment of the project must be documented. Another analyst should be able to recreate the environment, including the R version, packages, operating system, and other dependencies used in the analysis.
-  - **Methodology**: The analysis methodology, including the rationale behind specific decisions, interpretations, and assumptions, must be documented. Others should be able to achieve the same analysis results based on the methodology report.
-
-Many tools, practices, and project management techniques exist to make survey analysis projects easy to reproduce. For best results, they should be decided upon and applied at the beginning of a project. Below are our suggestions for a survey analysis data workflow. This list is not comprehensive but aims to provide a starting point for teams looking to create a reproducible workflow.
-
-### Setting Random Number Seeds  
-
-Some tasks in survey analysis require randomness, such as imputation, model training, or creating random samples. By default, the random numbers generated by R will change each time we rerun the code, making it difficult to reproduce the same results. By "setting the seed," we can control the randomness and ensure that the random numbers remain consistent whenever we rerun the code. Others can use the same seed value to reproduce our random numbers and achieve the same results, facilitating reproducibility.
-
-In R, we can use the `set.seed()` function to control the randomness in our code. Set a seed value by providing an integer to the function:
-
-```r
-set.seed(999)
-
-runif(5)
-```
-
-The `runif()` function generates five random numbers from a uniform distribution. Since the seed is set to `999`, running `runif()` multiple times will always produce the same sequence:
-
-```
-[1] 0.38907138 0.58306072 0.09466569 0.85263123 0.78674676
-```
-
-It is important to note that `set.seed()` should be used *before* random number generation but is only necessary once per program to make the entire program reproducible. For example, we might set the seed at the top of a program where libraries tend to be loaded.
-
-### Git
-
-A survey analysis project produces a lot of code. As code evolves throughout a project, keeping track of the latest version becomes challenging. If a team of analysts is working on the same script, someone may use an outdated version, resulting in incorrect results or duplicative work.
-
-Version control systems like Git can help alleviate these pains. Git is a system that helps track changes in computer files. Survey analysis can use Git to follow the evolution of code and manage asynchronous work. With Git, it is easy to see any changes made in a script, revert changes, and resolve conflicts between versions.
-
-Services such as GitHub or GitLab provide hosting and sharing of files as well as version control with Git. For example, we can visit the GitHub repository for this book ([https://github.com/tidy-survey-r/tidy-survey-book](https://github.com/tidy-survey-r/tidy-survey-book)) and see the files that build the book, when they were committed to the repository, and the history of modifications over time.
-
-<!--TODO: Add image-->
-
-In addition to code scripts, platforms like GitHub can store data and documentation. They provide a way to maintain a history of data modifications through versioning and timestamps. By saving the data and documentation alongside the code, it becomes easier for others to refer to and access everything they need in one place.
-
-Using version control in data science projects makes collaboration and maintenance more manageable. One excellent resource is [Happy Git and GitHub for the useR by Jenny Bryan and Jim Hester](https://happygitwithr.com/).
-
-### {renv}
-
-The {renv} package is a popular option for managing dependencies and creating virtual environments in R. It creates isolated, project-specific environments that record the packages and their versions used in the code. When initiated, {renv} checks whether the installed packages are consistent with the record. If not, it restores the correct versions for running the project.
-
-With {renv}, others can replicate the project's environment to rerun the code and obtain consistent results.
-
-### Quarto/R Markdown
-
-Quarto and R Markdown are powerful tools that allow us to create documents that combine code and text. These documents present analysis results alongside the report's narrative, so there's no need to copy and paste code output into the final documentation. By eliminating manual steps, we can reduce the chances of errors in the final output.
-
-Rerunning a Quarto or R Markdown document re-executes the underlying code. Another team member can recreate the report and obtain the same results.
-
-#### Parameterization {-}
-
-Quarto and R Markdown's parameterization is an important aspect of reproducibility in reporting. Parameters can control various aspects of the analysis, such as dates, geography, or other analysis variables. By parameterizing our code, we can define and modify these parameters to explore different scenarios or inputs. For example, we can create a document that provides survey analysis results for Michigan. By defining a `state` parameter, we can rerun the same analysis for Wisconsin without having to edit the code throughout the document.
-
-We can define parameterization in the header or code chunks of our Quarto/R Markdown documents. Again, we can easily modify and document the values of these parameters, reducing errors that may occur by manually editing code throughout the script. Parameterization is also a flexible way for others to replicate the analysis and explore variations.
-
-### The {targets} package
-
-The {targets} package is a workflow manager enabling us to document, automate, and execute complex data workflows with multiple steps and dependencies. We define the order of execution for our code. Only the affected code and its downstream targets are re-executed when we change a script. The {targets} package also provides interactive progress monitoring and reporting, allowing us to track the status and progress of our analysis pipeline.   
-
-This tool helps with reproducibility by tracking dependencies, inputs, and outputs of each step of our workflow.
-
-As noted above, many tools, practices, and project management techniques exist for achieving reproducibility. Most critical is deciding on reproducibility goals with our team and the requirements to achieve them before deciding on workflow and documentation.
