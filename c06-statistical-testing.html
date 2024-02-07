@@ -23,7 +23,7 @@
 <meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
 
 
-<meta name="date" content="2024-02-04" />
+<meta name="date" content="2024-02-07" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -623,48 +623,46 @@ div.csl-indent {
 </div>
 <div id="stattest-ttest-ex2" class="section level4 unnumbered hasAnchor">
 <h4>Example 2: One-sample t-test for Proportion<a href="c06-statistical-testing.html#stattest-ttest-ex2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>ANES asked respondents if they voted in the presidential election in 2020.<a href="#fn16" class="footnote-ref" id="fnref16"><sup>16</sup></a> In our data, we call this variable <code>VotedPres2020</code>. Let’s look at the proportion of the U.S. voting-eligible population that voted for the president in 2020 using the <code>survey_prop()</code> function we learned in Chapter <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a>.</p>
-<div class="sourceCode" id="cb200"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb200-1"><a href="c06-statistical-testing.html#cb200-1" aria-hidden="true" tabindex="-1"></a>voteprop <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb200-2"><a href="c06-statistical-testing.html#cb200-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020) <span class="sc">%&gt;%</span></span>
+<p>RECS asked respondents if they use any air conditioning (AC) in their home.<a href="#fn16" class="footnote-ref" id="fnref16"><sup>16</sup></a> In our data, we call this variable <code>ACUsed</code>. Let’s look at the proportion of U.S. households that use AC in their homes using the <code>survey_prop()</code> function we learned in Chapter <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a>.</p>
+<div class="sourceCode" id="cb200"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb200-1"><a href="c06-statistical-testing.html#cb200-1" aria-hidden="true" tabindex="-1"></a>acprop <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb200-2"><a href="c06-statistical-testing.html#cb200-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ACUsed) <span class="sc">%&gt;%</span></span>
 <span id="cb200-3"><a href="c06-statistical-testing.html#cb200-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_prop</span>())</span>
 <span id="cb200-4"><a href="c06-statistical-testing.html#cb200-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb200-5"><a href="c06-statistical-testing.html#cb200-5" aria-hidden="true" tabindex="-1"></a>voteprop</span></code></pre></div>
-<pre><code>## # A tibble: 3 × 3
-##   VotedPres2020      p    p_se
-##   &lt;fct&gt;          &lt;dbl&gt;   &lt;dbl&gt;
-## 1 Yes           0.716  0.00765
-## 2 No            0.0135 0.00198
-## 3 &lt;NA&gt;          0.270  0.00808</code></pre>
-<p>Based on this, 71.6% of the U.S. voting-eligible population voted for president in 2020. If we wanted to know how this compares to another country, we could use <code>svyttest()</code>. For example, if we know that the voter turnout in Germany in the 2017 general election was 76.2%, we could set up our hypothesis as follows:</p>
+<span id="cb200-5"><a href="c06-statistical-testing.html#cb200-5" aria-hidden="true" tabindex="-1"></a>acprop</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 3
+##   ACUsed     p    p_se
+##   &lt;lgl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+## 1 FALSE  0.113 0.00306
+## 2 TRUE   0.887 0.00306</code></pre>
+<p>Based on this, 88.7% of U.S. households use AC in their homes. If we wanted to know if this differs from 90%, we could set up our hypothesis as follows:</p>
 <ul>
-<li><span class="math inline">\(H_0: p = 0.762\)</span> where <span class="math inline">\(p\)</span> is the proportion of the U.S. voting-eligible population that voted for president in 2020</li>
-<li><span class="math inline">\(H_A: p \neq 0.762\)</span></li>
+<li><span class="math inline">\(H_0: p = 0.90\)</span> where <span class="math inline">\(p\)</span> is the proportion of the U.S. households that use AC in their homes</li>
+<li><span class="math inline">\(H_A: p \neq 0.90\)</span></li>
 </ul>
 <p>To conduct this in R, we use the <code>svyttest()</code> function as follows:</p>
-<div class="sourceCode" id="cb202"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb202-1"><a href="c06-statistical-testing.html#cb202-1" aria-hidden="true" tabindex="-1"></a>ttest_ex2 <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb202-2"><a href="c06-statistical-testing.html#cb202-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyttest</span>(<span class="at">formula =</span> (VotedPres2020 <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span>) <span class="sc">-</span> <span class="fl">0.762</span> <span class="sc">~</span> <span class="dv">0</span>, <span class="at">design =</span> .,</span>
-<span id="cb202-3"><a href="c06-statistical-testing.html#cb202-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb202-4"><a href="c06-statistical-testing.html#cb202-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb202-5"><a href="c06-statistical-testing.html#cb202-5" aria-hidden="true" tabindex="-1"></a>ttest_ex2</span></code></pre></div>
+<div class="sourceCode" id="cb202"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb202-1"><a href="c06-statistical-testing.html#cb202-1" aria-hidden="true" tabindex="-1"></a>ttest_ex2 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb202-2"><a href="c06-statistical-testing.html#cb202-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyttest</span>(<span class="at">formula =</span> (ACUsed <span class="sc">==</span> <span class="cn">TRUE</span>) <span class="sc">-</span> <span class="fl">0.9</span> <span class="sc">~</span> <span class="dv">0</span>, <span class="at">design =</span> ., <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-3"><a href="c06-statistical-testing.html#cb202-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-4"><a href="c06-statistical-testing.html#cb202-4" aria-hidden="true" tabindex="-1"></a>ttest_ex2</span></code></pre></div>
 <pre><code>## 
 ##  Design-based one-sample t-test
 ## 
-## data:  (VotedPres2020 == &quot;Yes&quot;) - 0.762 ~ 0
-## t = 83, df = 50, p-value &lt;2e-16
+## data:  (ACUsed == TRUE) - 0.9 ~ 0
+## t = -4.4, df = 58, p-value = 5e-05
 ## alternative hypothesis: true mean is not equal to 0
 ## 95 percent confidence interval:
-##  0.2141 0.2248
+##  -0.019603 -0.007348
 ## sample estimates:
-##   mean 
-## 0.2195</code></pre>
+##     mean 
+## -0.01348</code></pre>
 <p>The output from the <code>svyttest()</code> function can be a bit hard to read. Using the {broom} package from tidymodels, a collection of packages for modeling using the tidyverse principles, we can clean up the output into a tibble to more easily understand what the test tells us.</p>
 <div class="sourceCode" id="cb204"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb204-1"><a href="c06-statistical-testing.html#cb204-1" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(ttest_ex2)</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 8
-##   estimate statistic  p.value parameter conf.low conf.high method       
-##      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;        
-## 1    0.219      82.9 3.30e-55        50    0.214     0.225 Design-based…
+##   estimate statistic   p.value parameter conf.low conf.high method      
+##      &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;       
+## 1  -0.0135     -4.40 0.0000466        58  -0.0196  -0.00735 Design-base…
 ## # ℹ 1 more variable: alternative &lt;chr&gt;</code></pre>
-<p>The estimate differs from example one in that the estimate is not displaying <span class="math inline">\(\mu - 0.762\)</span> but rather <span class="math inline">\(\mu\)</span>, or the difference between the U.S. proportion and the German proportion we are comparing. We can see that there is a difference of 21.9 percentage points. Additionally, the t-statistic value in the <code>statistic</code> column is 82.9, and the p-value is 3.3^{-55}. These results indicate that the U.S. and Germany have similar voter turnout.</p>
+<p>The estimate differs from Example 1 in that the estimate is not displaying <span class="math inline">\(\mu - 0.90\)</span> but rather <span class="math inline">\(\mu\)</span>, or the difference between the U.S. households that use AC and the proportion we are comparing to. We can see that there is a difference of -1.35 percentage points. Additionally, the t-statistic value in the <code>statistic</code> column is -4.4, and the p-value is 4.66^{-5}. These results indicate that the fewer than 90% of U.S. households use AC in their homes.</p>
 <!--Add in callout box about how to use the $ notation to help call out the different values? Maybe indicate how this will be covered more in the reporting chapter? IV: I added a bit up top, not sure if it needs a whole call out box but happy to revisit.-->
 </div>
 <div id="stattest-ttest-ex3" class="section level4 unnumbered hasAnchor">
@@ -922,23 +920,23 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
 <span id="cb227-11"><a href="c06-statistical-testing.html#cb227-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Some of the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;Some of&lt;br /&gt;the time&quot;</span>))</span></code></pre></div>
 <div class="sourceCode" id="cb228"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb228-1"><a href="c06-statistical-testing.html#cb228-1" aria-hidden="true" tabindex="-1"></a>chi_ex2_table</span></code></pre></div>
 
-<div id="fsysfcwrzk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#fsysfcwrzk table {
+<div id="zliummytip" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#zliummytip table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#fsysfcwrzk thead, #fsysfcwrzk tbody, #fsysfcwrzk tfoot, #fsysfcwrzk tr, #fsysfcwrzk td, #fsysfcwrzk th {
+#zliummytip thead, #zliummytip tbody, #zliummytip tfoot, #zliummytip tr, #zliummytip td, #zliummytip th {
   border-style: none;
 }
 
-#fsysfcwrzk p {
+#zliummytip p {
   margin: 0;
   padding: 0;
 }
 
-#fsysfcwrzk .gt_table {
+#zliummytip .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -964,12 +962,12 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-left-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_caption {
+#zliummytip .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#fsysfcwrzk .gt_title {
+#zliummytip .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -981,7 +979,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-width: 0;
 }
 
-#fsysfcwrzk .gt_subtitle {
+#zliummytip .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -993,7 +991,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-top-width: 0;
 }
 
-#fsysfcwrzk .gt_heading {
+#zliummytip .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1005,13 +1003,13 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_bottom_border {
+#zliummytip .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_col_headings {
+#zliummytip .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1026,7 +1024,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_col_heading {
+#zliummytip .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1046,7 +1044,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   overflow-x: hidden;
 }
 
-#fsysfcwrzk .gt_column_spanner_outer {
+#zliummytip .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1058,15 +1056,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 4px;
 }
 
-#fsysfcwrzk .gt_column_spanner_outer:first-child {
+#zliummytip .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#fsysfcwrzk .gt_column_spanner_outer:last-child {
+#zliummytip .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#fsysfcwrzk .gt_column_spanner {
+#zliummytip .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1078,11 +1076,11 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   width: 100%;
 }
 
-#fsysfcwrzk .gt_spanner_row {
+#zliummytip .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#fsysfcwrzk .gt_group_heading {
+#zliummytip .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1108,7 +1106,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   text-align: left;
 }
 
-#fsysfcwrzk .gt_empty_group_heading {
+#zliummytip .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1123,15 +1121,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   vertical-align: middle;
 }
 
-#fsysfcwrzk .gt_from_md > :first-child {
+#zliummytip .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#fsysfcwrzk .gt_from_md > :last-child {
+#zliummytip .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#fsysfcwrzk .gt_row {
+#zliummytip .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1150,7 +1148,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   overflow-x: hidden;
 }
 
-#fsysfcwrzk .gt_stub {
+#zliummytip .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1163,7 +1161,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#fsysfcwrzk .gt_stub_row_group {
+#zliummytip .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1177,15 +1175,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   vertical-align: top;
 }
 
-#fsysfcwrzk .gt_row_group_first td {
+#zliummytip .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#fsysfcwrzk .gt_row_group_first th {
+#zliummytip .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#fsysfcwrzk .gt_summary_row {
+#zliummytip .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1195,16 +1193,16 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#fsysfcwrzk .gt_first_summary_row {
+#zliummytip .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_first_summary_row.thick {
+#zliummytip .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#fsysfcwrzk .gt_last_summary_row {
+#zliummytip .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1214,7 +1212,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_grand_summary_row {
+#zliummytip .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1224,7 +1222,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#fsysfcwrzk .gt_first_grand_summary_row {
+#zliummytip .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1234,7 +1232,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-top-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_last_grand_summary_row_top {
+#zliummytip .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1244,11 +1242,11 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_striped {
+#zliummytip .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#fsysfcwrzk .gt_table_body {
+#zliummytip .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1257,7 +1255,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_footnotes {
+#zliummytip .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1271,7 +1269,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_footnote {
+#zliummytip .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1280,7 +1278,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#fsysfcwrzk .gt_sourcenotes {
+#zliummytip .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1294,7 +1292,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#fsysfcwrzk .gt_sourcenote {
+#zliummytip .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1302,63 +1300,63 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#fsysfcwrzk .gt_left {
+#zliummytip .gt_left {
   text-align: left;
 }
 
-#fsysfcwrzk .gt_center {
+#zliummytip .gt_center {
   text-align: center;
 }
 
-#fsysfcwrzk .gt_right {
+#zliummytip .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#fsysfcwrzk .gt_font_normal {
+#zliummytip .gt_font_normal {
   font-weight: normal;
 }
 
-#fsysfcwrzk .gt_font_bold {
+#zliummytip .gt_font_bold {
   font-weight: bold;
 }
 
-#fsysfcwrzk .gt_font_italic {
+#zliummytip .gt_font_italic {
   font-style: italic;
 }
 
-#fsysfcwrzk .gt_super {
+#zliummytip .gt_super {
   font-size: 65%;
 }
 
-#fsysfcwrzk .gt_footnote_marks {
+#zliummytip .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#fsysfcwrzk .gt_asterisk {
+#zliummytip .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#fsysfcwrzk .gt_indent_1 {
+#zliummytip .gt_indent_1 {
   text-indent: 5px;
 }
 
-#fsysfcwrzk .gt_indent_2 {
+#zliummytip .gt_indent_2 {
   text-indent: 10px;
 }
 
-#fsysfcwrzk .gt_indent_3 {
+#zliummytip .gt_indent_3 {
   text-indent: 15px;
 }
 
-#fsysfcwrzk .gt_indent_4 {
+#zliummytip .gt_indent_4 {
   text-indent: 20px;
 }
 
-#fsysfcwrzk .gt_indent_5 {
+#zliummytip .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1433,23 +1431,23 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
 <span id="cb229-14"><a href="c06-statistical-testing.html#cb229-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_options</span>(<span class="at">page.orientation =</span> <span class="st">&quot;landscape&quot;</span>)</span></code></pre></div>
 <div class="sourceCode" id="cb230"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb230-1"><a href="c06-statistical-testing.html#cb230-1" aria-hidden="true" tabindex="-1"></a>chi_ex2_obs_table</span></code></pre></div>
 
-<div id="kctiqgctne" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#kctiqgctne table {
+<div id="dcznusujwi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#dcznusujwi table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#kctiqgctne thead, #kctiqgctne tbody, #kctiqgctne tfoot, #kctiqgctne tr, #kctiqgctne td, #kctiqgctne th {
+#dcznusujwi thead, #dcznusujwi tbody, #dcznusujwi tfoot, #dcznusujwi tr, #dcznusujwi td, #dcznusujwi th {
   border-style: none;
 }
 
-#kctiqgctne p {
+#dcznusujwi p {
   margin: 0;
   padding: 0;
 }
 
-#kctiqgctne .gt_table {
+#dcznusujwi .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1475,12 +1473,12 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-left-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_caption {
+#dcznusujwi .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#kctiqgctne .gt_title {
+#dcznusujwi .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1492,7 +1490,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-width: 0;
 }
 
-#kctiqgctne .gt_subtitle {
+#dcznusujwi .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1504,7 +1502,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-top-width: 0;
 }
 
-#kctiqgctne .gt_heading {
+#dcznusujwi .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1516,13 +1514,13 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_bottom_border {
+#dcznusujwi .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_col_headings {
+#dcznusujwi .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1537,7 +1535,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_col_heading {
+#dcznusujwi .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1557,7 +1555,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   overflow-x: hidden;
 }
 
-#kctiqgctne .gt_column_spanner_outer {
+#dcznusujwi .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1569,15 +1567,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 4px;
 }
 
-#kctiqgctne .gt_column_spanner_outer:first-child {
+#dcznusujwi .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#kctiqgctne .gt_column_spanner_outer:last-child {
+#dcznusujwi .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#kctiqgctne .gt_column_spanner {
+#dcznusujwi .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1589,11 +1587,11 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   width: 100%;
 }
 
-#kctiqgctne .gt_spanner_row {
+#dcznusujwi .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#kctiqgctne .gt_group_heading {
+#dcznusujwi .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1619,7 +1617,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   text-align: left;
 }
 
-#kctiqgctne .gt_empty_group_heading {
+#dcznusujwi .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1634,15 +1632,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   vertical-align: middle;
 }
 
-#kctiqgctne .gt_from_md > :first-child {
+#dcznusujwi .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#kctiqgctne .gt_from_md > :last-child {
+#dcznusujwi .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#kctiqgctne .gt_row {
+#dcznusujwi .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1661,7 +1659,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   overflow-x: hidden;
 }
 
-#kctiqgctne .gt_stub {
+#dcznusujwi .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1674,7 +1672,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#kctiqgctne .gt_stub_row_group {
+#dcznusujwi .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1688,15 +1686,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   vertical-align: top;
 }
 
-#kctiqgctne .gt_row_group_first td {
+#dcznusujwi .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#kctiqgctne .gt_row_group_first th {
+#dcznusujwi .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#kctiqgctne .gt_summary_row {
+#dcznusujwi .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1706,16 +1704,16 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#kctiqgctne .gt_first_summary_row {
+#dcznusujwi .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_first_summary_row.thick {
+#dcznusujwi .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#kctiqgctne .gt_last_summary_row {
+#dcznusujwi .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1725,7 +1723,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_grand_summary_row {
+#dcznusujwi .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1735,7 +1733,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#kctiqgctne .gt_first_grand_summary_row {
+#dcznusujwi .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1745,7 +1743,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-top-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_last_grand_summary_row_top {
+#dcznusujwi .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1755,11 +1753,11 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_striped {
+#dcznusujwi .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#kctiqgctne .gt_table_body {
+#dcznusujwi .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1768,7 +1766,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_footnotes {
+#dcznusujwi .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1782,7 +1780,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_footnote {
+#dcznusujwi .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1791,7 +1789,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#kctiqgctne .gt_sourcenotes {
+#dcznusujwi .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1805,7 +1803,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#kctiqgctne .gt_sourcenote {
+#dcznusujwi .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1813,63 +1811,63 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#kctiqgctne .gt_left {
+#dcznusujwi .gt_left {
   text-align: left;
 }
 
-#kctiqgctne .gt_center {
+#dcznusujwi .gt_center {
   text-align: center;
 }
 
-#kctiqgctne .gt_right {
+#dcznusujwi .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#kctiqgctne .gt_font_normal {
+#dcznusujwi .gt_font_normal {
   font-weight: normal;
 }
 
-#kctiqgctne .gt_font_bold {
+#dcznusujwi .gt_font_bold {
   font-weight: bold;
 }
 
-#kctiqgctne .gt_font_italic {
+#dcznusujwi .gt_font_italic {
   font-style: italic;
 }
 
-#kctiqgctne .gt_super {
+#dcznusujwi .gt_super {
   font-size: 65%;
 }
 
-#kctiqgctne .gt_footnote_marks {
+#dcznusujwi .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#kctiqgctne .gt_asterisk {
+#dcznusujwi .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#kctiqgctne .gt_indent_1 {
+#dcznusujwi .gt_indent_1 {
   text-indent: 5px;
 }
 
-#kctiqgctne .gt_indent_2 {
+#dcznusujwi .gt_indent_2 {
   text-indent: 10px;
 }
 
-#kctiqgctne .gt_indent_3 {
+#dcznusujwi .gt_indent_3 {
   text-indent: 15px;
 }
 
-#kctiqgctne .gt_indent_4 {
+#dcznusujwi .gt_indent_4 {
   text-indent: 20px;
 }
 
-#kctiqgctne .gt_indent_5 {
+#dcznusujwi .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1989,23 +1987,23 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
 <span id="cb234-13"><a href="c06-statistical-testing.html#cb234-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Age Group&quot;</span>)</span></code></pre></div>
 <div class="sourceCode" id="cb235"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb235-1"><a href="c06-statistical-testing.html#cb235-1" aria-hidden="true" tabindex="-1"></a>chi_ex3_obs_table</span></code></pre></div>
 
-<div id="mujyiavgdh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#mujyiavgdh table {
+<div id="jiaeakpsjf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jiaeakpsjf table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#mujyiavgdh thead, #mujyiavgdh tbody, #mujyiavgdh tfoot, #mujyiavgdh tr, #mujyiavgdh td, #mujyiavgdh th {
+#jiaeakpsjf thead, #jiaeakpsjf tbody, #jiaeakpsjf tfoot, #jiaeakpsjf tr, #jiaeakpsjf td, #jiaeakpsjf th {
   border-style: none;
 }
 
-#mujyiavgdh p {
+#jiaeakpsjf p {
   margin: 0;
   padding: 0;
 }
 
-#mujyiavgdh .gt_table {
+#jiaeakpsjf .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2031,12 +2029,12 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-left-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_caption {
+#jiaeakpsjf .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#mujyiavgdh .gt_title {
+#jiaeakpsjf .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2048,7 +2046,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-width: 0;
 }
 
-#mujyiavgdh .gt_subtitle {
+#jiaeakpsjf .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2060,7 +2058,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-top-width: 0;
 }
 
-#mujyiavgdh .gt_heading {
+#jiaeakpsjf .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2072,13 +2070,13 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_bottom_border {
+#jiaeakpsjf .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_col_headings {
+#jiaeakpsjf .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2093,7 +2091,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_col_heading {
+#jiaeakpsjf .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2113,7 +2111,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   overflow-x: hidden;
 }
 
-#mujyiavgdh .gt_column_spanner_outer {
+#jiaeakpsjf .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2125,15 +2123,15 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 4px;
 }
 
-#mujyiavgdh .gt_column_spanner_outer:first-child {
+#jiaeakpsjf .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#mujyiavgdh .gt_column_spanner_outer:last-child {
+#jiaeakpsjf .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#mujyiavgdh .gt_column_spanner {
+#jiaeakpsjf .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2145,11 +2143,11 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   width: 100%;
 }
 
-#mujyiavgdh .gt_spanner_row {
+#jiaeakpsjf .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#mujyiavgdh .gt_group_heading {
+#jiaeakpsjf .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2175,7 +2173,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   text-align: left;
 }
 
-#mujyiavgdh .gt_empty_group_heading {
+#jiaeakpsjf .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2190,15 +2188,15 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   vertical-align: middle;
 }
 
-#mujyiavgdh .gt_from_md > :first-child {
+#jiaeakpsjf .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#mujyiavgdh .gt_from_md > :last-child {
+#jiaeakpsjf .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#mujyiavgdh .gt_row {
+#jiaeakpsjf .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2217,7 +2215,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   overflow-x: hidden;
 }
 
-#mujyiavgdh .gt_stub {
+#jiaeakpsjf .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2230,7 +2228,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#mujyiavgdh .gt_stub_row_group {
+#jiaeakpsjf .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2244,15 +2242,15 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   vertical-align: top;
 }
 
-#mujyiavgdh .gt_row_group_first td {
+#jiaeakpsjf .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#mujyiavgdh .gt_row_group_first th {
+#jiaeakpsjf .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#mujyiavgdh .gt_summary_row {
+#jiaeakpsjf .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2262,16 +2260,16 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#mujyiavgdh .gt_first_summary_row {
+#jiaeakpsjf .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_first_summary_row.thick {
+#jiaeakpsjf .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#mujyiavgdh .gt_last_summary_row {
+#jiaeakpsjf .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2281,7 +2279,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_grand_summary_row {
+#jiaeakpsjf .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2291,7 +2289,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#mujyiavgdh .gt_first_grand_summary_row {
+#jiaeakpsjf .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2301,7 +2299,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-top-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_last_grand_summary_row_top {
+#jiaeakpsjf .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2311,11 +2309,11 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_striped {
+#jiaeakpsjf .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#mujyiavgdh .gt_table_body {
+#jiaeakpsjf .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2324,7 +2322,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_footnotes {
+#jiaeakpsjf .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2338,7 +2336,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_footnote {
+#jiaeakpsjf .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2347,7 +2345,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#mujyiavgdh .gt_sourcenotes {
+#jiaeakpsjf .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2361,7 +2359,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#mujyiavgdh .gt_sourcenote {
+#jiaeakpsjf .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2369,63 +2367,63 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#mujyiavgdh .gt_left {
+#jiaeakpsjf .gt_left {
   text-align: left;
 }
 
-#mujyiavgdh .gt_center {
+#jiaeakpsjf .gt_center {
   text-align: center;
 }
 
-#mujyiavgdh .gt_right {
+#jiaeakpsjf .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#mujyiavgdh .gt_font_normal {
+#jiaeakpsjf .gt_font_normal {
   font-weight: normal;
 }
 
-#mujyiavgdh .gt_font_bold {
+#jiaeakpsjf .gt_font_bold {
   font-weight: bold;
 }
 
-#mujyiavgdh .gt_font_italic {
+#jiaeakpsjf .gt_font_italic {
   font-style: italic;
 }
 
-#mujyiavgdh .gt_super {
+#jiaeakpsjf .gt_super {
   font-size: 65%;
 }
 
-#mujyiavgdh .gt_footnote_marks {
+#jiaeakpsjf .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#mujyiavgdh .gt_asterisk {
+#jiaeakpsjf .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#mujyiavgdh .gt_indent_1 {
+#jiaeakpsjf .gt_indent_1 {
   text-indent: 5px;
 }
 
-#mujyiavgdh .gt_indent_2 {
+#jiaeakpsjf .gt_indent_2 {
   text-indent: 10px;
 }
 
-#mujyiavgdh .gt_indent_3 {
+#jiaeakpsjf .gt_indent_3 {
   text-indent: 15px;
 }
 
-#mujyiavgdh .gt_indent_4 {
+#jiaeakpsjf .gt_indent_4 {
   text-indent: 20px;
 }
 
-#mujyiavgdh .gt_indent_5 {
+#jiaeakpsjf .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2585,7 +2583,7 @@ Scott, Alastair. 2007. <em>Rao-Scott Corrections and Their Impact</em>. Section 
 <hr />
 <ol start="15">
 <li id="fn15"><p>During the summer, what is your home’s typical indoor temperature inside your home at night?<a href="c06-statistical-testing.html#fnref15" class="footnote-back">↩︎</a></p></li>
-<li id="fn16"><p>This question is not about the primary elections and caucuses that were held a few months ago. Instead, we’d like to ask you about the election for President to be held on November 3, in which (Donald Trump / Joe Biden) is running against (Joe Biden / Donald Trump). Have you already voted in that election, or have you not voted?<a href="c06-statistical-testing.html#fnref16" class="footnote-back">↩︎</a></p></li>
+<li id="fn16"><p>Is any air conditioning equipment used in your home?<a href="c06-statistical-testing.html#fnref16" class="footnote-back">↩︎</a></p></li>
 <li id="fn17"><p>Is any air conditioning equipment used in your home?<a href="c06-statistical-testing.html#fnref17" class="footnote-back">↩︎</a></p></li>
 <li id="fn18"><p>During the summer, what is your home’s typical indoor temperature inside your home at night?<a href="c06-statistical-testing.html#fnref18" class="footnote-back">↩︎</a></p></li>
 <li id="fn19"><p>During the winter, what is your home’s typical indoor temperature inside your home at night?<a href="c06-statistical-testing.html#fnref19" class="footnote-back">↩︎</a></p></li>
