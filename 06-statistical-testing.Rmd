@@ -1,5 +1,12 @@
 # Statistical testing {#c06-statistical-testing}
 
+```{r}
+#| label: stattest-styler
+#| include: false
+knitr::opts_chunk$set(tidy = 'styler')
+```
+
+
 ::: {.prereqbox-header}
 `r if (knitr:::is_html_output()) '### Prerequisites {- #prereq6}'`
 :::
@@ -63,7 +70,7 @@ When analyzing results from a survey, the point estimates described in Chapter \
 
 The general idea of statistical testing is the same for data obtained through surveys and data obtained through other methods, where we compare the point estimates and variance estimates of each statistic to see if statistically significant differences exist. However, statistical testing for complex surveys involves additional considerations due to the need to account for the sampling design in order to obtain accurate variance estimates.
 
-Statistical testing, also called hypothesis testing, involves declaring a null and alternative hypothesis. A null hypothesis is denoted as $H_0$ and the alternative hypothesis is denoted as $H_A$. The null hypothesis is the "business as usual" situation while the alternative hypothesis is what we are trying to determine if the data supports. Stepping away from surveys, if you are rolling a dice, a null hypothesis would be that the die is fair and that each side has an equal chance of being rolled whereas the alternative hypothesis would be that the die is unfair. When we do hypothesis testing, we obtain a p-value and this shows how likely we are to observe the data if the null hypothesis is true. If the p-value (a probability between 0 and 1) is small, we have strong evidence to reject the null hypothesis as it is unlikely to see the data we are observing if the null hypothesis is true. However, if the p-value is large, we say we do not have evidence to reject the null hypothesis.
+Statistical testing, also called hypothesis testing, involves declaring a null and alternative hypothesis. A null hypothesis is denoted as $H_0$ and the alternative hypothesis is denoted as $H_A$. The null hypothesis is the "business as usual" situation while the alternative hypothesis is what we are trying to determine if the data supports. Stepping away from surveys, if we are rolling a dice, a null hypothesis would be that the die is fair and that each side has an equal chance of being rolled whereas the alternative hypothesis would be that the die is unfair. When we do hypothesis testing, we obtain a p-value and this shows how likely we are to observe the data if the null hypothesis is true. If the p-value (a probability between 0 and 1) is small, we have strong evidence to reject the null hypothesis as it is unlikely to see the data we are observing if the null hypothesis is true. However, if the p-value is large, we say we do not have evidence to reject the null hypothesis. We perform tests to say something about the population value after observing a sample.
 
 The functions in the {survey} package allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and functions:
 
@@ -152,12 +159,12 @@ Notice that the first argument here is the `formula` and not the `design`. This 
 The `formula` argument can take several different forms depending on what we are measuring. Here are a few common scenarios:
 
 1. **One-sample t-test:** 
-    a. **Comparison to 0:** `var ~ 0`, where `var` is the measure of interest, and we compare it to the value `0`. For example, we could test if the population mean of household debt is different from `0`.
+    a. **Comparison to 0:** `var ~ 0`, where `var` is the measure of interest, and we compare it to the value `0`. For example, we could test if the population mean of household debt is different from `0` given the sample data collected.
     b. **Comparison to a different value:** `var - value ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `var - 0.25 ~ 0`. Note that specifying the formula as `var ~ 0.25` is not equivalent and will result in a syntax error.
 2. **Two-sample t-test:**
     a. **Unpaired:**
         - **2 level grouping variable:** `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories. For example, we could test if the average age of the population who voted for president in 2020 differed from the age of people who did not vote. In this case, age would be used for `var`, and a binary variable indicating voting activity would be the `groupVar`.
-        - **3+ level grouping variable:** `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms where `groupVar` would be the variable holding the values for classroom IDs and `level` is the classroom ID you want to compare to the others.
+        - **3+ level grouping variable:** `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms where `groupVar` would be the variable holding the values for classroom IDs and `level` is the classroom ID we want to compare to the others.
     b. **Paired:** `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course so `var_1` would be the test score at the beginning of the course and `var_2` would be the score at the end of the course.
     
 The `na.rm` argument defaults to `FALSE`, which means if any data is missing, the t-test will not compute. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c03-understanding-survey-data-documentation) to better understand how to handle missing data.
@@ -543,7 +550,7 @@ chi_ex2_table<-chi_ex2$observed %>%
 chi_ex2_table
 ```
 
-(ref:stattest-chi-ex2-prop1-tab) Estimates of proportion of people by levels of trust in people and government, ANES 2020
+(ref:stattest-chi-ex2-prop1-tab) Proportion of adults in the U.S. by levels of trust in people and government, ANES 2020
 
 ```{r}
 #| label: stattest-chi-ex2-prop1-tab
@@ -585,7 +592,7 @@ chi_ex2_obs_table<-chi_ex2_obs %>%
 chi_ex2_obs_table
 ```
 
-(ref:stattest-chi-ex2-prop2-tab) Estimates of proportion of people by levels of trust in people and government with confidence intervals, ANES 2020
+(ref:stattest-chi-ex2-prop2-tab) Proportion of adults in the U.S. by levels of trust in people and government with confidence intervals, ANES 2020
 
 ```{r}
 #| label: stattest-chi-ex2-prop2-tab
@@ -603,8 +610,8 @@ We may find it easier to look at these proportions graphically. We can use `ggpl
 <!--Perhaps a mosaic plot instead?-->
 ```{r}
 #| label: stattest-chi-ex2-graph
-#| fig.cap: Estimates of proportion of people by levels of trust in people and government with confidence intervals, ANES 2020
-#| fig.alt: Estimates of proportion of people by levels of trust in people and government with confidence intervals, ANES 2020. This presents the same information as the previous table in graphical form.
+#| fig.cap: Proportion of adults in the U.S. by levels of trust in people and government with confidence intervals, ANES 2020
+#| fig.alt: Proportion of adults in the U.S. by levels of trust in people and government with confidence intervals, ANES 2020. This presents the same information as the previous table in graphical form.
 
 chi_ex2_obs %>%
   mutate(TrustPeople=
