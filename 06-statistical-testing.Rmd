@@ -14,7 +14,7 @@ For this chapter, load the following packages:
 library(tidyverse)
 library(survey) 
 library(srvyr) 
-library(srvyr.data)
+library(srvyrexploR)
 library(broom)
 library(gt)
 ```
@@ -195,7 +195,7 @@ recs_des %>%
   summarize(mu = survey_mean(SummerTempNight, na.rm = TRUE))
 ```
 
-The result is the same in both methods, so we see that the average temperature U.S. households set their thermostat to in the summer at night is `r signif(ttest_ex1$estimate + 68,3)`$^\circ$F. Looking at the output from `svyttest()`, the t-statistic is `r signif(ttest_ex1$statistic, 3)`, and the p-value is $`r signif(ttest_ex1[["p.value"]], 3)`$, indicating that the average is statistically different from 68$^\circ$F at an $\alpha$ level of $0.05$.
+The result is the same in both methods, so we see that the average temperature U.S. households set their thermostat to in the summer at night is `r signif(ttest_ex1$estimate + 68,3)`$^\circ$F. Looking at the output from `svyttest()`, the t-statistic is `r signif(ttest_ex1$statistic, 3)`, and the p-value is $`r pretty_p_value(ttest_ex1[["p.value"]])`$, indicating that the average is statistically different from 68$^\circ$F at an $\alpha$ level of $0.05$.
 
 If we want an 80% confidence interval for the test statistic, we can use the function `confint()` to change the confidence level. Below, we print both the original 95% confidence interval and the 80% confidence interval:
 
@@ -208,29 +208,29 @@ confint(ttest_ex1, level = 0.8)
 
 #### Example 2: One-sample t-test for Proportion {.unnumbered #stattest-ttest-ex2}
 
-ANES asked respondents if they voted in the presidential election in 2020.^[This question is not about the primary elections and caucuses that were held a few months ago. Instead, we'd like to ask you about the election for President to be held on November 3, in which (Donald Trump / Joe Biden) is running against (Joe Biden / Donald Trump). Have you already voted in that election, or have you not voted?] In our data, we call this variable `VotedPres2020`. Let's look at the proportion of the U.S. voting-eligible population that voted for the president in 2020 using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis).
+RECS asked respondents if they use any air conditioning (AC) in their home.^[Is any air conditioning equipment used in your home?] In our data, we call this variable `ACUsed`. Let's look at the proportion of U.S. households that use AC in their homes using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis).
 
 ```{r}
-#| label: stattest-ttest-voteprop
-voteprop <- anes_des %>%
-  group_by(VotedPres2020) %>%
+#| label: stattest-ttest-acused
+acprop <- recs_des %>%
+  group_by(ACUsed) %>%
   summarize(p = survey_prop())
 
-voteprop
+acprop
 ```
 
-Based on this, `r signif((voteprop %>% filter(VotedPres2020=="Yes") %>% pull(p))*100,3)`% of the U.S. voting-eligible population voted for president in 2020. If we wanted to know how this compares to another country, we could use `svyttest()`. For example, if we know that the voter turnout in Germany in the 2017 general election was 76.2%, we could set up our hypothesis as follows:
+Based on this, `r signif((acprop %>% filter(ACUsed==TRUE) %>% pull(p))*100,3)`% of U.S. households use AC in their homes. If we wanted to know if this differs from 90%, we could set up our hypothesis as follows:
 
-- $H_0: p = 0.762$ where $p$ is the proportion of the U.S. voting-eligible population that voted for president in 2020
-- $H_A: p \neq 0.762$
+- $H_0: p = 0.90$ where $p$ is the proportion of the U.S. households that use AC in their homes
+- $H_A: p \neq 0.90$
 
 To conduct this in R, we use the `svyttest()` function as follows:
 
 ```{r}
 #| label: stattest-ttest-ex2
-ttest_ex2 <- anes_des %>%
+ttest_ex2 <- recs_des %>%
   svyttest(
-    formula = (VotedPres2020 == "Yes") - 0.762 ~ 0,
+    formula = (ACUsed == TRUE) - 0.90 ~ 0,
     design = .,
     na.rm = TRUE
   )
@@ -245,7 +245,7 @@ The output from the `svyttest()` function can be a bit hard to read. Using the {
 broom::tidy(ttest_ex2)
 ```
 
-The estimate differs from example one in that the estimate is not displaying \(\mu - 0.762\) but rather \(\mu\), or the difference between the U.S. proportion and the German proportion we are comparing. We can see that there is a difference of `r signif(ttest_ex2$estimate*100,3)` percentage points. Additionally, the t-statistic value in the `statistic` column is `r signif(ttest_ex2$statistic,3)`, and the p-value is `r signif(ttest_ex2$p.value,3)`. These results indicate that the U.S. and Germany have similar voter turnout.
+The estimate differs from Example 1 in that the estimate is not displaying \(\mu - 0.90\) but rather \(\mu\), or the difference between the U.S. households that use AC and the proportion we are comparing to. We can see that there is a difference of `r signif(ttest_ex2$estimate*100,3)` percentage points. Additionally, the t-statistic value in the `statistic` column is `r signif(ttest_ex2$statistic,3)`, and the p-value is `r pretty_p_value(ttest_ex2$p.value)`. These results indicate that the fewer than 90% of U.S. households use AC in their homes.
 
 <!--Add in callout box about how to use the $ notation to help call out the different values? Maybe indicate how this will be covered more in the reporting chapter? IV: I added a bit up top, not sure if it needs a whole call out box but happy to revisit.-->
 
@@ -277,7 +277,7 @@ ttest_ex3 <- recs_des %>%
 broom::tidy(ttest_ex3)
 ```
 
-The results indicate that the difference in electrical bills for those that used AC and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r signif(ttest_ex3$statistic, 3)` and the p-value is $`r signif(ttest_ex3[["p.value"]], 3)`$. Households that used AC spent, on average, $`r round(ttest_ex3[["estimate"]], 2) %>% unname()` more in 2020 on electricity than households without AC.
+The results indicate that the difference in electrical bills for those that used AC and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r signif(ttest_ex3$statistic, 3)` and the p-value is $`r pretty_p_value(ttest_ex3[["p.value"]])`$. Households that used AC spent, on average, $`r round(ttest_ex3[["estimate"]], 2) %>% unname()` more in 2020 on electricity than households without AC.
 
 #### Example 4: Paired two-sample t-test {.unnumbered #stattest-ttest-ex4}
 
@@ -300,7 +300,7 @@ ttest_ex4 <- recs_des %>%
 broom::tidy(ttest_ex4)
 ```
 
-U.S. households set their thermostat on average `r signif(ttest_ex4$estimate,2)`$^\circ$F warmer in summer nights than winter nights, which is statistically significant (t = `r signif(ttest_ex4$statistic, 3)`, p-value = $`r signif(ttest_ex4$p.value, 3)`$).  
+U.S. households set their thermostat on average `r signif(ttest_ex4$estimate,2)`$^\circ$F warmer in summer nights than winter nights, which is statistically significant (t = `r signif(ttest_ex4$statistic, 3)`, p-value = $`r pretty_p_value(ttest_ex4[["p.value"]])`$).  
 
 ## Chi-Square Tests {#stattest-chi}
 
@@ -432,7 +432,7 @@ chi_ex1 <- anes_des_educ %>%
 chi_ex1
 ```
 
-The output from the `svygofchisq()` indicates that at least one proportion from ANES does not match the ACS data ($\chi^2 =$ `r chi_ex1$statistic`; $p-value =$ `r signif(chi_ex1$p.value,3)`). To get a better idea of the differences, we can use the `expected` output along with `survey_mean()` to create a comparison table:  
+The output from the `svygofchisq()` indicates that at least one proportion from ANES does not match the ACS data ($\chi^2 =$ `r chi_ex1$statistic`; $p-value =$ `r pretty_p_value(chi_ex1[["p.value"]])`). To get a better idea of the differences, we can use the `expected` output along with `survey_mean()` to create a comparison table:  
 
 ```{r}
 #| label: stattest-chi-ex1-table
