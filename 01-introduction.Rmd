@@ -40,4 +40,63 @@ This book will cover many aspects of survey design and analysis, from understand
 - **Chapter \@ref(c13-ncvs-vignette)**: National Crime Victimization Survey Vignette. A vignette on how to analyze data from the NCVS, a survey in the U.S. that collects information on crimes and their characteristics. This illustrates an analysis that requires multiple files to calculate victimization rates.
 - **Chapter \@ref(c14-ambarom-vignette)**: AmericasBarometer Vignette. A vignette on how to analyze data from the AmericasBarometer, a survey of attitudes, evaluations, experiences, and behavior in countries in the Western Hemisphere. This includes how to make choropleth maps with survey estimates.
 
+<<<<<<< HEAD
+In most chapters, you'll find code that you can follow. Each of these chapters starts with a "set-up" section. This section will include the code needed to load the necessary packages and datasets in the chapter.  We then provide the main idea of the chapter and examples on how to use the functions.  Most chapters end with exercises to work through.  Solutions to the exercises can be found in the Appendix.
+
+## Datasets used in this book
+
+We work with two key datasets throughout the book: the Residential Energy Consumption Survey [RECS -- @recs-2020-tech] and the American National Election Studies [ANES -- @debell].  To ensure that all readers can follow the examples, we have provided analytic datasets in an R package, {srvyrexploR}. Install the package from GitHub using the {remotes} package.
+
+```r
+remotes::install_github("tidy-survey-r/srvyrexploR")
+```
+
+To explore the provided datasets in the package, access the documentation usng the `help()` command.
+
+```r
+help(package="srvyrexploR")
+```
+To load the RECS and ANES datasets, start by running `library(srvyrexploR)` to load the package. Then, use the `data()` command to load the datasets into the environment.
+
+```{r}
+#| label: intro-setup
+#| error: FALSE
+#| warning: FALSE
+#| message: FALSE
+library(tidyverse)
+library(survey)
+library(srvyr)
+library(srvyrexploR)
+```
+
+```{r}
+#| label: intro-setup-readin
+#| error: FALSE
+#| warning: FALSE
+#| message: FALSE
+
+data(recs_2020)
+data(anes_2020)
+```
+
+RECS is a study that provides energy consumption and expenditures data in American households. The Energy Information Administration funds RECS and has been fielded 15 times between 1950 and 2020. The survey has two components - the household survey and the energy supplier survey. In 2020, the household survey was collected by web and paper questionnaires and included questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, respondent demographics, and energy assistance. The energy supplier survey consists of components relating to energy consumption and energy expenditure. Below is an overview of the `recs_2020` data:
+
+```{r}
+#| label: intro-recs
+recs_2020 %>% select(-starts_with("NWEIGHT"))
+recs_2020 %>% select(starts_with("NWEIGHT"))
+```
+
+From this output, we can see that there are `r nrow(recs_2020) %>% formatC(big.mark = ",")` rows and `r ncol(recs_2020) %>% formatC(big.mark = ",")` variables.  We can see that there are variables containing an ID (`DOEID`), geographic information (e.g., `Region`, `state_postal`, `Urbanicity`), along with information about the house, including the type of house (`HousingUnitType`) and when the house was built (`YearMade`). Additionally, there is a long list of weighting variables that we will use in the analysis (e.g., `NWEIGHT`, `NWEIGHT1`, ..., `NWEIGHT60`). We will discuss using these weighting variables in Chapter \@ref(c10-specifying-sample-designs). For a more detailed codebook, see Appendix \@ref(recs-cb).
+
+The ANES is a series study that has collected data from election surveys since 1948. These surveys contain data on public opinion and voting behavior in U.S. presidential elections. The 2020 survey (the data we will be using) was fielded to individuals over the web, through live video interviewing, or over with computer-assisted telephone interviewing (CATI). The survey includes questions on party affiliation, voting choice, and level of trust with the government. Here is an overview of the `anes_2020` data. First, we show the variables starting with "V" followed by a number; these are the original variables. Then, we show you the remaining variables that we created based on the original data:
+
+```{r}
+#| label: intro-anes
+anes_2020 %>% select(matches("^V\\d"))
+anes_2020 %>% select(-matches("^V\\d"))
+```
+
+From this output we can see that there are `r nrow(anes_2020) %>% formatC(big.mark = ",")` rows and `r ncol(anes_2020) %>% formatC(big.mark = ",")` variables.  Most of the variables start with V20, so referencing the documentation for survey will be crucial to not get lost (see Chapter \@ref(c03-understanding-survey-data-documentation)).  We have created some more descriptive variables for you to use throughout this book, such as the age (`Age`) and gender (`Gender`) of the respondent, along with variables that represent their party affiliation (`PartyID`). Additionally, we need the variables  `Weight` and `Stratum` to analyze this data accurately.  We will discuss how to use these weighting variables in Chapters \@ref(c10-specifying-sample-designs) and \@ref(c03-understanding-survey-data-documentation). For a more detailed codebook, see Appendix \@ref(anes-cb).
+
 In most chapters, you'll find code that you can follow. Each of these chapters starts with a "setup" section. The setup section includes the code needed to load the necessary packages and datasets in the chapter.  We then provide the main idea of the chapter and examples on how to use the functions.  Most chapters end with exercises to work through.  Solutions to the exercises can be found in the Appendix.
