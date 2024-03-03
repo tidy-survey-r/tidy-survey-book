@@ -88,70 +88,47 @@ The 2004 ANES dataset released an erratum, notifying analysts to remove a specif
 
 Survey documentation may include additional material, such as interviewer instructions or "show cards" provided to respondents during interviewer-administered surveys to help respondents answer questions. Explore the survey website to find out what resources were used and in what contexts.
 
-## Working with Missing Data
+## Missing data coding
 
-Missing data in surveys refers to situations where participants do not provide complete responses to survey questions. Respondents may not have seen a question by design. Or, they may not respond to a question for various other reasons, such as not wanting to answer a particular question, not understanding the question, or simply forgetting to answer. 
+For some observations in a dataset, there may be missing data. This can be by design or from nonresponse, and these concepts are detailed in Chapter \@ref(c11-missing-data). In that chapter, we also discuss how to analyze data with missing data. In this section, we discuss how to understand documentation related to missing data.
 
-Missing data can be a significant problem in survey analysis, as it can introduce bias and reduce the representativeness of the data. Missing data typically falls into two main categories: missing by design or unintentional missing data.
+The survey documentation, often the codebook, represents the missing data with a code. The codebook may list different codes depending on why certain data is missing. In the example of variable `V202066` from the ANES (Figure \@ref(fig:understand-codebook-examp)), `-9` represents "Refused," `-7` means that the response was deleted due to an incomplete interview, `-6` means that there is no response because there was no follow-up interview, and `-1` means "Inapplicable" (due to the designed skip pattern). 
 
-1. **Missing by design/questionnaire skip logic**: This type of missingness occurs when certain respondents are intentionally directed to skip specific questions based on their previous responses or characteristics. For example, in a survey about employment, if a respondent indicates that they are not employed, they may be directed to skip questions related to their job responsibilities. Additionally, some surveys randomize questions or modules so that not all participants respond to all questions. In these instances, respondents would have missing data for the modules not randomly assigned to them.
-
-2. **Unintentional missing data**: This type of missingness occurs when researchers do not intend for there to be missing data on a particular question, for example, if respondents did not finish the survey or refused to answer individual questions.  There are three main types of unintentional missing data that each should be considered and handled differently [@mack; @Schafer2002]:   
-
-    a. **Missing completely at random (MCAR)**: The missing data are unrelated to both observed and unobserved data, and the probability of being missing is the same across all cases. For example, if a respondent missed a question because they had to leave the survey early due to an emergency.
-
-    b. **Missing at random (MAR)**: The missing data are related to observed data but not unobserved data, and the probability of being missing is the same within groups. For example, if older respondents choose not to answer specific questions but younger respondents do answer them and we know the respondent's age.
-
-    c. **Missing not at random (MNAR)**: The missing data are related to unobserved data, and the probability of being missing varies for reasons we are not measuring. For example, if respondents with depression do not answer a question about depression severity.
-
-The survey documentation, often the codebook, represents the missing data with a code. For example, a survey may have "Yes" responses coded to `1`, "No" responses coded to `2`, and missing responses coded to `-9`. Or, the codebook may list different codes depending on why certain data are missing. In the example of variable `V202066` from the ANES (Figure \@ref(fig:understand-codebook-examp)), `-9` represents "Refused," `-7` means that the response was deleted due to an incomplete interview, `-6` means that there is no response because there was no follow-up interview, and `-1` means "Inapplicable" (due to the designed skip pattern). 
-
-When running analysis in R, we must handle missing responses as missing data (i.e., `NA`) and not numeric data. If missing responses are treated as zeros or arbitrary values, they can artificially alter summary statistics or introduce spurious patterns in the analysis. Recoding these values to `NA` will allow us to handle missing data in different ways in R, such as using functions like `na.omit()`, `complete.cases()`, or specialized packages like {tidyimpute} or {mice}. These tools allow us to treat missing responses as missing data to conduct our analysis accurately and obtain valid results.
-
-Visualizing the missing data can also inform the types of missing data that are present.  The {naniar} package provides many valuable missing data visualizations, such as using `gg_miss_var()` to see the count or percent of missing data points by variable or `gg_miss_fct()` to see relationships in missing data across levels of a factor variable.  Investigating the relationships and nature of the missing data before running models can ensure that the missing data are accurately accounted for.
-
-### Accounting for Questionnaire Skip Patterns
-
-Questionnaires may include skip patterns, in which specific questions are skipped based on the respondent's answers to earlier questions. For example, if a respondent answers "no" to a question on whether they voted in the last election, they may be instructed to skip a series of questions related to that election.
-
-Skip patterns are used in surveys to streamline the data collection process and avoid asking irrelevant questions to certain respondents. However, they also result in missing data, as respondents cannot respond to questions they were instructed to skip. Analyzing the data missing by design requires understanding the underlying reasons for the skip patterns. Our survey analysis must properly account for skip patterns to ensure unbiased and accurate population parameters.
-
-Dealing with missing data due to skip patterns requires careful consideration.  We can treat skipped questions as missing data. Or, we can run an analysis that accounts for the conditional dependence between the skipped and answered questions. The appropriate method depends on the nature and extent of the skip patterns, the research questions, and the methodology. For example, if we wanted to know what proportion of eligible voters voted for a particular candidate, the denominator would be all eligible voters, while if we wanted to know what proportion voted for a specific candidate among those who voted, the denominator would be those who voted. We include or exclude missing values depending on our research question.
-
-### Accounting for Unintentional Missing Data 
-
-When dealing with missing data that is MCAR, MAR, or MNAR, we must consider the implications of how we handle these missing data and avoid introducing more sources of bias. For instance, we can analyze only the respondents who answered all questions by performing listwise deletion, which drops all rows from a data frame with a missing value in any column. For example, let's say we have a dataset `dat` with one complete case and two cases with some missing data. We can use the function `tidyr::drop_na()` for listwise deletion.
+As another example, there may be a summary variable that describes the missingness of a set of variables - particularly with "select all that apply" or "multiple response" questions. In the National Crime Victimization Survey (NCVS), respondents who are victims of a crime and saw the offender are asked if the offender have a weapon and then asked what the type of weapon was. This part of the questionnaire from 2021 is shown in Figure \@ref(fig:understand-ncvs-weapon-q).
 
 ```{r}
-#| label: understand-dropna-example1
-dat <- tibble::tribble(~ col1, ~ col2, ~ col3,
-                       "a",    "d",   "e",
-                       "b",    NA,    NA,
-                       "c",    NA,    "f")
+#| label: understand-ncvs-weapon-q
+#| echo: false
+#| fig.cap: Excerpt from the NCVS 2020-2021 Crime Incident Report - Weapon Type
+#| fig.alt: Questions 22 and 23a from the NCVS 2020-2021 Crime Incident Report, see https://bjs.ojp.gov/content/pub/pdf/ncvs20_cir.pdf 
 
-dat
+knitr::include_graphics(path="images/questionnaire-ncvs-weapon.jpg")
 ```
 
-If we use the `tidyr::drop_na()` function, only the first case will remain, as the other two cases have at least one missing value.
-```{r}
-#| label: understand-dropna-example2
-dat %>%
-  tidyr::drop_na()
-```
+<!-- https://bjs.ojp.gov/content/pub/pdf/ncvs20_cir.pdf -->
 
-However, if we want to only remove rows that have missing values in `col3`, we can specify this as an argument in `drop_na()` as follows:
+The NCVS codebook includes coding for all multiple response variables of a "lead in" variable that summarizes the individual options. For question 23a on the weapon type, the lead in variable is V4050 which is shown in \@ref(fig:understand-ncvs-weapon-cb). This variable is then followed by a set of variables for each weapon type. An example of one of the individual variables from the codebook, the handgun, is shown in \@ref(fig:understand-ncvs-weapon-cb-hg). We will dive in more to this example in Chapter \@ref(c11-missing-data) of how to analyze this variable.
 
 ```{r}
-#| label: understand-dropna-example3
-dat %>%
-  tidyr::drop_na(col3)
+#| label: understand-ncvs-weapon-cb
+#| echo: false
+#| fig.cap: Excerpt from the NCVS 2021 Codebook for V4050 - LI WHAT WAS WEAPON
+#| fig.alt: Codebook includes location of variable (files and columns), variable type (numeric), question (What was the weapon? Anything else?), and the coding of this lead in variable
+knitr::include_graphics(path="images/codebook-ncvs-weapon-li.jpg")
 ```
 
-The `drop_na()` function works on `tbl_svy` objects as well and should only be applied after creating the design object.
 
-If the data are not missing completely at random (MCAR), then listwise deletion may produce biased estimates if there is a pattern of respondents who do not respond to specific questions. In these circumstances, we should explore other options, such as multiple imputation or weighted estimation. However, imputation is not always appropriate and can introduce its own sources of bias. See @allison for more details.
+```{r}
+#| label: understand-ncvs-weapon-cb-hg
+#| echo: false
+#| fig.cap: "Excerpt from the NCVS 2021 Codebook for V4051 - C WEAPON: HAND GUN"
+#| fig.alt: Codebook includes location of variable (files and columns), variable type (numeric), question (What was the weapon? Anything else?), and the coding of this categorical variable
+knitr::include_graphics(path="images/codebook-ncvs-weapon-handgun.jpg")
+```
 
-In summary, we need to deeply understand the types and reasons for missing data in our survey before running any analysis. The survey documentation is an important resource for understanding how to deal with missing data. Carefully review the documentation for guidance from the researchers.
+When data is read into R, some values may be system missing, that is they are coded as `NA` even if that is not evident in a codebook. We will discuss in Chapter \@ref(c11-missing-data) how to analyze data with `NA` values and review how R handles missing data in calculations.
+
+<!-- https://stats.oarc.ucla.edu/r/faq/how-does-r-handle-missing-values/ -->
 
 ## Example: American National Election Studies (ANES) 2020 Survey Documentation 
 
