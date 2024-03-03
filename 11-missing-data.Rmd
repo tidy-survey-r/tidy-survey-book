@@ -1,20 +1,10 @@
 # Missing data {#c11-missing-data}
 
 ```{r}
-#| label: missing-undo-fcts
-#| echo: FALSE
-
-#Adding this code here, but think we need to update the code in the package to fix how missing is handled in factors.
-
-recs_2020_miss<-recs_2020 %>% 
-  mutate(across(where(is.factor),~fct_na_level_to_value(.x)))
-
-anes_2020_miss<-anes_2020 %>% 
-  mutate(across(where(is.factor),~fct_na_level_to_value(.x)))
-
+#| label: missing-styler
+#| include: false
+knitr::opts_chunk$set(tidy = 'styler')
 ```
-
-
 
 ::: {.prereqbox-header}
 `r if (knitr:::is_html_output()) '### Prerequisites {- #prereq11}'`
@@ -30,9 +20,10 @@ For this chapter, load the following packages:
 library(tidyverse)
 library(survey) 
 library(srvyr) 
-library(srvyr.data)
+library(srvyrexploR)
 library(naniar)
 library(haven)
+library(gt)
 ```
 
 We will be using data from ANES and RECS. Here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c03-understanding-survey-data-documentation) for more information).
@@ -61,7 +52,7 @@ For RECS, details are included in the RECS documentation and Chapter \@ref(c10-s
 #| eval: FALSE
 data(recs_2020)
 
-recs_des <- recs_2020_miss %>%
+recs_des <- recs_2020 %>%
   as_survey_rep(
     weights = NWEIGHT,
     repweights = NWEIGHT1:NWEIGHT60,
@@ -93,7 +84,7 @@ There are two main categories that missing data typically fall into: missing by 
 
 ## Assessing missing data
 
-Before beginning analysis, we should explore the data to determine if there is missing data and what types of missing data are present. Conducting this descriptive analysis can help with analysis and reporting of survey data (see Section \@ref(c12-pitfalls)), and can inform the survey design in future studies. For example, large amounts of unexpected missing data may indicate the questions were unclear or difficult to recall.  There are several ways to explore missing data which we walk through below.
+Before beginning analysis, we should explore the data to determine if there is missing data and what types of missing data are present. Conducting this descriptive analysis can help with analysis and reporting of survey data (see Section \@ref(c12-pitfalls)), and can inform the survey design in future studies. For example, large amounts of unexpected missing data may indicate the questions were unclear or difficult to recall.  There are several ways to explore missing data which we walk through below. When assessing the missing data, we recommend using a data.frame object and not the survey object as most of the analysis is about patterns of records and weights are not necessary.
 
 ### Summarize data
 
@@ -125,17 +116,18 @@ It can be challenging to look at tables for every variable, and instead may be m
 ```{r}
 #| label: missing-anes-vismiss
 #| warning: FALSE
+#| message: FALSE
 #| fig.cap: "Visual depiction of missing data in the ANES 2020 data"
-#| fig.alt: ""
+#| fig.alt: "This chart shows a the missingness of the selected variables where missing is highlighted in a dark color. Each row of the plot is an observation and each column is a variable. There are some patterns observed such as a large block of missing for `VotedPres2016_selection` and many of the same respondents also having missing for `VotedPres2020_selection`."
 
 anes_2020_derived<-anes_2020 %>%
   select(!starts_with("V2"),-CaseID,-InterviewMode,-Weight,-Stratum,-VarUnit)
 
 anes_2020_derived %>%
   vis_miss(cluster= TRUE, show_perc = FALSE) +
-  scale_fill_manual(values = c("#bfd7ea","#0b3954"),
+  scale_fill_manual(values = book_colors[c(3,1)], 
                     labels = c("Present","Missing"),
-                    name = NULL)
+                    name = "")
 
 ```
 
@@ -147,14 +139,14 @@ Additionally, we can also look at `VotedPres2016_selection` and see that there i
 #| lable: missing-anes-ggmissfct
 #| warning: FALSE
 #| fig.cap: "Missingness in variables for each level of `VotedPres2016` in the ANES 2020 data"
-#| fig.alt: 
+#| fig.alt: "This chart has x-axis 'Voted for President in 2016' with labels Yes, No and NA and has y-axis 'Variable' with labels Age, AgeGroup, CampaignInterest, EarlyVote2020, Education, Gender, Income, Income7, PartyID, RaceEth, TrustGovernment, TrustPeople, VotedPres2016_selection, VotedPres2020 and VotedPres2020_selection. There is a legend indicating fill is used to show pct_miss, ranging from 0 represented by fill very pale blue to 100 shown as fill dark blue. Among those that voted for president in 2016, they had little missing for other variables (light color) but those that did not vote have more missing data in their 2020 voting patterns and their 2016 president selection."
 
 anes_2020_derived %>% 
   gg_miss_fct(VotedPres2016) +
   scale_fill_gradientn(
     guide = "colorbar",
     name = "% Miss",
-    colors = rev(c("#0B3954", "#087E8B", "#BFD7EA"))
+    colors = book_colors[c(3, 2, 1)] 
   ) +
   ylab("Variable") +
   xlab("Voted for President in 2016")
@@ -162,13 +154,16 @@ anes_2020_derived %>%
 
 In this case, we can see that if they did not vote for president in 2016 or did not answer that question, then they were not asked about who they voted for in 2016 (the percentage of missing data if 100%).  Additionally, we can see with this graphic, that there is more missing data across all questions if they did not provide an answer to `VotedPres2016`.
 
-There are other graphics that work well with numeric data.  For example, in the RECS 2020 data we can plot two continuous variables and the missing data associated with it to see if there are any patterns to the missingness.  To do this, we can use the `bind_shadow()` function from the {naniar} package. This creates a dataformat called a **nabular** (combination of "na" with "tabular"), which features the original data (first 100 columns) followed by specific `NA` format columns (last 100 columns).  These `NA` columns are indicators of if the value in the original data is missing or not.  The example printed below shows how most levels of `HeatingBehavior` are not missing `!NA` in the NA variable of `HeatingBehavior_NA`, but those missing in `HeatingBehavior` are also missing in `HeatingBehavior_NA`.
+There are other graphics that work well with numeric data.  For example, in the RECS 2020 data we can plot two continuous variables and the missing data associated with it to see if there are any patterns to the missingness.  To do this, we can use the `bind_shadow()` function from the {naniar} package. This creates a **nabular** (combination of "na" with "tabular"), which features the original columns followed by the same number of columns with a specific `NA` format.  These `NA` columns are indicators of if the value in the original data is missing or not.  The example printed below shows how most levels of `HeatingBehavior` are not missing `!NA` in the NA variable of `HeatingBehavior_NA`, but those missing in `HeatingBehavior` are also missing in `HeatingBehavior_NA`.
 
 ```{r}
 #| label: missing-recs-shadow
 
-recs_2020_shadow <- recs_2020_miss %>% 
+recs_2020_shadow <- recs_2020 %>% 
   bind_shadow()
+
+ncol(recs_2020)
+ncol(recs_2020_shadow)
 
 recs_2020_shadow %>% 
   count(HeatingBehavior,HeatingBehavior_NA)
@@ -179,13 +174,13 @@ We can then use these new variables to plot the missing data along side the actu
 ```{r}
 #| label: missing-recs-hist
 #| fig.cap: "Histogram of Energy Cost by Heating Behavior Missing Data"
-#| fig.alt: ""
+#| fig.alt: "This chart has title 'Histogram of Energy Cost by Heating Behavior Missing Data'. It has x-axis 'Total Energy Cost (Truncated at $5000)' with labels 0, 1000, 2000, 3000, 4000 and 5000. It has y-axis 'Number of Households' with labels 0, 500, 1000 and 1500. There is a legend indicating fill is used to show HeatingBehavior_NA, with 2 levels: !NA shown as very pale blue fill and  NA shown as dark blue fill. The chart is a bar chart with 30 vertical bars. These are stacked, as sorted by HeatingBehavior_NA."
 
 recs_2020_shadow %>% 
-  filter(TOTALDOL < 5000) %>% 
+  filter(TOTALDOL < 5000) %>%
   ggplot(aes(x=TOTALDOL,fill=HeatingBehavior_NA)) +
   geom_histogram() +
-  scale_fill_manual(values = c("#bfd7ea","#0b3954"),
+  scale_fill_manual(values = book_colors[c(3, 1)],
                     labels = c("Present", "Missing"),
                     name = "Heating Behavior") +
   theme_minimal() +
@@ -226,7 +221,7 @@ When we created the derived variables for use in this book, we coded all negativ
 
 anes_2020_shadow<-anes_2020 %>%
   select(starts_with("V2")) %>%
-  mutate(across(everything(),~case_when(.x < 0 & .x != -1 ~ NA,
+  mutate(across(everything(),~case_when(.x < -1 ~ NA,
                                         TRUE~.x))) %>% 
   bind_shadow() %>%
   recode_shadow(V201103 = .where(V201103==-1~"skip"))
@@ -235,7 +230,7 @@ anes_2020_shadow %>%
   count(V201103,V201103_NA)
 ```
 
-However it is important to note that at the time of publication, there is no easy way to implement this across all variables at once (e.g., we cannot use the tidyverse feature of `across()`).  The example code above only implements this for a single variable, so this would have to be done across all variables of interest.
+However it is important to note that at the time of publication, there is no easy way to implement `recode_shadow()` to multiple variables at once (e.g., we cannot use the tidyverse feature of `across()`).  The example code above only implements this for a single variable, so this would have to be done to all variables of interest manually or in a loop.
 
 
 ### Accounting for skip patterns
@@ -385,12 +380,12 @@ pres16_select_gt<-pres16_select1 %>%
 (ref:missing-anes-shadow-tab) Percentage of Votes by Candidate for Different Missing Data Inclusions
 
 ```{r}
-#| label: missing-anes-shadow-tab-out
+#| label: missing-anes-shadow-tab
 #| echo: FALSE
 #| warning: FALSE
 
 pres16_select_gt %>%
-  print_gt_book("missing-anes-shadow-tab")
+  print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
 ```{r}
@@ -422,4 +417,4 @@ pres16_select2_out<-round(pres16_select2_1*100-pres16_select2_2*100,1)
 ```
 
 
-As Table \@ref(missing-anes-shadow-tab) shows, the results can vary greatly depending on which type of missing data that are removed. If we remove only the skip patterns the margin between the Clinton and Trump is `r pres16_select2_out` percentage points, but if we include all data even including those that did not vote in 2016, the margin is `r pres16_select1_out` percentage points. How we handle the different types of missing values is important for interpretation of the data.
+As Table \@ref(tab:missing-anes-shadow-tab) shows, the results can vary greatly depending on which type of missing data that are removed. If we remove only the skip patterns the margin between the Clinton and Trump is `r pres16_select2_out` percentage points, but if we include all data even including those that did not vote in 2016, the margin is `r pres16_select1_out` percentage points. How we handle the different types of missing values is important for interpretation of the data.
