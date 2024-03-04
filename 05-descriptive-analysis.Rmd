@@ -171,7 +171,7 @@ Both functions include the `vartype` argument with four different values:
 The confidence intervals are always calculated using a symmetric t-distribution based method, given by the formula:
 
 $$ \text{estimate} \pm t^*_{df}\times SE$$
-where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of PSUs minus the number of strata. For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- the default in {survey}. These variability types are the same for most of the survey functions, and we will provide examples using different variabilty types throughout this chapter.
+where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of PSUs minus the number of strata. For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we will provide examples using different variabilty types throughout this chapter.
 
 ### Examples
 
@@ -229,7 +229,7 @@ recs_des %>%
 
 When we run the crosstab, we see there are an estimated `r .est_pop_div %>% filter(Division=="New England") %>% pull(N)` housing units in the New England Division. 
 
-If we want to achieve the same result using `survey_tally()`, using the same syntax as `survey_count()` will result in an error:
+The code will result in an error if we try to use the `survey_count()` syntax with `survey_tally()`:
 
 ```{r}
 #| label: desc-tally-group-bad
@@ -395,7 +395,7 @@ In section \@ref(desc-count-syntax), we provide an overview of different variabi
   * `asin`: uses the variance-stabilizing transformation for the binomial distribution, the arcsine square root, and then back-transforms the interval to the probability scale
   * `beta`: uses the incomplete beta function with an effective sample size based on the estimated variance of the proportion.
   * `mean`: the Wald-type interval
-  * `xlogit`: uses a logit transformation of the proportion, calculates a Wald-type interval, and then back-transforms to the probability scale. This method is the same methods used in SUDAAN and SPSS.
+  * `xlogit`: uses a logit transformation of the proportion, calculates a Wald-type interval, and then back-transforms to the probability scale. This method is the same as those used in SUDAAN and SPSS.
 
 Each option will yield slightly different confidence interval bounds when dealing with proportions. Please note that when working with `survey_mean()`, we do not need to specify a method unless the `proportion` argument is `TRUE`. If `proportion` is `FALSE`, it uses a symmetric +/- 1.96 * SE.
 
@@ -584,7 +584,7 @@ recs_des %>%
   ))))
 ```
 
-The output above shows the values for the three quartiles and their respective standard errors: the 25th percentile is `r .elbill_quant |> pull(elec_bill_q25)` with a standard error of `r .elbill_quant |> pull(elec_bill_q25_se)`, the 50th percentile (median) is `r .elbill_quant |> pull(elec_bill_q50)` with a standard error of `r .elbill_quant |> pull(elec_bill_q50_se)`, and the 75th percentile is `r .elbill_quant |> pull(elec_bill_q75)` with a standard error of `r .elbill_quant |> pull(elec_bill_q75_se)`.
+The output above shows the values for the three quartiles and their respective standard errors: the 25th percentile is `r .elbill_quant %>% pull(elec_bill_q25)` with a standard error of `r .elbill_quant %>% pull(elec_bill_q25_se)`, the 50th percentile (median) is `r .elbill_quant %>% pull(elec_bill_q50)` with a standard error of `r .elbill_quant %>% pull(elec_bill_q50_se)`, and the 75th percentile is `r .elbill_quant %>% pull(elec_bill_q75)` with a standard error of `r .elbill_quant %>% pull(elec_bill_q75_se)`.
 
 #### Example 2: Quartiles by subgroup {.unnumbered}
 
@@ -1037,7 +1037,7 @@ The `across()` function allows you to apply the same function to multiple column
 
 #### Example 1: `across()` {.unnumbered}
 
-Suppose we want to calculate the total and average consumption, along with coefficients of variation (CV), for each fuel type: the reported consumption of electricity (`BTUEL`), natural gas (`BTUNG`), liquid propane (`BTULP`), fuel oil (`BTUFO`), and wood (`BTUWOOD`), as mentioned in the section on design effects. We can take advantage of the fact that these are the only variables that start with "BTU" by selecting them with `starts_with("BTU")` in the `across()` function. For each selected column (`.x`), `across()` creates a list of two functions to be applied: `survey_total()` to calculate the total and `survey_mean()` to calculate the mean, along with their CV (`vartype = "cv"`). Finally, `.unpack = "{outer}.{inner}"` specifies that the resulting column names are a concatenation of the variable name, followed by Total or Mean, and then "coeff" or "cv".
+Suppose we want to calculate the total and average consumption, along with coefficients of variation (CV), for each fuel type. These include the reported consumption of electricity (`BTUEL`), natural gas (`BTUNG`), liquid propane (`BTULP`), fuel oil (`BTUFO`), and wood (`BTUWOOD`), as mentioned in the section on design effects. We can take advantage of the fact that these are the only variables that start with "BTU" by selecting them with `starts_with("BTU")` in the `across()` function. For each selected column (`.x`), `across()` creates a list of two functions to be applied: `survey_total()` to calculate the total and `survey_mean()` to calculate the mean, along with their CV (`vartype = "cv"`). Finally, `.unpack = "{outer}.{inner}"` specifies that the resulting column names are a concatenation of the variable name, followed by Total or Mean, and then "coeff" or "cv".
 
 ```{r}
 #| label: desc-multi-1
