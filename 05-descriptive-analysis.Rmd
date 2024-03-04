@@ -87,14 +87,25 @@ We will discuss many different types of descriptive analyses in this chapter. Ho
   * Discrete data: variables that are counted or measured, such as number of children
   * Continuous data, variables that are measured and whose values can lie anywhere on an interval, such as income
 
-This chapter will discuss how to analyze *measures of distribution* (e.g., cross-tabulations), *central tendency* (e.g., means), *relationship* (e.g., ratios), and *dispersion* (e.g., standard deviation). Measures of distribution describe how often an event or response occurs. These measures include counts and totals. Measures of central tendency find the central (or average) responses. These measures include means and medians. Measures of relationship describe how variables relate to each other. These measures include correlations and ratios. Measures of dispersion describe how data spreads around the central tendency for continuous variables. These measures include standard deviations and variances. Specifically, we will cover the following functions from the {srvyr} package:
+This chapter will discuss how to analyze *measures of distribution* (e.g., cross-tabulations), *central tendency* (e.g., means), *relationship* (e.g., ratios), and *dispersion* (e.g., standard deviation).
+
+**Measures of distribution** describe how often an event or response occurs. These measures include counts and totals. We will cover the following functions from the {srvyr} package:
 
   * Count of observations (`survey_count()` and `survey_tally()`)
   * Summation of variables (`survey_total()`)
+
+**Measures of central tendency** find the central (or average) responses. These measures include means and medians. We will cover the following functions from the {srvyr} package:
+
   * Means and proportions (`survey_mean()` and `survey_prop()`) 
   * Quantiles and medians (`survey_quantile()` and `survey_median()`)
+  
+**Measures of relationship** describe how variables relate to each other. These measures include correlations and ratios. We will cover the following functions from the {srvyr} package:
+
   * Correlations (`survey_corr()`)
   * Ratios (`survey_ratio()`)
+  
+**Measures of dispersion** describe how data spreads around the central tendency for continuous variables. These measures include standard deviations and variances. We will cover the following functions from the {srvyr} package:
+
   * Variances and standard deviations (`survey_var()` and `survey_sd()`)
 
 To incorporate each of these survey functions, recall the general process for survey estimation from Chapter \@ref(c04-set-up):  
@@ -1144,7 +1155,9 @@ anes_des %>%
   select(Variable, everything())
 ```
 
-Then, we create a function to replace `TrustGovernment` with the argument provided to the function. This involves a bit of tidy evaluation, which is a more advanced skill. To learn more, we recommend @wickham2019advanced. 
+We estimate that `r scales::percent(anes_des %>% drop_na(TrustGovernment) %>%  group_by(TrustGovernment) %>% summarize(p = survey_prop()) %>% mutate(Variable = "TrustGovernment") %>% rename(Answer = TrustGovernment) %>% select(Variable, everything()) %>% filter(Answer == "Always") %>% pull(p), accuracy = 0.01)` of people always trust the government, `r scales::percent(anes_des %>% drop_na(TrustGovernment) %>%  group_by(TrustGovernment) %>% summarize(p = survey_prop()) %>% mutate(Variable = "TrustGovernment") %>% rename(Answer = TrustGovernment) %>% select(Variable, everything()) %>% filter(Answer == "Most of the time") %>% pull(p), accuracy = 0.01)` trust the government most of the time, and so on.
+
+Now, we want to use the original series of steps as a template to create a general function `calcps()` that can apply the same series of steps to other variables. We replace `TrustGovernment` with an argument for the a generic variable, `var`. Referring to `var` involves a bit of tidy evaluation, an advanced skill. To learn more, we recommend @wickham2019advanced. 
 
 ```{r}
 #| label: desc-map-2
@@ -1159,7 +1172,7 @@ calcps <- function(var) {
 }
 ```
 
-We can then apply this function to the two variables of interest:
+We can then apply this function to the two variables of interest, `TrustGovernment` and `TrustPeople`:
 
 ```{r}
 #| label: desc-map-3
@@ -1167,7 +1180,7 @@ calcps("TrustGovernment")
 calcps("TrustPeople")
 ```
 
-Finally, we can use `map()` to iterate over as many variables as needed. The output will be a tibble with the variable name in the "Variable" column, the responses in the "Answer" column, along with the percentage and standard error. This example extends nicely when dealing with numerous variables for which we want percentage estimates.
+Finally, we can use `map()` to iterate over as many variables as needed. The input is our desired variables. Within `map()`, we input our custom function `calcps`. The output will be a tibble with the variable name in the "Variable" column, the responses in the "Answer" column, along with the percentage and standard error. The `list_rbind()` function binds all the rows together and outputs them in a single tibble. This example extends nicely when dealing with numerous variables for which we want percentage estimates.
 
 ```{r}
 #| label: desc-map-4
@@ -1175,6 +1188,8 @@ c("TrustGovernment", "TrustPeople") %>%
   map(calcps) %>%
   list_rbind()
 ```
+
+In addition to our results above, we can also see the output for `TrustPeople`. While we estimate `r scales::percent(anes_des %>% drop_na(TrustGovernment) %>%  group_by(TrustGovernment) %>% summarize(p = survey_prop()) %>% mutate(Variable = "TrustGovernment") %>% rename(Answer = TrustGovernment) %>% select(Variable, everything()) %>% filter(Answer == "Always") %>% pull(p), accuracy = 0.01)` of people always trust the government,  `r scales::percent(anes_des %>% drop_na(TrustPeople) %>%  group_by(TrustPeople) %>% summarize(p = survey_prop()) %>% mutate(Variable = "TrustPeople") %>% rename(Answer = TrustPeople) %>% select(Variable, everything()) %>% filter(Answer == "Always") %>% pull(p), accuracy = 0.01)` always trust people.
 
 ## Exercises
 
@@ -1306,6 +1321,24 @@ quant_wintertemp <- recs_des %>%
   ))
 
 quant_wintertemp
+
+# Can also calculate all of these medians in a single summarize() function:
+
+med_alltemp <- recs_des %>%
+  summarize(
+    wtd_mean = survey_median(WinterTempDay,
+                             vartype = "se",
+                             na.rm = TRUE),
+    wtn_mean = survey_median(WinterTempNight,
+                             vartype = "se",
+                             na.rm = TRUE),
+    std_mean = survey_median(SummerTempDay,
+                             vartype = "se",
+                             na.rm = TRUE),
+    stn_mean = survey_median(SummerTempNight,
+                             vartype = "se",
+                             na.rm = TRUE)
+  )
 ```
 
 8. What is the correlation between the temperature that people set their temperature at during the night and during the day in the summer?
