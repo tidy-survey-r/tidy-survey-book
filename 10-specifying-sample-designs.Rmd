@@ -46,7 +46,7 @@ data(recs_2020)
 
 The primary reason for using packages like {survey} and {srvyr} is to account for the sampling design or replicate weights into estimates. By incorporating the sampling design or replicate weights, precision estimates (e.g., standard errors and confidence intervals) are appropriately calculated.
 
-In this chapter, we will introduce common sampling designs and common types of replicate weights, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design or replicate weights. While we will show the math behind the estimates, the functions in these packages will do the calculation. To deeply understand the math and the derivation, refer to @pennstate506, @sarndal2003model, @wolter2007introduction, or @fuller2011sampling (these are listed in order of statistical accessibility). 
+In this chapter, we will introduce common sampling designs and common types of replicate weights, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design or replicate weights. While we will show the math behind the estimates, the functions in these packages will do the calculation. To deeply understand the math and the derivation, refer to @pennstate506, @sarndal2003model, @wolter2007introduction, or @fuller2011sampling (these are listed in order of increasing statistical rigorousness). 
 
 The general process for estimation in the {srvyr} package is to:
 
@@ -125,7 +125,7 @@ srs3_des <- dat %>%
                   fpc = fpcvar)
 ```
 
-where `wtvar` is a variable in the data indicating the weight for each case. Again, the FPC can be omitted if it is unnecessary because the frame is large.
+where `wtvar` is a variable in the data indicating the weight for each case. Again, the FPC can be omitted if it is unnecessary because the frame is large compared to the sample size.
 
 #### Example {-} 
 
@@ -414,6 +414,8 @@ clus2wrb_des <- dat %>%
 
 ```
 
+Note that there is one additional argument that is sometimes necessary which is `nest = TRUE`. This option relabels cluster IDs to enforce nesting within strata. Sometimes, as an example, there may be a cluster `1` and a cluster `2` within each stratum but these are actually different clusters. This option indicates that the repeated use of numbering does not mean it is the same cluster. If this option is not used and there are repeated cluster IDs across different strata, an error will be generated.
+
 #### Example {-} 
 
 The `survey` package includes a two-stage cluster sample data, `apiclus2`, in which school districts were sampled, and then a random sample of five schools was selected within each district. For districts with fewer than five schools, all schools were sampled. School districts are identified by `dnum`, and schools are identified by `snum`. The variable `fpc1` indicates how many districts there are in California (`A`), and `fpc2` indicates how many schools were in a given district with at least 100 students (`B`). The data has a row for each school. In the data printed below, there are 757 school districts, as indicated by `fpc1`, and there are nine schools in District 731, one school in District 742, two schools in District 768, and so on as indicated by `fpc2`. For illustration purposes, the object `apiclus2_slim` has been created from `apiclus2`, which subsets the data to only the necessary columns and sorts data.
@@ -490,7 +492,7 @@ To create the design object for surveys with replicate weights, we use `as_surve
 The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by two but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have one row, two rows, or a multiple of four rows. The size of the Hadamard matrix is determined by the first multiple of 4 greater than or equal to the number of strata.  For example, if a survey had 7 strata, the Hadamard matrix would be an $8\times8$ matrix. Additionally, a survey with 8 strata would also have an $8\times8$ Hadamard matrix. The columns in the matrix specify the strata and the rows specify the replicate. In each replicate (row), a +1 means to use the first PSU and a -1 means to use the second PSU in the estimate. For example, here is a $4\times4$ Hadamard matrix: 
 
 $$ \begin{array}{rrrr} +1 &+1 &+1 &+1\\ +1&-1&+1&-1\\ +1&+1&-1&-1\\ +1 &-1&-1&+1 \end{array} $$
-In the first replicate (row), all the values are +1, so in each stratum, the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in stratum 1 and 3, while the second PSU would be used in stratum 2 and 4. In the third replicate, the first PSU would be used in stratum 1 and 2, while the second PSU would be used in strata 3 and 4. Finally, in the fourth replicate, the first PSU would be used in strata 1 and 4, while the second PSU would be used in strata 2 and 3. For more information about Hadamard matrices see @wolter2007introduction.
+In the first replicate (row), all the values are +1, so in each stratum, the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in stratum 1 and 3, while the second PSU would be used in stratum 2 and 4. In the third replicate, the first PSU would be used in stratum 1 and 2, while the second PSU would be used in strata 3 and 4. Finally, in the fourth replicate, the first PSU would be used in strata 1 and 4, while the second PSU would be used in strata 2 and 3. For more information about Hadamard matrices see @wolter2007introduction. Note that supplied BRR weights from a data provider will already incorporate this adjustment, and the {survey} package generates the Hadamard matrix, if necessary for calculating BRR weights so an analyst will not need to provide the matrix.
 
 #### The math {-}
 
@@ -506,7 +508,7 @@ The default option for `mse` is to use the global option of "survey.replicates.m
 
 #### The syntax {-} 
 
-Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 for the person weights in the American Community Survey (ACS) [@acs-pums-2021] or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS) [@recs-2015-micro; @recs-2020-micro]. This makes it easy to use some of the tidy selection^[dplyr documentation on tidy-select: https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] functions in R. 
+Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 for the person weights in the American Community Survey (ACS) [@acs-pums-2021] or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS) [@recs-2015-micro]. This makes it easy to use some of the tidy selection^[dplyr documentation on tidy-select: https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] functions in R. 
 
 To specify a BRR design, we need to specify the weight variable (`weights`), the replicate weight variables (`repweights`), the type of replicate weights is BRR (`type = BRR`), and whether the mean squared error should be used (`mse = TRUE`) or not (`mse = FALSE`).  For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, we can use the following syntax (both are equivalent):
 
@@ -818,11 +820,14 @@ As with other replicate design objects, when printing the object or looking at t
 
 <!-- For this chapter, the exercises entail reading public documentation to determine how to specify the survey design. While reading the documentation, be on the lookout for description of the weights and the survey design variables or replicate weights. -->
 
-1. The American National Election Studies (ANES) collect data before and after elections approximately every four years around the presidential election cycle. Each year with the data release, a user's guide is also released^[ANES 2020 User's Guide: https://electionstudies.org/wp-content/uploads/2022/02/anes_timeseries_2020_userguidecodebook_20220210.pdf]. What is the syntax for specifying the analysis of the full sample post-election data?
+1. The National Health Interview Survey (NHIS) is an annual household survey conducted by the National Center for Health Statistics (NCHS). The NHIS includes a wide variety of health topics for adults including health status and conditions, functioning and disability, health care access and health service utilization, health-related behaviors, health promotion, mental health, barriers to care, and community engagement. Like many national in-person surveys, the sampling design is a stratified clustered design with details included in the Survey Description^[2022 National Health Interview Survey (NHIS) Survey Description: https://www.cdc.gov/nchs/nhis/2022nhis.htm]. The Survey Description provides information on setting up syntax in SUDAAN, Stata, SPSS, SAS, and R ({survey} package implementation). How would you specify the design using {srvyr} using either `as_survey_design` or `as_survey_rep()`?
 
 ```r
-anes_des <- anes_data %>%
-  as_survey_design(weight)
+nhis_adult_des <- nhis_adult_data %>%
+  as_survey_design(ids=PPSU, 
+  strata=PSTRAT, 
+  nest=TRUE, 
+  weights=WTFA_A)
 ```
 
 2. The General Social Survey is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook^[2016-2020 GSS Panel Codebook Release 1a: https://gss.norc.org/Documents/codebook/2016-2020%20GSS%20Panel%20Codebook%20-%20R1a.pdf] provides examples of setting up syntax in SAS and Stata but not R. How would you specify the design in R?
