@@ -10,15 +10,15 @@ knitr::opts_chunk$set(tidy = 'styler')
 
 ## Introduction
 
-This chapter provides an overview of the packages, data, and design objects we use throughout this book. For a streamlined learning experience, we recommend taking the time to walk through the code provided and making sure everything is installed. As mentioned in Chapter \@ref(c02-overview-surveys), understanding how a survey was conducted helps us make sense of the results and interpret findings. Therefore, we provide background on the datasets used in examples and exercises and we walk through how to create the survey design objects necessary to begin analysis. Finally, we provide an overview of the {srvyr} package and the steps needed for analysis. If you have questions or face issues while going through the book, please report them in the book's GitHub repository: [https://github.com/tidy-survey-r/tidy-survey-book](https://github.com/tidy-survey-r/tidy-survey-book).
+This chapter provides an overview of the packages, data, and design objects we use throughout this book. As mentioned in Chapter \@ref(c02-overview-surveys), understanding how a survey was conducted helps us make sense of the results and interpret findings. Therefore, we provide background on the datasets used in examples and exercises. Next, we walk through how to create the survey design objects necessary to begin analysis. Finally, we provide an overview of the {srvyr} package and the steps needed for analysis. If you have questions or face issues while going through the book, please report them in the book's GitHub repository: [https://github.com/tidy-survey-r/tidy-survey-book](https://github.com/tidy-survey-r/tidy-survey-book).
 
 ## Setup
 
-Before any R session, we need to set up our environment for working. To follow along with the examples and exercises in the book, we need to install packages, load data, and prepare the survey data for us to use throughout.  This section provides details on the different packages and data that we need and prepares the design objects which are required for analyzing survey data.
+The Setup section provides details on the required packages and data, as well as the steps for preparing survey design objects. For a streamlined learning experience, we recommend taking the time to walk through the code provided and making sure everything is properly set up.
 
 ### Packages
 
-We use several packages throughout the book, but let's install and load specific ones for this chapter. Many functions in the examples and exercises are from three packages: {tidyverse}, {survey}, and {srvyr}. If they are not already installed, use the code below. The {tidyverse} and {survey} package can both be installed from the Comprehensive R Archive Network (CRAN). We use the GitHub development version of {srvyr} because of its additional functionality compared to the one on CRAN. Install the package directly from GitHub using the {remotes} package:
+We use several packages throughout the book, but let's install and load specific ones for this chapter. Many functions in the examples and exercises are from three packages: {tidyverse}, {survey}, and {srvyr}. If they are not already installed, use the code below. The {tidyverse} and {survey} packages can both be installed from the Comprehensive R Archive Network (CRAN). We use the GitHub development version of {srvyr} because of its additional functionality compared to the one on CRAN. Install the package directly from GitHub using the {remotes} package:
 
 ```{r}
 #| label: setup-install-core1
@@ -87,7 +87,7 @@ After installing this package, load it using the `library()` function:
 library(censusapi)
 ```
 
-Note that the {censusapi} package requires a Census API key, available for free from the U.S. Census Bureau website (refer to the package documentation for more information). It's recommended to include the Census API key in our R environment instead of directly in the code. After obtaining the API key, save it in your R environment by running `Sys.setenv()`:
+Note that the {censusapi} package requires a Census API key, available for free from the U.S. Census Bureau website (refer to the package documentation for more information). We recommend storing the Census API key in our R environment instead of directly in the code. After obtaining the API key, save it in your R environment by running `Sys.setenv()`:
 
 ```{r}
 #| label: setup-census-api-setup
@@ -206,11 +206,11 @@ The design object is the backbone for survey analysis. It is where we specify th
 
 In this chapter, we provide details on how to code the design object for the ANES and RECS data used in the book. However, we only provide a high-level overview to get readers started. For a deeper understanding of creating these design objects for a variety of sampling designs, see Chapter \@ref(c10-specifying-sample-designs).
 
-While we recommend conducting exploratory data analysis on the original data before diving into complex survey analysis (see Chapter \@ref(c12-pitfalls)), the actual analysis and inference should be performed with the survey design objects instead of the original survey data. This ensures that we appropriately apply the details of the survey design to our calculations. For example, the ANES data is called `anes_2020`. If we create a survey design object called `anes_des`, our analyses should begin with `anes_des` and not `anes_2020`.
+While we recommend conducting exploratory data analysis on the original data before diving into complex survey analysis (see Chapter \@ref(c12-pitfalls)), the actual analysis and inference should be performed with the survey design objects instead of the original survey data. For example, the ANES data is called `anes_2020`. If we create a survey design object called `anes_des`, our analyses should begin with `anes_des` and not `anes_2020`.  Using the survey design object ensures that our calculations are appropriately accounting for the details of the survey design.
 
 #### American National Election Studies (ANES) Design Object {-}
 
-The ANES documentation [@debell] details the sampling and weighting implications for analyzing the survey data. From this documentation and as noted in Chapter \@ref(c03-understanding-survey-data-documentation), the 2020 ANES data is weighted to the sample, not the population. To make generalizations for the population, we need to weigh the data against the full population count.The ANES methodology recommends using the Current Population Survey (CPS) to determine the number of the non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. in March of 2020.
+The ANES documentation [@debell] details the sampling and weighting implications for analyzing the survey data. From this documentation and as noted in Chapter \@ref(c03-understanding-survey-data-documentation), the 2020 ANES data is weighted to the sample, not the population. To make generalizations about the population, we need to weigh the data against the full population count. The ANES methodology recommends using the Current Population Survey (CPS) to determine the number of non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. in March of 2020.
 
 We can use the {censusapi} package to obtain the information needed for the survey design object. The `getCensus()` function allows us to retrieve the CPS data for March (`cps/basic/mar`) in 2020 (`vintage = 2020`). Additionally, we extract several variables from the CPS:
 
@@ -239,9 +239,9 @@ cps_state <- cps_state_in %>%
                 .fns = as.numeric))
 ```
 
-In the code above, we include `region = "state"`. The default region type for the CPS data is at the state level. While it's not required to include this, it can be helpful for understanding the geographical context of the data.
+In the code above, we include `region = "state"`. The default region type for the CPS data is at the state level. While not required, including the region can be helpful for understanding the geographical context of the data.
 
-In `getCensus()`, we filtered the dataset by specifying the month (`HRMONTH == 3`) and year (`HRYEAR4 == 2020`) of our request. Therefore, we expect that all interviews within our output were conducted during that particular month and year. We can confirm that the data is from March of 2020 by running the code below:
+In `getCensus()`, we filtered the dataset by specifying the month (`HRMONTH == 3`) and year (`HRYEAR4 == 2020`) of our request. Therefore, we expect that all interviews within our output were conducted during that particular month and year. We can confirm that the data is from March 2020 by running the code below:
 
 ```{r}
 #| label: setup-anes-cps-date
@@ -279,7 +279,7 @@ targetpop
 scales::comma(targetpop)
 ```
 
-The target population in 2020 is `r scales::comma(targetpop)`. This result gives us what we need to create the survey design object for estimating population statistics. Using the `anes_2020` data, we adjust the weighting variable (`V200010b`) using the target population we just calculated (`targetpop`). We determine the proportion of the total weight for each individual weights (`V200010b / sum(V200010b)`) and then multiply that proportion by the calculated target population.
+The target population in 2020 is `r scales::comma(targetpop)`. This result gives us what we need to create the survey design object for estimating population statistics. Using the `anes_2020` data, we adjust the weighting variable (`V200010b`) using the target population we just calculated (`targetpop`). We determine the proportion of the total weight for each individual weight (`V200010b / sum(V200010b)`) and then multiply that proportion by the calculated target population.
 
 ```{r}
 #| label: setup-anes-adjust
@@ -287,7 +287,7 @@ anes_adjwgt <- anes_2020 %>%
   mutate(Weight = V200010b / sum(V200010b) * targetpop) 
 ```
 
-Once we have the adjusted weights, we can refer to the rest of the documentation to create the survey design. The documentation indicates that the study uses a stratified cluster sampling design. This means that we need to specify variables for `strata` and `ids` (cluster) and fill in the `nest` argument. The documentation provides guidance on which strata and cluster variables to use depending on whether we are analyzing pre- or post-election data. In this book, we analyze post-election data, so we need to use the post-election weight `V200010b`, strata variable `V200010d`, and PSU/cluster variable `V200010c`. Additionally, we set `nest=TRUE` to ensure the clusters are nested within the strata.
+Once we have the adjusted weights, we can refer to the rest of the documentation to create the survey design. The documentation indicates that the study uses a stratified cluster sampling design. Therefore, we need to specify variables for `strata` and `ids` (cluster) and fill in the `nest` argument. The documentation provides guidance on which strata and cluster variables to use depending on whether we are analyzing pre- or post-election data. In this book, we analyze post-election data, so we need to use the post-election weight `V200010b`, strata variable `V200010d`, and PSU/cluster variable `V200010c`. Additionally, we set `nest=TRUE` to ensure the clusters are nested within the strata.
 
 ```{r}
 #| label: setup-anes-des
@@ -300,11 +300,11 @@ anes_des <- anes_adjwgt %>%
 anes_des
 ```
 
-We can examine this new object to learn more about the survey design, such that the ANES is a "Stratified 1 - level Cluster Sampling design (with replacement) With (101) clusters". Additionally, the output displays the sampling variables and then lists the remaning variables in the dataset. This design object will be used throughout this book to conduct survey analysis.
+We can examine this new object to learn more about the survey design, such that the ANES is a "Stratified 1 - level Cluster Sampling design (with replacement) With (101) clusters". Additionally, the output displays the sampling variables and then lists the remaining variables in the dataset. This design object will be used throughout this book to conduct survey analysis.
 
 #### Residential Energy Consumption Survey (RECS) Design Object {-}
 
-The RECS documentation [@recs-2020-tech] provides information on the survey's sampling and weighting implications for analysis. The documentation shows the 2020 RECS uses Jackknife weights, where the main analytic weight is `NWEIGHT`, and the Jackknife weights are `NWEIGHT1`-`NWEIGHT60`. In the survey design object code, we can specify these in the `weights` and `repweights` arguments, respectively. 
+The RECS documentation [@recs-2020-tech] provides information on the survey's sampling and weighting implications for analysis. The documentation shows the 2020 RECS uses Jackknife weights, where the main analytic weight is `NWEIGHT`, and the Jackknife weights are `NWEIGHT1`-`NWEIGHT60`. We can specify these in the weights and repweights arguments in the survey design object code, respectively.
 
 With Jackknife weights, additional information is required: `type`, `scale`, and `mse`.  Chapter \@ref(c10-specifying-sample-designs) goes into depth about each of these arguments, but to quickly get started, the documentation lets us know that `type=JK1`, `scale=59/60`, and `mse = TRUE`. We can use the following code to create the survey design object: 
 
@@ -325,28 +325,27 @@ recs_des
 
 Viewing this new object provides information about the survey design, such that the RECS is an "unstratified cluster jacknife (JK1) with 60 replicates and MSE variances".  Additionally, the output shows the sampling variables (`NWEIGHT1`-`NWEIGHT50`) and then lists the remaining variables in the dataset. This design object will be used throughout this book to conduct survey analysis.
 
-This section walked through the installation and loading of several packages, introduced the survey data available in the {srvyrexploR} package, and provided context on creating survey design objects for the ANES and RECS datasets. With this foundational knowledge, we can follow the instructions listed in the Prerequisite boxes at the start of each chapter.
-
-
 ## Survey analysis process
+
+The section above walked through the installation and loading of several packages, introduced the survey data available in the {srvyrexploR} package, and provided context on preparing survey design objects for the ANES and RECS data. Once the survey design objects are created, there is a general process for creating estimates using {srvyr} package.
 
 The general process for estimation in the {srvyr} package is to:
 
 1. Create a `tbl_svy` object (a survey object) using: `as_survey_design()` or `as_survey_rep()`
 
-2. Subset data (if needed) using `filter()` (subpopulations)
+2. Subset data (if needed) using `filter()` (to create subpopulations)
 
 3. Specify domains of analysis using `group_by()` 
 
 4. Within `summarize()`, specify variables to calculate, including means, totals, proportions, quantiles, and more
 
-In Section \@ref(setup-des-obj), we create the survey design objects for the ANES and RECS data that we use through this book. More details on how to create design objects is located in \@ref(c10-specifying-sample-designs).  Then, once we have the design object, we can then filter the data to any subpopulation of interest (if needed). It is important to only filter the data **after** creating the design object.  This ensures that we are accurately accounting for the survey design. Then we can use `group_by()`, `summarize()`, and other functions from the {survey} and {srvyr} packages to analyze the survey data.
+In Section \@ref(setup-des-obj), we follow Step #1 create the survey design objects for the ANES and RECS data used in this book. More details on how to create design objects are located in \@ref(c10-specifying-sample-designs).  Then, once we have the design object, we can then filter the data to any subpopulation of interest (if needed). It is important to only filter the data **after** creating the design object. This ensures that we are accurately accounting for the survey design. Finally, we can use `group_by()`, `summarize()`, and other functions from the {survey} and {srvyr} packages to analyze the survey data by calculating means, totals, and so on.
 
 ## Similarities between {dplyr} and {srvyr} functions
 
-One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package. We can use pipes to specify a tbl_svy object, apply a function, and then feed that output into the next function's first argument. Functions follow the 'tidy' convention of snake_case function names. 
+One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package. We can use pipes, such as `%>%` from the {magrittr} package, to specify a `tbl_svy` object, apply a function, and then feed that output into the next function's first argument. Functions follow the 'tidy' convention of snake_case function names. 
 
-To help explain the similarities between {dplyr} functions and {srvyr} functions, we will use the `mtcars` and `iris` datasets that are built-in to R and `apistrat` data that comes in the {survey} package:
+To help explain the similarities between {dplyr} functions and {srvyr} functions, we use the `mtcars` and `iris` datasets that are built-in to R and `apistrat` data that comes in the {survey} package:
 
 ```{r}
 #| label: setup-api-surveydata
