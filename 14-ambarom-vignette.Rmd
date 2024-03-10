@@ -27,7 +27,7 @@ library(gt)
 library(ggpattern)
 ```
 
-In this vignette, we use a subset of data from the 2021 AmericasBarometer survey. The raw files are available on the [LAPOP website](http://datasets.americasbarometer.org/database/index.php). We work with version 1.2 of the data, and there are separate files for each of the 22 countries. To read all files into R while ignoring the Stata labels, we recommend running code like this:
+In this vignette, we use a subset of data from the 2021 AmericasBarometer survey. Download the raw files, available on the [LAPOP website](http://datasets.americasbarometer.org/database/index.php). We work with version 1.2 of the data, and there are separate files for each of the 22 countries. To read all files into R while ignoring the Stata labels, we recommend running code like this:
 
 ```r
 stata_files <- list.files(here("RawData", "LAPOP_2021"), "*.dta")
@@ -133,7 +133,7 @@ ambarom <- ambarom_in %>%
          Educ_Hybrid = covidedu1_4,
          Educ_NoSchool = covidedu1_5,
          BroadbandInternet = r18n,
-         Internet = r18)
+          = r18)
 ```
 
 At this point, it is a good time to check the cross-tabs between the original variables and the newly derived ones. These tables help us confirm that we have correctly matched the numeric data from the original dataset to the renamed factor data in the new dataset. For instance, let's check the original variable `pais` and the derived variable `Country`. We can consult the questionnaire or codebook to confirm that Argentina is coded as `17`, Bolivia as `10`, and so on. Similarly, for `CovidWorry` and `covid2at`, we can verify that `Very worried` is coded as `1`, and so on for the other variables.
@@ -441,7 +441,7 @@ map_country_list_gt %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-There are several ways to fix the mismatched names for a successful join. The simplest solution is to rename the data in the shape object before merging. Since there is only one country name in the survey data that differs from the map data, we will rename the map data accordingly.
+There are several ways to fix the mismatched names for a successful join. The simplest solution is to rename the data in the shape object before merging. Since there is only one country name in the survey data that differs from the map data, we rename the map data accordingly.
 
 ```{r}
 #| label: ambarom-update-map-usa
@@ -562,11 +562,11 @@ In Figure \@ref(fig:ambarom-make-maps-covid-ed-c-s), we can see that most countr
 #| label: ambarom-int-prev
 int_ests <-
   ambarom_des %>%
-  filter(!is.na(Internet) | !is.na(BroadbandInternet)) %>%
+  filter(!is.na() | !is.na(BroadbandInternet)) %>%
   group_by(Country) %>%
   summarize(
     p_broadband = survey_mean(BroadbandInternet, na.rm = TRUE) * 100,
-    p_internet = survey_mean(Internet, na.rm = TRUE) * 100
+    p_internet = survey_mean(, na.rm = TRUE) * 100
   ) 
 
 int_ests %>%
@@ -581,7 +581,7 @@ int_ests %>%
 #| fig.cap: "Percent of broadband internet and any internet usage, Central and South America"
 internet_sf <- country_shape_upd %>%
   full_join(select(int_ests, p = p_internet, geounit = Country), by = "geounit") %>%
-  mutate(Type = "Internet")
+  mutate(Type = "")
 broadband_sf <- country_shape_upd %>%
   full_join(select(int_ests, p = p_broadband, geounit = Country), by = "geounit") %>%
   mutate(Type = "Broadband")
