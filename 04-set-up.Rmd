@@ -325,11 +325,9 @@ recs_des
 
 Viewing this new object provides information about the survey design, such that the RECS is an "unstratified cluster jacknife (JK1) with 60 replicates and MSE variances".  Additionally, the output shows the sampling variables (`NWEIGHT1`-`NWEIGHT50`) and then lists the remaining variables in the dataset. This design object will be used throughout this book to conduct survey analysis.
 
-## Survey analysis process
+## Survey analysis process {#survey-analysis-process}
 
-The section above walked through the installation and loading of several packages, introduced the survey data available in the {srvyrexploR} package, and provided context on preparing survey design objects for the ANES and RECS data. Once the survey design objects are created, there is a general process for creating estimates using {srvyr} package.
-
-The general process for estimation in the {srvyr} package is to:
+The section above walked through the installation and loading of several packages, introduced the survey data available in the {srvyrexploR} package, and provided context on preparing survey design objects for the ANES and RECS data. Once the survey design objects are created, there is a general process for analyzing data to create estimates with {srvyr} package:
 
 1. Create a `tbl_svy` object (a survey object) using: `as_survey_design()` or `as_survey_rep()`
 
@@ -339,34 +337,56 @@ The general process for estimation in the {srvyr} package is to:
 
 4. Within `summarize()`, specify variables to calculate, including means, totals, proportions, quantiles, and more
 
-In Section \@ref(setup-des-obj), we follow Step #1 create the survey design objects for the ANES and RECS data used in this book. More details on how to create design objects are located in \@ref(c10-specifying-sample-designs).  Then, once we have the design object, we can then filter the data to any subpopulation of interest (if needed). It is important to only filter the data **after** creating the design object. This ensures that we are accurately accounting for the survey design. Finally, we can use `group_by()`, `summarize()`, and other functions from the {survey} and {srvyr} packages to analyze the survey data by calculating means, totals, and so on.
+In Section \@ref(setup-des-obj), we follow Step #1 to create the survey design objects for the ANES and RECS data featured in this book. Additional details on how to create design objects can be found in \@ref(c10-specifying-sample-designs). Then, once we have the design object, we can then filter the data to any subpopulation of interest (if needed). It is important to filter the data **after** creating the design object. This ensures that we are accurately accounting for the survey design in our calculations. Finally, we can use `group_by()`, `summarize()`, and other functions from the {survey} and {srvyr} packages to analyze the survey data by estimating means, totals, and so on.
 
-## Similarities between {dplyr} and {srvyr} functions
+## Similarities between {dplyr} and {srvyr} functions {#similarities-dplyr-srvyr}
 
-One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package. We can use pipes, such as `%>%` from the {magrittr} package, to specify a `tbl_svy` object, apply a function, and then feed that output into the next function's first argument. Functions follow the 'tidy' convention of snake_case function names. 
+The {dplyr} package from the tidyverse offers flexible and intuitive functions for data wrangling. One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package. We can use pipes, such as `%>%` from the {magrittr} package, to specify a survey design object, apply a function, and then feed that output into the next function's first argument. Functions follow the 'tidy' convention of snake_case function names.
 
-To help explain the similarities between {dplyr} functions and {srvyr} functions, we use the `mtcars` and `iris` datasets that are built-in to R and `apistrat` data that comes in the {survey} package:
+To help explain the similarities between {dplyr} functions and {srvyr} functions, we use the `iris` dataset that is built-in to R and `apistrat` data that comes in the {survey} package. The `iris` dataset provides measurements on various plant species. We can load the data into our environment using `data(iris)`. Taking a look at `iris` with `dplyr::glimpse()`, we can see the dataset has five columns, four of which are numeric and one is a factor.
+
+```{r}
+#| label: setup-iris-surveydata
+data(iris)
+
+iris %>% 
+  glimpse()
+```
+
+Let's examine the `iris` object's class. We verify that it is a `data.frame` by running the code below:
+
+```{r}
+class(iris)
+```
+
+The {survey} package contains datasets related to the California Academic Performance Index, which measures student performance in schools with at least 100 students in California. We can access these datasets by loading the {survey} package and running `data(api)`.
+
+Let's work with the `apistrat` dataset, a stratified simple random sample of three school types (elementary, middle, high) in each stratum. We can follow the process outlined in Section \@ref(setup-des-obj) to create the survey design object. The sample is stratified by the `stype` variable and the sampling weights are found in the `pw` variable. We can use this information to construct the design object, `dstrata`.
 
 ```{r}
 #| label: setup-api-surveydata
-data(mtcars)
-data(iris)
 data(api)
 
 dstrata <- apistrat %>%
   as_survey_design(strata = stype, weights = pw)
 ```
 
-The example below calculates the mean and median for the variable `mpg` (miles per gallon) in the `mtcars` dataset.
+When we check the class of `dstrata`, it is not a typical `data.frame`. Applying the `as_survey_design()` function transforms the data into a `tbl_svy`, a special class specifically for survey design objects. The {srvyr} package is designed to work with the `tbl_svy` class of objects.
+
+```{r}
+class(dstrata)
+```
+
+Let's look at how {dplyr} works with regular data frames. The example below calculates the mean and median for the `Sepal.Length` variable in the `iris` dataset.
 
 ```{r}
 #| label: setup-dplyr-examp
-mtcars %>%
-  summarize(mpg_mean = mean(mpg),
-            mpg_median = median(mpg))
+iris %>%
+  summarize(sl_mean = mean(Sepal.Length),
+            sl_median = median(Sepal.Length))
 ```
 
-Similarly, in the next example, the variance and standard deviation of the variable `api00` are calculated for the tbl_svy object `dstrata`. Note the similarity in the syntax. When we dig into the functions later, we will show that the results output are similar in that one row is output for each group (if there are groups), but there will be more columns output. Specifically, by default, the standard error of the statistic is calculated in addition to the statistic.
+In the code below, we calculate the mean and median of the variable `api00` using `dstrata`. Note the similarity in the syntax. When we dig into the {srvyr} functions later, we will show that the outputs share a similar structure. Each group (if present) generates one row of output, but with additional columns. By default, the standard error of the statistic is also calculated in addition to the statistic itself.
 
 ```{r}
 #| label: setup-srvyr-examp
@@ -375,7 +395,7 @@ dstrata %>%
             api00_med = survey_median(api00))
 ```
 
-The functions in {srvyr} also play nicely with other tidyverse functions. If we wanted to select columns that have something in common, we use {tidyselect} functions such as `starts_with()`, `num_range()`, etc. In the examples below, a combination of `across()` and `starts_with()` to calculate the mean of variables starting with "Sepal" in the `iris` data frame and then starting with `api` in the `dstrata` survey object.
+The functions in {srvyr} also play nicely with other tidyverse functions. For example, if we wanted to select columns with shared characteristics, we can use {tidyselect} functions such as `starts_with()`, `num_range()`, etc. In the examples below, we use a combination of `across()` and `starts_with()` to calculate the mean of variables starting with "Sepal" in the `iris` data frame and those beginning with `api` in the `dstrata` survey object.
 
 ```{r}
 #| label: setup-dplyr-select
@@ -389,7 +409,7 @@ dstrata %>%
   summarize(across(starts_with("api"), survey_mean))
 ```
 
-We can use {dplyr} verbs such as `mutate()`, `filter()`, etc., on our survey object.
+We have the flexibility to use {dplyr} verbs such as `mutate()`, `filter()`, and `select()` on our survey design object. As mentioned in Section \@ref(survey-analysis-process), these steps should be performed on the survey design object. This ensures our survey design is properly considered in all our calculations.
 
 ```{r}
 #| label: setup-srvyr-mutate
@@ -403,35 +423,16 @@ dstrata_mod
 dstrata
 ```
 
-Instead of data frames or tibbles, {srvyr} functions are meant for `tbl_svy` objects. Attempting to run data manipulation on non-`tbl_svy` objects will result in an error, as shown in the example below when using the mtcars data frame (which is not `tbl_svy` object).
-
-```{r}
-#| label: setup-nsobj-error
-#| error: true
-mtcars %>%
-  summarize(mpg_mean = survey_mean(mpg))
-```
-
-A few functions in {srvyr} parallel functions in {dplyr}, such as `srvyr::summarize()` and `srvyr::group_by()`. Unlike {srvyr}-specific verbs, the package recognizes these parallel functions on a non-survey object. It will not error and instead give the equivalent output from {dplyr}:
-
-```{r}
-#| label: setup-nsobj-noerr
-mtcars %>%
-  srvyr::summarize(mpg_mean = mean(mpg))
-```
-
-Because this book focuses on survey analysis, most of our pipes will stem from a survey object. We will not include the namespace for each function (e.g., `srvyr::summarize()`).
-
-Several functions in {srvyr} must be called within `srvyr::summarize()` with the exception of `srvyr::survey_count()` and `srvyr::survey_tally()` much like `dplyr::count()` and `dplyr::tally()` are not called within `dplyr::summarize()`. These verbs can be used in conjunction with `group_by()` or `by/.by`, applying the functions on a group-by-group basis to create grouped summaries.
+Several functions in {srvyr} must be called within `srvyr::summarize()`, with the exception of `srvyr::survey_count()` and `srvyr::survey_tally()`. This is similar to how `dplyr::count()` and `dplyr::tally()` are not called within `dplyr::summarize()`. The `summarize()` function can be used in conjunction with `group_by()` or `by/.by`, which applies the functions on a group-by-group basis to create grouped summaries.
 
 ```{r}
 #| label: setup-dplyr-groupby
-mtcars %>%
-  group_by(cyl) %>%
-  dplyr::summarize(mpg_mean = mean(mpg))
+iris %>%
+  group_by(Species) %>%
+  dplyr::summarize(sl_mean = mean(Sepal.Length))
 ```
 
-We use a similar setup to summarize data in {srvyr}.
+We use a similar setup to summarize data in {srvyr}:
 
 ```{r}
 #| label: setup-srvyr-groupby
@@ -440,3 +441,22 @@ dstrata %>%
   summarize(api00_mean = survey_mean(api00),
             api00_median = survey_median(api00))
 ```
+
+As mentioned above, {srvyr} functions are meant for `tbl_svy` objects. Attempting to perform data manipulation on non-`tbl_svy` objects, like the `iris` example shown below, will result in an error. Running the code will let you know what the issue is: `Survey context not set`.
+
+```{r}
+#| label: setup-nsobj-error
+#| error: true
+iris %>%
+  summarize(sl_mean = survey_mean(Sepal.Length))
+```
+
+A few functions in {srvyr} have counterparts in {dplyr}, such as `srvyr::summarize()` and `srvyr::group_by()`. Unlike {srvyr}-specific verbs, {srvyr} recognizes these parallel functions if applied to a non-survey object. Instead of causing an error, the package will provide the equivalent output from {dplyr}:
+
+```{r}
+#| label: setup-nsobj-noerr
+iris %>%
+  srvyr::summarize(sl_mean = mean(Sepal.Length))
+```
+
+Because this book focuses on survey analysis, most of our pipes will stem from a survey object. When we load the {dplyr} and {srvyr} packages, the functions will automatically figure out the class of data and use the appropriate one from {dplyr} or {srvyr}. Therefore, we do not need to include the namespace for each function (e.g., `srvyr::summarize()`). 
