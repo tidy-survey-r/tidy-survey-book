@@ -133,7 +133,7 @@ ambarom <- ambarom_in %>%
          Educ_Hybrid = covidedu1_4,
          Educ_NoSchool = covidedu1_5,
          BroadbandInternet = r18n,
-          = r18)
+         Internet = r18)
 ```
 
 At this point, it is a good time to check the cross-tabs between the original variables and the newly derived ones. These tables help us confirm that we have correctly matched the numeric data from the original dataset to the renamed factor data in the new dataset. For instance, let's check the original variable `pais` and the derived variable `Country`. We can consult the questionnaire or codebook to confirm that Argentina is coded as `17`, Bolivia as `10`, and so on. Similarly, for `CovidWorry` and `covid2at`, we can verify that `Very worried` is coded as `1`, and so on for the other variables.
@@ -450,7 +450,7 @@ country_shape_upd <- country_shape_crop %>%
                            "United States", geounit))
 ```
 
-Now that the country names match, we can merge the survey and map data and then plot the data. We begin with the map file and merge it with the survey estimates generated in Section \@ref(ambarom-estimates) (`covid_worry_country_ests` and `covid_educ_ests`). We use the tidyverse function of `full_join()`, which joins the rows in the map data and the survey estimates based on the columns `geounit` and `Country`. A full join keeps all the rows from both datasets, matching rows when possible. For any rows where there are no matches, the function fills in an `NA` for the missing value.
+Now that the country names match, we can merge the survey and map data and then plot the data. We begin with the map file and merge it with the survey estimates generated in Section \@ref(ambarom-estimates) (`covid_worry_country_ests` and `covid_educ_ests`). We use the tidyverse function of `full_join()`, which joins the rows in the map data and the survey estimates based on the columns `geounit` and `Country`. A full joinkeeps all the rows from both datasets, matching rows when possible. For any rows where there are no matches, the function fills in an `NA` for the missing value.
 
 ```{r}
 #| label: ambarom-join-maps-ests
@@ -562,11 +562,11 @@ In Figure \@ref(fig:ambarom-make-maps-covid-ed-c-s), we can see that most countr
 #| label: ambarom-int-prev
 int_ests <-
   ambarom_des %>%
-  filter(!is.na() | !is.na(BroadbandInternet)) %>%
+  filter(!is.na(Internet) | !is.na(BroadbandInternet)) %>%
   group_by(Country) %>%
   summarize(
     p_broadband = survey_mean(BroadbandInternet, na.rm = TRUE) * 100,
-    p_internet = survey_mean(, na.rm = TRUE) * 100
+    p_internet = survey_mean(Internet, na.rm = TRUE) * 100
   ) 
 
 int_ests %>%
@@ -581,7 +581,7 @@ int_ests %>%
 #| fig.cap: "Percent of broadband internet and any internet usage, Central and South America"
 internet_sf <- country_shape_upd %>%
   full_join(select(int_ests, p = p_internet, geounit = Country), by = "geounit") %>%
-  mutate(Type = "")
+  mutate(Type = "Internet")
 broadband_sf <- country_shape_upd %>%
   full_join(select(int_ests, p = p_broadband, geounit = Country), by = "geounit") %>%
   mutate(Type = "Broadband")
