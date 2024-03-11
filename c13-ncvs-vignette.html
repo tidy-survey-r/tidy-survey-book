@@ -411,7 +411,8 @@ div.csl-indent {
 <li class="chapter" data-level="13.6.3" data-path="c13-ncvs-vignette.html"><a href="c13-ncvs-vignette.html#vic-rate"><i class="fa fa-check"></i><b>13.6.3</b> Estimation 3: Victimization Rates</a></li>
 <li class="chapter" data-level="13.6.4" data-path="c13-ncvs-vignette.html"><a href="c13-ncvs-vignette.html#prev-rate"><i class="fa fa-check"></i><b>13.6.4</b> Estimation 4: Prevalence Rates</a></li>
 </ul></li>
-<li class="chapter" data-level="13.7" data-path="c13-ncvs-vignette.html"><a href="c13-ncvs-vignette.html#exercises-3"><i class="fa fa-check"></i><b>13.7</b> Exercises</a></li>
+<li class="chapter" data-level="13.7" data-path="c13-ncvs-vignette.html"><a href="c13-ncvs-vignette.html#statistical-testing"><i class="fa fa-check"></i><b>13.7</b> Statistical testing</a></li>
+<li class="chapter" data-level="13.8" data-path="c13-ncvs-vignette.html"><a href="c13-ncvs-vignette.html#exercises-3"><i class="fa fa-check"></i><b>13.8</b> Exercises</a></li>
 </ul></li>
 <li class="chapter" data-level="14" data-path="c14-ambarom-vignette.html"><a href="c14-ambarom-vignette.html"><i class="fa fa-check"></i><b>14</b> AmericasBarometer Vignette</a>
 <ul>
@@ -495,14 +496,14 @@ div.csl-indent {
 <span id="cb433-3"><a href="c13-ncvs-vignette.html#cb433-3" tabindex="-1"></a><span class="fu">library</span>(srvyr) </span>
 <span id="cb433-4"><a href="c13-ncvs-vignette.html#cb433-4" tabindex="-1"></a><span class="fu">library</span>(srvyrexploR)</span>
 <span id="cb433-5"><a href="c13-ncvs-vignette.html#cb433-5" tabindex="-1"></a><span class="fu">library</span>(gt)</span></code></pre></div>
-<p>We will use data from NCVS. Here is the code to read in the three datasets from the {srvyrexploR} package:</p>
+<p>We will use data from the United States National Crime Victimization Survey (NCVS). Here is the code to read in the three datasets from the {srvyrexploR} package:</p>
 <div class="sourceCode" id="cb434"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb434-1"><a href="c13-ncvs-vignette.html#cb434-1" tabindex="-1"></a><span class="fu">data</span>(ncvs_2021_incident)</span>
 <span id="cb434-2"><a href="c13-ncvs-vignette.html#cb434-2" tabindex="-1"></a><span class="fu">data</span>(ncvs_2021_household)</span>
 <span id="cb434-3"><a href="c13-ncvs-vignette.html#cb434-3" tabindex="-1"></a><span class="fu">data</span>(ncvs_2021_person)</span></code></pre></div>
 </div>
 <div id="introduction-10" class="section level2 hasAnchor" number="13.1">
 <h2><span class="header-section-number">13.1</span> Introduction<a href="c13-ncvs-vignette.html#introduction-10" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>The United States National Crime Victimization Survey (NCVS) is a household survey sponsored by the Bureau of Justice Statistics (BJS), which collects data on criminal victimization, including characteristics of the crimes, offenders, and victims. Crime types include both household and personal crimes, as well as violent and non-violent crimes. The target population of this survey is all people in the United States age 12 and older living in housing units and noninstitutional group quarters.</p>
+<p>The NCVS is a household survey sponsored by the Bureau of Justice Statistics (BJS), which collects data on criminal victimization, including characteristics of the crimes, offenders, and victims. Crime types include both household and personal crimes, as well as violent and non-violent crimes. The target population of this survey is all people in the United States age 12 and older living in housing units and noninstitutional group quarters.</p>
 <p>The NCVS has been ongoing since 1992. An earlier survey, the National Crime Survey, was run from 1972 to 1991 <span class="citation">(<a href="#ref-ncvs_tech_2016">Bureau of Justice Statistics 2017</a>)</span>. The survey is administered using a rotating panel. When an address enters the sample, the residents of that address are interviewed every six months for a total of seven interviews. If the initial residents move away from the address during the period, the new residents are included in the survey, as people are not followed when they move.</p>
 <p>NCVS data is publicly available and distributed by Inter-university Consortium for Political and Social Research (ICPSR)<a href="#fn37" class="footnote-ref" id="fnref37"><sup>37</sup></a>, with data going back to 1992. The vignette in this book will include data from 2021 <span class="citation">(<a href="#ref-ncvs_data_2021">United States. Bureau of Justice Statistics 2022</a>)</span>. The NCVS data structure is complicated, and the User’s Guide contains examples for analysis in SAS, SUDAAN, SPSS, and Stata, but not R <span class="citation">(<a href="#ref-ncvs_user_guide">Shook-Sa, Bonnie, Couzens, G. Lance, and Berzofsky, Marcus 2015</a>)</span>. This vignette will adapt those examples for R.</p>
 </div>
@@ -559,7 +560,7 @@ where <span class="math inline">\(w_{ijk}\)</span> is the person weight (<code>W
 <div id="preparing-files-for-estimation-of-victimization-rates" class="section level3 hasAnchor" number="13.4.1">
 <h3><span class="header-section-number">13.4.1</span> Preparing Files for Estimation of Victimization Rates<a href="c13-ncvs-vignette.html#preparing-files-for-estimation-of-victimization-rates" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Each record on the incident file represents one victimization, which is not the same as one incident. Some victimizations have several instances that make it difficult for the victim to differentiate the details of these incidents, labeled as “series crimes”. Appendix A of the User’s Guide indicates how to calculate the series weight in other statistical languages.</p>
-<p>Here, we adapt that code for R. Essentially, if a victimization is a series crime, its series weight is top-coded at 10 based on the number of actual victimizations. If an incident is a series crime, but the number of occurrences is unknown, the series weight is set to 6. A description of the variables used to create indicators of series and the associated weights is included in Table <a href="c13-ncvs-vignette.html#tab:cb-incident">13.1</a>.</p>
+<p>Here, we adapt that code for R. Essentially, if a victimization is a series crime, its series weight is top-coded at 10 based on the number of actual victimizations, that is that even if the crime repeatedly occurred more than 10 times, it is counted as 10 times to reduce the influence of extreme outliers. If an incident is a series crime, but the number of occurrences is unknown, the series weight is set to 6. A description of the variables used to create indicators of series and the associated weights is included in Table <a href="c13-ncvs-vignette.html#tab:cb-incident">13.1</a>.</p>
 <table style="width:100%;">
 <caption><span id="tab:cb-incident">TABLE 13.1: </span> Codebook for incident variables - related to series weight</caption>
 <colgroup>
@@ -651,13 +652,13 @@ where <span class="math inline">\(w_{ijk}\)</span> is the person weight (<code>W
 </tr>
 </tbody>
 </table>
-<p>We want to create four variables to indicate if an incident is a series crime. First, we create a variable called series using <code>V4017</code>, <code>V4018</code>, and <code>V4019</code>. Next, we top code the number of incidents (<code>V4016</code>). Finally, we create the series weight using our new top-coded variable and the existing weight.</p>
+<p>We want to create four variables to indicate if an incident is a series crime. First, we create a variable called series using <code>V4017</code>, <code>V4018</code>, and <code>V4019</code> where an incident is considered a series crime if there are 6 or more incidents (<code>V4107</code>), the incidents are similar in detail (<code>V4018</code>), or there is not enough detail to distinguish the incidents (<code>V4019</code>). Next, we top-code the number of incidents (<code>V4016</code>) by creating a variable <code>n10v4016</code> which is set to 10 if <code>V4016 &gt; 10</code>. Finally, we create the series weight using our new top-coded variable and the existing weight.</p>
 <div class="sourceCode" id="cb435"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb435-1"><a href="c13-ncvs-vignette.html#cb435-1" tabindex="-1"></a>inc_series <span class="ot">&lt;-</span> ncvs_2021_incident <span class="sc">%&gt;%</span></span>
 <span id="cb435-2"><a href="c13-ncvs-vignette.html#cb435-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb435-3"><a href="c13-ncvs-vignette.html#cb435-3" tabindex="-1"></a>    <span class="at">series =</span> <span class="fu">case_when</span>(V4017 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">8</span>) <span class="sc">~</span> <span class="dv">1</span>,</span>
 <span id="cb435-4"><a href="c13-ncvs-vignette.html#cb435-4" tabindex="-1"></a>                       V4018 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">8</span>) <span class="sc">~</span> <span class="dv">1</span>,</span>
 <span id="cb435-5"><a href="c13-ncvs-vignette.html#cb435-5" tabindex="-1"></a>                       V4019 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">8</span>) <span class="sc">~</span> <span class="dv">1</span>,</span>
-<span id="cb435-6"><a href="c13-ncvs-vignette.html#cb435-6" tabindex="-1"></a>                       <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">2</span> <span class="co"># series</span></span>
+<span id="cb435-6"><a href="c13-ncvs-vignette.html#cb435-6" tabindex="-1"></a>                       <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">2</span></span>
 <span id="cb435-7"><a href="c13-ncvs-vignette.html#cb435-7" tabindex="-1"></a>    ),</span>
 <span id="cb435-8"><a href="c13-ncvs-vignette.html#cb435-8" tabindex="-1"></a>    <span class="at">n10v4016 =</span> <span class="fu">case_when</span>(V4016 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">997</span>, <span class="dv">998</span>) <span class="sc">~</span> <span class="cn">NA_real_</span>,</span>
 <span id="cb435-9"><a href="c13-ncvs-vignette.html#cb435-9" tabindex="-1"></a>                         V4016 <span class="sc">&gt;</span> <span class="dv">10</span> <span class="sc">~</span> <span class="dv">10</span>,</span>
@@ -1967,21 +1968,21 @@ where <span class="math inline">\(w_{ijk}\)</span> is the person weight (<code>W
 ##   Violent_Vzn Violent_Vzn_se
 ##         &lt;dbl&gt;          &lt;dbl&gt;
 ## 1    4598306.        198115.</code></pre>
-<p>The number of victimizations estimated using the incident file is equivalent to the person and household file method. There are 1.1682^{7} property incidents and 4.5983^{6} violent incidents in a six-month period.</p>
+<p>The number of victimizations estimated using the incident file is equivalent to the person and household file method. There are 11,682,056 property incidents and 4,598,306 violent incidents in a six-month period.</p>
 </div>
 <div id="vic-prop" class="section level3 hasAnchor" number="13.6.2">
 <h3><span class="header-section-number">13.6.2</span> Estimation 2: Victimization Proportions<a href="c13-ncvs-vignette.html#vic-prop" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Victimization proportions are proportions describing features of a victimization. The key here is that these are questions among victimizations, not among the population. These types of estimates can only be calculated using the incident design object (<code>inc_des</code>).</p>
-<p>For example, we could be interested in the percentage of property victimizations reported to the police:</p>
+<p>For example, we could be interested in the percentage of property victimizations reported to the police as shown in the following code with an estimate, the standard error, and 95% confidence interval:</p>
 <div class="sourceCode" id="cb482"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb482-1"><a href="c13-ncvs-vignette.html#cb482-1" tabindex="-1"></a>prop1 <span class="ot">&lt;-</span> inc_des <span class="sc">%&gt;%</span></span>
 <span id="cb482-2"><a href="c13-ncvs-vignette.html#cb482-2" tabindex="-1"></a>  <span class="fu">filter</span>(Property) <span class="sc">%&gt;%</span></span>
-<span id="cb482-3"><a href="c13-ncvs-vignette.html#cb482-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Pct =</span> <span class="fu">survey_mean</span>(ReportPolice, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb482-3"><a href="c13-ncvs-vignette.html#cb482-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Pct =</span> <span class="fu">survey_mean</span>(ReportPolice, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">proportion=</span><span class="cn">TRUE</span>, <span class="at">vartype=</span><span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>)) <span class="sc">*</span> <span class="dv">100</span>)</span>
 <span id="cb482-4"><a href="c13-ncvs-vignette.html#cb482-4" tabindex="-1"></a></span>
 <span id="cb482-5"><a href="c13-ncvs-vignette.html#cb482-5" tabindex="-1"></a>prop1</span></code></pre></div>
-<pre><code>## # A tibble: 1 × 2
-##     Pct Pct_se
-##   &lt;dbl&gt;  &lt;dbl&gt;
-## 1  30.8  0.798</code></pre>
+<pre><code>## # A tibble: 1 × 4
+##     Pct Pct_se Pct_low Pct_upp
+##   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1  30.8  0.798    29.2    32.4</code></pre>
 <p>Or, the percentage of violent victimizations that are in urban areas:</p>
 <div class="sourceCode" id="cb484"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb484-1"><a href="c13-ncvs-vignette.html#cb484-1" tabindex="-1"></a>prop2 <span class="ot">&lt;-</span> inc_des <span class="sc">%&gt;%</span></span>
 <span id="cb484-2"><a href="c13-ncvs-vignette.html#cb484-2" tabindex="-1"></a>  <span class="fu">filter</span>(Violent) <span class="sc">%&gt;%</span></span>
@@ -2032,7 +2033,7 @@ where <span class="math inline">\(w_{ijk}\)</span> is the person weight (<code>W
 ## 1       0.249         0.0595        0.860           0.101      0.455
 ## # ℹ 3 more variables: AAST_Knife_se &lt;dbl&gt;, AAST_Other &lt;dbl&gt;,
 ## #   AAST_Other_se &lt;dbl&gt;</code></pre>
-<p>A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate the violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a <code>group_by()</code> statement for each categorization separately. Thus, we make a function to do this and then use <code>map_df()</code> from the {purrr} package (part of the tidyverse) to loop through the variables. Finally, the {gt} package is used to make a publishable table shown in Table <a href="c13-ncvs-vignette.html#tab:ncvs-vign-rates-demo-tab">13.5</a>.</p>
+<p>A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate the violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a <code>group_by()</code> statement for each categorization separately. Thus, we make a function to do this and then use <code>map_df()</code> from the {purrr} package (part of the tidyverse) to loop through the variables. This function takes a demographic variable as its input (<code>byarvar</code>) and calculates the violent and aggravated assault vicitimization rate for each level. It then creates some columns with the variable, the level of each variable, and a numeric version of the variable (<code>LevelNum</code>) for sorting later. The function is run across multiple variables using <code>map()</code> and then stacks the results into a single output using <code>bind_rows()</code>.</p>
 <div class="sourceCode" id="cb492"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb492-1"><a href="c13-ncvs-vignette.html#cb492-1" tabindex="-1"></a>pers_est_by <span class="ot">&lt;-</span> <span class="cf">function</span>(byvar) {</span>
 <span id="cb492-2"><a href="c13-ncvs-vignette.html#cb492-2" tabindex="-1"></a>  pers_des <span class="sc">%&gt;%</span></span>
 <span id="cb492-3"><a href="c13-ncvs-vignette.html#cb492-3" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">Level :=</span> {{byvar}}) <span class="sc">%&gt;%</span></span>
@@ -2052,65 +2053,66 @@ where <span class="math inline">\(w_{ijk}\)</span> is the person weight (<code>W
 <span id="cb492-17"><a href="c13-ncvs-vignette.html#cb492-17" tabindex="-1"></a></span>
 <span id="cb492-18"><a href="c13-ncvs-vignette.html#cb492-18" tabindex="-1"></a>pers_est_df <span class="ot">&lt;-</span></span>
 <span id="cb492-19"><a href="c13-ncvs-vignette.html#cb492-19" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;Sex&quot;</span>, <span class="st">&quot;RaceHispOrigin&quot;</span>, <span class="st">&quot;AgeGroup&quot;</span>, <span class="st">&quot;MaritalStatus&quot;</span>, <span class="st">&quot;Income&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb492-20"><a href="c13-ncvs-vignette.html#cb492-20" tabindex="-1"></a>  <span class="fu">map_df</span>(pers_est_by)</span>
-<span id="cb492-21"><a href="c13-ncvs-vignette.html#cb492-21" tabindex="-1"></a></span>
-<span id="cb492-22"><a href="c13-ncvs-vignette.html#cb492-22" tabindex="-1"></a>vr_gt<span class="ot">&lt;-</span>pers_est_df <span class="sc">%&gt;%</span></span>
-<span id="cb492-23"><a href="c13-ncvs-vignette.html#cb492-23" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb492-24"><a href="c13-ncvs-vignette.html#cb492-24" tabindex="-1"></a>    <span class="at">Variable =</span> <span class="fu">case_when</span>(</span>
-<span id="cb492-25"><a href="c13-ncvs-vignette.html#cb492-25" tabindex="-1"></a>      Variable <span class="sc">==</span> <span class="st">&quot;RaceHispOrigin&quot;</span> <span class="sc">~</span> <span class="st">&quot;Race/Hispanic origin&quot;</span>,</span>
-<span id="cb492-26"><a href="c13-ncvs-vignette.html#cb492-26" tabindex="-1"></a>      Variable <span class="sc">==</span> <span class="st">&quot;MaritalStatus&quot;</span> <span class="sc">~</span> <span class="st">&quot;Marital status&quot;</span>,</span>
-<span id="cb492-27"><a href="c13-ncvs-vignette.html#cb492-27" tabindex="-1"></a>      Variable <span class="sc">==</span> <span class="st">&quot;AgeGroup&quot;</span> <span class="sc">~</span> <span class="st">&quot;Age&quot;</span>,</span>
-<span id="cb492-28"><a href="c13-ncvs-vignette.html#cb492-28" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Variable</span>
-<span id="cb492-29"><a href="c13-ncvs-vignette.html#cb492-29" tabindex="-1"></a>    )</span>
-<span id="cb492-30"><a href="c13-ncvs-vignette.html#cb492-30" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb492-31"><a href="c13-ncvs-vignette.html#cb492-31" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>LevelNum) <span class="sc">%&gt;%</span></span>
-<span id="cb492-32"><a href="c13-ncvs-vignette.html#cb492-32" tabindex="-1"></a>  <span class="fu">group_by</span>(Variable) <span class="sc">%&gt;%</span></span>
-<span id="cb492-33"><a href="c13-ncvs-vignette.html#cb492-33" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Level&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb492-34"><a href="c13-ncvs-vignette.html#cb492-34" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb492-35"><a href="c13-ncvs-vignette.html#cb492-35" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;Violent crime&quot;</span>,</span>
-<span id="cb492-36"><a href="c13-ncvs-vignette.html#cb492-36" tabindex="-1"></a>    <span class="at">id =</span> <span class="st">&quot;viol_span&quot;</span>,</span>
-<span id="cb492-37"><a href="c13-ncvs-vignette.html#cb492-37" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;Violent&quot;</span>, <span class="st">&quot;Violent_se&quot;</span>)</span>
-<span id="cb492-38"><a href="c13-ncvs-vignette.html#cb492-38" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb492-39"><a href="c13-ncvs-vignette.html#cb492-39" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Aggravated assault&quot;</span>,</span>
-<span id="cb492-40"><a href="c13-ncvs-vignette.html#cb492-40" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;AAST&quot;</span>, <span class="st">&quot;AAST_se&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb492-41"><a href="c13-ncvs-vignette.html#cb492-41" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
-<span id="cb492-42"><a href="c13-ncvs-vignette.html#cb492-42" tabindex="-1"></a>    <span class="at">Violent =</span> <span class="st">&quot;Rate&quot;</span>,</span>
-<span id="cb492-43"><a href="c13-ncvs-vignette.html#cb492-43" tabindex="-1"></a>    <span class="at">Violent_se =</span> <span class="st">&quot;SE&quot;</span>,</span>
-<span id="cb492-44"><a href="c13-ncvs-vignette.html#cb492-44" tabindex="-1"></a>    <span class="at">AAST =</span> <span class="st">&quot;Rate&quot;</span>,</span>
-<span id="cb492-45"><a href="c13-ncvs-vignette.html#cb492-45" tabindex="-1"></a>    <span class="at">AAST_se =</span> <span class="st">&quot;SE&quot;</span>,</span>
-<span id="cb492-46"><a href="c13-ncvs-vignette.html#cb492-46" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb492-47"><a href="c13-ncvs-vignette.html#cb492-47" tabindex="-1"></a>  <span class="fu">fmt_number</span>(</span>
-<span id="cb492-48"><a href="c13-ncvs-vignette.html#cb492-48" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;Violent&quot;</span>, <span class="st">&quot;Violent_se&quot;</span>, <span class="st">&quot;AAST&quot;</span>, <span class="st">&quot;AAST_se&quot;</span>),</span>
-<span id="cb492-49"><a href="c13-ncvs-vignette.html#cb492-49" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">1</span></span>
-<span id="cb492-50"><a href="c13-ncvs-vignette.html#cb492-50" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb492-51"><a href="c13-ncvs-vignette.html#cb492-51" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
-<span id="cb492-52"><a href="c13-ncvs-vignette.html#cb492-52" tabindex="-1"></a>    <span class="at">footnote =</span> <span class="st">&quot;Includes rape or sexual assault, robbery,</span></span>
-<span id="cb492-53"><a href="c13-ncvs-vignette.html#cb492-53" tabindex="-1"></a><span class="st">    aggravated assault, and simple assault.&quot;</span>,</span>
-<span id="cb492-54"><a href="c13-ncvs-vignette.html#cb492-54" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_column_spanners</span>(<span class="at">spanners =</span> <span class="st">&quot;viol_span&quot;</span>)</span>
-<span id="cb492-55"><a href="c13-ncvs-vignette.html#cb492-55" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb492-56"><a href="c13-ncvs-vignette.html#cb492-56" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
-<span id="cb492-57"><a href="c13-ncvs-vignette.html#cb492-57" tabindex="-1"></a>    <span class="at">footnote =</span> <span class="st">&quot;Excludes persons of Hispanic origin&quot;</span>,</span>
-<span id="cb492-58"><a href="c13-ncvs-vignette.html#cb492-58" tabindex="-1"></a>    <span class="at">locations =</span></span>
-<span id="cb492-59"><a href="c13-ncvs-vignette.html#cb492-59" tabindex="-1"></a>      <span class="fu">cells_stub</span>(<span class="at">rows =</span> Level <span class="sc">%in%</span></span>
-<span id="cb492-60"><a href="c13-ncvs-vignette.html#cb492-60" tabindex="-1"></a>                   <span class="fu">c</span>(<span class="st">&quot;White&quot;</span>, <span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Asian&quot;</span>, NHOPI, <span class="st">&quot;Other&quot;</span>))) <span class="sc">%&gt;%</span></span>
-<span id="cb492-61"><a href="c13-ncvs-vignette.html#cb492-61" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
-<span id="cb492-62"><a href="c13-ncvs-vignette.html#cb492-62" tabindex="-1"></a>    <span class="at">footnote =</span> <span class="st">&quot;Includes persons who identified as</span></span>
-<span id="cb492-63"><a href="c13-ncvs-vignette.html#cb492-63" tabindex="-1"></a><span class="st">    Native Hawaiian or Other Pacific Islander only.&quot;</span>,</span>
-<span id="cb492-64"><a href="c13-ncvs-vignette.html#cb492-64" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_stub</span>(<span class="at">rows =</span> Level <span class="sc">==</span> NHOPI)</span>
-<span id="cb492-65"><a href="c13-ncvs-vignette.html#cb492-65" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb492-66"><a href="c13-ncvs-vignette.html#cb492-66" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
-<span id="cb492-67"><a href="c13-ncvs-vignette.html#cb492-67" tabindex="-1"></a>    <span class="at">footnote =</span> <span class="st">&quot;Includes persons who identified as American Indian or</span></span>
-<span id="cb492-68"><a href="c13-ncvs-vignette.html#cb492-68" tabindex="-1"></a><span class="st">    Alaska Native only or as two or more races.&quot;</span>,</span>
-<span id="cb492-69"><a href="c13-ncvs-vignette.html#cb492-69" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_stub</span>(<span class="at">rows =</span> Level <span class="sc">==</span> <span class="st">&quot;Other&quot;</span>)</span>
-<span id="cb492-70"><a href="c13-ncvs-vignette.html#cb492-70" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb492-71"><a href="c13-ncvs-vignette.html#cb492-71" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(</span>
-<span id="cb492-72"><a href="c13-ncvs-vignette.html#cb492-72" tabindex="-1"></a>    <span class="at">source_note =</span> <span class="st">&quot;Note: Rates per 1,000 persons age 12 or older.&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb492-73"><a href="c13-ncvs-vignette.html#cb492-73" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="at">source_note =</span> <span class="st">&quot;Source: Bureau of Justice Statistics,</span></span>
-<span id="cb492-74"><a href="c13-ncvs-vignette.html#cb492-74" tabindex="-1"></a><span class="st">                  National Crime Victimization Survey, 2021.&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb492-75"><a href="c13-ncvs-vignette.html#cb492-75" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Victim demographic&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb492-76"><a href="c13-ncvs-vignette.html#cb492-76" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Rate and standard error of violent victimization,</span></span>
-<span id="cb492-77"><a href="c13-ncvs-vignette.html#cb492-77" tabindex="-1"></a><span class="st">             by type of crime and demographic characteristics, 2021&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb493"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb493-1"><a href="c13-ncvs-vignette.html#cb493-1" tabindex="-1"></a>vr_gt</span></code></pre></div>
+<span id="cb492-20"><a href="c13-ncvs-vignette.html#cb492-20" tabindex="-1"></a>  <span class="fu">map</span>(pers_est_by) <span class="sc">%&gt;%</span></span>
+<span id="cb492-21"><a href="c13-ncvs-vignette.html#cb492-21" tabindex="-1"></a>  <span class="fu">bind_rows</span>()</span></code></pre></div>
+<p>The output from all the estimates is cleanded to create better labels such as going from “RaceHispOrigin” to “Race/Hispanic Origin”. Finally, the {gt} package is used to make a publishable table (Table <a href="c13-ncvs-vignette.html#tab:ncvs-vign-rates-demo-tab">13.5</a>). Using the functions from the {gt} package, column labels and footnotes are added and estimates are presented to the first decimal place.</p>
+<div class="sourceCode" id="cb493"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb493-1"><a href="c13-ncvs-vignette.html#cb493-1" tabindex="-1"></a>vr_gt<span class="ot">&lt;-</span>pers_est_df <span class="sc">%&gt;%</span></span>
+<span id="cb493-2"><a href="c13-ncvs-vignette.html#cb493-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb493-3"><a href="c13-ncvs-vignette.html#cb493-3" tabindex="-1"></a>    <span class="at">Variable =</span> <span class="fu">case_when</span>(</span>
+<span id="cb493-4"><a href="c13-ncvs-vignette.html#cb493-4" tabindex="-1"></a>      Variable <span class="sc">==</span> <span class="st">&quot;RaceHispOrigin&quot;</span> <span class="sc">~</span> <span class="st">&quot;Race/Hispanic origin&quot;</span>,</span>
+<span id="cb493-5"><a href="c13-ncvs-vignette.html#cb493-5" tabindex="-1"></a>      Variable <span class="sc">==</span> <span class="st">&quot;MaritalStatus&quot;</span> <span class="sc">~</span> <span class="st">&quot;Marital status&quot;</span>,</span>
+<span id="cb493-6"><a href="c13-ncvs-vignette.html#cb493-6" tabindex="-1"></a>      Variable <span class="sc">==</span> <span class="st">&quot;AgeGroup&quot;</span> <span class="sc">~</span> <span class="st">&quot;Age&quot;</span>,</span>
+<span id="cb493-7"><a href="c13-ncvs-vignette.html#cb493-7" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Variable</span>
+<span id="cb493-8"><a href="c13-ncvs-vignette.html#cb493-8" tabindex="-1"></a>    )</span>
+<span id="cb493-9"><a href="c13-ncvs-vignette.html#cb493-9" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb493-10"><a href="c13-ncvs-vignette.html#cb493-10" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>LevelNum) <span class="sc">%&gt;%</span></span>
+<span id="cb493-11"><a href="c13-ncvs-vignette.html#cb493-11" tabindex="-1"></a>  <span class="fu">group_by</span>(Variable) <span class="sc">%&gt;%</span></span>
+<span id="cb493-12"><a href="c13-ncvs-vignette.html#cb493-12" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Level&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb493-13"><a href="c13-ncvs-vignette.html#cb493-13" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb493-14"><a href="c13-ncvs-vignette.html#cb493-14" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;Violent crime&quot;</span>,</span>
+<span id="cb493-15"><a href="c13-ncvs-vignette.html#cb493-15" tabindex="-1"></a>    <span class="at">id =</span> <span class="st">&quot;viol_span&quot;</span>,</span>
+<span id="cb493-16"><a href="c13-ncvs-vignette.html#cb493-16" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;Violent&quot;</span>, <span class="st">&quot;Violent_se&quot;</span>)</span>
+<span id="cb493-17"><a href="c13-ncvs-vignette.html#cb493-17" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb493-18"><a href="c13-ncvs-vignette.html#cb493-18" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Aggravated assault&quot;</span>,</span>
+<span id="cb493-19"><a href="c13-ncvs-vignette.html#cb493-19" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;AAST&quot;</span>, <span class="st">&quot;AAST_se&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb493-20"><a href="c13-ncvs-vignette.html#cb493-20" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
+<span id="cb493-21"><a href="c13-ncvs-vignette.html#cb493-21" tabindex="-1"></a>    <span class="at">Violent =</span> <span class="st">&quot;Rate&quot;</span>,</span>
+<span id="cb493-22"><a href="c13-ncvs-vignette.html#cb493-22" tabindex="-1"></a>    <span class="at">Violent_se =</span> <span class="st">&quot;SE&quot;</span>,</span>
+<span id="cb493-23"><a href="c13-ncvs-vignette.html#cb493-23" tabindex="-1"></a>    <span class="at">AAST =</span> <span class="st">&quot;Rate&quot;</span>,</span>
+<span id="cb493-24"><a href="c13-ncvs-vignette.html#cb493-24" tabindex="-1"></a>    <span class="at">AAST_se =</span> <span class="st">&quot;SE&quot;</span>,</span>
+<span id="cb493-25"><a href="c13-ncvs-vignette.html#cb493-25" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb493-26"><a href="c13-ncvs-vignette.html#cb493-26" tabindex="-1"></a>  <span class="fu">fmt_number</span>(</span>
+<span id="cb493-27"><a href="c13-ncvs-vignette.html#cb493-27" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;Violent&quot;</span>, <span class="st">&quot;Violent_se&quot;</span>, <span class="st">&quot;AAST&quot;</span>, <span class="st">&quot;AAST_se&quot;</span>),</span>
+<span id="cb493-28"><a href="c13-ncvs-vignette.html#cb493-28" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">1</span></span>
+<span id="cb493-29"><a href="c13-ncvs-vignette.html#cb493-29" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb493-30"><a href="c13-ncvs-vignette.html#cb493-30" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb493-31"><a href="c13-ncvs-vignette.html#cb493-31" tabindex="-1"></a>    <span class="at">footnote =</span> <span class="st">&quot;Includes rape or sexual assault, robbery,</span></span>
+<span id="cb493-32"><a href="c13-ncvs-vignette.html#cb493-32" tabindex="-1"></a><span class="st">    aggravated assault, and simple assault.&quot;</span>,</span>
+<span id="cb493-33"><a href="c13-ncvs-vignette.html#cb493-33" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_column_spanners</span>(<span class="at">spanners =</span> <span class="st">&quot;viol_span&quot;</span>)</span>
+<span id="cb493-34"><a href="c13-ncvs-vignette.html#cb493-34" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb493-35"><a href="c13-ncvs-vignette.html#cb493-35" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb493-36"><a href="c13-ncvs-vignette.html#cb493-36" tabindex="-1"></a>    <span class="at">footnote =</span> <span class="st">&quot;Excludes persons of Hispanic origin&quot;</span>,</span>
+<span id="cb493-37"><a href="c13-ncvs-vignette.html#cb493-37" tabindex="-1"></a>    <span class="at">locations =</span></span>
+<span id="cb493-38"><a href="c13-ncvs-vignette.html#cb493-38" tabindex="-1"></a>      <span class="fu">cells_stub</span>(<span class="at">rows =</span> Level <span class="sc">%in%</span></span>
+<span id="cb493-39"><a href="c13-ncvs-vignette.html#cb493-39" tabindex="-1"></a>                   <span class="fu">c</span>(<span class="st">&quot;White&quot;</span>, <span class="st">&quot;Black&quot;</span>, <span class="st">&quot;Asian&quot;</span>, NHOPI, <span class="st">&quot;Other&quot;</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb493-40"><a href="c13-ncvs-vignette.html#cb493-40" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb493-41"><a href="c13-ncvs-vignette.html#cb493-41" tabindex="-1"></a>    <span class="at">footnote =</span> <span class="st">&quot;Includes persons who identified as</span></span>
+<span id="cb493-42"><a href="c13-ncvs-vignette.html#cb493-42" tabindex="-1"></a><span class="st">    Native Hawaiian or Other Pacific Islander only.&quot;</span>,</span>
+<span id="cb493-43"><a href="c13-ncvs-vignette.html#cb493-43" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_stub</span>(<span class="at">rows =</span> Level <span class="sc">==</span> NHOPI)</span>
+<span id="cb493-44"><a href="c13-ncvs-vignette.html#cb493-44" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb493-45"><a href="c13-ncvs-vignette.html#cb493-45" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb493-46"><a href="c13-ncvs-vignette.html#cb493-46" tabindex="-1"></a>    <span class="at">footnote =</span> <span class="st">&quot;Includes persons who identified as American Indian or</span></span>
+<span id="cb493-47"><a href="c13-ncvs-vignette.html#cb493-47" tabindex="-1"></a><span class="st">    Alaska Native only or as two or more races.&quot;</span>,</span>
+<span id="cb493-48"><a href="c13-ncvs-vignette.html#cb493-48" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_stub</span>(<span class="at">rows =</span> Level <span class="sc">==</span> <span class="st">&quot;Other&quot;</span>)</span>
+<span id="cb493-49"><a href="c13-ncvs-vignette.html#cb493-49" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb493-50"><a href="c13-ncvs-vignette.html#cb493-50" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(</span>
+<span id="cb493-51"><a href="c13-ncvs-vignette.html#cb493-51" tabindex="-1"></a>    <span class="at">source_note =</span> <span class="st">&quot;Note: Rates per 1,000 persons age 12 or older.&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb493-52"><a href="c13-ncvs-vignette.html#cb493-52" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="at">source_note =</span> <span class="st">&quot;Source: Bureau of Justice Statistics,</span></span>
+<span id="cb493-53"><a href="c13-ncvs-vignette.html#cb493-53" tabindex="-1"></a><span class="st">                  National Crime Victimization Survey, 2021.&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb493-54"><a href="c13-ncvs-vignette.html#cb493-54" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Victim demographic&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb493-55"><a href="c13-ncvs-vignette.html#cb493-55" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Rate and standard error of violent victimization,</span></span>
+<span id="cb493-56"><a href="c13-ncvs-vignette.html#cb493-56" tabindex="-1"></a><span class="st">             by type of crime and demographic characteristics, 2021&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb494"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb494-1"><a href="c13-ncvs-vignette.html#cb494-1" tabindex="-1"></a>vr_gt</span></code></pre></div>
 
 <div id="jslvphoojc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#jslvphoojc table {
@@ -2741,24 +2743,24 @@ where <span class="math inline">\(w_{ijk}\)</span> is the person weight (<code>W
 <div id="prev-rate" class="section level3 hasAnchor" number="13.6.4">
 <h3><span class="header-section-number">13.6.4</span> Estimation 4: Prevalence Rates<a href="c13-ncvs-vignette.html#prev-rate" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Prevalence rates differ from victimization rates as the numerator is the number of people or households victimized rather than the number of victimizations. To calculate the prevalence rates, we must run another summary of the data by calculating an indicator for whether a person or household is a victim of a particular crime at any point in the year. Below is an example of calculating first the indicator and then the prevalence rate of violent crime and aggravated assault.</p>
-<div class="sourceCode" id="cb494"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb494-1"><a href="c13-ncvs-vignette.html#cb494-1" tabindex="-1"></a>pers_prev_des <span class="ot">&lt;-</span></span>
-<span id="cb494-2"><a href="c13-ncvs-vignette.html#cb494-2" tabindex="-1"></a>  pers_vsum_slim <span class="sc">%&gt;%</span></span>
-<span id="cb494-3"><a href="c13-ncvs-vignette.html#cb494-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Year =</span> <span class="fu">floor</span>(YEARQ)) <span class="sc">%&gt;%</span></span>
-<span id="cb494-4"><a href="c13-ncvs-vignette.html#cb494-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Violent_Ind =</span> <span class="fu">sum</span>(Violent) <span class="sc">&gt;</span> <span class="dv">0</span>,</span>
-<span id="cb494-5"><a href="c13-ncvs-vignette.html#cb494-5" tabindex="-1"></a>         <span class="at">AAST_Ind =</span> <span class="fu">sum</span>(AAST) <span class="sc">&gt;</span> <span class="dv">0</span>,</span>
-<span id="cb494-6"><a href="c13-ncvs-vignette.html#cb494-6" tabindex="-1"></a>         <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>, <span class="st">&quot;IDHH&quot;</span>, <span class="st">&quot;IDPER&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb494-7"><a href="c13-ncvs-vignette.html#cb494-7" tabindex="-1"></a>  <span class="fu">as_survey</span>(</span>
-<span id="cb494-8"><a href="c13-ncvs-vignette.html#cb494-8" tabindex="-1"></a>    <span class="at">weight =</span> WGTPERCY,</span>
-<span id="cb494-9"><a href="c13-ncvs-vignette.html#cb494-9" tabindex="-1"></a>    <span class="at">strata =</span> V2117,</span>
-<span id="cb494-10"><a href="c13-ncvs-vignette.html#cb494-10" tabindex="-1"></a>    <span class="at">ids =</span> V2118,</span>
-<span id="cb494-11"><a href="c13-ncvs-vignette.html#cb494-11" tabindex="-1"></a>    <span class="at">nest =</span> <span class="cn">TRUE</span></span>
-<span id="cb494-12"><a href="c13-ncvs-vignette.html#cb494-12" tabindex="-1"></a>  )</span>
-<span id="cb494-13"><a href="c13-ncvs-vignette.html#cb494-13" tabindex="-1"></a></span>
-<span id="cb494-14"><a href="c13-ncvs-vignette.html#cb494-14" tabindex="-1"></a>pers_prev_ests <span class="ot">&lt;-</span> pers_prev_des <span class="sc">%&gt;%</span></span>
-<span id="cb494-15"><a href="c13-ncvs-vignette.html#cb494-15" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Violent_Prev =</span> <span class="fu">survey_mean</span>(Violent_Ind <span class="sc">*</span> <span class="dv">100</span>),</span>
-<span id="cb494-16"><a href="c13-ncvs-vignette.html#cb494-16" tabindex="-1"></a>            <span class="at">AAST_Prev =</span> <span class="fu">survey_mean</span>(AAST_Ind <span class="sc">*</span> <span class="dv">100</span>))</span>
-<span id="cb494-17"><a href="c13-ncvs-vignette.html#cb494-17" tabindex="-1"></a></span>
-<span id="cb494-18"><a href="c13-ncvs-vignette.html#cb494-18" tabindex="-1"></a>pers_prev_ests</span></code></pre></div>
+<div class="sourceCode" id="cb495"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb495-1"><a href="c13-ncvs-vignette.html#cb495-1" tabindex="-1"></a>pers_prev_des <span class="ot">&lt;-</span></span>
+<span id="cb495-2"><a href="c13-ncvs-vignette.html#cb495-2" tabindex="-1"></a>  pers_vsum_slim <span class="sc">%&gt;%</span></span>
+<span id="cb495-3"><a href="c13-ncvs-vignette.html#cb495-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Year =</span> <span class="fu">floor</span>(YEARQ)) <span class="sc">%&gt;%</span></span>
+<span id="cb495-4"><a href="c13-ncvs-vignette.html#cb495-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Violent_Ind =</span> <span class="fu">sum</span>(Violent) <span class="sc">&gt;</span> <span class="dv">0</span>,</span>
+<span id="cb495-5"><a href="c13-ncvs-vignette.html#cb495-5" tabindex="-1"></a>         <span class="at">AAST_Ind =</span> <span class="fu">sum</span>(AAST) <span class="sc">&gt;</span> <span class="dv">0</span>,</span>
+<span id="cb495-6"><a href="c13-ncvs-vignette.html#cb495-6" tabindex="-1"></a>         <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>, <span class="st">&quot;IDHH&quot;</span>, <span class="st">&quot;IDPER&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb495-7"><a href="c13-ncvs-vignette.html#cb495-7" tabindex="-1"></a>  <span class="fu">as_survey</span>(</span>
+<span id="cb495-8"><a href="c13-ncvs-vignette.html#cb495-8" tabindex="-1"></a>    <span class="at">weight =</span> WGTPERCY,</span>
+<span id="cb495-9"><a href="c13-ncvs-vignette.html#cb495-9" tabindex="-1"></a>    <span class="at">strata =</span> V2117,</span>
+<span id="cb495-10"><a href="c13-ncvs-vignette.html#cb495-10" tabindex="-1"></a>    <span class="at">ids =</span> V2118,</span>
+<span id="cb495-11"><a href="c13-ncvs-vignette.html#cb495-11" tabindex="-1"></a>    <span class="at">nest =</span> <span class="cn">TRUE</span></span>
+<span id="cb495-12"><a href="c13-ncvs-vignette.html#cb495-12" tabindex="-1"></a>  )</span>
+<span id="cb495-13"><a href="c13-ncvs-vignette.html#cb495-13" tabindex="-1"></a></span>
+<span id="cb495-14"><a href="c13-ncvs-vignette.html#cb495-14" tabindex="-1"></a>pers_prev_ests <span class="ot">&lt;-</span> pers_prev_des <span class="sc">%&gt;%</span></span>
+<span id="cb495-15"><a href="c13-ncvs-vignette.html#cb495-15" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Violent_Prev =</span> <span class="fu">survey_mean</span>(Violent_Ind <span class="sc">*</span> <span class="dv">100</span>),</span>
+<span id="cb495-16"><a href="c13-ncvs-vignette.html#cb495-16" tabindex="-1"></a>            <span class="at">AAST_Prev =</span> <span class="fu">survey_mean</span>(AAST_Ind <span class="sc">*</span> <span class="dv">100</span>))</span>
+<span id="cb495-17"><a href="c13-ncvs-vignette.html#cb495-17" tabindex="-1"></a></span>
+<span id="cb495-18"><a href="c13-ncvs-vignette.html#cb495-18" tabindex="-1"></a>pers_prev_ests</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 4
 ##   Violent_Prev Violent_Prev_se AAST_Prev AAST_Prev_se
 ##          &lt;dbl&gt;           &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;
@@ -2766,15 +2768,52 @@ where <span class="math inline">\(w_{ijk}\)</span> is the person weight (<code>W
 <p>In the example above, the indicator is multiplied by 100 to return a percentage rather than a proportion. In 2021, we estimate that 0.98% of people aged 12 and older were a victim of violent crime in the United States, and 0.22% were victims of aggravated assault.</p>
 </div>
 </div>
-<div id="exercises-3" class="section level2 hasAnchor" number="13.7">
-<h2><span class="header-section-number">13.7</span> Exercises<a href="c13-ncvs-vignette.html#exercises-3" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="statistical-testing" class="section level2 hasAnchor" number="13.7">
+<h2><span class="header-section-number">13.7</span> Statistical testing<a href="c13-ncvs-vignette.html#statistical-testing" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>For any of the types of estimates discussed, we can also perform statistical testing. For example, we could test whether property victimization rates are different between properties that are owned versus rented. First, we calculate the point estimates.</p>
+<div class="sourceCode" id="cb497"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb497-1"><a href="c13-ncvs-vignette.html#cb497-1" tabindex="-1"></a>prop_tenure <span class="ot">&lt;-</span> hh_des <span class="sc">%&gt;%</span></span>
+<span id="cb497-2"><a href="c13-ncvs-vignette.html#cb497-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Tenure) <span class="sc">%&gt;%</span></span>
+<span id="cb497-3"><a href="c13-ncvs-vignette.html#cb497-3" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb497-4"><a href="c13-ncvs-vignette.html#cb497-4" tabindex="-1"></a>    <span class="at">Property_Rate =</span> <span class="fu">survey_mean</span>(Property <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb497-5"><a href="c13-ncvs-vignette.html#cb497-5" tabindex="-1"></a>                                <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">vartype=</span><span class="st">&quot;ci&quot;</span>),</span>
+<span id="cb497-6"><a href="c13-ncvs-vignette.html#cb497-6" tabindex="-1"></a>  )</span>
+<span id="cb497-7"><a href="c13-ncvs-vignette.html#cb497-7" tabindex="-1"></a></span>
+<span id="cb497-8"><a href="c13-ncvs-vignette.html#cb497-8" tabindex="-1"></a>prop_tenure  </span></code></pre></div>
+<pre><code>## # A tibble: 3 × 4
+##   Tenure Property_Rate Property_Rate_low Property_Rate_upp
+##   &lt;fct&gt;          &lt;dbl&gt;             &lt;dbl&gt;             &lt;dbl&gt;
+## 1 Owned           68.2              64.3              72.1
+## 2 Rented         130.              123.              137. 
+## 3 &lt;NA&gt;           NaN               NaN               NaN</code></pre>
+<p>The property victimization rate for rented households is 129.8 per 1,000 households while the property victimization rate for owned households is 68.2, which seem very different especially given the non-overlapping confidence intervals. However, survey data is inheriently non-independent so statistical testing cannot be done by comparing confidence intervals. To conduct the statistical test, we first need to create a variable that we will compare which incorporates the adjusted incident weight (<code>ADJINC_WT</code>) and then the test can be conducted as discussed in Chapter <a href="c06-statistical-testing.html#c06-statistical-testing">6</a>.</p>
+<div class="sourceCode" id="cb499"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb499-1"><a href="c13-ncvs-vignette.html#cb499-1" tabindex="-1"></a>prop_tenure_test <span class="ot">&lt;-</span> hh_des <span class="sc">%&gt;%</span></span>
+<span id="cb499-2"><a href="c13-ncvs-vignette.html#cb499-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb499-3"><a href="c13-ncvs-vignette.html#cb499-3" tabindex="-1"></a>    <span class="at">Prop_Adj=</span>Property <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span></span>
+<span id="cb499-4"><a href="c13-ncvs-vignette.html#cb499-4" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb499-5"><a href="c13-ncvs-vignette.html#cb499-5" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
+<span id="cb499-6"><a href="c13-ncvs-vignette.html#cb499-6" tabindex="-1"></a>    <span class="at">formula =</span> Prop_Adj <span class="sc">~</span> Tenure,</span>
+<span id="cb499-7"><a href="c13-ncvs-vignette.html#cb499-7" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb499-8"><a href="c13-ncvs-vignette.html#cb499-8" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb499-9"><a href="c13-ncvs-vignette.html#cb499-9" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb499-10"><a href="c13-ncvs-vignette.html#cb499-10" tabindex="-1"></a>  broom<span class="sc">::</span><span class="fu">tidy</span>()</span>
+<span id="cb499-11"><a href="c13-ncvs-vignette.html#cb499-11" tabindex="-1"></a></span>
+<span id="cb499-12"><a href="c13-ncvs-vignette.html#cb499-12" tabindex="-1"></a>prop_tenure_test</span></code></pre></div>
+<pre><code>## # A tibble: 1 × 8
+##   estimate statistic  p.value parameter conf.low conf.high method       
+##      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;        
+## 1     61.6      16.0 8.91e-36       169     54.0      69.2 Design-based…
+## # ℹ 1 more variable: alternative &lt;chr&gt;</code></pre>
+<p>The output of the statistical test shows the same difference of 61.6 between the property victimization rates of renters and owners and the test is highly significant with the p-value of &lt;0.0001.</p>
+</div>
+<div id="exercises-3" class="section level2 hasAnchor" number="13.8">
+<h2><span class="header-section-number">13.8</span> Exercises<a href="c13-ncvs-vignette.html#exercises-3" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <ol style="list-style-type: decimal">
 <li>What proportion of completed motor vehicle thefts are not reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).</li>
 </ol>
-<div class="sourceCode" id="cb496"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb496-1"><a href="c13-ncvs-vignette.html#cb496-1" tabindex="-1"></a>ans1 <span class="ot">&lt;-</span> inc_des <span class="sc">%&gt;%</span></span>
-<span id="cb496-2"><a href="c13-ncvs-vignette.html#cb496-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(V4529, <span class="st">&quot;40|41&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb496-3"><a href="c13-ncvs-vignette.html#cb496-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Pct =</span> <span class="fu">survey_mean</span>(ReportPolice, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>)</span>
-<span id="cb496-4"><a href="c13-ncvs-vignette.html#cb496-4" tabindex="-1"></a>ans1</span></code></pre></div>
+<div class="sourceCode" id="cb501"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb501-1"><a href="c13-ncvs-vignette.html#cb501-1" tabindex="-1"></a>ans1 <span class="ot">&lt;-</span> inc_des <span class="sc">%&gt;%</span></span>
+<span id="cb501-2"><a href="c13-ncvs-vignette.html#cb501-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(V4529, <span class="st">&quot;40|41&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb501-3"><a href="c13-ncvs-vignette.html#cb501-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Pct =</span> <span class="fu">survey_mean</span>(ReportPolice, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb501-4"><a href="c13-ncvs-vignette.html#cb501-4" tabindex="-1"></a>ans1</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 2
 ##     Pct Pct_se
 ##   &lt;dbl&gt;  &lt;dbl&gt;
@@ -2782,9 +2821,9 @@ where <span class="math inline">\(w_{ijk}\)</span> is the person weight (<code>W
 <ol start="2" style="list-style-type: decimal">
 <li>How many violent crimes occur in each region?</li>
 </ol>
-<div class="sourceCode" id="cb498"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb498-1"><a href="c13-ncvs-vignette.html#cb498-1" tabindex="-1"></a>inc_des <span class="sc">%&gt;%</span></span>
-<span id="cb498-2"><a href="c13-ncvs-vignette.html#cb498-2" tabindex="-1"></a>  <span class="fu">filter</span>(Violent) <span class="sc">%&gt;%</span></span>
-<span id="cb498-3"><a href="c13-ncvs-vignette.html#cb498-3" tabindex="-1"></a>  <span class="fu">survey_count</span>(Region)</span></code></pre></div>
+<div class="sourceCode" id="cb503"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb503-1"><a href="c13-ncvs-vignette.html#cb503-1" tabindex="-1"></a>inc_des <span class="sc">%&gt;%</span></span>
+<span id="cb503-2"><a href="c13-ncvs-vignette.html#cb503-2" tabindex="-1"></a>  <span class="fu">filter</span>(Violent) <span class="sc">%&gt;%</span></span>
+<span id="cb503-3"><a href="c13-ncvs-vignette.html#cb503-3" tabindex="-1"></a>  <span class="fu">survey_count</span>(Region)</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 3
 ##   Region           n    n_se
 ##   &lt;fct&gt;        &lt;dbl&gt;   &lt;dbl&gt;
@@ -2795,10 +2834,10 @@ where <span class="math inline">\(w_{ijk}\)</span> is the person weight (<code>W
 <ol start="3" style="list-style-type: decimal">
 <li>What is the property victimization rate among each income level?</li>
 </ol>
-<div class="sourceCode" id="cb500"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb500-1"><a href="c13-ncvs-vignette.html#cb500-1" tabindex="-1"></a>hh_des <span class="sc">%&gt;%</span></span>
-<span id="cb500-2"><a href="c13-ncvs-vignette.html#cb500-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Income) <span class="sc">%&gt;%</span></span>
-<span id="cb500-3"><a href="c13-ncvs-vignette.html#cb500-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Property_Rate =</span> <span class="fu">survey_mean</span>(Property <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span>, </span>
-<span id="cb500-4"><a href="c13-ncvs-vignette.html#cb500-4" tabindex="-1"></a>                                        <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb505"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb505-1"><a href="c13-ncvs-vignette.html#cb505-1" tabindex="-1"></a>hh_des <span class="sc">%&gt;%</span></span>
+<span id="cb505-2"><a href="c13-ncvs-vignette.html#cb505-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Income) <span class="sc">%&gt;%</span></span>
+<span id="cb505-3"><a href="c13-ncvs-vignette.html#cb505-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Property_Rate =</span> <span class="fu">survey_mean</span>(Property <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span>, </span>
+<span id="cb505-4"><a href="c13-ncvs-vignette.html#cb505-4" tabindex="-1"></a>                                        <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
 <pre><code>## # A tibble: 6 × 3
 ##   Income            Property_Rate Property_Rate_se
 ##   &lt;fct&gt;                     &lt;dbl&gt;            &lt;dbl&gt;
@@ -2808,6 +2847,38 @@ where <span class="math inline">\(w_{ijk}\)</span> is the person weight (<code>W
 ## 4 $100,000-199,999           76.5             3.49
 ## 5 $200,000 or more           91.8             5.69
 ## 6 &lt;NA&gt;                      NaN             NaN</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>What is the difference between the violent victimization rate between males and females? Is it statistically different?</li>
+</ol>
+<div class="sourceCode" id="cb507"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb507-1"><a href="c13-ncvs-vignette.html#cb507-1" tabindex="-1"></a>pers_des <span class="sc">%&gt;%</span></span>
+<span id="cb507-2"><a href="c13-ncvs-vignette.html#cb507-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Sex) <span class="sc">%&gt;%</span></span>
+<span id="cb507-3"><a href="c13-ncvs-vignette.html#cb507-3" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb507-4"><a href="c13-ncvs-vignette.html#cb507-4" tabindex="-1"></a>    <span class="at">Violent_rate=</span><span class="fu">survey_mean</span>(Violent <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb507-5"><a href="c13-ncvs-vignette.html#cb507-5" tabindex="-1"></a>  )</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 3
+##   Sex    Violent_rate Violent_rate_se
+##   &lt;fct&gt;         &lt;dbl&gt;           &lt;dbl&gt;
+## 1 Female         15.5           0.873
+## 2 Male           17.5           1.11</code></pre>
+<div class="sourceCode" id="cb509"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb509-1"><a href="c13-ncvs-vignette.html#cb509-1" tabindex="-1"></a>pers_des <span class="sc">%&gt;%</span></span>
+<span id="cb509-2"><a href="c13-ncvs-vignette.html#cb509-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb509-3"><a href="c13-ncvs-vignette.html#cb509-3" tabindex="-1"></a>    <span class="at">Violent_Adj=</span>Violent <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span></span>
+<span id="cb509-4"><a href="c13-ncvs-vignette.html#cb509-4" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb509-5"><a href="c13-ncvs-vignette.html#cb509-5" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
+<span id="cb509-6"><a href="c13-ncvs-vignette.html#cb509-6" tabindex="-1"></a>    <span class="at">formula =</span> Violent_Adj <span class="sc">~</span> Sex,</span>
+<span id="cb509-7"><a href="c13-ncvs-vignette.html#cb509-7" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb509-8"><a href="c13-ncvs-vignette.html#cb509-8" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb509-9"><a href="c13-ncvs-vignette.html#cb509-9" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb509-10"><a href="c13-ncvs-vignette.html#cb509-10" tabindex="-1"></a>  broom<span class="sc">::</span><span class="fu">tidy</span>()</span></code></pre></div>
+<pre><code>## Warning in summary.glm(g): observations with zero weight not used for
+## calculating dispersion</code></pre>
+<pre><code>## Warning in summary.glm(glm.object): observations with zero weight not
+## used for calculating dispersion</code></pre>
+<pre><code>## # A tibble: 1 × 8
+##   estimate statistic p.value parameter conf.low conf.high method        
+##      &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;         
+## 1     1.93      1.43   0.156       169   -0.745      4.61 Design-based …
+## # ℹ 1 more variable: alternative &lt;chr&gt;</code></pre>
 
 </div>
 </div>
