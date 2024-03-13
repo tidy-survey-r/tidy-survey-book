@@ -10,7 +10,7 @@ knitr::opts_chunk$set(tidy = 'styler')
 
 ## Introduction
 
-This chapter provides an overview of the packages, data, and design objects we use throughout this book. As mentioned in Chapter \@ref(c02-overview-surveys), understanding how a survey was conducted helps us make sense of the results and interpret findings. Therefore, we provide background on the datasets used in examples and exercises. Next, we walk through how to create the survey design objects necessary to begin analysis. Finally, we provide an overview of the {srvyr} package and the steps needed for analysis. If you have questions or face issues while going through the book, please report them in the book's GitHub repository: [https://github.com/tidy-survey-r/tidy-survey-book](https://github.com/tidy-survey-r/tidy-survey-book).
+This chapter provides an overview of the packages, data, and design objects we use frequently throughout this book. As mentioned in Chapter \@ref(c02-overview-surveys), understanding how a survey was conducted helps us make sense of the results and interpret findings. Therefore, we provide background on the datasets used in examples and exercises. Next, we walk through how to create the survey design objects necessary to begin analysis. Finally, we provide an overview of the {srvyr} package and the steps needed for analysis. If you have questions or face issues while going through the book, please report them in the book's [GitHub repository](https://github.com/tidy-survey-r/tidy-survey-book).
 
 ## Setup
 
@@ -23,8 +23,8 @@ We use several packages throughout the book, but let's install and load specific
 ```{r}
 #| label: setup-install-core1
 #| eval: FALSE
-install.packages(c("tidyverse", "survey"))
-remotes::install_github("https://github.com/gergness/srvyr")
+install.packages(c("tidyverse", "survey", "remotes"))
+remotes::install_github("gergness/srvyr")
 ```
 
 We bundled the datasets used in the book in an R package, {srvyrexploR}. Install it directly from GitHub using the {remotes} package:
@@ -33,7 +33,7 @@ We bundled the datasets used in the book in an R package, {srvyrexploR}. Install
 #| label: setup-install-core2
 #| eval: FALSE
 #| warning: FALSE
-remotes::install_github("https://github.com/tidy-survey-r/srvyrexploR")
+remotes::install_github("tidy-survey-r/srvyrexploR")
 ```
 
 After installing these packages, load them using the `library()` function:
@@ -87,7 +87,7 @@ After installing this package, load it using the `library()` function:
 library(censusapi)
 ```
 
-Note that the {censusapi} package requires a Census API key, available for free from the U.S. Census Bureau website (refer to the package documentation for more information). We recommend storing the Census API key in our R environment instead of directly in the code. After obtaining the API key, save it in your R environment by running `Sys.setenv()`:
+Note that the {censusapi} package requires a Census API key, available for free from the [U.S. Census Bureau website](https://api.census.gov/data/key_signup.html) (refer to the package documentation for more information). We recommend storing the Census API key in our R environment instead of directly in the code. After obtaining the API key, save it in your R environment by running `Sys.setenv()`:
 
 ```{r}
 #| label: setup-census-api-setup
@@ -97,7 +97,7 @@ Sys.setenv(CENSUS_KEY="YOUR_API_KEY_HERE")
 
 Then, restart the R session. Once the Census API key is stored, we can retrieve it in our R code with `Sys.getenv("CENSUS_KEY")`.
 
-There are other packages used throughout the book. We list them in the Prerequisite boxes at the beginning of each chapter. As we work through the book, make sure to check the Prerequisite box and install any missing packages before proceeding.
+There are a few other packages used in the book in limited frequency. We list them in the Prerequisite boxes at the beginning of each chapter. As we work through the book, make sure to check the Prerequisite box and install any missing packages before proceeding.
 
 ### Data
 
@@ -116,14 +116,13 @@ This book uses two main datasets: the American National Election Studies [ANES -
 #| error: FALSE
 #| warning: FALSE
 #| message: FALSE
-#| cache: TRUE
 data(anes_2020)
 data(recs_2020)
 ```
 
 #### American National Election Studies (ANES) Data {-}
 
-The ANES is a study that collects data from election surveys dating back to 1948. These surveys contain information on public opinion and voting behavior in U.S. presidential elections. They cover topics such as party affiliation, voting choice, and level of trust in the government. The 2020 survey, the data we use in the book, was fielded online, through live video interviews, or via computer-assisted telephone interviews (CATI). 
+The ANES is a study that collects data from election surveys dating back to 1948. These surveys contain information on public opinion and voting behavior in U.S. presidential elections and some midterm elections^[In the United States, presidential elections are held in years divisible by four. In other even years, there are elections at the federal level for congress which are referred to as midterm elections as they occur at the middle of the term of a president.]. They cover topics such as party affiliation, voting choice, and level of trust in the government. The 2020 survey, the data we use in the book, was fielded online, through live video interviews, or via computer-assisted telephone interviews (CATI). 
 
 When working with new survey data, analysts should review the survey documentation (see Chapter \@ref(c03-understanding-survey-data-documentation)) to understand the data collection methods. The original ANES data contains variables starting with `V20` [@debell], so to assist with our analysis throughout the book, we created descriptive variable names. For example, the respondent's age is now in a variable called `Age`, and gender is in a variable called `Gender`. These descriptive variables are included in the {srvyrexploR} package, and Table \@ref(tab:anes-view-tab) displays the list of these renamed variables. A complete overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(anes-cb)`r if (!knitr:::is_html_output()) ')'`.
 
@@ -139,7 +138,8 @@ anes_view <- anes_2020 %>%
   colnames() %>%
   as_tibble() %>%
   rename(`Variable Name` = value) %>%
-  gt()
+  gt() %>%
+  cols_width(everything()~px(295))
 ```
 
 ```{r}
@@ -149,7 +149,7 @@ anes_view %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-Before beginning an analysis, it is useful to view the data to understand the available variables. The `dplyr::glimpse()` function produces a list of all variables, their types (e.g., function, double), and a few example values. Below, we remove variables containing numbers with `select(-matches("^V\\d"))` before using `glimpse()` to get a quick overview of the data with descriptive variable names:
+Before beginning an analysis, it is useful to view the data to understand the available variables. The `dplyr::glimpse()` function produces a list of all variables, their types (e.g., function, double), and a few example values. Below, we remove variables containing a "V" followed by numbers with `select(-matches("^V\\d"))` before using `glimpse()` to get a quick overview of the data with descriptive variable names:
 
 ```{r}
 #| label: setup-anes-glimpse
@@ -162,7 +162,7 @@ From the output, we can see there are `r nrow(anes_2020 %>% select(-matches("^V\
 
 #### Residential Energy Consumption Survey (RECS) Data {-}
 
-RECS is a study that measures energy consumption and expenditure in American households. Funded by the Energy Information Administration, the RECS data are collected through interviews with household members and energy suppliers. These interviews take place in person, over the phone, via mail, and on the web. The survey has been fielded 14 times between 1950 and 2020. It includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance. 
+RECS is a study that measures energy consumption and expenditure in American households. Funded by the Energy Information Administration, the RECS data are collected through interviews with household members and energy suppliers. These interviews take place in person, over the phone, via mail, and on the web with modes changing over time. The survey has been fielded 14 times between 1950 and 2020. It includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance. 
 
 As mentioned above, analysts should read the survey documentation (see Chapter \@ref(c03-understanding-survey-data-documentation)) to understand how the data was collected and implemented. Table \@ref(tab:recs-view-tab) displays the list of variables in the RECS data (not including the weights, which start with `NWEIGHT` and will be described in more detail in Chapter \@ref(c10-specifying-sample-designs)). An overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(recs-cb)`r if (!knitr:::is_html_output()) ')'`. 
 
@@ -178,7 +178,8 @@ recs_view <- recs_2020 %>%
   colnames() %>%
   as_tibble() %>%
   rename(`Variable Name` = value)  %>%
-  gt()
+  gt() %>%
+  cols_width(everything()~px(295))
 ```
 
 
@@ -219,7 +220,7 @@ We can use the {censusapi} package to obtain the information needed for the surv
 - citizenship status (`PRCITSHP`) of the respondent: to narrow the population to only those eligible to vote
 - final person-level weight (`PWSSWGT`)
 
-Detailed information for these variables can be found in the CPS data dictionary^[https://www2.census.gov/programs-surveys/cps/datasets/2020/basic/2020_Basic_CPS_Public_Use_Record_Layout_plus_IO_Code_list.txt].
+Detailed information for these variables can be found in the [CPS data dictionary](https://www2.census.gov/programs-surveys/cps/datasets/2020/basic/2020_Basic_CPS_Public_Use_Record_Layout_plus_IO_Code_list.txt).
 
 ```{r}
 #| label: setup-anes-cps-get
@@ -268,14 +269,7 @@ targetpop <- cps_narrow_resp %>%
 ```
 
 ```{r}
-#| label: setup-anes-cps-targetpop-display
-#| eval: false
-targetpop
-```
-
-```{r}
 #| label: setup-anes-cps-targetpop-print
-#| echo: false
 scales::comma(targetpop)
 ```
 
@@ -323,7 +317,7 @@ recs_des <- recs_2020 %>%
 recs_des
 ```
 
-Viewing this new object provides information about the survey design, such that the RECS is an "unstratified cluster jacknife (JK1) with 60 replicates and MSE variances".  Additionally, the output shows the sampling variables (`NWEIGHT1`-`NWEIGHT50`) and then lists the remaining variables in the dataset. This design object will be used throughout this book to conduct survey analysis.
+Viewing this new object provides information about the survey design, such that the RECS is an "unstratified cluster jacknife (JK1) with 60 replicates and MSE variances".  Additionally, the output shows the sampling variables (`NWEIGHT1`-`NWEIGHT60`) and then lists the remaining variables in the dataset. This design object will be used throughout this book to conduct survey analysis.
 
 ## Survey analysis process {#survey-analysis-process}
 
@@ -343,21 +337,24 @@ In Section \@ref(setup-des-obj), we follow Step #1 to create the survey design o
 
 The {dplyr} package from the tidyverse offers flexible and intuitive functions for data wrangling. One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package. We can use pipes, such as `%>%` from the {magrittr} package, to specify a survey design object, apply a function, and then feed that output into the next function's first argument. Functions follow the 'tidy' convention of snake_case function names.
 
-To help explain the similarities between {dplyr} functions and {srvyr} functions, we use the `iris` dataset that is built-in to R and `apistrat` data that comes in the {survey} package. The `iris` dataset provides measurements on various plant species. We can load the data into our environment using `data(iris)`. Taking a look at `iris` with `dplyr::glimpse()`, we can see the dataset has five columns, four of which are numeric and one is a factor.
+To help explain the similarities between {dplyr} functions and {srvyr} functions, we use the `towny` dataset from the {gt} package and `apistrat` data that comes in the {survey} package. The `towny` dataset provides population data for municipalities in Ontario, Canada on Census years between 1996 and 2021. We can load the data into our environment using `data(towny)`. Taking a look at `towny` with `dplyr::glimpse()`, we can see the dataset has `r ncol(towny)` columns with a mix of character and numeric data.
 
 ```{r}
-#| label: setup-iris-surveydata
-data(iris)
+#| label: setup-towny-surveydata
+data(towny)
 
-iris %>% 
+towny %>% 
   glimpse()
 ```
 
-Let's examine the `iris` object's class. We verify that it is a `data.frame` by running the code below:
+Let's examine the `towny` object's class. We verify that it is a tibble, as indicated by `"tbl_df"`, by running the code below:
 
 ```{r}
-class(iris)
+#| label: setup-towny-class
+class(towny)
 ```
+
+All tibbles are data.frames but not all data.frames are tibbles. Compared to data.frames, tibbles have some advantages with the printing behavior being a noticeable advantage.
 
 The {survey} package contains datasets related to the California Academic Performance Index, which measures student performance in schools with at least 100 students in California. We can access these datasets by loading the {survey} package and running `data(api)`.
 
@@ -374,16 +371,17 @@ dstrata <- apistrat %>%
 When we check the class of `dstrata`, it is not a typical `data.frame`. Applying the `as_survey_design()` function transforms the data into a `tbl_svy`, a special class specifically for survey design objects. The {srvyr} package is designed to work with the `tbl_svy` class of objects.
 
 ```{r}
+#| label: setup-api-class
 class(dstrata)
 ```
 
-Let's look at how {dplyr} works with regular data frames. The example below calculates the mean and median for the `Sepal.Length` variable in the `iris` dataset.
+Let's look at how {dplyr} works with regular data frames. The example below calculates the mean and median for the `land_area_km2` variable in the `towny` dataset.
 
 ```{r}
 #| label: setup-dplyr-examp
-iris %>%
-  summarize(sl_mean = mean(Sepal.Length),
-            sl_median = median(Sepal.Length))
+towny %>%
+  summarize(area_mean = mean(land_area_km2),
+            area_median = median(land_area_km2))
 ```
 
 In the code below, we calculate the mean and median of the variable `api00` using `dstrata`. Note the similarity in the syntax. When we dig into the {srvyr} functions later, we will show that the outputs share a similar structure. Each group (if present) generates one row of output, but with additional columns. By default, the standard error of the statistic is also calculated in addition to the statistic itself.
@@ -395,12 +393,12 @@ dstrata %>%
             api00_med = survey_median(api00))
 ```
 
-The functions in {srvyr} also play nicely with other tidyverse functions. For example, if we wanted to select columns with shared characteristics, we can use {tidyselect} functions such as `starts_with()`, `num_range()`, etc. In the examples below, we use a combination of `across()` and `starts_with()` to calculate the mean of variables starting with "Sepal" in the `iris` data frame and those beginning with `api` in the `dstrata` survey object.
+The functions in {srvyr} also play nicely with other tidyverse functions. For example, if we wanted to select columns with shared characteristics, we can use {tidyselect} functions such as `starts_with()`, `num_range()`, etc. In the examples below, we use a combination of `across()` and `starts_with()` to calculate the mean of variables starting with "population" in the `towny` data frame and those beginning with `api` in the `dstrata` survey object.
 
 ```{r}
 #| label: setup-dplyr-select
-iris %>%
-  summarize(across(starts_with("Sepal"), mean))
+towny %>%
+  summarize(across(starts_with("population"), ~mean(.x, na.rm=TRUE)))
 ```
 
 ```{r}
@@ -427,9 +425,10 @@ Several functions in {srvyr} must be called within `srvyr::summarize()`, with th
 
 ```{r}
 #| label: setup-dplyr-groupby
-iris %>%
-  group_by(Species) %>%
-  dplyr::summarize(sl_mean = mean(Sepal.Length))
+towny %>%
+  group_by(csd_type) %>%
+  dplyr::summarize(area_mean = mean(land_area_km2),
+                   area_median = median(land_area_km2))
 ```
 
 We use a similar setup to summarize data in {srvyr}:
@@ -442,21 +441,42 @@ dstrata %>%
             api00_median = survey_median(api00))
 ```
 
-As mentioned above, {srvyr} functions are meant for `tbl_svy` objects. Attempting to perform data manipulation on non-`tbl_svy` objects, like the `iris` example shown below, will result in an error. Running the code will let you know what the issue is: `Survey context not set`.
+At this time, the `.by` argument is `srvyr::summarize()` does not exist as it does in {dplyr}. An alternative way to do the grouped analysis on the `towny` data would be:
+
+```{r}
+#| label: setup-dplyr-by-alt
+towny %>%
+  dplyr::summarize(area_mean = mean(land_area_km2),
+                   area_median = median(land_area_km2), 
+                   .by=csd_type)
+```
+
+However, the `.by` syntax is not yet available in {srvyr}:
+
+```{r}
+#| label: setup-srvyr-by-alt
+#| error: true
+dstrata %>%
+  summarize(api00_mean = survey_mean(api00),
+            api00_median = survey_median(api00),
+            .by=stype)
+```
+
+As mentioned above, {srvyr} functions are meant for `tbl_svy` objects. Attempting to perform data manipulation on non-`tbl_svy` objects, like the `towny` example shown below, will result in an error. Running the code will let you know what the issue is: `Survey context not set`.
 
 ```{r}
 #| label: setup-nsobj-error
 #| error: true
-iris %>%
-  summarize(sl_mean = survey_mean(Sepal.Length))
+towny %>%
+  summarize(area_mean = survey_mean(land_area_km2))
 ```
 
 A few functions in {srvyr} have counterparts in {dplyr}, such as `srvyr::summarize()` and `srvyr::group_by()`. Unlike {srvyr}-specific verbs, {srvyr} recognizes these parallel functions if applied to a non-survey object. Instead of causing an error, the package will provide the equivalent output from {dplyr}:
 
 ```{r}
 #| label: setup-nsobj-noerr
-iris %>%
-  srvyr::summarize(sl_mean = mean(Sepal.Length))
+towny %>%
+  srvyr::summarize(area_mean = mean(land_area_km2))
 ```
 
 Because this book focuses on survey analysis, most of our pipes will stem from a survey object. When we load the {dplyr} and {srvyr} packages, the functions will automatically figure out the class of data and use the appropriate one from {dplyr} or {srvyr}. Therefore, we do not need to include the namespace for each function (e.g., `srvyr::summarize()`). 
