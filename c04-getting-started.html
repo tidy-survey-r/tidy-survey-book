@@ -23,7 +23,7 @@
 <meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
 
 
-<meta name="date" content="2024-03-13" />
+<meta name="date" content="2024-03-16" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -52,6 +52,14 @@
 <link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections/anchor-sections.js"></script>
+<script src="libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="libs/d3/d3.min.js"></script>
+<script src="libs/dagre/dagre-d3.min.js"></script>
+<link href="libs/mermaid/dist/mermaid.css" rel="stylesheet" />
+<script src="libs/mermaid/dist/mermaid.slim.min.js"></script>
+<link href="libs/DiagrammeR-styles/styles.css" rel="stylesheet" />
+<script src="libs/chromatography/chromatography.js"></script>
+<script src="libs/DiagrammeR-binding/DiagrammeR.js"></script>
 <script defer data-domain="tidy-survey-r.github.io/tidy-survey-book" src="https://plausible.io/js/script.js"></script>
 
 
@@ -530,23 +538,23 @@ div.csl-indent {
 <p>The ANES is a study that collects data from election surveys dating back to 1948. These surveys contain information on public opinion and voting behavior in U.S. presidential elections and some midterm elections<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>. They cover topics such as party affiliation, voting choice, and level of trust in the government. The 2020 survey, the data we use in the book, was fielded online, through live video interviews, or via computer-assisted telephone interviews (CATI).</p>
 <p>When working with new survey data, analysts should review the survey documentation (see Chapter <a href="c03-understanding-survey-data-documentation.html#c03-understanding-survey-data-documentation">3</a>) to understand the data collection methods. The original ANES data contains variables starting with <code>V20</code> <span class="citation">(<a href="#ref-debell">DeBell 2010</a>)</span>, so to assist with our analysis throughout the book, we created descriptive variable names. For example, the respondent’s age is now in a variable called <code>Age</code>, and gender is in a variable called <code>Gender</code>. These descriptive variables are included in the {srvyrexploR} package, and Table <a href="c04-getting-started.html#tab:anes-view-tab">4.1</a> displays the list of these renamed variables. A complete overview of all variables can be found in Appendix <a href="anes-cb.html#anes-cb">A</a>.</p>
 
-<div id="mfdtcwagqe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#mfdtcwagqe table {
+<div id="yifesgshcc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#yifesgshcc table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#mfdtcwagqe thead, #mfdtcwagqe tbody, #mfdtcwagqe tfoot, #mfdtcwagqe tr, #mfdtcwagqe td, #mfdtcwagqe th {
+#yifesgshcc thead, #yifesgshcc tbody, #yifesgshcc tfoot, #yifesgshcc tr, #yifesgshcc td, #yifesgshcc th {
   border-style: none;
 }
 
-#mfdtcwagqe p {
+#yifesgshcc p {
   margin: 0;
   padding: 0;
 }
 
-#mfdtcwagqe .gt_table {
+#yifesgshcc .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -572,12 +580,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_caption {
+#yifesgshcc .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#mfdtcwagqe .gt_title {
+#yifesgshcc .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -589,7 +597,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#mfdtcwagqe .gt_subtitle {
+#yifesgshcc .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -601,7 +609,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#mfdtcwagqe .gt_heading {
+#yifesgshcc .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -613,13 +621,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_bottom_border {
+#yifesgshcc .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_col_headings {
+#yifesgshcc .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -634,7 +642,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_col_heading {
+#yifesgshcc .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -654,7 +662,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#mfdtcwagqe .gt_column_spanner_outer {
+#yifesgshcc .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -666,15 +674,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#mfdtcwagqe .gt_column_spanner_outer:first-child {
+#yifesgshcc .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#mfdtcwagqe .gt_column_spanner_outer:last-child {
+#yifesgshcc .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#mfdtcwagqe .gt_column_spanner {
+#yifesgshcc .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -686,11 +694,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#mfdtcwagqe .gt_spanner_row {
+#yifesgshcc .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#mfdtcwagqe .gt_group_heading {
+#yifesgshcc .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -716,7 +724,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#mfdtcwagqe .gt_empty_group_heading {
+#yifesgshcc .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -731,15 +739,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#mfdtcwagqe .gt_from_md > :first-child {
+#yifesgshcc .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#mfdtcwagqe .gt_from_md > :last-child {
+#yifesgshcc .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#mfdtcwagqe .gt_row {
+#yifesgshcc .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -758,7 +766,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#mfdtcwagqe .gt_stub {
+#yifesgshcc .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -771,7 +779,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#mfdtcwagqe .gt_stub_row_group {
+#yifesgshcc .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -785,15 +793,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#mfdtcwagqe .gt_row_group_first td {
+#yifesgshcc .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#mfdtcwagqe .gt_row_group_first th {
+#yifesgshcc .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#mfdtcwagqe .gt_summary_row {
+#yifesgshcc .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -803,16 +811,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#mfdtcwagqe .gt_first_summary_row {
+#yifesgshcc .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_first_summary_row.thick {
+#yifesgshcc .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#mfdtcwagqe .gt_last_summary_row {
+#yifesgshcc .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -822,7 +830,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_grand_summary_row {
+#yifesgshcc .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -832,7 +840,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#mfdtcwagqe .gt_first_grand_summary_row {
+#yifesgshcc .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -842,7 +850,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_last_grand_summary_row_top {
+#yifesgshcc .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -852,11 +860,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_striped {
+#yifesgshcc .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#mfdtcwagqe .gt_table_body {
+#yifesgshcc .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -865,7 +873,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_footnotes {
+#yifesgshcc .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -879,7 +887,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_footnote {
+#yifesgshcc .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -888,7 +896,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#mfdtcwagqe .gt_sourcenotes {
+#yifesgshcc .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -902,7 +910,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#mfdtcwagqe .gt_sourcenote {
+#yifesgshcc .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -910,63 +918,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#mfdtcwagqe .gt_left {
+#yifesgshcc .gt_left {
   text-align: left;
 }
 
-#mfdtcwagqe .gt_center {
+#yifesgshcc .gt_center {
   text-align: center;
 }
 
-#mfdtcwagqe .gt_right {
+#yifesgshcc .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#mfdtcwagqe .gt_font_normal {
+#yifesgshcc .gt_font_normal {
   font-weight: normal;
 }
 
-#mfdtcwagqe .gt_font_bold {
+#yifesgshcc .gt_font_bold {
   font-weight: bold;
 }
 
-#mfdtcwagqe .gt_font_italic {
+#yifesgshcc .gt_font_italic {
   font-style: italic;
 }
 
-#mfdtcwagqe .gt_super {
+#yifesgshcc .gt_super {
   font-size: 65%;
 }
 
-#mfdtcwagqe .gt_footnote_marks {
+#yifesgshcc .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#mfdtcwagqe .gt_asterisk {
+#yifesgshcc .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#mfdtcwagqe .gt_indent_1 {
+#yifesgshcc .gt_indent_1 {
   text-indent: 5px;
 }
 
-#mfdtcwagqe .gt_indent_2 {
+#yifesgshcc .gt_indent_2 {
   text-indent: 10px;
 }
 
-#mfdtcwagqe .gt_indent_3 {
+#yifesgshcc .gt_indent_3 {
   text-indent: 15px;
 }
 
-#mfdtcwagqe .gt_indent_4 {
+#yifesgshcc .gt_indent_4 {
   text-indent: 20px;
 }
 
-#mfdtcwagqe .gt_indent_5 {
+#yifesgshcc .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1042,23 +1050,23 @@ div.csl-indent {
 <p>RECS is a study that measures energy consumption and expenditure in American households. Funded by the Energy Information Administration, the RECS data are collected through interviews with household members and energy suppliers. These interviews take place in person, over the phone, via mail, and on the web with modes changing over time. The survey has been fielded 14 times between 1950 and 2020. It includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance.</p>
 <p>As mentioned above, analysts should read the survey documentation (see Chapter <a href="c03-understanding-survey-data-documentation.html#c03-understanding-survey-data-documentation">3</a>) to understand how the data was collected and implemented. Table <a href="c04-getting-started.html#tab:recs-view-tab">4.2</a> displays the list of variables in the RECS data (not including the weights, which start with <code>NWEIGHT</code> and will be described in more detail in Chapter <a href="c10-specifying-sample-designs.html#c10-specifying-sample-designs">10</a>). An overview of all variables can be found in Appendix <a href="recs-cb.html#recs-cb">B</a>.</p>
 
-<div id="iolvyqtumc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#iolvyqtumc table {
+<div id="cbqqmkvbkx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#cbqqmkvbkx table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#iolvyqtumc thead, #iolvyqtumc tbody, #iolvyqtumc tfoot, #iolvyqtumc tr, #iolvyqtumc td, #iolvyqtumc th {
+#cbqqmkvbkx thead, #cbqqmkvbkx tbody, #cbqqmkvbkx tfoot, #cbqqmkvbkx tr, #cbqqmkvbkx td, #cbqqmkvbkx th {
   border-style: none;
 }
 
-#iolvyqtumc p {
+#cbqqmkvbkx p {
   margin: 0;
   padding: 0;
 }
 
-#iolvyqtumc .gt_table {
+#cbqqmkvbkx .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1084,12 +1092,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_caption {
+#cbqqmkvbkx .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#iolvyqtumc .gt_title {
+#cbqqmkvbkx .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1101,7 +1109,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#iolvyqtumc .gt_subtitle {
+#cbqqmkvbkx .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1113,7 +1121,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#iolvyqtumc .gt_heading {
+#cbqqmkvbkx .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1125,13 +1133,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_bottom_border {
+#cbqqmkvbkx .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_col_headings {
+#cbqqmkvbkx .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1146,7 +1154,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_col_heading {
+#cbqqmkvbkx .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1166,7 +1174,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#iolvyqtumc .gt_column_spanner_outer {
+#cbqqmkvbkx .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1178,15 +1186,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#iolvyqtumc .gt_column_spanner_outer:first-child {
+#cbqqmkvbkx .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#iolvyqtumc .gt_column_spanner_outer:last-child {
+#cbqqmkvbkx .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#iolvyqtumc .gt_column_spanner {
+#cbqqmkvbkx .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1198,11 +1206,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#iolvyqtumc .gt_spanner_row {
+#cbqqmkvbkx .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#iolvyqtumc .gt_group_heading {
+#cbqqmkvbkx .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1228,7 +1236,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#iolvyqtumc .gt_empty_group_heading {
+#cbqqmkvbkx .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1243,15 +1251,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#iolvyqtumc .gt_from_md > :first-child {
+#cbqqmkvbkx .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#iolvyqtumc .gt_from_md > :last-child {
+#cbqqmkvbkx .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#iolvyqtumc .gt_row {
+#cbqqmkvbkx .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1270,7 +1278,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#iolvyqtumc .gt_stub {
+#cbqqmkvbkx .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1283,7 +1291,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#iolvyqtumc .gt_stub_row_group {
+#cbqqmkvbkx .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1297,15 +1305,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#iolvyqtumc .gt_row_group_first td {
+#cbqqmkvbkx .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#iolvyqtumc .gt_row_group_first th {
+#cbqqmkvbkx .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#iolvyqtumc .gt_summary_row {
+#cbqqmkvbkx .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1315,16 +1323,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#iolvyqtumc .gt_first_summary_row {
+#cbqqmkvbkx .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_first_summary_row.thick {
+#cbqqmkvbkx .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#iolvyqtumc .gt_last_summary_row {
+#cbqqmkvbkx .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1334,7 +1342,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_grand_summary_row {
+#cbqqmkvbkx .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1344,7 +1352,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#iolvyqtumc .gt_first_grand_summary_row {
+#cbqqmkvbkx .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1354,7 +1362,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_last_grand_summary_row_top {
+#cbqqmkvbkx .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1364,11 +1372,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_striped {
+#cbqqmkvbkx .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#iolvyqtumc .gt_table_body {
+#cbqqmkvbkx .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1377,7 +1385,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_footnotes {
+#cbqqmkvbkx .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1391,7 +1399,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_footnote {
+#cbqqmkvbkx .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1400,7 +1408,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#iolvyqtumc .gt_sourcenotes {
+#cbqqmkvbkx .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1414,7 +1422,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#iolvyqtumc .gt_sourcenote {
+#cbqqmkvbkx .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1422,63 +1430,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#iolvyqtumc .gt_left {
+#cbqqmkvbkx .gt_left {
   text-align: left;
 }
 
-#iolvyqtumc .gt_center {
+#cbqqmkvbkx .gt_center {
   text-align: center;
 }
 
-#iolvyqtumc .gt_right {
+#cbqqmkvbkx .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#iolvyqtumc .gt_font_normal {
+#cbqqmkvbkx .gt_font_normal {
   font-weight: normal;
 }
 
-#iolvyqtumc .gt_font_bold {
+#cbqqmkvbkx .gt_font_bold {
   font-weight: bold;
 }
 
-#iolvyqtumc .gt_font_italic {
+#cbqqmkvbkx .gt_font_italic {
   font-style: italic;
 }
 
-#iolvyqtumc .gt_super {
+#cbqqmkvbkx .gt_super {
   font-size: 65%;
 }
 
-#iolvyqtumc .gt_footnote_marks {
+#cbqqmkvbkx .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#iolvyqtumc .gt_asterisk {
+#cbqqmkvbkx .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#iolvyqtumc .gt_indent_1 {
+#cbqqmkvbkx .gt_indent_1 {
   text-indent: 5px;
 }
 
-#iolvyqtumc .gt_indent_2 {
+#cbqqmkvbkx .gt_indent_2 {
   text-indent: 10px;
 }
 
-#iolvyqtumc .gt_indent_3 {
+#cbqqmkvbkx .gt_indent_3 {
   text-indent: 15px;
 }
 
-#iolvyqtumc .gt_indent_4 {
+#cbqqmkvbkx .gt_indent_4 {
   text-indent: 20px;
 }
 
-#iolvyqtumc .gt_indent_5 {
+#cbqqmkvbkx .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
