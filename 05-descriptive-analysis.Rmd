@@ -1,4 +1,4 @@
-# Descriptive analyses in {srvyr} {#c05-descriptive-analysis}
+# Descriptive analyses {#c05-descriptive-analysis}
 
 
 ```{r}
@@ -20,25 +20,12 @@ For this chapter, load the following packages:
 #| warning: FALSE
 #| message: FALSE
 library(tidyverse)
-library(survey)
 library(srvyr)
 library(srvyrexploR)
 library(broom)
 ```
 
-
-
-To help explain the similarities between {dplyr} functions and {srvyr} functions, this chapter will use the `mtcars` and `iris` datasets that are built-in to R and `apistrat` data that comes in the {survey} package:
-
-```{r}
-#| label: desc-setup-surveydata
-data(api)
-
-dstrata <- apistrat %>%
-  as_survey_design(strata = stype, weights = pw)
-```
-
-We will also be using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
+We will be using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
 
 ```{r}
 #| label: desc-anes-des
@@ -182,7 +169,7 @@ Both functions include the `vartype` argument with four different values:
 The confidence intervals are always calculated using a symmetric t-distribution based method, given by the formula:
 
 $$ \text{estimate} \pm t^*_{df}\times SE$$
-where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of PSUs minus the number of strata. For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we will provide examples using different variabilty types throughout this chapter.
+where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of PSUs minus the number of strata. For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we will provide examples using different variability types throughout this chapter.
 
 ### Examples
 
@@ -405,10 +392,10 @@ In section \@ref(desc-count-syntax), we provide an overview of different variabi
   * `likelihood`: uses the (Rao-Scott) scaled chi-squared distribution for the log-likelihood from a binomial distribution.
   * `asin`: uses the variance-stabilizing transformation for the binomial distribution, the arcsine square root, and then back-transforms the interval to the probability scale
   * `beta`: uses the incomplete beta function with an effective sample size based on the estimated variance of the proportion.
-  * `mean`: the Wald-type interval
+  * `mean`: the Wald-type interval ($\pm t_{df}^*\times SE$)
   * `xlogit`: uses a logit transformation of the proportion, calculates a Wald-type interval, and then back-transforms to the probability scale. This method is the same as those used in SUDAAN and SPSS.
 
-Each option will yield slightly different confidence interval bounds when dealing with proportions. Please note that when working with `survey_mean()`, we do not need to specify a method unless the `proportion` argument is `TRUE`. If `proportion` is `FALSE`, it uses a symmetric +/- 1.96 * SE.
+Each option will yield slightly different confidence interval bounds when dealing with proportions. Please note that when working with `survey_mean()`, we do not need to specify a method unless the `proportion` argument is `TRUE`. If `proportion` is `FALSE`, it calculates a symmetric `mean` type of confidence interval.
 
 ### Examples
 
@@ -515,7 +502,7 @@ recs_des %>%
   )))
 ```
 
-Households from the West spent approximately \$`r .elbill_mn_reg %>% filter(Region=="West") %>% pull(elec_bill)`, while in the South, the average spending was \$`r .elbill_mn_reg %>% filter(Region=="South") %>% pull(elec_bill)`.
+Households from the West spent approximately `r .elbill_mn_reg %>% filter(Region=="West") %>% pull(elec_bill)`, while in the South, the average spending was `r .elbill_mn_reg %>% filter(Region=="South") %>% pull(elec_bill)`.
 
 ## Quantiles and medians
 
@@ -581,7 +568,8 @@ Quantiles provide insights into the distribution of a variable. Let's look into 
 #| label: desc-quantile-oa
 recs_des %>%
   summarize(elec_bill = survey_quantile(DOLLAREL,
-                                        quantiles = c(0.25, .5, 0.75)))
+                                        quantiles = c(0.25, .5, 0.75))) %>%
+  print(width=Inf)
 ```
 
 ```{r}
@@ -590,9 +578,12 @@ recs_des %>%
 .elbill_quant <- recs_des %>%
   summarize(elec_bill = survey_quantile(DOLLAREL,
                                         quantiles = c(0.25, .5, 0.75))) %>%
-  mutate(across(c(starts_with("elec_bill")), \(x) str_c("$", prettyNum(
-    round(x, 0), big.mark = ","
-  ))))
+  mutate(
+    across(c(!ends_with("se")), \(x) str_c("$", prettyNum(
+    round(x, 0), big.mark = ","))),
+    across(c(ends_with("se")), \(x) str_c("$", prettyNum(
+    round(x, 2), big.mark = ",")))
+  )
 ```
 
 The output above shows the values for the three quartiles and their respective standard errors: the 25th percentile is `r .elbill_quant %>% pull(elec_bill_q25)` with a standard error of `r .elbill_quant %>% pull(elec_bill_q25_se)`, the 50th percentile (median) is `r .elbill_quant %>% pull(elec_bill_q50)` with a standard error of `r .elbill_quant %>% pull(elec_bill_q50_se)`, and the 75th percentile is `r .elbill_quant %>% pull(elec_bill_q75)` with a standard error of `r .elbill_quant %>% pull(elec_bill_q75_se)`.
@@ -610,7 +601,23 @@ recs_des %>%
   print(width = Inf)
 ```
 
-The 25th percentile for the Northeast region is `r scales::dollar(recs_des %>% group_by(Region) %>% summarize(elec_bill = survey_quantile(DOLLAREL,  quantiles = c(0.25, .5, 0.75))) %>% filter(Region == "Northeast") %>% pull(elec_bill_q25))` while it is `r scales::dollar(recs_des %>% group_by(Region) %>% summarize(elec_bill = survey_quantile(DOLLAREL,  quantiles = c(0.25, .5, 0.75))) %>% filter(Region == "South") %>% pull(elec_bill_q25))` for the South.
+```{r}
+#| label: desc-quantile-save
+#| echo: FALSE
+.elbill_quant_gp <- recs_des %>%
+  group_by(Region) %>%
+  summarize(elec_bill = survey_quantile(DOLLAREL,
+                                        quantiles = c(0.25, .5, 0.75))) %>%
+  mutate(
+    across(c(!ends_with("se") & where(is.numeric)), \(x) str_c("$", prettyNum(
+    round(x, 0), big.mark = ","))),
+    across(c(ends_with("se")), \(x) str_c("$", prettyNum(
+    round(x, 1), big.mark = ",")))
+  )
+```
+
+
+The 25th percentile for the Northeast region is `r .elbill_quant_gp %>% filter(Region=="Northeast") %>% pull(elec_bill_q25)` while it is `r .elbill_quant_gp %>% filter(Region=="South") %>% pull(elec_bill_q25)` for the South.
 
 #### Example 3: Minimum and maximum {.unnumbered}
 
@@ -620,10 +627,23 @@ As mentioned in the syntax section, we can specify quantiles of `0` (minimum) an
 #| label: desc-quantile-minmax
 recs_des %>%
   summarize(elec_bill = survey_quantile(DOLLAREL,
-                                        quantiles = c(0, 1)))
+                                        quantiles = c(0, 1))) 
+
 ```
 
-The minimum cost of electricity in the dataset is `r recs_des %>% summarize(elec_bill = survey_quantile(DOLLAREL, quantiles = c(0, 1))) %>%  pull(elec_bill_q00)` while the maximum is `r recs_des %>% summarize(elec_bill = survey_quantile(DOLLAREL, quantiles = c(0, 1))) %>%  pull(elec_bill_q100)`, but the standard error is shown as `NaN` and 0, respectively. Notice that the minimum cost is a negative number. We should investigate the value to gain a better understanding of its meaning.
+```{r}
+#| label: desc-quantile-minmax-save
+#| echo: FALSE
+.elbill_minmax <- recs_des %>%
+  summarize(elec_bill = survey_quantile(DOLLAREL,
+                                        quantiles = c(0, 1))) %>%
+    mutate(
+        across(!ends_with("se"), \(x) scales::dollar(round(x), format="d"))
+
+  )
+```
+
+The minimum cost of electricity in the dataset is `r .elbill_minmax %>% pull(elec_bill_q00)` while the maximum is `r .elbill_minmax %>% pull(elec_bill_q100)`, but the standard error is shown as `NaN` and 0, respectively. Notice that the minimum cost is a negative number which may be surprising but some housing units with solar power sell their energy back to the grid and make money which is recorded as a negative expenditure.
 
 #### Example 4: Overall median {.unnumbered}
 
@@ -645,7 +665,7 @@ recs_des %>%
   )))
 ```
 
-Nationally, the median household spent `r pull(.elbill_med, elec_bill)` in 2020. This is the same result as we obtained using the `survey_quantile()` function (`r pull(.elbill_quant, elec_bill_q50)`). Interestingly, the average electric bill for households that we calculated in section \@ref(desc-meanprop) is `r pull(.elbill_mn, elec_bill)`, but the estimated median electric bill is `r pull(.elbill_med, elec_bill)` indicating the distribution is likely right-skewed.
+Nationally, the median household spent `r pull(.elbill_med, elec_bill)` in 2020. This is the same result as we obtained using the `survey_quantile()` function. Interestingly, the average electric bill for households that we calculated in section \@ref(desc-meanprop) is `r pull(.elbill_mn, elec_bill)`, but the estimated median electric bill is `r pull(.elbill_med, elec_bill)` indicating the distribution is likely right-skewed.
 
 #### Example 5: Medians by subgroup {.unnumbered}
 
@@ -681,7 +701,7 @@ Note that the ratio is not the same as calculating the following:
 $$ \frac{1}{N} \sum \frac{x_i}{y_i} $$
 which can be calculated with `survey_mean()` by creating a derived variable $z=x/y$ and then calculating the mean of $z$.
 
-Say we wanted to assess the energy efficiency of homes in a standardized way, where we can compare homes of different sizes. We can calculate the ratio of energy consumption to the square footage of a home. This helps us meaningfully compare homes of different sizes by identifying how much energy is being used per unit of space. To calculate this ratio, we would run `survey_ratio(Energy Consumption in BTUs, Square Footage of Home)`. If, instead, we used `survey_mean(Energy Consumption in BTUs, Square Footage of Home)`, we would estimate the average energy consumption per square foot of all surveyed homes. While helpful in understanding general energy use, this statistic does not account for differences in home sizes.
+Say we wanted to assess the energy efficiency of homes in a standardized way, where we can compare homes of different sizes. We can calculate the ratio of energy consumption to the square footage of a home. This helps us meaningfully compare homes of different sizes by identifying how much energy is being used per unit of space. To calculate this ratio, we would run `survey_ratio(Energy Consumption in BTUs, Square Footage of Home)`. If, instead, we used `survey_mean(Energy Consumption in BTUs/Square Footage of Home)`, we would estimate the average energy consumption per square foot of all surveyed homes. While helpful in understanding general energy use, this statistic does not account for differences in home sizes.
 
 ### Syntax
 
@@ -763,10 +783,11 @@ As previously done with other estimates, we can use `group_by()` to examine whet
 #| label: desc-ratio-2
 recs_des %>%
   group_by(Region) %>%
-  summarize(DOL_BTU_Rat = survey_ratio(DOLLARLP, BTULP))
+  summarize(DOL_BTU_Rat = survey_ratio(DOLLARLP, BTULP)) %>%
+  arrange(DOL_BTU_Rat)
 ```
 
-Although not a formal statistical test, it appears that the cost ratios for liquid propane are the lowest in the Midwest (`r round(recs_des %>% group_by(Region) %>% summarize(DOL_BTU_Rat = survey_ratio(DOLLARLP, BTULP)) %>% filter(Region == "Midwest") %>% pull(DOL_BTU_Rat), 2)`).
+Although not a formal statistical test, it appears that the cost ratios for liquid propane are the lowest in the Midwest (`r round(recs_des %>% group_by(Region) %>% summarize(DOL_BTU_Rat = survey_ratio(DOLLARLP, BTULP)) %>% filter(Region == "Midwest") %>% pull(DOL_BTU_Rat), 4)`).
 
 ## Correlations
 
@@ -813,7 +834,7 @@ recs_des %>%
   summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, BTUEL))
 ```
 
-The correlation between total square footage of homes and electricity consumption is `r recs_des %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, BTUEL)) %>% pull(SQFT_Elec_Corr)`, indicating a moderate positive relationship.
+The correlation between total square footage of homes and electricity consumption is `r recs_des %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, BTUEL)) %>% pull(SQFT_Elec_Corr) %>% round(3)`, indicating a moderate positive relationship.
 
 #### Example 2: Correlations by subgroup {.unnumbered}
 
@@ -827,7 +848,7 @@ recs_des %>%
   summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL))
 ```
 
-For homes without air conditioning, there is a moderate positive correlation between total square footage with electricity consumption (`r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == FALSE) %>% pull(SQFT_Elec_Corr)`). For homes with air conditioning, the correlation of `r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == TRUE) %>% pull(SQFT_Elec_Corr)` indicates a stronger positive correlation betwen total square footage and electricity consumption.
+For homes without air conditioning, there is a moderate positive correlation between total square footage with electricity consumption (`r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == FALSE) %>% pull(SQFT_Elec_Corr) %>% round(3)`). For homes with air conditioning, the correlation of `r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == TRUE) %>% pull(SQFT_Elec_Corr) %>% round(3)` indicates a stronger positive correlation between total square footage and electricity consumption.
 
 ## Standard deviation and variance
 
@@ -868,6 +889,7 @@ Let's return to electricity bills and explore the variability in electricity exp
 
 ```{r}
 #| label: desc-sdvar-ex1
+#| warning: FALSE
 recs_des %>%
   summarize(var_elbill = survey_var(DOLLAREL),
             sd_elbill = survey_sd(DOLLAREL))
@@ -908,14 +930,22 @@ recs_des %>%
 .elbill_mn_unwgt <- recs_des %>%
   summarize(elec_bill = survey_mean(DOLLAREL),
             elec_unweight = unweighted(mean(DOLLAREL))) %>%
-  mutate(across(starts_with("elec"), \(x) str_c(
+  mutate(
+    across(c(elec_bill, elec_unweight), \(x) str_c(
     "$", formatC(
       x,
       big.mark = ",",
       format = "f",
       digits = 0
-    )
-  )))
+    ))),
+    across(c(elec_bill_se), \(x) str_c(
+    "$", formatC(
+      x,
+      big.mark = ",",
+      format = "f",
+      digits = 2
+    )))
+  )
 ```
 
 It is estimated that American residential households spent an average of `r .elbill_mn_unwgt %>% pull(elec_bill)` on electricity in 2020, and the estimate has a standard error of `r .elbill_mn_unwgt %>% pull(elec_bill_se)`. The `unweighted()` function calculates the unweighted average and represents the average amount of money spent on electricity in 2020 by the *respondents*, which was `r .elbill_mn_unwgt %>% pull(elec_unweight)`. 
@@ -934,7 +964,7 @@ recs_des %>%
                                   vartype = c("se", "ci")))
 ```
 
-The estimated average amount spent on natural gas is `r scales::dollar(recs_des %>% filter(BTUNG > 0) %>% summarize(NG_mean = survey_mean(DOLLARNG, vartype = c("se", "ci"))) %>% pull(NG_mean))`.
+The estimated average amount spent on natural gas is `r recs_des %>% filter(BTUNG > 0) %>% summarize(NG_mean = survey_mean(DOLLARNG, vartype = c("se", "ci"))) %>% mutate(NG_mean =round(NG_mean )) %>% pull(NG_mean) %>% scales::dollar()`.
 
 Note that applying the filter to include only housing units that use natural gas yields a higher mean than when not applying the filter. This is because including housing units that do not use natural gas introduces many $0 amounts, impacting the mean calculation.
 
@@ -945,7 +975,7 @@ recs_des %>%
                                   vartype = c("se", "ci")))
 ```
 
-Based on this calculation, the estimated average amount spent on natural gas is `r scales::dollar(recs_des %>% summarize(NG_mean = survey_mean(DOLLARNG, vartype = c("se", "ci"))) %>% pull(NG_mean))`.
+Based on this calculation, the estimated average amount spent on natural gas is `r recs_des  %>% summarize(NG_mean = survey_mean(DOLLARNG, vartype = c("se", "ci"))) %>% mutate(NG_mean =round(NG_mean )) %>% pull(NG_mean) %>% scales::dollar()`.
 
 ### Design effects {#desc-deff}
 
@@ -999,7 +1029,7 @@ where the arguments are:
 First, let's look at an example where we calculate the average household electricity cost and. Then, we build on it to examine the features of the `cascade()` function. In the first example below, we calculate the average household energy cost `DOLLAREL_mn` using `survey_mean()` without modifying any of the argument defaults in the function:
 
 ```{r}
-#| desc-casc-ex1
+#| label: desc-casc-ex1
 recs_des %>%
   cascade(DOLLAREL_mn = survey_mean(DOLLAREL))
 ```
@@ -1007,16 +1037,33 @@ recs_des %>%
 Next, let's group the results by region by adding `group_by()` before the `cascade()` function:
 
 ```{r}
-#| desc-casc-ex2
+#| label: desc-casc-ex2
 recs_des %>%
   group_by(Region) %>%
   cascade(DOLLAREL_mn = survey_mean(DOLLAREL))
 ```
 
-We can see the estimated average electricity bills by regions: `r scales::dollar(recs_des %>% group_by(Region) %>% cascade(DOLLAREL_mn = survey_mean(DOLLAREL)) %>% filter(Region == "Northeast") %>% pull(DOLLAREL_mn))` for the Northeast, `r scales::dollar(recs_des %>% group_by(Region) %>% cascade(DOLLAREL_mn = survey_mean(DOLLAREL)) %>% filter(Region == "South") %>% pull(DOLLAREL_mn))` for the South, and so on. The last row where `Region = NA` is the national average electricity bill, `r scales::dollar(recs_des %>% group_by(Region) %>% cascade(DOLLAREL_mn = survey_mean(DOLLAREL)) %>% filter(is.na(Region)) %>% pull(DOLLAREL_mn))`. However, naming the national "region" as `NA` is not very informative. We can give it a better name using the `.fill` argument.
+```{r}
+#| label: desc-casc-ex2-save
+#| echo: false
+.ebill_reg_cascade <- recs_des %>%
+  group_by(Region) %>%
+  cascade(DOLLAREL_mn = survey_mean(DOLLAREL)) %>%
+  mutate(
+        across(c(DOLLAREL_mn), \(x) str_c(
+    "$", formatC(
+      x,
+      big.mark = ",",
+      format = "f",
+      digits = 0
+    )))
+  )
+```
+
+We can see the estimated average electricity bills by regions: `r .ebill_reg_cascade %>% filter(Region=="Northeast") %>% pull(DOLLAREL_mn)` for the Northeast, `r .ebill_reg_cascade %>% filter(Region=="South") %>% pull(DOLLAREL_mn)` for the South, and so on. The last row where `Region = NA` is the national average electricity bill, `r .ebill_reg_cascade %>% filter(is.na(Region)) %>% pull(DOLLAREL_mn)`. However, naming the national "region" as `NA` is not very informative. We can give it a better name using the `.fill` argument.
 
 ```{r}
-#| desc-casc-ex3
+#| label: desc-casc-ex3
 recs_des %>%
   group_by(Region) %>%
   cascade(DOLLAREL_mn = survey_mean(DOLLAREL),
@@ -1026,15 +1073,14 @@ recs_des %>%
 We can move the summary row to the first row by adding `.fill_level_top = TRUE` to `cascade()`:
 
 ```{r}
-#| desc-casc-ex4
+#| label: desc-casc-ex4
 recs_des %>%
   group_by(Region) %>%
   cascade(
     DOLLAREL_mn = survey_mean(DOLLAREL),
     .fill = "National",
     .fill_level_top = TRUE
-  ) %>%
-  ungroup()
+  )
 ```
 
 While the results remain the same, the table is now easier to interpret.
@@ -1047,7 +1093,7 @@ The `across()` function allows you to apply the same function to multiple column
 
 #### Example 1: `across()` {.unnumbered}
 
-Suppose we want to calculate the total and average consumption, along with coefficients of variation (CV), for each fuel type. These include the reported consumption of electricity (`BTUEL`), natural gas (`BTUNG`), liquid propane (`BTULP`), fuel oil (`BTUFO`), and wood (`BTUWOOD`), as mentioned in the section on design effects. We can take advantage of the fact that these are the only variables that start with "BTU" by selecting them with `starts_with("BTU")` in the `across()` function. For each selected column (`.x`), `across()` creates a list of two functions to be applied: `survey_total()` to calculate the total and `survey_mean()` to calculate the mean, along with their CV (`vartype = "cv"`). Finally, `.unpack = "{outer}.{inner}"` specifies that the resulting column names are a concatenation of the variable name, followed by Total or Mean, and then "coeff" or "cv".
+Suppose we want to calculate the total and average consumption, along with coefficients of variation (CV), for each fuel type. These include the reported consumption of electricity (`BTUEL`), natural gas (`BTUNG`), liquid propane (`BTULP`), fuel oil (`BTUFO`), and wood (`BTUWOOD`), as mentioned in the section on design effects. We can take advantage of the fact that these are the only variables that start with "BTU" by selecting them with `starts_with("BTU")` in the `across()` function. For each selected column (`.x`), `across()` creates a list of two functions to be applied: `survey_total()` to calculate the total and `survey_mean()` to calculate the mean, along with their CV (`vartype = "cv"`). Finally, `.unpack = "{outer}.{inner}"` specifies that the resulting column names are a concatenation of the variable name, followed by Total or Mean, and then "coef" or "cv".
 
 ```{r}
 #| label: desc-multi-1
@@ -1064,7 +1110,7 @@ consumption_ests <- recs_des %>%
 consumption_ests 
 ```
 
-The estimated total consumption of electricity (`BTUEL`) is `r scales::comma(consumption_ests %>% pull(BTUEL_Total.coef))` (`BTUEL_Total.coef`), the estimated average consumption is `r scales::comma(consumption_ests %>% pull(BTUEL_Mean.coef))` (`BTUEL_Mean.coef`), and the CV is `r round(consumption_ests %>% pull(BTUEL_Total._cv), 3)`.
+The estimated total consumption of electricity (`BTUEL`) is `r scales::comma(consumption_ests %>% pull(BTUEL_Total.coef))` (`BTUEL_Total.coef`), the estimated average consumption is `r scales::comma(consumption_ests %>% pull(BTUEL_Mean.coef))` (`BTUEL_Mean.coef`), and the CV is `r round(consumption_ests %>% pull(BTUEL_Total._cv), 5)`.
 
 In the example above, the table was quite wide. We may prefer a row for each fuel type. Using the `pivot_longer()` and `pivot_wider()` functions from {tidyr} can help us achieve this. First, we use `pivot_longer()` to make each variable a column, changing the data to a "long" format. We use the `names_to` argument to specify new column names: `FuelType`, `Stat`, and `Type`. Then, the `names_pattern` argument extracts the names in the original column names based on the regular expression pattern `BTU(.*)_(.*)\\.(.*)`. They are saved in the column names defined in `names_to`.
 
@@ -1094,6 +1140,8 @@ consumption_ests_long %>%
     values_from = value
   )
 ```
+
+
 
 #### Example 2: Proportions with `across()` {.unnumbered}
 
