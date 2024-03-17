@@ -1,0 +1,567 @@
+# Exercise solutions {#exercise-solutions}
+
+```{r}
+#| label: exercise-sol-styler
+#| include: false
+knitr::opts_chunk$set(tidy = 'styler')
+```
+
+```{r}
+#| label: exercise-sol-setup
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+library(survey)
+library(srvyr)
+library(srvyrexploR)
+library(broom)
+
+targetpop <- 231592693
+data(anes_2020)
+
+anes_adjwgt <- anes_2020 %>%
+  mutate(Weight = Weight / sum(Weight) * targetpop)
+
+anes_des <- anes_adjwgt %>%
+  as_survey_design(
+    weights = Weight,
+    strata = Stratum,
+    ids = VarUnit,
+    nest = TRUE
+  )
+
+data(recs_2020)
+
+recs_des <- recs_2020 %>%
+  as_survey_rep(
+    weights = NWEIGHT,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59/60,
+    mse = TRUE
+  )
+
+data(ncvs_2021_incident)
+data(ncvs_2021_household)
+data(ncvs_2021_person)
+
+inc_des <- inc_analysis %>%
+  as_survey(
+    weight = NEWWGT,
+    strata = V2117,
+    ids = V2118,
+    nest = TRUE
+  )
+
+hh_des <- hh_vsum_slim %>%
+  as_survey(
+    weight = WGTHHCY,
+    strata = V2117,
+    ids = V2118,
+    nest = TRUE
+  )
+
+pers_des <- pers_vsum_slim %>%
+  as_survey(
+    weight = WGTPERCY,
+    strata = V2117,
+    ids = V2118,
+    nest = TRUE
+  )
+```
+
+The chapter exercises use the survey design objects and packages provided in the Prerequisites box in the beginning of the chapter. Please ensure they are loaded in your environment before running the exercise solutions.
+
+## 5 - Descriptive analysis {-}
+
+1. How many females have a graduate degree? Hint: the variables `Gender` and `Education` will be useful.
+
+```{r}
+#| label: desc-ex-solution1
+# Option 1:
+femgd_option1 <- anes_des %>%
+  filter(Gender == "Female", Education == "Graduate") %>%
+  survey_count(name = "n")
+
+femgd_option1
+
+# Option 2:
+femgd_option2 <- anes_des %>%
+  filter(Gender == "Female", Education == "Graduate") %>%
+  summarize(N = survey_total(), .groups = "drop")
+
+femgd_option2
+```
+
+2. What percentage of people identify as "Strong Democrat"? Hint: The variable `PartyID` indicates someone's party affiliation.
+
+```{r}
+#| label: desc-ex-solution2
+psd <- anes_des %>%
+  group_by(PartyID) %>%
+  summarize(p = survey_mean()) %>%
+  filter(PartyID == "Strong democrat")
+
+psd
+```
+
+3. What percentage of people who voted in the 2020 election identify as "Strong Republican"? Hint: The variable `VotedPres2020` indicates whether someone voted in 2020.
+
+```{r}
+#| label: desc-ex-solution3
+psr <- anes_des %>%
+  filter(VotedPres2020 == "Yes") %>%
+  group_by(PartyID) %>%
+  summarize(p = survey_mean()) %>%
+  filter(PartyID == "Strong republican")
+
+psr
+```
+
+4. What percentage of people voted in both the 2016 election and the 2020 election?  Include the logit confidence interval. Hint: The variable `VotedPres2016` indicates whether someone voted in 2016.
+
+```{r}
+#| label: desc-ex-solution4
+#| message: false
+pvb <- anes_des %>%
+  filter(!is.na(VotedPres2016),!is.na(VotedPres2020)) %>%
+  group_by(interact(VotedPres2016, VotedPres2020)) %>%
+  summarize(p = survey_prop(var = "ci", method = "logit"),) %>%
+  filter(VotedPres2016 == "Yes", VotedPres2020 == "Yes")
+
+pvb
+```
+
+5. What is the design effect for the proportion of people who voted early? Hint: The variable `EarlyVote2020` indicates whether someone voted early in 2020.
+
+```{r}
+#| label: desc-ex-solution5
+pdeff <- anes_des %>%
+  filter(!is.na(EarlyVote2020)) %>%
+  group_by(EarlyVote2020) %>%
+  summarize(p = survey_mean(deff = TRUE)) %>%
+  filter(EarlyVote2020 == "Yes")
+
+pdeff
+```
+
+6. What is the median temperature people set their thermostats to at night during the winter? Hint: The variable `WinterTempNight` indicates the temperature that people set their temperature in the winter at night.
+
+```{r}
+#| label: desc-ex-solution6
+mean_wintertempnight <- recs_des %>%
+  summarize(wtn_mean = survey_mean(x = WinterTempNight,
+                                   na.rm = TRUE))
+
+mean_wintertempnight
+```
+
+7. People sometimes set their temperature differently over different seasons and during the day. What median temperatures do people set their thermostat to in the summer and winter, both during the day and at night? Include confidence intervals. Hint: Use the variables `WinterTempDay`, `WinterTempNight`, `SummerTempDay`, and `SummerTempNight`.
+
+```{r}
+#| label: desc-ex-solution7
+# Option 1
+med_wintertempday <- recs_des %>%
+  summarize(wtd_mean = survey_median(WinterTempDay,
+                                     vartype = "se",
+                                     na.rm = TRUE))
+
+med_wintertempday
+
+med_wintertempnight <- recs_des %>%
+  summarize(wtn_mean = survey_median(WinterTempNight,
+                                     vartype = "se",
+                                     na.rm = TRUE))
+
+med_wintertempnight
+
+med_summertempday <- recs_des %>%
+  summarize(std_mean = survey_median(SummerTempDay,
+                                     vartype = "se",
+                                     na.rm = TRUE))
+
+med_summertempday
+
+med_summertempnight <- recs_des %>%
+  summarize(stn_mean = survey_median(SummerTempNight,
+                                     vartype = "se",
+                                     na.rm = TRUE))
+
+med_summertempnight
+
+# Alternatively, could use `survey_quantile()` as shown below for WinterTempNight:
+
+quant_wintertemp <- recs_des %>%
+  summarize(wnt_quant = survey_quantile(
+    WinterTempNight,
+    quantiles = 0.5,
+    vartype = "se",
+    na.rm = TRUE
+  ))
+
+quant_wintertemp
+```
+
+8. What is the correlation between the temperature that people set their temperature at during the night and during the day in the summer?
+
+```{r}
+#| label: desc-ex-solution8
+#| warning: false
+corr_summer_temp <- recs_des %>%
+  summarize(summer_corr = survey_corr(SummerTempNight, SummerTempDay,
+                                      na.rm = TRUE))
+
+corr_summer_temp
+```
+
+9. What is the 1st, 2nd, and 3rd quartile of the amount of money spent on energy by Building America (BA) climate zone? Hint: `TOTALDOL` indicates the total amount spent on electricity, and `ClimateRegion_BA` indicates the BA climate zones.
+
+```{r}
+#| label: desc-ex-solution9
+quant_baenergyexp <- recs_des %>%
+  group_by(ClimateRegion_BA) %>%
+  summarize(dol_quant = survey_quantile(
+    TOTALDOL,
+    quantiles = c(0.25, 0.5, 0.75),
+    vartype = "se",
+    na.rm = TRUE
+  ))
+
+quant_baenergyexp
+```
+
+## 6 - Statistical testing {-}
+
+1. Using the RECS data, do more than 50% of U.S. households use AC (`ACUsed`)?
+
+```{r}
+#| label: stattest-ex-solution1
+ttest_solution1 <- recs_des %>%
+  svyttest(design = .,
+           formula = ((ACUsed == TRUE) - 0.5) ~ 0,
+           na.rm = TRUE)
+
+ttest_solution1
+```
+
+2. Using the RECS data, does the average temperature that U.S. households set their thermostats to differ between the day and night in the winter (`WinterTempDay` and `WinterTempNight`)?
+
+```{r}
+#| label: stattest-ex-solution2
+ttest_solution2 <- recs_des %>%
+  svyttest(
+    design = .,
+    formula = WinterTempDay - WinterTempNight ~ 0,
+    na.rm = TRUE
+  )
+
+ttest_solution2
+```
+
+3. Using the ANES data, does the average age (`Age`) of those who voted for Joseph Biden in 2020 (`VotedPres2020_selection`) differ from those who voted for another candidate?
+
+```{r}
+#| label: stattest-ex-solution3
+ttest_solution3 <- anes_des %>%
+  svyttest(
+    design = .,
+    formula = Age ~ VotedPres2020_selection == "Biden",
+    na.rm = TRUE
+  )
+
+ttest_solution3
+```
+
+4. If you wanted to determine if the political party affiliation differed for males and females, what test would you use?
+
+  a. Goodness of fit test (`svygofchisq()`)
+  b. Test of independence (`svychisq()`)
+  c. Test of homogeneity (`svychisq()`)
+  
+```{r}
+#| label: stattest-ex-solution4
+chisq_solution1 <- "c. Test of homogeneity (`svychisq()`)"
+chisq_solution1
+```
+
+5. In the RECS data, is there a relationship between the type of housing unit (`HousingUnitType`) and the year the house was built (`YearMade`)?
+
+```{r}
+#| label: stattest-ex-solution5
+chisq_solution2 <- recs_des %>%
+  svychisq(
+    formula =  ~ HousingUnitType + YearMade,
+    design = .,
+    statistic = "Wald",
+    na.rm = TRUE
+  )
+
+chisq_solution2
+```
+
+6. In the ANES data, is there a difference in the distribution of gender (`Gender`) across early voting status in 2020 (`EarlyVote2020`)?
+
+```{r}
+#| label: stattest-ex-solution6
+chisq_solution3 <- anes_des %>%
+  svychisq(
+    formula =  ~ Gender + EarlyVote2020,
+    design = .,
+    statistic = "F",
+    na.rm = TRUE
+  )
+
+chisq_solution3
+```
+
+## 7 - Modeling {-}
+
+1.  The type of housing unit may have an impact on energy expenses. Is there any relationship between housing unit type (`HousingUnitType`) and total energy expenditure (`TOTALDOL`)? First, find the average energy expenditure by housing unit type as a descriptive analysis and then do the test. The reference level in the comparison should be the housing unit type that is most common.
+
+```{r}
+#| label: model-ex-solution1
+recs_des %>%
+  group_by(HousingUnitType) %>%
+  summarize(Expense = survey_mean(TOTALDOL, na.rm = TRUE),
+            HUs = survey_total()) %>%
+  arrange(desc(HUs))
+
+exp_unit_out <- recs_des %>%
+  mutate(HousingUnitType = fct_infreq(HousingUnitType, NWEIGHT)) %>%
+  svyglm(
+    design = .,
+    formula = TOTALDOL ~ HousingUnitType,
+    na.action = na.omit
+  )
+
+tidy(exp_unit_out)
+
+# Single-family detached units are most common
+# There is a significant relationship between energy expenditure and housing unit type
+```
+
+2.  Does temperature play a role in energy expenditure? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, CDD65=0. While a day that averages 85°F would have CDD80=20 because it is 20 degrees warmer. For each day in the year, this is summed to give an indicator of how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65°F (18.3°C)^[<https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php>]. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.
+
+```{r}
+#| label: model-ex-solution2
+temps_sqft_exp <- recs_des %>%
+  svyglm(
+    design = .,
+    formula = DOLLAREL ~ (TOTSQFT_EN + CDD65 + HDD65) ^ 2,
+    na.action = na.omit
+  )
+
+tidy(temps_sqft_exp)
+```
+
+3.  Continuing with our results from question 2, create a plot between the actual and predicted expenditures and a residual plot for the predicted expenditures.
+
+```{r}
+#| label: model-ex-solution3
+temps_sqft_exp_fit <- temps_sqft_exp %>%
+  augment() %>%
+  mutate(.se.fit = sqrt(attr(.fitted, "var")), 
+         # extract the variance of the fitted value
+         .fitted = as.numeric(.fitted)) 
+```
+
+```{r}
+#| label: model-ex-solution4
+#| fig.cap: "Actual and predicted electricity expenditures"
+temps_sqft_exp_fit %>%
+  ggplot(aes(x = DOLLAREL, y = .fitted)) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              color = "red") +
+  xlab("Actual expenditures") +
+  ylab("Predicted expenditures") +
+  theme_minimal()
+```
+
+```{r}
+#| label: model-ex-solution5
+#| fig.cap: "Residual plot of electric cost model with covariates TOTSQFT_EN, CDD65, and HDD65"
+temps_sqft_exp_fit %>%
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, color = "red") +
+  xlab("Predicted expenditure") +
+  ylab("Residual value of expenditure") +
+  theme_minimal()
+```
+
+4.  Early voting expanded in 2020^[<https://www.npr.org/2020/10/26/927803214/62-million-and-counting-americans-are-breaking-early-voting-records>]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`). Include two-way interactions.
+
+```{r}
+#| label: model-ex-solution6
+earlyvote_mod <- anes_des %>%
+  filter(!is.na(EarlyVote2020)) %>%
+  svyglm(
+    design = .,
+    formula = EarlyVote2020 ~ (Age + Education + PartyID) ^ 2 ,
+    family = quasibinomial
+  )
+
+tidy(earlyvote_mod) %>% arrange(p.value)
+```
+
+5.  Continuing from Exercise 1, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.
+
+```{r}
+#| label: model-ex-solution7
+add_vote_dat <- anes_2020 %>%
+  select(EarlyVote2020, Age, Education, PartyID) %>%
+  rbind(tibble(
+    EarlyVote2020 = NA,
+    Age = 28,
+    Education = "Graduate",
+    PartyID = c("Strong democrat", "Strong republican")
+  )) %>%
+  tail(2)
+
+log_ex_2_out <- earlyvote_mod %>%
+  augment(newdata = add_vote_dat, type.predict = "response") %>%
+  mutate(.se.fit = sqrt(attr(.fitted, "var")),
+         # extract the variance of the fitted value
+         .fitted = as.numeric(.fitted))
+```
+
+## 10 - Specifying sample designs and replicate weights in {srvyr}  {-}
+
+1. The National Health Interview Survey (NHIS) is an annual household survey conducted by the National Center for Health Statistics (NCHS). The NHIS includes a wide variety of health topics for adults including health status and conditions, functioning and disability, health care access and health service utilization, health-related behaviors, health promotion, mental health, barriers to care, and community engagement. Like many national in-person surveys, the sampling design is a stratified clustered design with details included in the Survey Description^[2022 National Health Interview Survey (NHIS) Survey Description: https://www.cdc.gov/nchs/nhis/2022nhis.htm]. The Survey Description provides information on setting up syntax in SUDAAN, Stata, SPSS, SAS, and R ({survey} package implementation). How would you specify the design using {srvyr} using either `as_survey_design` or `as_survey_rep()`?
+
+```{r}
+#| label: samp-ex-solution1
+#| eval: false
+nhis_adult_des <- nhis_adult_data %>%
+  as_survey_design(
+    ids = PPSU,
+    strata = PSTRAT,
+    nest = TRUE,
+    weights = WTFA_A
+  )
+```
+
+2. The General Social Survey is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook^[2016-2020 GSS Panel Codebook Release 1a: https://gss.norc.org/Documents/codebook/2016-2020%20GSS%20Panel%20Codebook%20-%20R1a.pdf] provides examples of setting up syntax in SAS and Stata but not R. How would you specify the design in R?
+
+```{r}
+#| label: samp-ex-solution2
+#| eval: false
+gss_des <- gss_data %>%
+  as_survey_design(ids = VPSU_2,
+                   strata = VSTRAT_2,
+                   weights = WTSSNR_2)
+```
+
+## 13 - National Crime Victimization Survey Vignette {-}
+
+1. What proportion of completed motor vehicle thefts are not reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).
+
+```{r}
+#| label: ncvs-vign-ex-solution1
+ans1 <- inc_des %>%
+  filter(str_detect(V4529, "40|41")) %>%
+  summarize(Pct = survey_mean(ReportPolice, na.rm = TRUE) * 100)
+ans1
+```
+
+2. How many violent crimes occur in each region?
+
+```{r}
+#| label: ncvs-vign-ex-solution2
+inc_des %>%
+  filter(Violent) %>%
+  survey_count(Region)
+```
+
+3. What is the property victimization rate among each income level?
+
+```{r}
+#| label: ncvs-vign-ex-solution3
+hh_des %>%
+  group_by(Income) %>%
+  summarize(Property_Rate = survey_mean(Property * ADJINC_WT * 1000, 
+                                        na.rm = TRUE))
+```
+
+4. What is the difference between the violent victimization rate between males and females? Is it statistically different?
+
+```{r}
+#| label: ncvs-vign-ex-solution4
+pers_des %>%
+  group_by(Sex) %>%
+  summarize(
+    Violent_rate=survey_mean(Violent * ADJINC_WT * 1000, na.rm=TRUE)
+  )
+
+pers_des %>%
+  mutate(
+    Violent_Adj=Violent * ADJINC_WT * 1000
+  ) %>%
+  svyttest(
+    formula = Violent_Adj ~ Sex,
+    design = .,
+    na.rm = TRUE
+  ) %>%
+  broom::tidy()
+```
+
+## 14 - AmericasBarometer Vignette {-}
+
+1. Calculate the percentage of households with broadband internet and those with any internet at home, including from a phone or tablet. Hint: if you come across countries with 0% internet usage, you may want to filter by something first.
+
+```{r}
+#| label: ambarom-ex-solution1
+int_ests <-
+  ambarom_des %>%
+  filter(!is.na(Internet) | !is.na(BroadbandInternet)) %>%
+  group_by(Country) %>%
+  summarize(
+    p_broadband = survey_mean(BroadbandInternet, na.rm = TRUE) * 100,
+    p_internet = survey_mean(Internet, na.rm = TRUE) * 100
+  ) 
+
+int_ests %>%
+  print(n = 30)
+```
+
+2. Create a faceted map showing both broadband internet and any internet usage.
+
+```{r}
+#| label: ambarom-ex-solution2
+#| error: true
+#| fig.cap: "Percent of broadband internet and any internet usage, Central and South America"
+internet_sf <- country_shape_upd %>%
+  full_join(select(int_ests, p = p_internet, geounit = Country), by = "geounit") %>%
+  mutate(Type = "Internet")
+broadband_sf <- country_shape_upd %>%
+  full_join(select(int_ests, p = p_broadband, geounit = Country), by = "geounit") %>%
+  mutate(Type = "Broadband")
+b_int_sf <- internet_sf %>%
+  bind_rows(broadband_sf) %>%
+  filter(region_wb == "Latin America & Caribbean")
+
+b_int_sf %>%
+  ggplot(aes(fill = p),
+         color="darkgray") +
+  geom_sf() +
+  facet_wrap( ~ Type) +
+  scale_fill_gradientn(
+    guide = "colorbar",
+    name = "Percent",
+    labels = scales::comma,
+    colors = c("#BFD7EA", "#087E8B", "#0B3954"),
+    na.value = NA
+  ) +
+  geom_sf_pattern(
+    data = filter(b_int_sf, is.na(p)),
+    pattern = "crosshatch",
+    pattern_fill = "lightgray",
+    pattern_color = "lightgray",
+    fill = NA,
+    color = "darkgray"
+  ) +
+  theme_minimal()
+```

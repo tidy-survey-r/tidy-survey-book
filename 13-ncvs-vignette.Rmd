@@ -882,50 +882,8 @@ The output of the statistical test shows the same difference of `r prop_tenure_t
 
 1. What proportion of completed motor vehicle thefts are not reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).
 
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: ncvs-vign-des-sol1
-ans1 <- inc_des %>%
-  filter(str_detect(V4529, "40|41")) %>%
-  summarize(Pct = survey_mean(ReportPolice, na.rm = TRUE) * 100)
-ans1
-```
-
 2. How many violent crimes occur in each region?
-
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: ncvs-vign-des-sol2
-inc_des %>%
-  filter(Violent) %>%
-  survey_count(Region)
-```
 
 3. What is the property victimization rate among each income level?
 
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: ncvs-vign-des-sol3
-hh_des %>%
-  group_by(Income) %>%
-  summarize(Property_Rate = survey_mean(Property * ADJINC_WT * 1000, 
-                                        na.rm = TRUE))
-```
-
 4. What is the difference between the violent victimization rate between males and females? Is it statistically different?
-
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-pers_des %>%
-  group_by(Sex) %>%
-  summarize(
-    Violent_rate=survey_mean(Violent * ADJINC_WT * 1000, na.rm=TRUE)
-  )
-
-pers_des %>%
-  mutate(
-    Violent_Adj=Violent * ADJINC_WT * 1000
-  ) %>%
-  svyttest(
-    formula = Violent_Adj ~ Sex,
-    design = .,
-    na.rm = TRUE
-  ) %>%
-  broom::tidy()
-```

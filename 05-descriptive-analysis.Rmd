@@ -1240,178 +1240,22 @@ In addition to our results above, we can also see the output for `TrustPeople`. 
 
 ## Exercises
 
-The exercises use the design objects `anes_des` and `recs_des` as provided in the Prerequisites box in the beginning of the chapter.
+The exercises use the design objects `anes_des` and `recs_des` provided in the Prerequisites box in the beginning of the chapter.
 
 1. How many females have a graduate degree? Hint: the variables `Gender` and `Education` will be useful.
 
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: desc-solution1
-# Option 1:
-femgd_option1 <- anes_des %>%
-  filter(Gender == "Female", Education == "Graduate") %>%
-  survey_count(name = "n")
-
-femgd_option1
-
-# Option 2:
-femgd_option2 <- anes_des %>%
-  filter(Gender == "Female", Education == "Graduate") %>%
-  summarize(N = survey_total(), .groups = "drop")
-
-femgd_option2
-```
-
 2. What percentage of people identify as "Strong Democrat"? Hint: The variable `PartyID` indicates someone's party affiliation.
-
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: desc-solution2
-psd <- anes_des %>%
-  group_by(PartyID) %>%
-  summarize(p = survey_mean()) %>%
-  filter(PartyID == "Strong democrat")
-
-psd
-```
 
 3. What percentage of people who voted in the 2020 election identify as "Strong Republican"? Hint: The variable `VotedPres2020` indicates whether someone voted in 2020.
 
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: desc-solution3
-psr <- anes_des %>%
-  filter(VotedPres2020 == "Yes") %>%
-  group_by(PartyID) %>%
-  summarize(p = survey_mean()) %>%
-  filter(PartyID == "Strong republican")
-
-psr
-```
-
-4. What percentage of people voted in both the 2016 election and the 2020 election? Include the logit confidence interval. Hint: The variable `VotedPres2016` indicates whether someone voted in 2016.
-
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: desc-solution4
-#| message: false
-pvb <- anes_des %>%
-  filter(!is.na(VotedPres2016),!is.na(VotedPres2020)) %>%
-  group_by(interact(VotedPres2016, VotedPres2020)) %>%
-  summarize(p = survey_prop(var = "ci", method = "logit"),) %>%
-  filter(VotedPres2016 == "Yes", VotedPres2020 == "Yes")
-
-pvb
-```
+4. What percentage of people voted in both the 2016 election and the 2020 election?  Include the logit confidence interval. Hint: The variable `VotedPres2016` indicates whether someone voted in 2016.
 
 5. What is the design effect for the proportion of people who voted early? Hint: The variable `EarlyVote2020` indicates whether someone voted early in 2020.
 
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: desc-solution5
-pdeff <- anes_des %>%
-  filter(!is.na(EarlyVote2020)) %>%
-  group_by(EarlyVote2020) %>%
-  summarize(p = survey_mean(deff = TRUE)) %>%
-  filter(EarlyVote2020 == "Yes")
-
-pdeff
-```
-
 6. What is the median temperature people set their thermostats to at night during the winter? Hint: The variable `WinterTempNight` indicates the temperature that people set their temperature in the winter at night.
-
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: desc-solution6
-mean_wintertempnight <- recs_des %>%
-  summarize(wtn_mean = survey_mean(x = WinterTempNight,
-                                   na.rm = TRUE))
-
-mean_wintertempnight
-```
 
 7. People sometimes set their temperature differently over different seasons and during the day. What median temperatures do people set their thermostat to in the summer and winter, both during the day and at night? Include confidence intervals. Hint: Use the variables `WinterTempDay`, `WinterTempNight`, `SummerTempDay`, and `SummerTempNight`.
 
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: desc-solution7
-# Option 1
-med_wintertempday <- recs_des %>%
-  summarize(wtd_mean = survey_median(WinterTempDay,
-                                     vartype = "se",
-                                     na.rm = TRUE))
-
-med_wintertempday
-
-med_wintertempnight <- recs_des %>%
-  summarize(wtn_mean = survey_median(WinterTempNight,
-                                     vartype = "se",
-                                     na.rm = TRUE))
-
-med_wintertempnight
-
-med_summertempday <- recs_des %>%
-  summarize(std_mean = survey_median(SummerTempDay,
-                                     vartype = "se",
-                                     na.rm = TRUE))
-
-med_summertempday
-
-med_summertempnight <- recs_des %>%
-  summarize(stn_mean = survey_median(SummerTempNight,
-                                     vartype = "se",
-                                     na.rm = TRUE))
-
-med_summertempnight
-
-# Alternatively, could use `survey_quantile()` as shown below for WinterTempNight:
-
-quant_wintertemp <- recs_des %>%
-  summarize(wnt_quant = survey_quantile(
-    WinterTempNight,
-    quantiles = 0.5,
-    vartype = "se",
-    na.rm = TRUE
-  ))
-
-quant_wintertemp
-
-# Can also calculate all of these medians in a single summarize() function:
-
-med_alltemp <- recs_des %>%
-  summarize(
-    wtd_mean = survey_median(WinterTempDay,
-                             vartype = "se",
-                             na.rm = TRUE),
-    wtn_mean = survey_median(WinterTempNight,
-                             vartype = "se",
-                             na.rm = TRUE),
-    std_mean = survey_median(SummerTempDay,
-                             vartype = "se",
-                             na.rm = TRUE),
-    stn_mean = survey_median(SummerTempNight,
-                             vartype = "se",
-                             na.rm = TRUE)
-  )
-```
-
 8. What is the correlation between the temperature that people set their temperature at during the night and during the day in the summer?
 
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: desc-solution8
-#| warning: false
-corr_summer_temp <- recs_des %>%
-  summarize(summer_corr = survey_corr(SummerTempNight, SummerTempDay,
-                                      na.rm = TRUE))
-
-corr_summer_temp
-```
-
 9. What is the 1st, 2nd, and 3rd quartile of the amount of money spent on energy by Building America (BA) climate zone? Hint: `TOTALDOL` indicates the total amount spent on electricity, and `ClimateRegion_BA` indicates the BA climate zones.
-
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: desc-solution9    
-quant_baenergyexp <- recs_des %>%
-  group_by(ClimateRegion_BA) %>%
-  summarize(dol_quant = survey_quantile(
-    TOTALDOL,
-    quantiles = c(0.25, 0.5, 0.75),
-    vartype = "se",
-    na.rm = TRUE
-  ))
-
-quant_baenergyexp
-```
