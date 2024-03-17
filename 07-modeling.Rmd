@@ -753,113 +753,12 @@ Interactions in models can be difficult to understand from the coefficients alon
 
 ## Exercises
 
-1.  The type of housing unit may have an impact on energy expenses. Using the RECS data, is there any relationship between housing unit type (`HousingUnitType`) and total energy expenditure (`TOTALDOL`)? First, find the average energy expenditure by housing unit type as a descriptive analysis and then do the test. The reference level in the comparison should be the housing unit type that is most common.
+1.  The type of housing unit may have an impact on energy expenses. Is there any relationship between housing unit type (`HousingUnitType`) and total energy expenditure (`TOTALDOL`)? First, find the average energy expenditure by housing unit type as a descriptive analysis and then do the test. The reference level in the comparison should be the housing unit type that is most common.
 
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: model-lin-sol-1
-recs_des %>%
-  group_by(HousingUnitType) %>%
-  summarize(Expense = survey_mean(TOTALDOL, na.rm = TRUE),
-            HUs = survey_total()) %>%
-  arrange(desc(HUs))
-
-exp_unit_out <- recs_des %>%
-  mutate(HousingUnitType = fct_infreq(HousingUnitType, NWEIGHT)) %>%
-  svyglm(
-    design = .,
-    formula = TOTALDOL ~ HousingUnitType,
-    na.action = na.omit
-  )
-
-tidy(exp_unit_out)
-
-# Single-family detached units are most common
-# There is a significant relationship between energy expenditure and housing unit type
-```
-
-2.  Using the RECS data, does temperature play a role in energy expenditure? Cooling degree days are a measure of how hot a place is. Variable `CDD65` for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, `CDD65=0`. While a day that averages 85°F would have `CDD65=20` because it is 20 degrees warmer. For each day in the year, this is summed to give an indicator of how hot the place is throughout the year. Similarly, `HDD65` indicates the days colder than 65°F (18.3°C)^[<https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php>]. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.
-
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: model-lin-sol-2
-temps_sqft_exp <- recs_des %>%
-  svyglm(
-    design = .,
-    formula = DOLLAREL ~ (TOTSQFT_EN + CDD65 + HDD65) ^ 2,
-    na.action = na.omit
-  )
-
-tidy(temps_sqft_exp)
-```
+2.  Does temperature play a role in energy expenditure? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, CDD65=0. While a day that averages 85°F would have CDD80=20 because it is 20 degrees warmer. For each day in the year, this is summed to give an indicator of how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65°F (18.3°C)^[<https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php>]. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.
 
 3.  Continuing with our results from question 2, create a plot between the actual and predicted expenditures and a residual plot for the predicted expenditures.
 
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: model-lin-sol-3
-temps_sqft_exp_fit <- temps_sqft_exp %>%
-  augment() %>%
-  mutate(.se.fit = sqrt(attr(.fitted, "var")), 
-         # extract the variance of the fitted value
-         .fitted = as.numeric(.fitted)) 
-```
+4.  Early voting expanded in 2020^[<https://www.npr.org/2020/10/26/927803214/62-million-and-counting-americans-are-breaking-early-voting-records>]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`). Include two-way interactions.
 
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: model-lin-sol-3-p1
-#| fig.cap: "Actual and predicted electricity expenditures"
-temps_sqft_exp_fit %>%
-  ggplot(aes(x = DOLLAREL, y = .fitted)) +
-  geom_point() +
-  geom_abline(intercept = 0,
-              slope = 1,
-              color = "red") +
-  xlab("Actual expenditures") +
-  ylab("Predicted expenditures") +
-  theme_minimal()
-```
-
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: model-lin-sol-3-p2
-#| fig.cap: "Residual plot of electric cost model with covariates TOTSQFT_EN, CDD65, and HDD65"
-temps_sqft_exp_fit %>%
-  ggplot(aes(x = .fitted, y = .resid)) +
-  geom_point() +
-  geom_hline(yintercept = 0, color = "red") +
-  xlab("Predicted expenditure") +
-  ylab("Residual value of expenditure") +
-  theme_minimal()
-```
-
-4.  Early voting expanded in 2020^[<https://www.npr.org/2020/10/26/927803214/62-million-and-counting-americans-are-breaking-early-voting-records>]. Using the ANES data, build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`). Include two-way interactions.
-
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: model-ex-logistic-1
-earlyvote_mod <- anes_des %>%
-  filter(!is.na(EarlyVote2020)) %>%
-  svyglm(
-    design = .,
-    formula = EarlyVote2020 ~ (Age + Education + PartyID) ^ 2 ,
-    family = quasibinomial
-  )
-
-tidy(earlyvote_mod) %>% arrange(p.value)
-```
-
-5.  Continuing from Exercise 4, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.
-
-```{r, echo=knitr::is_html_output(), eval=knitr::is_html_output()}
-#| label: model-ex-logistic-2
-add_vote_dat <- anes_2020 %>%
-  select(EarlyVote2020, Age, Education, PartyID) %>%
-  rbind(tibble(
-    EarlyVote2020 = NA,
-    Age = 28,
-    Education = "Graduate",
-    PartyID = c("Strong democrat", "Strong republican")
-  )) %>%
-  tail(2)
-
-log_ex_2_out <- earlyvote_mod %>%
-  augment(newdata = add_vote_dat, type.predict = "response") %>%
-  mutate(.se.fit = sqrt(attr(.fitted, "var")), 
-         # extract the variance of the fitted value
-         .fitted = as.numeric(.fitted))
-```
+5.  Continuing from Exercise 1, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.
