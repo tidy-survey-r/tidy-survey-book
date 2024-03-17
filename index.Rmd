@@ -44,6 +44,11 @@ as_latex_with_caption <- function(gtobj, chunk_label) {
     "\\caption{\\label{tab:", chunk_label, "}(ref:", chunk_label, ")}\\\\")
   latex <- strsplit(gt_l[1], split = "\n")[[1]]
   idxtable <- which(stringr::str_detect(latex, "begin") & stringr::str_detect(latex, "table"))
+  # https://tex.stackexchange.com/questions/95236/as-first-character-in-table-row 
+  idxparen <- which(stringr::str_detect(latex, "^\\("))
+  if (length(idxparen)>0){
+    latex[(idxparen-1)] <- stringr::str_c(latex[(idxparen-1)], "\\relax")
+  }
   latex2 <- c(latex[1:idxtable], caption, latex[-c(1:idxtable)])
   latex3 <- paste(latex2, collapse = "\n")
   gt_l[1] <- latex3

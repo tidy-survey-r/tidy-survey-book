@@ -22,6 +22,7 @@ library(survey)
 library(srvyr) 
 library(srvyrexploR)
 library(broom)
+library(gt)
 ```
 
 We will be using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
@@ -110,11 +111,8 @@ Table: (\#tab:notation-diffs) Differences in formulas for `:` and `*` code synta
 
 | Symbol | Syntax | Formula |
 |:-----------:|:---------------:|---------------------------------------------------------------------------|
-| : | `mpg ~ cyl:disp:hp` | $mpg_i=\beta_0+\beta_4cyl_{i}disp_{i}+\beta_5cyl_{i}hp_{i}+\beta_6disp_{i}hp_{i}+\epsilon_i$ |
-| \* | `mpg ~ cyl*disp*hp` | $mpg_i=\beta_0+\beta_1cyl_{i}+\beta_2disp_{i}+\beta_3hp_{i}+\beta_4cyl_{i}disp_{i}+\beta_5cyl_{i}hp_{i}+\beta_6disp_{i}hp_{i}+\beta_7cyl_{i}disp_{i}hp_{i}+\epsilon_i$ |
-
- 
-<!-- $mpg_i=\beta_0+\beta_1cyl_{i}+\beta_2disp_{i}+\beta_3hp_{i}+\beta_4cyl_{i}disp_{i}+\beta_5cyl_{i}hp_{i}+\beta_6disp_{i}hp_{i}+\beta_7cyl_{i}disp_{i}hp_{i}+\epsilon_i$  -->
+| : | `mpg ~ cyl:disp:hp` | $$ \begin{aligned} mpg_i = &\beta_0+\beta_4cyl_{i}disp_{i}+\beta_5cyl_{i}hp_{i}+ \\& \beta_6disp_{i}hp_{i}+\epsilon_i\end{aligned}$$ |
+| \* | `mpg ~ cyl*disp*hp` |$$ \begin{aligned} mpg_i= &\beta_0+\beta_1cyl_{i}+\beta_2disp_{i}+\beta_3hp_{i}+\\&        \beta_4cyl_{i}disp_{i}+\beta_5cyl_{i}hp_{i}+\beta_6disp_{i}hp_{i}+\\&\beta_7cyl_{i}disp_{i}hp_{i}+\epsilon_i\end{aligned}$$ |
 
 
 When using non-survey data such as experimental or observational data, researchers will use the `glm()` function for linear models.  With survey data, however, we use `svyglm()` from the {survey} package to ensure that we account for the survey design and weights in modeling^[There is some debate about whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg]. However, for the purposes of providing complete information on how to analyze complex survey data, this chapter will include weights.].  This allows us to generalize a model to the target population and accounts for the fact that the observations in the survey data may not be independent.  As discussed in Chapter \@ref(c06-statistical-testing), modeling survey data cannot be directly done in {srvyr}, but can be done in the {survey} package [@lumley2010complex; @R-survey]. In this chapter, we will provide syntax and examples for linear models, including ANOVA, normal linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book.
@@ -190,7 +188,7 @@ tidy(anova_out)
 
 In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In this output, the intercept represents the reference value of the Northeast region. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, `r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(estimate) %>% signif(3)` (p-value`r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(p.value) %>% pretty_p_value()`) degrees higher than in the Northeast during summer nights and each region sets their thermostats at significantly higher temperatures than the Northeast.
 
-If we wanted to change the reference value we would reorder the factor before modeling using the function `relevel()` from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`.  For example, if we wanted the reference level to be the Midwest region, we could use the following code.
+If we wanted to change the reference value we would reorder the factor before modeling using the function `relevel()` from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`.  For example, if we wanted the reference level to be the Midwest region, we could use the following code. Note the usage of the `gt()` function on top of `tidy()` to print a nice looking output table - we will go over more usage of this package in Chapter \@ref(c08-communicating-results).
 
 ```{r}
 #| label: model-anova-ex-relevel
@@ -198,9 +196,31 @@ anova_out_relevel <- recs_des %>%
   mutate(Region=fct_relevel(Region, "Midwest", after = 0)) %>% 
   svyglm(design = .,
          formula = SummerTempNight ~ Region)
-
-tidy(anova_out_relevel)
 ```
+
+```{r}
+#| label: model-anova-ex-noeval
+#| eval: FALSE
+tidy(anova_out_relevel) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number()
+```
+
+(ref:model-anova-ex-tab) ANOVA output for estimates of thermostat temperature setting at night by region with Midwest as the reference region, RECS 2020
+
+```{r}
+#| label: model-anova-ex-tab
+#| echo: FALSE
+#| warning: FALSE
+
+tidy(anova_out_relevel) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number() %>%
+  print_gt_book(knitr::opts_current$get()[["label"]])
+```
+
 
 This output now has the coefficients indicating the difference in temperature relative to the Midwest region. For example, in the Northeast, temperatures are set, on average, `r tidy(anova_out_relevel) %>% filter(term=="RegionNortheast") %>% pull(estimate) %>% signif(3)` (p-value`r tidy(anova_out_relevel) %>% filter(term=="RegionNortheast") %>% pull(p.value) %>% pretty_p_value()`) degrees lower than in the Midwest during summer nights and each region sets their thermostats at significantly lower temperatures than the Midwest.  This is the reverse from what we saw in the prior model as we are still comparing the same two regions, just from different reference points.
 
@@ -284,8 +304,32 @@ m_electric_sqft <- recs_des %>%
   svyglm(design = .,
          formula = DOLLAREL ~ TOTSQFT_EN,
          na.action = na.omit)
-tidy(m_electric_sqft)
 ```
+
+```{r}
+#| label: model-slr-examp-noeval
+#| eval: FALSE
+tidy(m_electric_sqft) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number()
+```
+
+(ref:model-slr-examp-tab) Linear regression output predicting electricity expenditure given square footage, RECS 2020
+
+```{r}
+#| label: model-slr-examp-tab
+#| echo: FALSE
+#| warning: FALSE
+
+tidy(m_electric_sqft) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number() %>%
+  print_gt_book(knitr::opts_current$get()[["label"]])
+```
+
+
 
 In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% signif(3))*100` cents and that square footage is significantly associated with electricity expenditure (p-value`r tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(p.value) %>% pretty_p_value()`). 
 
@@ -302,9 +346,31 @@ m_electric_multi <- recs_des %>%
     formula = DOLLAREL ~ (Region + Urbanicity + TOTSQFT_EN + ACUsed)^2 - 1, 
     na.action = na.omit
   )
-
-tidy(m_electric_multi) %>% print(n = 50) 
 ```
+
+```{r}
+#| label: model-lmr-examp-noeval
+#| eval: FALSE
+tidy(m_electric_multi) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number()
+```
+
+(ref:model-lmr-examp-tab) Linear regression output predicting electricity expenditure given region, urbanicity, square footage, air conditioning usage, and one-way interactions, RECS 2020
+
+```{r}
+#| label: model-lmr-examp-tab
+#| echo: FALSE
+#| warning: FALSE
+
+tidy(m_electric_multi) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number() %>%
+  print_gt_book(knitr::opts_current$get()[["label"]])
+```
+
 
 As shown above, there are many terms in this model. To test whether coefficients for a term are different from zero, the function `regTermTest()` can be used. For example, in the above regression, we can test whether the interaction of region and urbanicity is significant as follows:
 
@@ -480,17 +546,55 @@ logistic_trust_vote <- anes_des_der %>%
   svyglm(design = .,
          formula = TrustGovernmentUsually ~ VotedPres2020_selection,
          family = quasibinomial) 
+```
 
-tidy(logistic_trust_vote)
+```{r}
+#| label: model-logisticexamp-noeval
+#| eval: FALSE
+tidy(logistic_trust_vote) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number()
+```
+
+(ref:model-logisticexamp-tab) Logistic regression output predicting trust in government by presidential candidate selection, RECS 2020
+
+```{r}
+#| label: model-logisticexamp-tab
+#| echo: FALSE
+#| warning: FALSE
+
+tidy(logistic_trust_vote) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number() %>%
+  print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
 In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient.  This output indicates that respondents who voted for Trump are `r signif(logistic_trust_vote$coefficients[2],3)` times more likely to usually have trust in the government compared to those who voted for Biden (the reference level). 
 
 Sometimes it is easier to talk about the odds instead of the likelihood.  To do this, we need to exponentiate the coefficients. We can use the same `tidy()` function, but include the argument `exponentiate = TRUE` to see the odds.
+
 ```{r}
-#| label: model-logisticexamp-model-odds
+#| label: model-logisticexamp-model-odds-noeval
+#| eval: FALSE
 tidy(logistic_trust_vote, exponentiate = TRUE) %>% 
-  select(term, estimate)
+  select(term, estimate) %>%
+  gt() %>%
+  fmt_number()
+```
+
+(ref:model-logisticexamp-model-odds-tab) Logistic regression predicting trust in government by presidential candidate selection with exponentiated coefficients (odds), RECS 2020
+
+```{r}
+#| label: model-logisticexamp-model-odds-tab
+#| echo: FALSE
+#| warning: FALSE
+tidy(logistic_trust_vote, exponentiate = TRUE) %>% 
+  select(term, estimate) %>%
+  gt() %>%
+  fmt_number() %>%
+  print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
 ```{r}
@@ -545,9 +649,31 @@ log_biden_main <- anes_des_ind %>%
   svyglm(design = .,
          formula = VoteBiden ~ EarlyVote2020 + Gender,
          family = quasibinomial) 
-
-tidy(log_biden_main)
 ```
+
+```{r}
+#| label: model-logisticexamp-biden-main-noeval
+#| eval: FALSE
+tidy(log_biden_main) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number()
+```
+
+(ref:model-logisticexamp-biden-main-tab) Logistic regression output for predicting voting for Biden given early voting behavior and gender - main effects only, RECS 2020
+
+```{r}
+#| label: model-logisticexamp-biden-main-tab
+#| echo: FALSE
+#| warning: FALSE
+
+tidy(log_biden_main) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number() %>%
+  print_gt_book(knitr::opts_current$get()[["label"]])
+```
+
 
 This main effect model indicates that respondents with who early voted in 2020 are `r signif(log_biden_main$coefficients[2],3)` (p-value=`r tidy(log_biden_main) %>% slice(2) %>% pull(p.value) %>% pretty_p_value()`) times more likely to vote for Biden compared to respondents who did not early vote in the 2020 election (the reference level). We see that gender is also significant with females more likely to vote for Biden compared to males (p-value=`r tidy(log_biden_main) %>% slice(3) %>% pull(p.value) %>% pretty_p_value()`). 
 
@@ -559,8 +685,29 @@ log_biden_int <- anes_des_ind %>%
   svyglm(design = .,
          formula = VoteBiden ~ (EarlyVote2020 + Gender)^2,
          family = quasibinomial) 
+```
 
-tidy(log_biden_int)
+```{r}
+#| label: model-logisticexamp-biden-int-noeval
+#| eval: FALSE
+tidy(log_biden_int) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number()
+```
+
+(ref:model-logisticexamp-biden-int-tab) Logistic regression output for predicting voting for Biden given early voting behavior and gender - with interaction, RECS 2020
+
+```{r}
+#| label: model-logisticexamp-biden-int-tab
+#| echo: FALSE
+#| warning: FALSE
+
+tidy(log_biden_int) %>%
+  mutate(p.value=prettyunits::pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number() %>%
+  print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
 The results from the interaction model show that the interaction between early voting behavior and gender is significant.  To better understand what this interaction means, we will want to plot the predicted probabilities with an interaction plot.  Let's first obtain the predicted probabilities for each possible combination of variables using the `augment()` function.
