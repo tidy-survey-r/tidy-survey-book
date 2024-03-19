@@ -849,6 +849,7 @@ In the example above, the indicator is multiplied by 100 to return a percentage 
 For any of the types of estimates discussed, we can also perform statistical testing. For example, we could test whether property victimization rates are different between properties that are owned versus rented. First, we calculate the point estimates.
 
 ```{r}
+#| label: ncvs-vgn-prop-pt-estimates
 prop_tenure <- hh_des %>%
   group_by(Tenure) %>%
   summarize(
@@ -862,6 +863,7 @@ prop_tenure
 The property victimization rate for rented households is `r prop_tenure %>% filter(Tenure=="Rented") %>% pull(Property_Rate) %>% round(1)` per 1,000 households while the property victimization rate for owned households is `r prop_tenure %>% filter(Tenure=="Owned") %>% pull(Property_Rate) %>% round(1)`, which seem very different especially given the non-overlapping confidence intervals. However, survey data is inheriently non-independent so statistical testing cannot be done by comparing confidence intervals. To conduct the statistical test, we first need to create a variable that we will compare which incorporates the adjusted incident weight (`ADJINC_WT`) and then the test can be conducted as discussed in Chapter \@ref(c06-statistical-testing).
 
 ```{r}
+#| label: ncvs-vgn-prop-stat-test
 prop_tenure_test <- hh_des %>%
   mutate(
     Prop_Adj=Property * ADJINC_WT * 1000
@@ -874,6 +876,29 @@ prop_tenure_test <- hh_des %>%
   broom::tidy()
 
 prop_tenure_test
+```
+
+```{r}
+#| label: ncvs-vgn-prop-stat-test-gt
+#| eval: FALSE
+prop_tenure_test %>%
+  mutate(p.value = pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number()
+```
+
+(ref:ncvs-vgn-prop-stat-test-gt-tab)  One-sample t-test output for estimates of U.S. households use AC in their homes differing from 90%, RECS 2020
+
+```{r}
+#| label: ncvs-vgn-prop-stat-test-gt-tab
+#| echo: FALSE
+#| warning: FALSE
+
+prop_tenure_test %>%
+  mutate(p.value = pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number() %>%
+  print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
 The output of the statistical test shows the same difference of `r prop_tenure_test$estimate %>% round(1)` between the property victimization rates of renters and owners and the test is highly significant with the p-value of `r prettyunits::pretty_p_value(prop_tenure_test$p.value)`.
