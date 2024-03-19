@@ -159,13 +159,21 @@ library(rmarkdown)
 #| echo: FALSE
 #| warning: FALSE
 packinfo <- sessioninfo::package_info()
-packinfo_tib <- tibble(
+packinfo_tib <- 
+  tibble(
   Package=packinfo$package,
   Version=packinfo$loadedversion,
-  Source=packinfo$source, 
+  SourceLong=packinfo$source, 
   attached=packinfo$attached) %>%
+  mutate(
+    Source=case_when(
+      str_detect(SourceLong, "CRAN")~SourceLong,
+      str_detect(SourceLong, "Github")~str_c(str_extract(SourceLong, "^[^@]+@.{7}"), ")")
+    )
+  ) %>%
   filter(attached|Package %in% c("remotes")) %>%
-  select(-attached)
+  select(Package, Version, Source)
+  
 
 packinfo_tib %>%
   gt() %>%
