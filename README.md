@@ -19,7 +19,7 @@ III. Reporting
 IV. Real life data 
   10. Specifying sample designs and replicate weights in {srvyr}
   11. Missing data
-  12. Common pitfalls
+  12. Successful survey data analysis recommendations
 V. Vignettes
   13. National Crime Victimization Survey Vignette
   14. AmericasBarometer Vignette
