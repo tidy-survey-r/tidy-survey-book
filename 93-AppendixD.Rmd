@@ -94,6 +94,8 @@ femgd_option2 <- anes_des %>%
 femgd_option2
 ```
 
+Answer: `r femgd_option2$N %>% prettyNum(big.mark = ",")`
+
 2. What percentage of people identify as "Strong Democrat"? Hint: The variable `PartyID` indicates someone's party affiliation.
 
 ```{r}
@@ -105,6 +107,8 @@ psd <- anes_des %>%
 
 psd
 ```
+
+Answer: `r round(psd$p*100, 1)`%
 
 3. What percentage of people who voted in the 2020 election identify as "Strong Republican"? Hint: The variable `VotedPres2020` indicates whether someone voted in 2020.
 
@@ -118,6 +122,8 @@ psr <- anes_des %>%
 
 psr
 ```
+
+Answer: `r round(psr$p*100, 1)`%
 
 4. What percentage of people voted in both the 2016 election and the 2020 election?  Include the logit confidence interval. Hint: The variable `VotedPres2016` indicates whether someone voted in 2016.
 
@@ -133,6 +139,8 @@ pvb <- anes_des %>%
 pvb
 ```
 
+Answer: `r round(pvb$p*100, 1)` with confidence interval: (`r round(pvb$p_low*100, 1)`, `r round(pvb$p_upp*100, 1)`)
+
 5. What is the design effect for the proportion of people who voted early? Hint: The variable `EarlyVote2020` indicates whether someone voted early in 2020.
 
 ```{r}
@@ -146,62 +154,50 @@ pdeff <- anes_des %>%
 pdeff
 ```
 
+Answer: `r round(pdeff$p_deff,2)`
+
 6. What is the median temperature people set their thermostats to at night during the winter? Hint: The variable `WinterTempNight` indicates the temperature that people set their temperature in the winter at night.
 
 ```{r}
 #| label: desc-ex-solution6
-mean_wintertempnight <- recs_des %>%
-  summarize(wtn_mean = survey_mean(x = WinterTempNight,
+med_wintertempnight <- recs_des %>%
+  summarize(wtn_med = survey_median(x = WinterTempNight,
                                    na.rm = TRUE))
 
-mean_wintertempnight
+med_wintertempnight
 ```
+
+Answer: `r round(med_wintertempnight$wtn_med,1)`
+
 
 7. People sometimes set their temperature differently over different seasons and during the day. What median temperatures do people set their thermostat to in the summer and winter, both during the day and at night? Include confidence intervals. Hint: Use the variables `WinterTempDay`, `WinterTempNight`, `SummerTempDay`, and `SummerTempNight`.
 
 ```{r}
 #| label: desc-ex-solution7
 # Option 1
-med_wintertempday <- recs_des %>%
-  summarize(wtd_mean = survey_median(WinterTempDay,
-                                     vartype = "se",
-                                     na.rm = TRUE))
 
-med_wintertempday
+med_temps <- recs_des %>%
+  summarize(
+    across(c(WinterTempDay, WinterTempNight, SummerTempDay, SummerTempNight), ~survey_median(.x, na.rm=TRUE))
+  )
 
-med_wintertempnight <- recs_des %>%
-  summarize(wtn_mean = survey_median(WinterTempNight,
-                                     vartype = "se",
-                                     na.rm = TRUE))
-
-med_wintertempnight
-
-med_summertempday <- recs_des %>%
-  summarize(std_mean = survey_median(SummerTempDay,
-                                     vartype = "se",
-                                     na.rm = TRUE))
-
-med_summertempday
-
-med_summertempnight <- recs_des %>%
-  summarize(stn_mean = survey_median(SummerTempNight,
-                                     vartype = "se",
-                                     na.rm = TRUE))
-
-med_summertempnight
+med_temps
 
 # Alternatively, could use `survey_quantile()` as shown below for WinterTempNight:
 
-quant_wintertemp <- recs_des %>%
-  summarize(wnt_quant = survey_quantile(
-    WinterTempNight,
-    quantiles = 0.5,
-    vartype = "se",
-    na.rm = TRUE
-  ))
+quant_temps <- recs_des %>%
+  summarize(
+    across(c(WinterTempDay, WinterTempNight, SummerTempDay, SummerTempNight), ~survey_quantile(.x, quantiles=0.5, na.rm=TRUE))
+  )
 
-quant_wintertemp
+quant_temps
 ```
+
+Answer: 
+- Winter during the day: `r round(med_temps$WinterTempDay, 1)`
+- Winter during the night: `r round(med_temps$WinterTempNight, 1)`
+- Summer during the day: `r round(med_temps$SummerTempDay, 1)`
+- Summer during the night: `r round(med_temps$SummerTempNight, 1)`
 
 8. What is the correlation between the temperature that people set their temperature at during the night and during the day in the summer?
 
@@ -215,7 +211,9 @@ corr_summer_temp <- recs_des %>%
 corr_summer_temp
 ```
 
-9. What is the 1st, 2nd, and 3rd quartile of the amount of money spent on energy by Building America (BA) climate zone? Hint: `TOTALDOL` indicates the total amount spent on electricity, and `ClimateRegion_BA` indicates the BA climate zones.
+Answer: `r round(corr_summer_temp$summer_corr, 3)`
+
+9. What is the 1st, 2nd, and 3rd quartile of the amount of money spent on energy by Building America (BA) climate zone? Hint: `TOTALDOL` indicates the total amount spent on all fuel, and `ClimateRegion_BA` indicates the BA climate zones.
 
 ```{r}
 #| label: desc-ex-solution9
@@ -231,6 +229,23 @@ quant_baenergyexp <- recs_des %>%
 quant_baenergyexp
 ```
 
+Answer:
+
+```{r}
+#| label: desc-ex-solution9-print
+#| echo: FALSE
+quant_baenergyexp %>%
+  select(-ends_with("se")) %>%
+  gt(rowname_col="ClimateRegion_BA") %>%
+  fmt_currency(decimals=0) %>%
+  cols_label(
+    dol_quant_q25 ="Q1",
+    dol_quant_q50 ="Q2",
+    dol_quant_q75 ="Q3"
+  ) %>%
+  tab_header("Quartile summary of energy expenditure by BA Climate Zone")
+```
+
 ## 6 - Statistical testing {-}
 
 1. Using the RECS data, do more than 50% of U.S. households use AC (`ACUsed`)?
@@ -240,10 +255,15 @@ quant_baenergyexp
 ttest_solution1 <- recs_des %>%
   svyttest(design = .,
            formula = ((ACUsed == TRUE) - 0.5) ~ 0,
-           na.rm = TRUE)
+           na.rm = TRUE,
+           alternative="greater") %>%
+  tidy()
 
 ttest_solution1
 ```
+
+Answer: `r round((ttest_solution1$estimate+.5)*100, 1)`% of households use air-conditioning which is significantly different from 50% (p`r pretty_p_value(ttest_solution1$p.value)`) so there is strong evidence that more than 50% of households use air-conditioning.
+
 
 2. Using the RECS data, does the average temperature that U.S. households set their thermostats to differ between the day and night in the winter (`WinterTempDay` and `WinterTempNight`)?
 
@@ -254,24 +274,33 @@ ttest_solution2 <- recs_des %>%
     design = .,
     formula = WinterTempDay - WinterTempNight ~ 0,
     na.rm = TRUE
-  )
+  ) %>%
+  tidy()
 
 ttest_solution2
 ```
+
+Answer: The average temperature difference between night and day during the winter for thermostat settings is `r ttest_solution2$estimate %>% round(2)` which is significantly different from 0 (p`r pretty_p_value(ttest_solution2$p.value)`) so there is strong evidence that the temperature setting is different between night and daytime during the winter.
 
 3. Using the ANES data, does the average age (`Age`) of those who voted for Joseph Biden in 2020 (`VotedPres2020_selection`) differ from those who voted for another candidate?
 
 ```{r}
 #| label: stattest-ex-solution3
 ttest_solution3 <- anes_des %>%
+  filter(!is.na(VotedPres2020_selection)) %>%
   svyttest(
     design = .,
     formula = Age ~ VotedPres2020_selection == "Biden",
     na.rm = TRUE
-  )
+  ) %>%
+  tidy()
 
 ttest_solution3
 ```
+
+On average, those who voted for Joseph Biden in 2020 were `r ttest_solution3$estimate %>% round(1)` years younger than voters for other candidates and this is significantly different (p `r ttest_solution3$p.value %>% pretty_p_value()`).
+
+
 
 4. If you wanted to determine if the political party affiliation differed for males and females, what test would you use?
 
@@ -279,11 +308,8 @@ ttest_solution3
   b. Test of independence (`svychisq()`)
   c. Test of homogeneity (`svychisq()`)
   
-```{r}
-#| label: stattest-ex-solution4
-chisq_solution1 <- "c. Test of homogeneity (`svychisq()`)"
-chisq_solution1
-```
+
+Answer: c. Test of homogeneity (`svychisq()`)
 
 5. In the RECS data, is there a relationship between the type of housing unit (`HousingUnitType`) and the year the house was built (`YearMade`)?
 
@@ -297,8 +323,10 @@ chisq_solution2 <- recs_des %>%
     na.rm = TRUE
   )
 
-chisq_solution2
+chisq_solution2 %>% tidy()
 ```
+
+Answer: There is strong evidence (p`r chisq_solution2$p.value %>% pretty_p_value()`) that there is a relationship between type of housing unit and the year the house was built.
 
 6. In the ANES data, is there a difference in the distribution of gender (`Gender`) across early voting status in 2020 (`EarlyVote2020`)?
 
@@ -310,10 +338,13 @@ chisq_solution3 <- anes_des %>%
     design = .,
     statistic = "F",
     na.rm = TRUE
-  )
+  ) %>%
+  tidy()
 
 chisq_solution3
 ```
+
+Answer: There is strong evidence that there is a difference in the gender distribution of gender by early voting status (p=`r chisq_solution3$p.value %>% pretty_p_value()`).
 
 ## 7 - Modeling {-}
 
