@@ -16,6 +16,8 @@ library(survey)
 library(srvyr)
 library(srvyrexploR)
 library(broom)
+library(prettyunits)
+library(gt)
 
 targetpop <- 231592693
 data(anes_2020)
@@ -45,6 +47,179 @@ recs_des <- recs_2020 %>%
 data(ncvs_2021_incident)
 data(ncvs_2021_household)
 data(ncvs_2021_person)
+
+inc_series <- ncvs_2021_incident %>%
+  mutate(
+    series = case_when(V4017 %in% c(1, 8) ~ 1,
+                       V4018 %in% c(2, 8) ~ 1,
+                       V4019 %in% c(1, 8) ~ 1,
+                       TRUE ~ 2
+    ),
+    n10v4016 = case_when(V4016 %in% c(997, 998) ~ NA_real_,
+                         V4016 > 10 ~ 10,
+                         TRUE ~ V4016),
+    serieswgt = case_when(series == 2 & is.na(n10v4016) ~ 6,
+                          series == 2 ~ n10v4016,
+                          TRUE ~ 1),
+    NEWWGT = WGTVICCY * serieswgt
+  )
+
+inc_ind <- inc_series %>%
+  filter(V4022 != 1) %>%
+  mutate(
+    WeapCat = case_when(
+      is.na(V4049) ~ NA_character_,
+      V4049 == 2 ~ "NoWeap",
+      V4049 == 3 ~ "UnkWeapUse",
+      V4050 == 3 ~ "Other",
+      V4051 == 1 | V4052 == 1 | V4050 == 7 ~ "Firearm",
+      V4053 == 1 | V4054 == 1 ~ "Knife",
+      TRUE ~ "Other"
+    ),
+    V4529_num = parse_number(as.character(V4529)),
+    ReportPolice = V4399 == 1,
+    Property = V4529_num >= 31,
+    Violent = V4529_num <= 20,
+    Property_ReportPolice = Property & ReportPolice,
+    Violent_ReportPolice = Violent & ReportPolice,
+    AAST = V4529_num %in% 11:13,
+    AAST_NoWeap = AAST & WeapCat == "NoWeap",
+    AAST_Firearm = AAST & WeapCat == "Firearm",
+    AAST_Knife = AAST & WeapCat == "Knife",
+    AAST_Other = AAST & WeapCat == "Other"
+  )
+inc_hh_sums <-
+  inc_ind %>%
+  filter(V4529_num > 23) %>% # restrict to household crimes
+  group_by(YEARQ, IDHH) %>%
+  summarize(WGTVICCY = WGTVICCY[1],
+            across(starts_with("Property"), 
+                   ~ sum(. * serieswgt),
+                   .names = "{.col}"),
+            .groups = "drop")
+
+inc_pers_sums <-
+  inc_ind %>%
+  filter(V4529_num <= 23) %>% # restrict to person crimes
+  group_by(YEARQ, IDHH, IDPER) %>%
+  summarize(WGTVICCY = WGTVICCY[1],
+            across(c(starts_with("Violent"), starts_with("AAST")),
+                   ~ sum(. * serieswgt), 
+                   .names = "{.col}"),
+            .groups = "drop")
+
+hh_z_list <- rep(0, ncol(inc_hh_sums) - 3) %>% as.list() %>%
+  setNames(names(inc_hh_sums)[-(1:3)])
+pers_z_list <- rep(0, ncol(inc_pers_sums) - 4) %>% as.list() %>%
+  setNames(names(inc_pers_sums)[-(1:4)])
+
+hh_vsum <- ncvs_2021_household %>%
+  full_join(inc_hh_sums, by = c("YEARQ", "IDHH")) %>%
+  replace_na(hh_z_list) %>%
+  mutate(ADJINC_WT = if_else(is.na(WGTVICCY), 0, WGTVICCY / WGTHHCY))
+
+pers_vsum <- ncvs_2021_person %>%
+  full_join(inc_pers_sums, by = c("YEARQ", "IDHH", "IDPER")) %>%
+  replace_na(pers_z_list) %>%
+  mutate(ADJINC_WT = if_else(is.na(WGTVICCY), 0, WGTVICCY / WGTPERCY))
+
+hh_vsum_der <- hh_vsum %>%
+  mutate(
+    Tenure = factor(case_when(V2015 == 1 ~ "Owned", 
+                              !is.na(V2015) ~ "Rented"),
+                    levels = c("Owned", "Rented")),
+    Urbanicity = factor(case_when(V2143 == 1 ~ "Urban",
+                                  V2143 == 2 ~ "Suburban",
+                                  V2143 == 3 ~ "Rural"),
+                        levels = c("Urban", "Suburban", "Rural")),
+    SC214A_num = as.numeric(as.character(SC214A)),
+    Income = case_when(SC214A_num <= 8 ~ "Less than $25,000",
+                       SC214A_num <= 12 ~ "$25,000-49,999",
+                       SC214A_num <= 15 ~ "$50,000-99,999",
+                       SC214A_num <= 17 ~ "$100,000-199,999",
+                       SC214A_num <= 18 ~ "$200,000 or more"),
+    Income = fct_reorder(Income, SC214A_num, .na_rm = FALSE),
+    PlaceSize = case_match(as.numeric(as.character(V2126B)),
+                           0 ~ "Not in a place",
+                           13 ~ "Under 10,000",
+                           16 ~ "10,000-49,999",
+                           17 ~ "50,000-99,999",
+                           18 ~ "100,000-249,999",
+                           19 ~ "250,000-499,999",
+                           20 ~ "500,000-999,999",
+                           c(21, 22, 23) ~ "1,000,000 or more"),
+    PlaceSize = fct_reorder(PlaceSize, as.numeric(V2126B)),
+    Region = case_match(as.numeric(V2127B),
+                        1 ~ "Northeast",
+                        2 ~ "Midwest",
+                        3 ~ "South",
+                        4 ~ "West"),
+    Region = fct_reorder(Region, as.numeric(V2127B))
+  )
+NHOPI <- "Native Hawaiian or Other Pacific Islander"
+
+pers_vsum_der <- pers_vsum %>%
+  mutate(
+    Sex = factor(case_when(V3018 == 1 ~ "Male",
+                           V3018 == 2 ~ "Female")),
+    RaceHispOrigin = factor(case_when(V3024 == 1 ~ "Hispanic",
+                                      V3023A == 1 ~ "White",
+                                      V3023A == 2 ~ "Black",
+                                      V3023A == 4 ~ "Asian",
+                                      V3023A == 5 ~ NHOPI,
+                                      TRUE ~ "Other"),
+                            levels = c("White", "Black", "Hispanic", 
+                                       "Asian", NHOPI, "Other")),
+    V3014_num = as.numeric(as.character(V3014)),
+    AgeGroup = case_when(V3014_num <= 17 ~ "12-17",
+                         V3014_num <= 24 ~ "18-24",
+                         V3014_num <= 34 ~ "25-34",
+                         V3014_num <= 49 ~ "35-49",
+                         V3014_num <= 64 ~ "50-64",
+                         V3014_num <= 90 ~ "65 or older"),
+    AgeGroup = fct_reorder(AgeGroup, V3014_num),
+    MaritalStatus = factor(case_when(V3015 == 1 ~ "Married",
+                                     V3015 == 2 ~ "Widowed",
+                                     V3015 == 3 ~ "Divorced",
+                                     V3015 == 4 ~ "Separated",
+                                     V3015 == 5 ~ "Never married"),
+                           levels = c("Never married", "Married", 
+                                      "Widowed","Divorced", 
+                                      "Separated"))
+  ) %>% 
+  left_join(hh_vsum_der %>% select(YEARQ, IDHH, 
+                                   V2117, V2118, Tenure:Region),
+            by = c("YEARQ", "IDHH"))
+hh_vsum_slim <- hh_vsum_der %>%
+  select(YEARQ:V2118,
+         WGTVICCY:ADJINC_WT,
+         Tenure,
+         Urbanicity,
+         Income,
+         PlaceSize,
+         Region)
+
+pers_vsum_slim <- pers_vsum_der %>%
+  select(YEARQ:WGTPERCY, WGTVICCY:ADJINC_WT, Sex:Region)
+
+dummy_records <- hh_vsum_slim %>%
+  distinct(V2117, V2118) %>%
+  mutate(Dummy = 1,
+         WGTVICCY = 1,
+         NEWWGT = 1)
+
+inc_analysis <- inc_ind %>%
+  mutate(Dummy = 0) %>%
+  left_join(select(pers_vsum_slim, YEARQ, IDHH, IDPER, Sex:Region),
+            by = c("YEARQ", "IDHH", "IDPER")) %>%
+  bind_rows(dummy_records) %>%
+  select(YEARQ:IDPER,
+         WGTVICCY,
+         NEWWGT,
+         V4529,
+         WeapCat,
+         ReportPolice,
+         Property:Region)
 
 inc_des <- inc_analysis %>%
   as_survey(
@@ -352,11 +527,13 @@ Answer: There is strong evidence that there is a difference in the gender distri
 
 ```{r}
 #| label: model-ex-solution1
-recs_des %>%
+expense_by_hut <- recs_des %>%
   group_by(HousingUnitType) %>%
   summarize(Expense = survey_mean(TOTALDOL, na.rm = TRUE),
             HUs = survey_total()) %>%
   arrange(desc(HUs))
+
+expense_by_hut
 
 exp_unit_out <- recs_des %>%
   mutate(HousingUnitType = fct_infreq(HousingUnitType, NWEIGHT)) %>%
@@ -367,12 +544,12 @@ exp_unit_out <- recs_des %>%
   )
 
 tidy(exp_unit_out)
-
-# Single-family detached units are most common
-# There is a significant relationship between energy expenditure and housing unit type
 ```
 
-2.  Does temperature play a role in energy expenditure? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, CDD65=0. While a day that averages 85°F would have CDD80=20 because it is 20 degrees warmer. For each day in the year, this is summed to give an indicator of how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65°F (18.3°C)^[<https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php>]. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.
+Answer: The reference level should be `r expense_by_hut %>% slice(1) %>% pull(HousingUnitType) %>% as.character()`. All p-values are very small indicating there is a significant relationship between housing unit type and total energy expenditure.
+
+
+2.  Does temperature play a role in electricity expenditure (`DOLLAREL`)? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, CDD65=0. While a day that averages 85°F (29.4°C) would have CDD65=20 because it is 20 degrees Fahrenheit warmer. For each day in the year, this is summed to give an indicator of how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65°F^[<https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php>]. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.
 
 ```{r}
 #| label: model-ex-solution2
@@ -383,11 +560,15 @@ temps_sqft_exp <- recs_des %>%
     na.action = na.omit
   )
 
-tidy(temps_sqft_exp)
+tidy(temps_sqft_exp) %>%
+  mutate(p.value=pretty_p_value(p.value) %>% str_pad(7))
 ```
+
+Answer: There is a significant interaction between square footage and cooling degree days in the model and the square footage is a significant predictor of eletricity expenditure. 
 
 3.  Continuing with our results from question 2, create a plot between the actual and predicted expenditures and a residual plot for the predicted expenditures.
 
+Answer: 
 ```{r}
 #| label: model-ex-solution3
 temps_sqft_exp_fit <- temps_sqft_exp %>%
@@ -425,6 +606,7 @@ temps_sqft_exp_fit %>%
 
 4.  Early voting expanded in 2020^[<https://www.npr.org/2020/10/26/927803214/62-million-and-counting-americans-are-breaking-early-voting-records>]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`). Include two-way interactions.
 
+Answer: 
 ```{r}
 #| label: model-ex-solution6
 earlyvote_mod <- anes_des %>%
@@ -435,10 +617,10 @@ earlyvote_mod <- anes_des %>%
     family = quasibinomial
   )
 
-tidy(earlyvote_mod) %>% arrange(p.value)
+tidy(earlyvote_mod) %>% print(n=50)
 ```
 
-5.  Continuing from Exercise 1, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.
+5.  Continuing from Exercise 4, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.
 
 ```{r}
 #| label: model-ex-solution7
@@ -457,11 +639,17 @@ log_ex_2_out <- earlyvote_mod %>%
   mutate(.se.fit = sqrt(attr(.fitted, "var")),
          # extract the variance of the fitted value
          .fitted = as.numeric(.fitted))
+
+log_ex_2_out
 ```
+
+Answer: We predict that the 28 year old with a graduate degree who identifies as a strong democrat will vote early `r round(log_ex_2_out$.fitted[1]*100, 1)`% of the time while a person who is otherwise similar but is a strong replican will vote early `r round(log_ex_2_out$.fitted[2]*100, 1)`% of the time
 
 ## 10 - Specifying sample designs and replicate weights in {srvyr}  {-}
 
-1. The National Health Interview Survey (NHIS) is an annual household survey conducted by the National Center for Health Statistics (NCHS). The NHIS includes a wide variety of health topics for adults including health status and conditions, functioning and disability, health care access and health service utilization, health-related behaviors, health promotion, mental health, barriers to care, and community engagement. Like many national in-person surveys, the sampling design is a stratified clustered design with details included in the Survey Description^[2022 National Health Interview Survey (NHIS) Survey Description: https://www.cdc.gov/nchs/nhis/2022nhis.htm]. The Survey Description provides information on setting up syntax in SUDAAN, Stata, SPSS, SAS, and R ({survey} package implementation). How would you specify the design using {srvyr} using either `as_survey_design` or `as_survey_rep()`?
+1. The National Health Interview Survey (NHIS) is an annual household survey conducted by the National Center for Health Statistics (NCHS). The NHIS includes a wide variety of health topics for adults including health status and conditions, functioning and disability, health care access and health service utilization, health-related behaviors, health promotion, mental health, barriers to care, and community engagement. Like many national in-person surveys, the sampling design is a stratified clustered design with details included in the Survey Description^[2022 National Health Interview Survey (NHIS) Survey Description: https://www.cdc.gov/nchs/nhis/2022nhis.htm]. The Survey Description provides information on setting up syntax in SUDAAN, Stata, SPSS, SAS, and R ({survey} package implementation). You have imported the data and the variable containing the data is: `nhis_adult_data`. How would you specify the design using {srvyr} using either `as_survey_design()` or `as_survey_rep()`?
+
+Answer: 
 
 ```{r}
 #| label: samp-ex-solution1
@@ -475,7 +663,9 @@ nhis_adult_des <- nhis_adult_data %>%
   )
 ```
 
-2. The General Social Survey is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook^[2016-2020 GSS Panel Codebook Release 1a: https://gss.norc.org/Documents/codebook/2016-2020%20GSS%20Panel%20Codebook%20-%20R1a.pdf] provides examples of setting up syntax in SAS and Stata but not R. How would you specify the design in R?
+2. The General Social Survey is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook^[2016-2020 GSS Panel Codebook Release 1a: https://gss.norc.org/Documents/codebook/2016-2020%20GSS%20Panel%20Codebook%20-%20R1a.pdf] provides examples of setting up syntax in SAS and Stata but not R. You have imported the data and the variable containing the data is: `gss_data`. How would you specify the design in R using either `as_survey_design()` or `as_survey_rep()`?
+
+Answer: 
 
 ```{r}
 #| label: samp-ex-solution2
@@ -488,46 +678,66 @@ gss_des <- gss_data %>%
 
 ## 13 - National Crime Victimization Survey Vignette {-}
 
-1. What proportion of completed motor vehicle thefts are not reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).
+1. What proportion of completed motor vehicle thefts are **not** reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).
 
 ```{r}
 #| label: ncvs-vign-ex-solution1
 ans1 <- inc_des %>%
   filter(str_detect(V4529, "40|41")) %>%
-  summarize(Pct = survey_mean(ReportPolice, na.rm = TRUE) * 100)
-ans1
+  summarize(Pct = survey_mean(!ReportPolice, na.rm = TRUE) * 100)
 ```
 
+Answer: It is estimated that `r round(ans1$Pct, 1)`% of motor vehicle thefts are not reported to the police.
+
 2. How many violent crimes occur in each region?
+
+Answer:
 
 ```{r}
 #| label: ncvs-vign-ex-solution2
 inc_des %>%
   filter(Violent) %>%
-  survey_count(Region)
+  survey_count(Region) %>%
+  select(-n_se) %>%
+  gt(rowname_col="Region") %>%
+  fmt_integer() %>%
+  cols_label(
+    n ="Violent victimizations",
+  ) %>%
+  tab_header("Estimated number of violent crimes by region")
 ```
 
 3. What is the property victimization rate among each income level?
 
+Answer: 
+
 ```{r}
 #| label: ncvs-vign-ex-solution3
 hh_des %>%
+  filter(!is.na(Income)) %>%
   group_by(Income) %>%
   summarize(Property_Rate = survey_mean(Property * ADJINC_WT * 1000, 
-                                        na.rm = TRUE))
+                                        na.rm = TRUE)) %>%
+  gt(rowname_col="Income") %>%
+  cols_label(
+    Property_Rate="Rate",
+    Property_Rate_se="Standard Error"
+  ) %>%
+  fmt_number(decimals=1) %>%
+  tab_header("Estimated property victimization rate by income level")
 ```
 
 4. What is the difference between the violent victimization rate between males and females? Is it statistically different?
 
 ```{r}
 #| label: ncvs-vign-ex-solution4
-pers_des %>%
+vr_gender <- pers_des %>%
   group_by(Sex) %>%
   summarize(
     Violent_rate=survey_mean(Violent * ADJINC_WT * 1000, na.rm=TRUE)
   )
 
-pers_des %>%
+vr_gender_test <- pers_des %>%
   mutate(
     Violent_Adj=Violent * ADJINC_WT * 1000
   ) %>%
@@ -539,9 +749,13 @@ pers_des %>%
   broom::tidy()
 ```
 
+Answer: The difference between male and female victimization rate is estimated as `r vr_gender_test$estimate %>% round(1)` victimizations/1,000 people and is not significantly different (p-value=`r vr_gender_test$p.value %>% pretty_p_value()`)
+
 ## 14 - AmericasBarometer Vignette {-}
 
 1. Calculate the percentage of households with broadband internet and those with any internet at home, including from a phone or tablet. Hint: if you come across countries with 0% internet usage, you may want to filter by something first.
+
+Answer: 
 
 ```{r}
 #| label: ambarom-ex-solution1
@@ -555,15 +769,35 @@ int_ests <-
   ) 
 
 int_ests %>%
-  print(n = 30)
+  gt(rowname_col = "Country") %>%
+  fmt_number(decimals=1) %>%
+  tab_spanner(
+    label="Broadband at home",
+    columns=c(p_broadband, p_broadband_se)
+  ) %>%
+  tab_spanner(
+    label="Internet at home",
+    columns=c(p_internet, p_internet_se)
+  ) %>%
+  cols_label(
+    p_broadband="Percent",
+    p_internet="Percent",
+    p_broadband_se="S.E.",
+    p_internet_se="S.E.",
+  )
 ```
 
 2. Create a faceted map showing both broadband internet and any internet usage.
+
+Answer:
 
 ```{r}
 #| label: ambarom-ex-solution2
 #| error: true
 #| fig.cap: "Percent of broadband internet and any internet usage, Central and South America"
+library(sf)
+library(rnaturalearth)
+library(ggpattern)
 internet_sf <- country_shape_upd %>%
   full_join(select(int_ests, p = p_internet, geounit = Country), by = "geounit") %>%
   mutate(Type = "Internet")
