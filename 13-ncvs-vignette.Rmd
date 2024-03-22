@@ -849,6 +849,7 @@ In the example above, the indicator is multiplied by 100 to return a percentage 
 For any of the types of estimates discussed, we can also perform statistical testing. For example, we could test whether property victimization rates are different between properties that are owned versus rented. First, we calculate the point estimates.
 
 ```{r}
+#| label: ncvs-vgn-prop-pt-estimates
 prop_tenure <- hh_des %>%
   group_by(Tenure) %>%
   summarize(
@@ -862,6 +863,7 @@ prop_tenure
 The property victimization rate for rented households is `r prop_tenure %>% filter(Tenure=="Rented") %>% pull(Property_Rate) %>% round(1)` per 1,000 households while the property victimization rate for owned households is `r prop_tenure %>% filter(Tenure=="Owned") %>% pull(Property_Rate) %>% round(1)`, which seem very different especially given the non-overlapping confidence intervals. However, survey data is inheriently non-independent so statistical testing cannot be done by comparing confidence intervals. To conduct the statistical test, we first need to create a variable that we will compare which incorporates the adjusted incident weight (`ADJINC_WT`) and then the test can be conducted as discussed in Chapter \@ref(c06-statistical-testing).
 
 ```{r}
+#| label: ncvs-vgn-prop-stat-test
 prop_tenure_test <- hh_des %>%
   mutate(
     Prop_Adj=Property * ADJINC_WT * 1000
@@ -876,57 +878,37 @@ prop_tenure_test <- hh_des %>%
 prop_tenure_test
 ```
 
+```{r}
+#| label: ncvs-vgn-prop-stat-test-gt
+#| eval: FALSE
+prop_tenure_test %>%
+  mutate(p.value = pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number()
+```
+
+(ref:ncvs-vgn-prop-stat-test-gt-tab)  T-test output for estimates of property victimization rates between properties that are owned versus rented, NCVS 2021
+
+```{r}
+#| label: ncvs-vgn-prop-stat-test-gt-tab
+#| echo: FALSE
+#| warning: FALSE
+
+prop_tenure_test %>%
+  mutate(p.value = pretty_p_value(p.value)) %>%
+  gt() %>%
+  fmt_number() %>%
+  print_gt_book(knitr::opts_current$get()[["label"]])
+```
+
 The output of the statistical test shows the same difference of `r prop_tenure_test$estimate %>% round(1)` between the property victimization rates of renters and owners and the test is highly significant with the p-value of `r prettyunits::pretty_p_value(prop_tenure_test$p.value)`.
 
 ## Exercises
 
 1. What proportion of completed motor vehicle thefts are not reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).
 
-```{r}
-#| label: ncvs-vign-des-sol1
-ans1 <- inc_des %>%
-  filter(str_detect(V4529, "40|41")) %>%
-  summarize(Pct = survey_mean(ReportPolice, na.rm = TRUE) * 100)
-ans1
-```
-
 2. How many violent crimes occur in each region?
-
-```{r}
-#| label: ncvs-vign-des-sol2
-inc_des %>%
-  filter(Violent) %>%
-  survey_count(Region)
-```
 
 3. What is the property victimization rate among each income level?
 
-```{r}
-#| label: ncvs-vign-des-sol3
-hh_des %>%
-  group_by(Income) %>%
-  summarize(Property_Rate = survey_mean(Property * ADJINC_WT * 1000, 
-                                        na.rm = TRUE))
-```
-
 4. What is the difference between the violent victimization rate between males and females? Is it statistically different?
-
-```{r}
-pers_des %>%
-  group_by(Sex) %>%
-  summarize(
-    Violent_rate=survey_mean(Violent * ADJINC_WT * 1000, na.rm=TRUE)
-  )
-
-pers_des %>%
-  mutate(
-    Violent_Adj=Violent * ADJINC_WT * 1000
-  ) %>%
-  svyttest(
-    formula = Violent_Adj ~ Sex,
-    design = .,
-    na.rm = TRUE
-  ) %>%
-  broom::tidy()
-```
-

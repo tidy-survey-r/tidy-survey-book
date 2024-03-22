@@ -4,22 +4,43 @@ Surveys are a powerful tool for gathering information, drawing insights, and dri
 
 ## Chapters
 
-I. Intro
-  1. Introduction
-  2. Overview of Surveys
-  3. Understanding Survey Data Documentation
-II. Analysis
-  4. Set-up
-  5. Descriptive Analyses in {srvyr}
-  6. Statistical testing
-  7. Modeling
-III. Reporting
-  8. Communicating Results
-  9. Reproducible data
-IV. Real life data 
-  10. Specifying sample designs and replicate weights in {srvyr}
-  11. Missing data
-  12. Common pitfalls
-V. Vignettes
-  13. National Crime Victimization Survey Vignette
-  14. AmericasBarometer Vignette
+<ol type="I">
+<li> Intro
+<ol type="1">
+<li> Introduction
+<li> Overview of Surveys
+<li> Understanding Survey Data Documentation
+</ol></li>
+<li> Analysis
+<ol type="1" start=4>
+<li> Set-up
+<li> Statistical testing
+<li> Understanding Survey Data Documentation
+<li> Modeling
+</ol></li>
+<li> Reporting
+<ol type="1" start=8>
+<li> Communicating Results
+<li> Reproducible data
+</ol></li>
+<li> Real life data 
+<ol type="1" start=10>
+<li> Specifying sample designs and replicate weights in {srvyr}
+<li> Missing data
+<li> Successful survey data analysis recommendations
+</ol></li>
+<li> Vignettes
+<ol type="1" start=13>
+<li> National Crime Victimization Survey Vignette
+<li> AmericasBarometer Vignette
+</ol></li>
+</ol>
+
+## Appendices 
+
+<ol type="A">
+<li> Importing survey data into R
+<li> ANES Derived Variable Codebook
+<li> RECS Derived Variable Codebook
+<li> Exercise solutions
+</ol>
