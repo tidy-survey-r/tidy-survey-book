@@ -5,7 +5,10 @@
 ```{r}
 #| label: set-up-styler
 #| echo: false
+#| message: false
 knitr::opts_chunk$set(tidy = 'styler')
+library(magrittr)
+library(tidyselect)
 ```
 
 ## Introduction
@@ -18,7 +21,7 @@ The Setup section provides details on the required packages and data, as well as
 
 ### Packages
 
-We use several packages throughout the book, but let's install and load specific ones for this chapter. Many functions in the examples and exercises are from three packages: {tidyverse}, {survey}, and {srvyr}. If they are not already installed, use the code below. The {tidyverse} and {survey} packages can both be installed from the Comprehensive R Archive Network (CRAN). We use the GitHub development version of {srvyr} because of its additional functionality compared to the one on CRAN. Install the package directly from GitHub using the {remotes} package:
+We use several packages throughout the book, but let's install and load specific ones for this chapter. Many functions in the examples and exercises are from three packages: {tidyverse}, {survey}, and {srvyr}. If they are not already installed, use the code below. The {tidyverse} and {survey} packages can both be installed from the Comprehensive R Archive Network (CRAN) [@R-survey; @R-tidyverse]. We use the GitHub development version of {srvyr} because of its additional functionality compared to the one on CRAN [@R-srvyr]. Install the package directly from GitHub using the {remotes} package:
 
 ```{r}
 #| label: setup-install-core1
@@ -49,7 +52,7 @@ library(srvyr)
 library(srvyrexploR)
 ```
 
-The packages {broom}, {gt}, and {gtsummary} play a role in displaying output and creating formatted tables. Install them with the provided code^[Note: {broom} is already included in the tidyverse, so no separate installation is required]:
+The packages {broom}, {gt}, and {gtsummary} play a role in displaying output and creating formatted tables [@R-broom; @R-gt, @R-gtsummary]. Install them with the provided code^[Note: {broom} is already included in the tidyverse, so no separate installation is required]:
 
 ```{r}
 #| label: setup-install-extra
@@ -69,7 +72,7 @@ library(gt)
 library(gtsummary)
 ```
 
-Install and load the {censusapi} package to access the Current Population Survey (CPS), which we use to ensure accurate weighting of a key dataset in the book. Run the code below to install {censusapi}:
+Install and load the {censusapi} package to access the Current Population Survey (CPS), which we use to ensure accurate weighting of a key dataset in the book [@R-censusapi]. Run the code below to install {censusapi}:
 
 ```{r}
 #| label: setup-install-census
@@ -326,7 +329,7 @@ In Section \@ref(setup-des-obj), we follow Step #1 to create the survey design o
 
 ## Similarities between {dplyr} and {srvyr} functions {#similarities-dplyr-srvyr}
 
-The {dplyr} package from the tidyverse offers flexible and intuitive functions for data wrangling. One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package. We can use pipes, such as `%>%` from the {magrittr} package, to specify a survey design object, apply a function, and then feed that output into the next function's first argument. Functions follow the 'tidy' convention of snake_case function names.
+The {dplyr} package from the tidyverse offers flexible and intuitive functions for data wrangling [@R-dplyr]. One of the major advantages of using {srvyr} is that it applies {dplyr}-like syntax to the {survey} package [@R-srvyr]. We can use pipes, such as `%>%` from the {magrittr} package, to specify a survey design object, apply a function, and then feed that output into the next function's first argument [@R-magrittr]. Functions follow the 'tidy' convention of snake_case function names.
 
 To help explain the similarities between {dplyr} functions and {srvyr} functions, we use the `towny` dataset from the {gt} package and `apistrat` data that comes in the {survey} package. The `towny` dataset provides population data for municipalities in Ontario, Canada on Census years between 1996 and 2021. Taking a look at `towny` with `dplyr::glimpse()`, we can see the dataset has `r ncol(towny)` columns with a mix of character and numeric data.
 
@@ -382,7 +385,7 @@ dstrata %>%
             api00_med = survey_median(api00))
 ```
 
-The functions in {srvyr} also play nicely with other tidyverse functions. For example, if we wanted to select columns with shared characteristics, we can use {tidyselect} functions such as `starts_with()`, `num_range()`, etc. In the examples below, we use a combination of `across()` and `starts_with()` to calculate the mean of variables starting with "population" in the `towny` data frame and those beginning with `api` in the `dstrata` survey object.
+The functions in {srvyr} also play nicely with other tidyverse functions. For example, if we wanted to select columns with shared characteristics, we can use {tidyselect} functions such as `starts_with()`, `num_range()`, etc [@R-tidyselect]. In the examples below, we use a combination of `across()` and `starts_with()` to calculate the mean of variables starting with "population" in the `towny` data frame and those beginning with `api` in the `dstrata` survey object.
 
 ```{r}
 #| label: setup-dplyr-select
@@ -410,7 +413,7 @@ dstrata_mod
 dstrata
 ```
 
-Several functions in {srvyr} must be called within `srvyr::summarize()`, with the exception of `srvyr::survey_count()` and `srvyr::survey_tally()`. This is similar to how `dplyr::count()` and `dplyr::tally()` are not called within `dplyr::summarize()`. The `summarize()` function can be used in conjunction with `group_by()` or `by/.by`, which applies the functions on a group-by-group basis to create grouped summaries.
+Several functions in {srvyr} must be called within `srvyr::summarize()`, with the exception of `srvyr::survey_count()` and `srvyr::survey_tally()`. This is similar to how `dplyr::count()` and `dplyr::tally()` are not called within `dplyr::summarize()`. The `summarize()` function can be used in conjunction with the `group_by()` function or `by/.by` arguments, which applies the functions on a group-by-group basis to create grouped summaries.
 
 ```{r}
 #| label: setup-dplyr-groupby
