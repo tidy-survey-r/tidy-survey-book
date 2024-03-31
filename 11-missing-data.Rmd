@@ -26,7 +26,7 @@ library(haven)
 library(gt)
 ```
 
-We will be using data from ANES and RECS. Here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c03-understanding-survey-data-documentation) for more information).
+We will be using data from ANES as described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
 ```{r}
 #| label: missing-anes-des
 #| eval: FALSE
@@ -65,7 +65,7 @@ recs_des <- recs_2020 %>%
 
 ## Introduction
 
-Missing data in surveys refers to situations where participants do not provide complete responses to survey questions. Respondents may not have seen a question by design. Or, they may not respond to a question for various other reasons, such as not wanting to answer a particular question, not understanding the question, or simply forgetting to answer. Missing data is important to consider and account for, as it can introduce bias and reduce the representativeness of the data. This chapter provides an overview of the types of missing data, how to assess missing data in surveys, and how to conduct analysis when missing data is present. Understanding this complex topic can help ensure accurate reporting of survey results and can provide insight into potential changes to the survey design for the future.
+Missing data in surveys refer to situations where participants do not provide complete responses to survey questions. Respondents may not have seen a question by design. Or, they may not respond to a question for various other reasons, such as not wanting to answer a particular question, not understanding the question, or simply forgetting to answer. Missing data are important to consider and account for, as it can introduce bias and reduce the representativeness of the data. This chapter provides an overview of the types of missing data, how to assess missing data in surveys, and how to conduct analysis when missing data are present. Understanding this complex topic can help ensure accurate reporting of survey results and can provide insight into potential changes to the survey design for the future.
 
 ## Missing data mechanisms
 
@@ -75,11 +75,11 @@ There are two main categories that missing data typically fall into: missing by 
 
 2. **Unintentional missing data**: This type of missingness occurs when researchers do not intend for there to be missing data on a particular question, for example, if respondents did not finish the survey or refused to answer individual questions.  There are three main types of unintentional missing data that each should be considered and handled differently [@mack; @Schafer2002]:   
 
-    a. **Missing completely at random (MCAR)**: The missing data is unrelated to both observed and unobserved data, and the probability of being missing is the same across all cases. For example, if a respondent missed a question because they had to leave the survey early due to an emergency.
+    a. **Missing completely at random (MCAR)**: The missing data are unrelated to both observed and unobserved data, and the probability of being missing is the same across all cases. For example, if a respondent missed a question because they had to leave the survey early due to an emergency.
 
-    b. **Missing at random (MAR)**: The missing data is related to observed data but not unobserved data, and the probability of being missing is the same within groups. For example, if older respondents choose not to answer specific questions but younger respondents do answer them and we know the respondent's age.
+    b. **Missing at random (MAR)**: The missing data are related to observed data but not unobserved data, and the probability of being missing is the same within groups. For example, if older respondents choose not to answer specific questions but younger respondents do answer them and we know the respondent's age.
 
-    c. **Missing not at random (MNAR)**: The missing data is related to unobserved data, and the probability of being missing varies for reasons we are not measuring. For example, if respondents with depression do not answer a question about depression severity.
+    c. **Missing not at random (MNAR)**: The missing data are related to unobserved data, and the probability of being missing varies for reasons we are not measuring. For example, if respondents with depression do not answer a question about depression severity.
 
 
 ## Assessing missing data
@@ -202,7 +202,7 @@ Even with weights and imputation, missing data will still most likely exist in t
 
 ### Recoding missing data
 
-Even within a variable, there can be different reasons for missing data. In publicly released data negative values are often present to provide different meaning for values.  For example, in the ANES 2020 data they have the following negative values to represent different types of missing data:
+Even within a variable, there can be different reasons for missing data. In publicly released data, negative values are often present to provide different meaning for values.  For example, in the ANES 2020 data they have the following negative values to represent different types of missing data:
   * -9: Refused
   * -8: Don't Know
   * -7: No post-election data, deleted due to incomplete interview
@@ -213,7 +213,7 @@ Even within a variable, there can be different reasons for missing data. In publ
   * -2: Other missing reason (question specific)
   * -1: Inapplicable
 
-When we created the derived variables for use in this book, we coded all negative values as `NA` and proceeded to analyze the data.  For most cases this is an appropriate approach as long as you filter the data appropriately to account for skip patterns (see next section). However, the {nanair} package does have the option to code special missing values. For example, if we wanted to have two `NA` values, one that indicated the question was missing by design (e.g., due to skip patterns) and one for the other missing categories we can use the `nabular` format to incorporate these with the `recode_shadow()` function. 
+When we created the derived variables for use in this book, we coded all negative values as `NA` and proceeded to analyze the data.  For most cases this is an appropriate approach as long as we filter the data appropriately to account for skip patterns (see next section). However, the {nanair} package does have the option to code special missing values. For example, if we wanted to have two `NA` values, one that indicated the question was missing by design (e.g., due to skip patterns) and one for the other missing categories we can use the `nabular` format to incorporate these with the `recode_shadow()` function. 
 
 
 ```{r}
@@ -235,7 +235,7 @@ However it is important to note that at the time of publication, there is no eas
 
 ### Accounting for skip patterns
 
-When questions are skipped by design in a survey, it is meaningful that the data is later missing. For example the RECS survey asks people how they control the heat in their home in the winter (`HeatingBehavior`). This is only among those who have heat in their home (`SpaceHeatingUsed`). If no there is no heating equipment used, the value of `HeatingBehavior` is missing. One has several choices when analyzing this data which include 1) only including those with a valid value of `HeatingBehavior` and specifying the universe as those with heat or 2) including those who do not have heat. It is important to specify what population an analysis generalizes to.
+When questions are skipped by design in a survey, it is meaningful that the data are later missing. For example the RECS survey asks people how they control the heat in their home in the winter (`HeatingBehavior`). This is only among those who have heat in their home (`SpaceHeatingUsed`). If no there is no heating equipment used, the value of `HeatingBehavior` is missing. One has several choices when analyzing these data which include 1) only including those with a valid value of `HeatingBehavior` and specifying the universe as those with heat or 2) including those who do not have heat. It is important to specify what population an analysis generalizes to.
 
 Here is example code where we only include those with a valid value of `HeatingBehavior` (choice 1). Note that we use the design object (`recs_des`) then filter to those that are not missing on `HeatingBehavior`.
 

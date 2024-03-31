@@ -71,7 +71,7 @@ When analyzing results from a survey, the point estimates described in Chapter \
 
 The general idea of statistical testing is the same for data obtained through surveys and data obtained through other methods, where we compare the point estimates and variance estimates of each statistic to see if statistically significant differences exist. However, statistical testing for complex surveys involves additional considerations due to the need to account for the sampling design in order to obtain accurate variance estimates.
 
-Statistical testing, also called hypothesis testing, involves declaring a null and alternative hypothesis. A null hypothesis is denoted as $H_0$ and the alternative hypothesis is denoted as $H_A$. The null hypothesis is the default assumption in that there are no differences in the data, or that the data is operating under "standard" behaviors.  On the other hand, the alternative hypothesis is the break from the "standard" and what we are trying to determine if the data supports. 
+Statistical testing, also called hypothesis testing, involves declaring a null and alternative hypothesis. A null hypothesis is denoted as $H_0$ and the alternative hypothesis is denoted as $H_A$. The null hypothesis is the default assumption in that there are no differences in the data, or that the data are operating under "standard" behaviors.  On the other hand, the alternative hypothesis is the break from the "standard" and what we are trying to determine if the data support. 
 
 Let's review an example outside of survey data. If we are flipping a coin, a null hypothesis would be that the coin is fair and that each side has an equal chance of being flipped.  In other words, the probability of the coin landing on each side is 1/2.  Whereas an alternative hypothesis could be that the coin is unfair and that one side has a higher probability of being flipped (e.g., a probability of 1/4 to get heads, but a probability of 3/4 to get tails). We write this set of hypotheses as:
 
@@ -92,14 +92,14 @@ The functions in the {survey} package allow for the correct estimation of the va
 
 Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we will need to use dot (`.`) notation^[This could change in the future if another package is built or {srvyr} is expanded to work with **tidymodels** but no such plans are known at this time.]
 
-Functions that work with the magrittr pipe (`%>%`) have the data as the first argument. When we run a function with the pipe, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to cars with six cylinders, we can write the code in at least four different ways:
+Functions that work with the magrittr pipe (`%>%`) have the dataset as the first argument. When we run a function with the pipe, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to cars with six cylinders, we can write the code in at least four different ways:
 
 1. `filter(mtcars, cyl == 6)`
 2. `mtcars %>% filter(cyl == 6)`
 3. `mtcars %>% filter(., cyl == 6)`
 4. `mtcars %>% filter(.data = ., cyl == 6)`
 
-Each of these lines of code will produce the same output since the argument that takes the data is in the first spot in `filter()`. The first two are probably familiar to those who have worked with the tidyverse. The third option functions the same way as the second one but is explicit that `mtcars` goes into the first argument, and the fourth option indicates that `mtcars` is going into the named argument of `.data`. Here, we are telling R to take what's on the left side of the pipe (`mtcars`) and pipe it into the spot with the dot (`.`)---the first argument.
+Each of these lines of code will produce the same output since the argument that takes the dataset is in the first spot in `filter()`. The first two are probably familiar to those who have worked with the tidyverse. The third option functions the same way as the second one but is explicit that `mtcars` goes into the first argument, and the fourth option indicates that `mtcars` is going into the named argument of `.data`. Here, we are telling R to take what's on the left side of the pipe (`mtcars`) and pipe it into the spot with the dot (`.`)---the first argument.
 
 In functions that are not part of the tidyverse, the data argument may not be in the first spot. For example, in `svyttest()`, the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example:
 
@@ -175,7 +175,7 @@ The `formula` argument can take several different forms depending on what we are
         - **3+ level grouping variable:** `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms where `groupVar` would be the variable holding the values for classroom IDs and `level` is the classroom ID we want to compare to the others.
     b. **Paired:** `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course so `var_1` would be the test score at the beginning of the course and `var_2` would be the score at the end of the course.
     
-The `na.rm` argument defaults to `FALSE`, which means if any data is missing, the t-test will not compute. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c03-understanding-survey-data-documentation) to better understand how to handle missing data.
+The `na.rm` argument defaults to `FALSE`, which means if any data values are missing, the t-test will not compute. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data.
 
 Let's walk through a few examples using the ANES and RECS data.
 
@@ -468,11 +468,11 @@ The arguments are:
 
 There are six statistics that are accepted in this formula. For tests of homogeneity (when comparing cross-tabulations), the `F` or `Chisq` statistics should be used.^[These two statistics can also be used for goodness of fit tests if the `svygofchisq()` function is not used.] The `F` statistic is the default and uses the Rao-Scott second-order correction. This correction is designed to assist with complicated sampling designs (i.e., those other than a simple random sample) [@Scott2007]. The `Chisq` statistic is an adjusted version of the Pearson $\chi^2$ statistic. The version of this statistic in the `svychisq()` function compares the design effect estimate from the provided survey data to what the $\chi^2$ distribution would have been if the data came from a simple random sampling.
 
-For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons [@lumley2010complex]. If the data has a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this. The `lincom` and `saddlepoint` statistics are available for more complicated data structures.
+For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons [@lumley2010complex]. If the data have a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this. The `lincom` and `saddlepoint` statistics are available for more complicated data structures.
 
 The formula argument will always be one-sided, unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula = ~ var_1 + var_2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
 
-Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. If any data is missing, the $\chi^2$ tests will assume that `NA` is a category and include it in the calculation. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c03-understanding-survey-data-documentation) to better understand how to handle missing data.
+Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. If any data values are missing, the $\chi^2$ tests will assume that `NA` is a category and include it in the calculation. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data.
 
 ### Examples {#stattest-chi-examples}
 
@@ -502,7 +502,7 @@ anes_des %>%
   summarize(p = survey_mean())
 ```
 
-Based on this output, we can see that we have different levels than the ACS data provides. Specifically, the education data from ANES has two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we will use the `svygofchisq()` function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
+Based on this output, we can see that we have different levels than the ACS data provide. Specifically, the education data from ANES include two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we will use the `svygofchisq()` function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
 
 ```{r}
 #| label: stattest-chi-ex1
@@ -543,7 +543,7 @@ ex1_table <- anes_des_educ %>%
 ex1_table
 ```
 
-This output includes our expected proportions from the ACS that we provided the `svygofchisq()` function along with the output of the observed proportions and their confidence intervals. This table shows that the "High school" and "Post HS" categories have nearly identical proportions but that the other two categories are slightly different. Looking at the confidence intervals, we can see that the ANES data skews to include fewer people in the "Less than HS" category and more people in the "Bachelor or Higher" category. This may be easier to see if we plot this. The code below uses the tabular output to create Figure \@ref(fig:stattest-chi-ex1-graph).
+This output includes our expected proportions from the ACS that we provided the `svygofchisq()` function along with the output of the observed proportions and their confidence intervals. This table shows that the "High school" and "Post HS" categories have nearly identical proportions but that the other two categories are slightly different. Looking at the confidence intervals, we can see that the ANES data skew to include fewer people in the "Less than HS" category and more people in the "Bachelor or Higher" category. This may be easier to see if we plot this. The code below uses the tabular output to create Figure \@ref(fig:stattest-chi-ex1-graph).
 
 ```{r}
 #| label: stattest-chi-ex1-graph
