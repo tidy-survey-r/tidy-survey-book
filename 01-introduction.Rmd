@@ -158,22 +158,27 @@ library(rmarkdown)
 #| label: intro-packages-tab
 #| echo: FALSE
 #| warning: FALSE
+renv_in <- renv::lockfile_read()
+renv_pack <- renv_in$Packages %>%
+  map(as_tibble) %>%list_rbind() %>%
+  distinct(Package, Version, Source, Repository, RemoteSha, RemoteUsername, RemoteRepo)
+
 packinfo <- sessioninfo::package_info()
-packinfo_tib <- 
-  tibble(
-  Package=packinfo$package,
-  Version=packinfo$loadedversion,
-  SourceLong=packinfo$source, 
-  attached=packinfo$attached) %>%
+packinfo_attach <- packinfo %>%
+  filter(attached|package %in% c("renv"))
+
+packinfo_tib <-
+  renv_pack %>%
+  filter(Package %in% c(pull(packinfo_attach, package), "remotes")) %>%
+  rename(SourceInit=Source) %>%
   mutate(
+    ShortSha=str_sub(RemoteSha, 1, 7),
     Source=case_when(
-      str_detect(SourceLong, "Github")~str_c(str_extract(SourceLong, "^[^@]+@.{7}"), ")"),
-      TRUE~SourceLong
+      Repository=="CRAN"~"CRAN",
+      TRUE ~ glue::glue("{SourceInit} ({RemoteUsername}/{RemoteRepo}@{ShortSha})")
     )
   ) %>%
-  filter(attached|Package %in% c("remotes")) %>%
   select(Package, Version, Source)
-  
 
 packinfo_tib %>%
   gt() %>%
