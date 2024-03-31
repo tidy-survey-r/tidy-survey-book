@@ -47,7 +47,7 @@ anes_des <- anes_adjwgt %>%
   )
 ```
 
-For RECS, details are included in the RECS documentation and Chapters \@ref(c04-getting-started) and \@ref(c10-specifying-sample-designs).
+For RECS, details are included in the RECS documentation and Chapters \@ref(c04-getting-started) and \@ref(c10-sample-designs-replicate-weights).
 
 ```{r}
 #| label: stattest-recs-des
@@ -88,7 +88,7 @@ The functions in the {survey} package allow for the correct estimation of the va
 * Tests of independence `svychisq()`
 * Tests of homogeneity `svychisq()`
 
-## Dot Notation {#dot-notation}
+## Dot notation {#dot-notation}
 
 Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we will need to use dot (`.`) notation^[This could change in the future if another package is built or {srvyr} is expanded to work with **tidymodels** but no such plans are known at this time.]
 
@@ -124,7 +124,7 @@ svydata_des %>%
  svyttest(., x ~ y)
 ```
 
-## Comparison of Proportions and Means {#stattest-ttest}
+## Comparison of proportions and means {#stattest-ttest}
 
 We use t-tests to compare two proportions or means. T-tests allow us to determine if one proportion or mean is statistically different from another. They are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., North versus South). Comparing a single estimate to a known value is called a *one sample t-test*, and we can set up the hypothesis test as follows:  
 
@@ -138,7 +138,7 @@ For comparing two estimates, this is called a *two-sample t-test* and we can set
 
 Two sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., North versus South), the t-test run will be an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention).
 
-The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c10-specifying-sample-designs) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined.
+The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c10-sample-designs-replicate-weights) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined.
 
 ### Syntax {#stattest-ttest-syntax}
 
@@ -175,13 +175,13 @@ The `formula` argument can take several different forms depending on what we are
         - **3+ level grouping variable:** `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms where `groupVar` would be the variable holding the values for classroom IDs and `level` is the classroom ID we want to compare to the others.
     b. **Paired:** `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course so `var_1` would be the test score at the beginning of the course and `var_2` would be the score at the end of the course.
     
-The `na.rm` argument defaults to `FALSE`, which means if any data is missing, the t-test will not compute. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c03-understanding-survey-data-documentation) to better understand how to handle missing data.
+The `na.rm` argument defaults to `FALSE`, which means if any data is missing, the t-test will not compute. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c03-survey-data-documentation) to better understand how to handle missing data.
 
 Let's walk through a few examples using the ANES and RECS data.
 
 ### Examples {#stattest-ttest-examples}
 
-#### Example 1: One-sample t-test for Mean {.unnumbered #stattest-ttest-ex1}  
+#### Example 1: One-sample t-test for mean {.unnumbered #stattest-ttest-ex1}  
 
 RECS asks respondents to indicate what temperature they set their house to during the summer at night.^[During the summer, what is your home’s typical indoor temperature inside your home at night?] In our data, we have called this variable `SummerTempNight`. If we want to see if the average U.S. household sets its temperature at a value different from 68$^\circ$F^[This is the temperature that Stephanie prefers at night during the summer, and she wanted to see if she was different from the population.], we could set up the hypothesis as follows: 
 
@@ -231,7 +231,7 @@ confint(ttest_ex1, level = 0.8)
 
 In this case, neither confidence interval contains 0, and we draw the same conclusion from either that the average temperature households set their thermostat in the summer at night is significantly higher than 68$^\circ$F.
 
-#### Example 2: One-sample t-test for Proportion {.unnumbered #stattest-ttest-ex2}
+#### Example 2: One-sample t-test for proportion {.unnumbered #stattest-ttest-ex2}
 
 RECS asked respondents if they use any air conditioning (AC) in their home.^[Is any air conditioning equipment used in your home?] In our data, we call this variable `ACUsed`. Let's look at the proportion of U.S. households that use AC in their homes using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis).
 
@@ -398,7 +398,7 @@ tidy(ttest_ex4) %>%
 
 U.S. households set their thermostat on average `r signif(ttest_ex4$estimate,2)`$^\circ$F warmer in summer nights than winter nights, which is statistically significant (t = `r signif(ttest_ex4$statistic, 3)`, p-value = $`r pretty_p_value(ttest_ex4[["p.value"]])`$).  
 
-## Chi-Square Tests {#stattest-chi}
+## Chi-square tests {#stattest-chi}
 
 Chi-square tests ($\chi^2$) allow us to examine multiple proportions using a goodness-of-fit test, a test of independence, or a test of homogeneity. These three tests have the same $\chi^2$ distributions but with slightly different underlying assumptions.
 
@@ -417,7 +417,7 @@ Third, **tests of homogeneity** are used to compare two distributions to see if 
   - $H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}$ where $p_{ia}$ is the observed proportion of category $i$ for subgroup $a$, $p_{ib}$ is the observed proportion of category $i$ for subgroup $a$ and $k$ is the number of categories
   - $H_A:$ at least one category of $p_{ia}$ does not match $p_{ib}$
 
-As with t-tests, the difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c10-specifying-sample-designs).
+As with t-tests, the difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c10-sample-designs-replicate-weights).
 
 ### Syntax {#stattest-chi-syntax}
 
@@ -472,13 +472,13 @@ For tests of independence, the `Wald` and `adjWald` are recommended as they prov
 
 The formula argument will always be one-sided, unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula = ~ var_1 + var_2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
 
-Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. If any data is missing, the $\chi^2$ tests will assume that `NA` is a category and include it in the calculation. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c03-understanding-survey-data-documentation) to better understand how to handle missing data.
+Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. If any data is missing, the $\chi^2$ tests will assume that `NA` is a category and include it in the calculation. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c03-survey-data-documentation) to better understand how to handle missing data.
 
 ### Examples {#stattest-chi-examples}
 
 Let's walk through a few examples using the ANES data.
 
-#### Example 1: Goodness of Fit Test {.unnumbered #stattest-chi-ex1}
+#### Example 1: Goodness of fit test {.unnumbered #stattest-chi-ex1}
 
 ANES asked respondents about their highest education level.^[What is the highest level of school you have completed or the highest degree you have received?] Based on the data from the 2020 American Community Survey (ACS) 5-year estimates^[Data was pulled from data.census.gov using the S1501 Education Attainment 2020: ACS 5-Year Estimates Subject Tables], the education distribution of those aged 18+ in the United States (among the 50 states and District of Columbia) is as follows:
 
@@ -569,7 +569,7 @@ ex1_table %>%
   theme(legend.position = "bottom", legend.title = element_blank())
 ```
 
-#### Example 2: Test of Independence {.unnumbered #stattest-chi-ex2}
+#### Example 2: Test of independence {.unnumbered #stattest-chi-ex2}
 
 ANES asked respondents two questions about trust:
 
@@ -708,7 +708,7 @@ chi_ex2_obs %>%
   guides(col = guide_legend(nrow=2))
 ```
 
-#### Example 3: Test of Homogeneity {.unnumbered #stattest-chi-ex3}
+#### Example 3: Test of homogeneity {.unnumbered #stattest-chi-ex3}
 
 Researchers and politicians often look at specific demographics each election cycle to understand how each group is leaning or voting toward candidates. The ANES data are collected post-election, but we can still see if there are differences in how specific demographic groups voted.
 
