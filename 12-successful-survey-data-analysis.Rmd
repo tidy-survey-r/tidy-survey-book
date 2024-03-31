@@ -75,7 +75,7 @@ As we first introduced in Chapter \@ref(c04-getting-started) (Section \@ref(surv
 
 4. Within `summarize()`, specify variables to calculate, including means, totals, proportions, quantiles, and more
 
-The order of these steps matters in survey analysis. For example, if we need to subset the data, we must use `filter()` on our data **after** creating the survey design. If we do this before the survey design is created, we may not be correctly accounting for the study design, resulting in incorrect findings.
+The order of these steps matters in survey analysis. For example, if we need to subset the data, we must use `filter()` on our data **after** creating the survey design. If we do this before the survey design is created, we may not be correctly accounting for the study design, resulting in incorrect findings. \index{Functions in srvyr!filter}
 
 Additionally, correctly identifying the survey design is one of the most important steps in survey analysis.  Knowing the type of sample design (e.g., clustered, stratified) will help ensure the underlying error structure is correctly calculated and weights are correctly used. Reviewing the documentation (see Chapter \@ref(c03-understanding-survey-data-documentation)) will help us understand what variables to use from the data.  Learning about complex design factors such as clustering, stratification, and weighting is foundational to complex survey analysis, and we recommend that all analysts review Chapter \@ref(c10-specifying-sample-designs) before creating their first design object. 
 
@@ -95,7 +95,7 @@ For example, let’s explore the example survey dataset introduced in the Prereq
 #| label: recommendations-example-desc
 example_srvy %>% 
   group_by(gender) %>% 
-  summarise(n = n())
+  summarize(n = n())
 ```
 
 The data shows that males comprise 1 out of 10, or 10%, of the sample. Generally, we assume something close to a 50/50 split between male and female respondents in a population. The sizeable female proportion could indicate either a unique sample or a potential error in the data. If we review the survey documentation and see this was a deliberate part of the design, we can continue our analysis using the appropriate methods. If this was not an intentional choice by the researchers, the results alert us that something may be incorrect in the data or our code, and we can verify if there’s an issue by comparing the results with the weighted means.
@@ -185,7 +185,7 @@ example_srvy_fct %>%
   count(q_d2_1_fct, q_d2_1)
 ```
 
-This example data also includes a column called `region`, which is imported as a number (`<int>`). This is a good hint to use the questionnaire and codebook along with the data to find out if the values actually reflect a number or are perhaps a coded categorical variable (see Chapter \@ref(c03-understanding-survey-data-documentation) for more details). R will calculate the mean even if it is not appropriate, leading to the common mistake of applying an average to categorical values instead of a proportion function. For example, for ease of coding, we may use the `across()` function to calculate the mean across all numeric variables: \index{Functions in srvyr!survey\_mean}
+This example data also includes a column called `region`, which is imported as a number (`<int>`). This is a good hint to use the questionnaire and codebook along with the data to find out if the values actually reflect a number or are perhaps a coded categorical variable (see Chapter \@ref(c03-understanding-survey-data-documentation) for more details). R will calculate the mean even if it is not appropriate, leading to the common mistake of applying an average to categorical values instead of a proportion function. For example, for ease of coding, we may use the `across()` function to calculate the mean across all numeric variables: \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!summarize}
 
 ```{r}
 #| label: recommendations-example-dat-num-calc
@@ -200,7 +200,7 @@ In this example, if we do not adjust `region` to be a factor variable type, we m
 
 It is common for analysts working in R to come across warning or error messages, and learning how to debug these messages (i.e., find and fix issues) ensures we can proceed with our work and avoid potential mistakes.
 
-We've discussed a few examples in this book. For example, if we calculate an average with `survey_mean()` and get `NA` instead of a number, it may be because our column has missing values. \index{Functions in srvyr!survey\_mean}
+We've discussed a few examples in this book. For example, if we calculate an average with `survey_mean()` and get `NA` instead of a number, it may be because our column has missing values. \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!summarize}
 
 ```{r}
 #| label: recommendations-missing-dat
@@ -208,7 +208,7 @@ example_des %>%
   summarize(mean = survey_mean(q_d1))
 ```
 
-Including the `na.rm = TRUE` would resolve the issue:
+Including the `na.rm = TRUE` would resolve the issue: \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!summarize}
 
 ```{r}
 #| label: recommendations-missing-dat-fix
@@ -216,7 +216,7 @@ example_des %>%
   summarize(mean = survey_mean(q_d1, na.rm = TRUE))
 ```
 
-Another common error message that we may see with survey analysis may look something like the following:
+Another common error message that we may see with survey analysis may look something like the following: \index{Functions in survey!svyttest}
 
 ```{r}
 #| label: recommendations-desobj-loc
@@ -225,7 +225,7 @@ example_des %>%
   svyttest(q_d1~gender)
 ```
 
-In this case, we need to remember that with functions from the {survey} packages like `svyttest()`, the design object is not the first argument, and we have to use the dot (`.`) notation (see Chapter \@ref(c06-statistical-testing)).  Adding in the named argument of `design=.` will fix this error.
+In this case, we need to remember that with functions from the {survey} packages like `svyttest()`, the design object is not the first argument, and we have to use the dot (`.`) notation (see Chapter \@ref(c06-statistical-testing)).  Adding in the named argument of `design=.` will fix this error. \index{Functions in survey!svyttest}
 
 ```{r}
 #| label: recommendations-desobj-locfix
