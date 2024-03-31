@@ -4,88 +4,189 @@
 
 # Introduction {#c01-intro}
 
-Surveys are used to gather information about a population. They are frequently used by researchers, governments, and businesses to better understand public opinion and behavior. For example, a non-profit group might be interested in public opinion on a given topic, government agencies may be interested in behaviors to inform policy, or companies may survey potential consumers about what they want from their products. Developing and fielding a survey is a method to gather information about topics that interest us.
+Surveys are valuable tools for gathering information about a population, and are used by researchers, governments, and businesses alike to better understand public opinion and behaviors. For example, a non-profit group may analyze societal trends to measure their impact, government agencies may study behaviors to inform policy, or companies may seek to learn customer product preferences to refine business strategy. With survey data, we can explore the world around us. 
 
-This book focuses on how to **analyze** the data collected from a survey. We assume that you have conducted a survey or obtained a microdata file.  Microdata, also known as respondent-level or row-level data, contains individual survey responses, analysis weights, and design variables (as opposed to opposed to summarized data in tables). For the purposes of this book, you need the weights and design variables for your survey data. These are required to accurately calculate unbiased estimates^[Note, if you do not already have weights created for the survey data you are using, we recommend reviewing other resources focused on weight creation such as @Valliant2018weights to create weights before working on analysis.]. Understanding the concepts and techniques discussed in this book will help you to extract meaningful insights from your survey data.
+Surveys are often conducted with a sample of the population. Therefore, in order to use the survey data to understand the population, we use weights to adjust the survey results for unequal probabilities of selection, non-response, and post-stratification. These adjustments ensure the sample accurately represents the population of interest [@gard2023weightsdef]. To account for the intricate nature of the survey design, analysts rely on statistical software such as SAS, Stata, SUDAAN, and R. 
 
-To account for the weights and study design, researchers rely on statistical software such as SAS, Stata, SUDAAN, and R. In this book, we will use R to provide an overview to survey analysis. Our goal is to provide a comprehensive guide for individuals new to survey analysis but have some statistics and R programming background. We will use a combination of both the {survey} and {srvyr} packages and present the code following best practices from the tidyverse [@R-srvyr; @lumley2010complex; @tidyverse2019]. 
+In this book, we focus on R to introduce survey analysis. Our goal is to provide a comprehensive guide for individuals new to survey analysis but with some familiarity with statistics and R programming. We use a combination of the {survey} and {srvyr} packages and present the code following best practices from the tidyverse and assume weights have already been calculated and are available. 
 
-In 2003, the {survey} package was released on CRAN and has been continuously developed over time. This package, primarily developed by Thomas Lumley, is extensive and includes the following features:
+## Survey analysis in R
 
-- Estimates of point estimates and their associated variances, including means, totals, ratios, quantiles, and proportions
-- Estimation of regression models, including generalized linear models, log-linear models, and survival curves
-- Variances by Taylor linearization or by replicate weights (balance repeated replication, jackknife, bootstrap, multistage bootstrap, or user-supplied)
-- Hypothesis testing for means, proportions, and more
+The {survey} package was released on the [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/src/contrib/Archive/survey/) in 2003 and has been continuously developed over time. This package, primarily authored by Thomas Lumley, offers an extensive array of features, including:
 
-The {srvyr} package in R builds on the {survey} package. It provides wrappers for functions that align with the tidyverse philosophy, which is our motivation for using and recommending this package. We find that the {srvyr} package is user-friendly for those familiar with tidyverse packages in R [@tidyverse2019]. For example, while many functions in the {survey} package use variables as formulas, the {srvyr} package uses tidy selection to pass variable names (a common feature in the tidyverse) [R-tidyselect]. Users of the tidyverse are most likely familiar with the magrittr pipe (`%>%`), which seamlessly works with functions from the {srvyr} package. Moreover, several common functions from {dplyr}, such as including `filter()`, `mutate()`, and `summarize()`, can be applied to survey objects [@R-dplyr]. Users can streamline their analysis workflow and capitalize on the benefits of both the {srvyr} and {tidyverse} packages.
+* Calculation of point estimates and their associated variances, including means, totals, ratios, quantiles, and proportions
+* Estimation of regression models, including generalized linear models, log-linear models, and survival curves
+* Variances by Taylor linearization or by replicate weights, including balance repeated replication, jackknife, bootstrap, multistage bootstrap, or user-supplied methods
+* Hypothesis testing for means, proportions, and other parameters
 
-There is one limitation to the {srvyr} package: it doesn't fully incorporate the modeling capabilities of the {survey} package into its tidy versions. This book will use the {survey} package when discussing modeling and hypothesis testing. However, we will guide you on how to apply the pipe to these functions to ensure clarity in your analyses.
+The {srvyr} package builds on the {survey} package by providing wrappers for functions that align with the tidyverse philosophy. This is our motivation for using and recommending this package. We find that the {srvyr} package is user-friendly for those familiar with the tidyverse packages in R.
+
+For example, while many functions in the {survey} package use variables as formulas, the {srvyr} package uses [tidy selection](https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html) to pass variable names, a common feature in the tidyverse. Users of the tidyverse are likely familiar with the magrittr pipe operator (`%>%`), which seamlessly works with functions from the {srvyr} package. Moreover, several common functions from {dplyr}, such as `filter()`, `mutate()`, and `summarize()`, can be applied to survey objects. This enables users to streamline their analysis workflow and leverage the benefits of both the {srvyr} and tidyverse packages.
+
+While the {srvyr} package offers many advantages, there is one notable limitation: it doesn't fully incorporate the modeling capabilities of the {survey} package into tidy wrappers. When discussing modeling and hypothesis testing, we primarily rely on the {survey} package. However, we guide you on how to apply the pipe operator to these functions to maintain clarity and consistency in your analyses.
 
 ## What to expect {#what-to-expect}
 
-This book will cover many aspects of survey design and analysis, from understanding how to create design effects to conducting descriptive analysis, statistical tests, and models.  Additionally, we emphasize best practices in coding and presenting results. Throughout this book, we use real-world data and present practical examples to help you gain proficiency in survey analysis. While we provide a brief overview of survey methodology and statistical theory, this book is not intended to be the sole resource for these topics.  We reference other materials throughout the book and encourage readers to seek those out for more information. Below is a summary of each chapter:
+This book covers many aspects of survey design and analysis, from understanding how to create design objects to conducting descriptive analysis, statistical tests, and models. We emphasize coding best practices and effective presentation techniques while using real-world data and practical examples to help you gain proficiency in survey analysis. 
 
-- **Chapter \@ref(c02-overview-surveys)**: An overview of surveys and the process of designing surveys. This is only an overview, and we include many references for more in-depth knowledge.
-- **Chapter \@ref(c03-understanding-survey-data-documentation)**: Understanding survey documentation. How to read the various components of survey documentation, working with missing data, and finding the documentation.
-- **Chapter \@ref(c04-getting-started)**: TO-DO
-- **Chapter \@ref(c05-descriptive-analysis)**: Descriptive analyses. Calculating point estimates along with their standard errors, confidence intervals, and design effects.
-- **Chapter \@ref(c06-statistical-testing)**: Statistical testing. Testing for differences between groups, including comparisons of means and proportions as well as goodness of fit tests, tests of independence, and tests of homogeneity.
-- **Chapter \@ref(c07-modeling)**: Modeling. Linear regression, ANOVA, and logistic regression.
-- **Chapter \@ref(c08-communicating-results)**: Communicating results. Describing results, reproducibility, making publishable tables and graphs, and helpful functions.
-- **Chapter \@ref(c09-reprex-data)**: TO-DO 
-- **Chapter \@ref(c10-specifying-sample-designs)**: Specifying sampling designs. Descriptions of common sampling designs, when they are used, the math behind the mean and standard error estimates, how to specify the designs in R, and examples using real data.
-- **Chapter \@ref(c11-missing-data)**: TO-DO
-- **Chapter \@ref(c12-recommendations)**: TO-DO
-- **Chapter \@ref(c13-ncvs-vignette)**: National Crime Victimization Survey Vignette. A vignette on how to analyze data from the NCVS, a survey in the U.S. that collects information on crimes and their characteristics. This illustrates an analysis that requires multiple files to calculate victimization rates.
-- **Chapter \@ref(c14-ambarom-vignette)**: AmericasBarometer Vignette. A vignette on how to analyze data from the AmericasBarometer, a survey of attitudes, evaluations, experiences, and behavior in countries in the Western Hemisphere. This includes how to make choropleth maps with survey estimates.
+Below is a summary of each chapter:
 
-<<<<<<< HEAD
-In most chapters, you'll find code that you can follow. Each of these chapters starts with a "set-up" section. This section will include the code needed to load the necessary packages and datasets in the chapter.  We then provide the main idea of the chapter and examples on how to use the functions.  Most chapters end with exercises to work through.  Solutions to the exercises can be found in the Appendix.
+- **Chapter \@ref(c02-overview-surveys) - Overview of Surveys**:
+  - Overview of survey design processes
+  - References for more in-depth knowledge
+- **Chapter \@ref(c03-understanding-survey-data-documentation) - Understanding Survey Data Documentation**:
+  - Guide to survey documentation
+- **Chapter \@ref(c04-getting-started) - Getting started**:
+  - Installation of packages
+  - Introduction to the {srvyrexploR} package and its analytic datasets
+  - Outline of the survey analysis process
+  - Comparison between the {dplyr} and {srvyr} packages
+- **Chapter \@ref(c05-descriptive-analysis) - Descriptive analyses**:
+  - Calculation of point estimates, standard errors, confidence intervals, and design effects
+- **Chapter \@ref(c06-statistical-testing) - Statistical testing**:
+  - Statistical testing methods
+  - Comparison of means and proportions
+  - Goodness of fit tests, tests of independence, and tests of homogeneity
+- **Chapter \@ref(c07-modeling) - Modeling**:
+  - Linear regression, ANOVA, and logistic regression modeling
+- **Chapter \@ref(c08-communicating-results) - Communicating results**:
+  - Strategies for communicating survey results
+  - Tools and guidance for creating publishable tables and graphs
+- **Chapter \@ref(c09-reprex-data) - Reproducible research**: 
+  - Various tools and methods for achieving reproducibility
+- **Chapter \@ref(c10-specifying-sample-designs) - Sample designs and replicate weights**: 
+  - Description of common sampling designs and how to specify in R
+  - Description of replicate weight methods and how to specify in R
+- **Chapter \@ref(c11-missing-data) - Missing data**:
+  - Overview of missing data in surveys
+  - Approaches to dealing with missing data
+- **Chapter \@ref(c12-recommendations) - Successful survey analysis recommendations**:
+  - Tips for successful analysis
+  - Debugging skills
+- **Chapter \@ref(c13-ncvs-vignette) - National Crime Victimization Survey Vignette**: 
+  - Vignette on analyzing National Crime Victimization Survey (NCVS) data
+  - Illustrates analysis requiring multiple files for victimization rates
+- **Chapter \@ref(c14-ambarom-vignette) - AmericasBarometer Vignette**:
+  - Vignette on analyzing AmericasBarometer survey data
+  - Includes making choropleth maps with survey estimates
+
+The majority of chapters contain code that you can follow. Each of these chapters starts with a "set-up" section, which includes the code needed to load the packages and datasets. We then provide the main idea of the chapter and examples of how to use the functions. Most chapters conclude with exercises to work through. We provide the solutions to the exercises in the online version of the book, available at [tidy-survey-r.github.io](https://tidy-survey-r.github.io/).
+
+While we provide a brief overview of survey methodology and statistical theory, this book is not intended to be the sole resource for these topics. We reference other materials throughout the book and encourage readers to seek those out for more information. 
+
+## Prerequisites
+
+To get the most of our this book, we assume that you have already conducted a survey and have the data or obtained a microdata file. Microdata, also known as respondent-level or row-level data, differs from summarized data typically found in tables. It contains individual survey responses, along with analysis weights and design variables such as strata or clusters.
+
+Additionally, the survey data should already include weights and design variables. These are required to accurately calculate unbiased estimates. The concepts and techniques discussed in this book will help you to extract meaningful insights from your survey data, but will not cover how to create weights in the first place as this is a separate complex topic. If you do not already have weights created for the survey data you are using, we recommend reviewing other resources focused on weight creation such as @Valliant2018weights.
+
+This book is tailored for analysts already familiar with R and the tidyverse but who may be new to complex survey analysis in R. We anticipate that readers of this book can:
+
+* Install R and their Integrated Development Environment (IDE) of choice, such as RStudio
+* Install and load packages from CRAN and GitHub repositories
+* Run R code
+* Read data from a folder or their working directory
+* Understand fundamental tidyverse concepts such as tidy/long/wide data, tibbles, the magrittr pipe (`%>%`), and tidy selection
+* Use the tidyverse packages to wrangle, tidy, and visualize data
+
+If these concepts or skills are new to you, we recommend starting with introductory resources to cover these topics before reading this book. R for Data Science [@wickham2023r4ds] is a beginner-friendly guide for getting started in data science using R. It offers guidance on preliminary installation steps and basic R syntax, and it introduces tidyverse concepts and packages.
 
 ## Datasets used in this book
 
-We work with two key datasets throughout the book: the Residential Energy Consumption Survey [RECS -- @recs-2020-tech] and the American National Election Studies [ANES -- @debell].  To ensure that all readers can follow the examples, we have provided analytic datasets in an R package, {srvyrexploR} [@R-srvyrexploR]. Install the package from GitHub using the {remotes} package.
+We work with two key datasets throughout the book: the Residential Energy Consumption Survey [RECS -- @recs-2020-tech] and the American National Election Studies [ANES -- @debell]. We introduce and demonstrate the loading and preparation of these datasets in Chapter \@ref(c04-getting-started).
 
-```r
-remotes::install_github("tidy-survey-r/srvyrexploR")
-```
+## Conventions
 
-To explore the provided datasets in the package, access the documentation usng the `help()` command.
+Throughout the book, we use the following typographical conventions:
 
-```r
-help(package="srvyrexploR")
-```
-To load the RECS and ANES datasets, start by running `library(srvyrexploR)` to load the package. The {srvyrexploR} uses lazy loading so it is not necessary to load the data explicitly into the environment. The datasets we will use are `recs_2020` and `anes_2020`.
+* Package names are surrounded by curly brackets: {srvyr}
+* Function names are in constant width text format and include parentheses: `survey_mean()`
+* Object and variable names are in constant width text format: `anes_des`
+
+## Getting help
+
+We recommend first trying to resolve errors and issues independently using the tips provided in **Chapter \@ref(c12-recommendations)**. 
+
+If you have questions or face issues while working through the book, please report them to its [GitHub repository](https://github.com/tidy-survey-r/tidy-survey-book).
+
+There are several community forums for asking questions, including:
+
+* Posit Community: <https://community.rstudio.com/>
+* R for Data Science Slack Community: <https://rfordatasci.com/>
+* Stack Overflow: <https://stackoverflow.com/>
+
+## Colophon
+
+This book was written in [bookdown](http://bookdown.org/) using [RStudio](http://www.rstudio.com/ide/). The complete source is available on GitHub: <https://github.com/tidy-survey-r/tidy-survey-book>. 
+
+This version of the book was built with `r R.version.string` and with the packages listed in Table \@ref(tab:intro-packages-tab).
 
 ```{r}
-#| label: intro-setup
-#| error: FALSE
-#| warning: FALSE
-#| message: FALSE
+#| label: intro-colophon-pkgs
+#| echo: false
+#| warning: false
+#| message: false
+library(prettyunits)
+library(DiagrammeR)
 library(tidyverse)
 library(survey)
 library(srvyr)
 library(srvyrexploR)
+library(broom)
+library(gt)
+library(gtsummary)
+library(censusapi)
+library(naniar)
+library(haven)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(ggpattern)
+library(osfr)
+library(janitor)
+library(kableExtra)
+library(knitr)
+library(labelled)
+library(bookdown)
+library(rmarkdown)
+
 ```
 
-RECS is a study that provides energy consumption and expenditures data in American households. The Energy Information Administration funds RECS and has been fielded 15 times between 1950 and 2020. The survey has two components - the household survey and the energy supplier survey. In 2020, the household survey was collected by web and paper questionnaires and included questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, respondent demographics, and energy assistance. The energy supplier survey consists of components relating to energy consumption and energy expenditure. Below is an overview of the `recs_2020` data:
+(ref:intro-packages-tab) Package versions and source used in building this book
 
 ```{r}
-#| label: intro-recs
-recs_2020 %>% select(-starts_with("NWEIGHT"))
-recs_2020 %>% select(starts_with("NWEIGHT"))
+#| label: intro-packages-tab
+#| echo: FALSE
+#| warning: FALSE
+renv_in <- renv::lockfile_read()
+renv_pack <- renv_in$Packages %>%
+  map(as_tibble) %>%list_rbind() %>%
+  distinct(Package, Version, Source, Repository, RemoteSha, RemoteUsername, RemoteRepo)
+
+packinfo <- sessioninfo::package_info()
+packinfo_attach <- packinfo %>%
+  filter(attached|package %in% c("renv"))
+
+packinfo_tib <-
+  renv_pack %>%
+  filter(Package %in% c(pull(packinfo_attach, package), "remotes")) %>%
+  rename(SourceInit=Source) %>%
+  mutate(
+    ShortSha=str_sub(RemoteSha, 1, 7),
+    Source=case_when(
+      Repository=="CRAN"~"CRAN",
+      TRUE ~ glue::glue("{SourceInit} ({RemoteUsername}/{RemoteRepo}@{ShortSha})")
+    )
+  ) %>%
+  select(Package, Version, Source)
+
+packinfo_tib %>%
+  gt() %>%
+  cols_align(align="left") %>%
+  cols_label(
+    Package=md("**Package**"),
+    Version=md("**Version**"),
+    Source=md("**Source**"),
+  ) %>%
+  print_gt_book(knitr::opts_current$get()[["label"]])
 ```
-
-From this output, we can see that there are `r nrow(recs_2020) %>% formatC(big.mark = ",")` rows and `r ncol(recs_2020) %>% formatC(big.mark = ",")` variables.  We can see that there are variables containing an ID (`DOEID`), geographic information (e.g., `Region`, `state_postal`, `Urbanicity`), along with information about the house, including the type of house (`HousingUnitType`) and when the house was built (`YearMade`). Additionally, there is a long list of weighting variables that we will use in the analysis (e.g., `NWEIGHT`, `NWEIGHT1`, ..., `NWEIGHT60`). We will discuss using these weighting variables in Chapter \@ref(c10-specifying-sample-designs). For a more detailed codebook, see Appendix \@ref(recs-cb).
-
-The ANES is a series study that has collected data from election surveys since 1948. These surveys contain data on public opinion and voting behavior in U.S. presidential elections. The 2020 survey (the data we will be using) was fielded to individuals over the web, through live video interviewing, or over with computer-assisted telephone interviewing (CATI). The survey includes questions on party affiliation, voting choice, and level of trust with the government. Here is an overview of the `anes_2020` data. First, we show the variables starting with "V" followed by a number; these are the original variables. Then, we show you the remaining variables that we created based on the original data:
-
-```{r}
-#| label: intro-anes
-anes_2020 %>% select(matches("^V\\d"))
-anes_2020 %>% select(-matches("^V\\d"))
-```
-
-From this output we can see that there are `r nrow(anes_2020) %>% formatC(big.mark = ",")` rows and `r ncol(anes_2020) %>% formatC(big.mark = ",")` variables.  Most of the variables start with V20, so referencing the documentation for survey will be crucial to not get lost (see Chapter \@ref(c03-understanding-survey-data-documentation)).  We have created some more descriptive variables for you to use throughout this book, such as the age (`Age`) and gender (`Gender`) of the respondent, along with variables that represent their party affiliation (`PartyID`). Additionally, we need the variables  `Weight` and `Stratum` to analyze this data accurately.  We will discuss how to use these weighting variables in Chapters \@ref(c10-specifying-sample-designs) and \@ref(c03-understanding-survey-data-documentation). For a more detailed codebook, see Appendix \@ref(anes-cb).
-
-In most chapters, you'll find code that you can follow. Each of these chapters starts with a "setup" section. The setup section includes the code needed to load the necessary packages and datasets in the chapter.  We then provide the main idea of the chapter and examples on how to use the functions.  Most chapters end with exercises to work through.  Solutions to the exercises can be found in the Appendix.
