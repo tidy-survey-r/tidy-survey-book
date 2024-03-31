@@ -23,7 +23,7 @@
 <meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
 
 
-<meta name="date" content="2024-03-22" />
+<meta name="date" content="2024-03-31" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -176,8 +176,13 @@ div.csl-indent {
 <li class="part"><span><b>I Intro</b></span></li>
 <li class="chapter" data-level="1" data-path="c01-intro.html"><a href="c01-intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
 <ul>
-<li class="chapter" data-level="1.1" data-path="c01-intro.html"><a href="c01-intro.html#what-to-expect"><i class="fa fa-check"></i><b>1.1</b> What to expect</a></li>
-<li class="chapter" data-level="1.2" data-path="c01-intro.html"><a href="c01-intro.html#datasets-used-in-this-book"><i class="fa fa-check"></i><b>1.2</b> Datasets used in this book</a></li>
+<li class="chapter" data-level="1.1" data-path="c01-intro.html"><a href="c01-intro.html#survey-analysis-in-r"><i class="fa fa-check"></i><b>1.1</b> Survey analysis in R</a></li>
+<li class="chapter" data-level="1.2" data-path="c01-intro.html"><a href="c01-intro.html#what-to-expect"><i class="fa fa-check"></i><b>1.2</b> What to expect</a></li>
+<li class="chapter" data-level="1.3" data-path="c01-intro.html"><a href="c01-intro.html#prerequisites"><i class="fa fa-check"></i><b>1.3</b> Prerequisites</a></li>
+<li class="chapter" data-level="1.4" data-path="c01-intro.html"><a href="c01-intro.html#datasets-used-in-this-book"><i class="fa fa-check"></i><b>1.4</b> Datasets used in this book</a></li>
+<li class="chapter" data-level="1.5" data-path="c01-intro.html"><a href="c01-intro.html#conventions"><i class="fa fa-check"></i><b>1.5</b> Conventions</a></li>
+<li class="chapter" data-level="1.6" data-path="c01-intro.html"><a href="c01-intro.html#getting-help"><i class="fa fa-check"></i><b>1.6</b> Getting help</a></li>
+<li class="chapter" data-level="1.7" data-path="c01-intro.html"><a href="c01-intro.html#colophon"><i class="fa fa-check"></i><b>1.7</b> Colophon</a></li>
 </ul></li>
 <li class="chapter" data-level="2" data-path="c02-overview-surveys.html"><a href="c02-overview-surveys.html"><i class="fa fa-check"></i><b>2</b> Overview of Surveys</a>
 <ul>
@@ -513,142 +518,697 @@ div.csl-indent {
             <section class="normal" id="section-">
 <div id="c01-intro" class="section level1 hasAnchor" number="1">
 <h1><span class="header-section-number">Chapter 1</span> Introduction<a href="c01-intro.html#c01-intro" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Surveys are used to gather information about a population. They are frequently used by researchers, governments, and businesses to better understand public opinion and behavior. For example, a non-profit group might be interested in public opinion on a given topic, government agencies may be interested in behaviors to inform policy, or companies may survey potential consumers about what they want from their products. Developing and fielding a survey is a method to gather information about topics that interest us.</p>
-<!--Consider pulling out definitions into call out boxes or a glossary-->
-<p>This book focuses on how to <strong>analyze</strong> the data collected from a survey. We assume that you have conducted a survey or obtained a microdata file. Microdata, also known as respondent-level or row-level data, contains individual survey responses, analysis weights, and design variables (as opposed to opposed to summarized data in tables). For the purposes of this book, you need the weights and design variables for your survey data. These are required to accurately calculate unbiased estimates<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. Understanding the concepts and techniques discussed in this book will help you to extract meaningful insights from your survey data.</p>
-<p>To account for the weights and study design, researchers rely on statistical software such as SAS, Stata, SUDAAN, and R. In this book, we will use R to provide an overview to survey analysis. Our goal is to provide a comprehensive guide for individuals new to survey analysis but have some statistics and R programming background. We will use a combination of both the {survey} and {srvyr} packages and present the code following best practices from the tidyverse.</p>
-<p>In 2003, the {survey} package was released on CRAN and has been continuously developed over time<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>. This package, primarily developed by Thomas Lumley, is extensive and includes the following features:</p>
+<p>Surveys are valuable tools for gathering information about a population, and are used by researchers, governments, and businesses alike to better understand public opinion and behaviors. For example, a non-profit group may analyze societal trends to measure their impact, government agencies may study behaviors to inform policy, or companies may seek to learn customer product preferences to refine business strategy. With survey data, we can explore the world around us.</p>
+<p>Surveys are often conducted with a sample of the population. Therefore, in order to use the survey data to understand the population, we use weights to adjust the survey results for unequal probabilities of selection, non-response, and post-stratification. These adjustments ensure the sample accurately represents the population of interest <span class="citation">(<a href="#ref-gard2023weightsdef">Gard et al. 2023</a>)</span>. To account for the intricate nature of the survey design, analysts rely on statistical software such as SAS, Stata, SUDAAN, and R.</p>
+<p>In this book, we focus on R to introduce survey analysis. Our goal is to provide a comprehensive guide for individuals new to survey analysis but with some familiarity with statistics and R programming. We use a combination of the {survey} and {srvyr} packages and present the code following best practices from the tidyverse and assume weights have already been calculated and are available.</p>
+<div id="survey-analysis-in-r" class="section level2 hasAnchor" number="1.1">
+<h2><span class="header-section-number">1.1</span> Survey analysis in R<a href="c01-intro.html#survey-analysis-in-r" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The {survey} package was released on the <a href="https://cran.r-project.org/src/contrib/Archive/survey/">Comprehensive R Archive Network (CRAN)</a> in 2003 and has been continuously developed over time. This package, primarily authored by Thomas Lumley, offers an extensive array of features, including:</p>
 <ul>
-<li>Estimates of point estimates and their associated variances, including means, totals, ratios, quantiles, and proportions</li>
+<li>Calculation of point estimates and their associated variances, including means, totals, ratios, quantiles, and proportions</li>
 <li>Estimation of regression models, including generalized linear models, log-linear models, and survival curves</li>
-<li>Variances by Taylor linearization or by replicate weights (balance repeated replication, jackknife, bootstrap, multistage bootstrap, or user-supplied)</li>
-<li>Hypothesis testing for means, proportions, and more</li>
+<li>Variances by Taylor linearization or by replicate weights, including balance repeated replication, jackknife, bootstrap, multistage bootstrap, or user-supplied methods</li>
+<li>Hypothesis testing for means, proportions, and other parameters</li>
 </ul>
-<p>The {srvyr} package in R builds on the {survey} package. It provides wrappers for functions that align with the tidyverse philosophy, which is our motivation for using and recommending this package. We find that the {srvyr} package is user-friendly for those familiar with tidyverse packages in R. For example, while many functions in the {survey} package use variables as formulas, the {srvyr} package uses tidy selection to pass variable names<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> (a common feature in the tidyverse). Users of the tidyverse are most likely familiar with the magittr pipe (<code>%&gt;%</code>), which seamlessly works with functions from the {srvyr} package. Moreover, several common functions from {dplyr}, such as including <code>filter()</code>, <code>mutate()</code>, and <code>summarize()</code>, can be applied to survey objects. Users can streamline their analysis workflow and capitalize on the benefits of both the {srvyr} and tidyverse packages.</p>
-<p>There is one limitation to the {srvyr} package: it doesn’t fully incorporate the modeling capabilities of the {survey} package into its tidy versions. This book will use the {survey} package when discussing modeling and hypothesis testing. However, we will guide you on how to apply the pipe to these functions to ensure clarity in your analyses.</p>
-<div id="what-to-expect" class="section level2 hasAnchor" number="1.1">
-<h2><span class="header-section-number">1.1</span> What to expect<a href="c01-intro.html#what-to-expect" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>This book will cover many aspects of survey design and analysis, from understanding how to create design effects to conducting descriptive analysis, statistical tests, and models. Additionally, we emphasize best practices in coding and presenting results. Throughout this book, we use real-world data and present practical examples to help you gain proficiency in survey analysis. While we provide a brief overview of survey methodology and statistical theory, this book is not intended to be the sole resource for these topics. We reference other materials throughout the book and encourage readers to seek those out for more information. Below is a summary of each chapter:</p>
-<ul>
-<li><strong>Chapter <a href="c02-overview-surveys.html#c02-overview-surveys">2</a></strong>: An overview of surveys and the process of designing surveys. This is only an overview, and we include many references for more in-depth knowledge.</li>
-<li><strong>Chapter <a href="c03-understanding-survey-data-documentation.html#c03-understanding-survey-data-documentation">3</a></strong>: Understanding survey documentation. How to read the various components of survey documentation, working with missing data, and finding the documentation.</li>
-<li><strong>Chapter <a href="c04-getting-started.html#c04-getting-started">4</a></strong>: TO-DO</li>
-<li><strong>Chapter <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a></strong>: Descriptive analyses. Calculating point estimates along with their standard errors, confidence intervals, and design effects.</li>
-<li><strong>Chapter <a href="c06-statistical-testing.html#c06-statistical-testing">6</a></strong>: Statistical testing. Testing for differences between groups, including comparisons of means and proportions as well as goodness of fit tests, tests of independence, and tests of homogeneity.</li>
-<li><strong>Chapter <a href="c07-modeling.html#c07-modeling">7</a></strong>: Modeling. Linear regression, ANOVA, and logistic regression.</li>
-<li><strong>Chapter <a href="c08-communicating-results.html#c08-communicating-results">8</a></strong>: Communicating results. Describing results, reproducibility, making publishable tables and graphs, and helpful functions.</li>
-<li><strong>Chapter <a href="c09-reprex-data.html#c09-reprex-data">9</a></strong>: TO-DO</li>
-<li><strong>Chapter <a href="c10-specifying-sample-designs.html#c10-specifying-sample-designs">10</a></strong>: Specifying sampling designs. Descriptions of common sampling designs, when they are used, the math behind the mean and standard error estimates, how to specify the designs in R, and examples using real data.</li>
-<li><strong>Chapter <a href="c11-missing-data.html#c11-missing-data">11</a></strong>: TO-DO</li>
-<li><strong>Chapter <a href="c12-recommendations.html#c12-recommendations">12</a></strong>: TO-DO</li>
-<li><strong>Chapter <a href="c13-ncvs-vignette.html#c13-ncvs-vignette">13</a></strong>: National Crime Victimization Survey Vignette. A vignette on how to analyze data from the NCVS, a survey in the U.S. that collects information on crimes and their characteristics. This illustrates an analysis that requires multiple files to calculate victimization rates.</li>
-<li><strong>Chapter <a href="c14-ambarom-vignette.html#c14-ambarom-vignette">14</a></strong>: AmericasBarometer Vignette. A vignette on how to analyze data from the AmericasBarometer, a survey of attitudes, evaluations, experiences, and behavior in countries in the Western Hemisphere. This includes how to make choropleth maps with survey estimates.</li>
-</ul>
-<p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-In most chapters, you’ll find code that you can follow. Each of these chapters starts with a “set-up” section. This section will include the code needed to load the necessary packages and datasets in the chapter. We then provide the main idea of the chapter and examples on how to use the functions. Most chapters end with exercises to work through. Solutions to the exercises can be found in the Appendix.</p>
+<p>The {srvyr} package builds on the {survey} package by providing wrappers for functions that align with the tidyverse philosophy. This is our motivation for using and recommending this package. We find that the {srvyr} package is user-friendly for those familiar with the tidyverse packages in R.</p>
+<p>For example, while many functions in the {survey} package use variables as formulas, the {srvyr} package uses <a href="https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html">tidy selection</a> to pass variable names, a common feature in the tidyverse. Users of the tidyverse are likely familiar with the magrittr pipe operator (<code>%&gt;%</code>), which seamlessly works with functions from the {srvyr} package. Moreover, several common functions from {dplyr}, such as <code>filter()</code>, <code>mutate()</code>, and <code>summarize()</code>, can be applied to survey objects. This enables users to streamline their analysis workflow and leverage the benefits of both the {srvyr} and tidyverse packages.</p>
+<p>While the {srvyr} package offers many advantages, there is one notable limitation: it doesn’t fully incorporate the modeling capabilities of the {survey} package into tidy wrappers. When discussing modeling and hypothesis testing, we primarily rely on the {survey} package. However, we guide you on how to apply the pipe operator to these functions to maintain clarity and consistency in your analyses.</p>
 </div>
-<div id="datasets-used-in-this-book" class="section level2 hasAnchor" number="1.2">
-<h2><span class="header-section-number">1.2</span> Datasets used in this book<a href="c01-intro.html#datasets-used-in-this-book" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>We work with two key datasets throughout the book: the Residential Energy Consumption Survey <span class="citation">(RECS – <a href="#ref-recs-2020-tech">U.S. Energy Information Administration 2023a</a>)</span> and the American National Election Studies <span class="citation">(ANES – <a href="#ref-debell">DeBell 2010</a>)</span>. To ensure that all readers can follow the examples, we have provided analytic datasets in an R package, {srvyrexploR}. Install the package from GitHub using the {remotes} package.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="c01-intro.html#cb1-1" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;tidy-survey-r/srvyrexploR&quot;</span>)</span></code></pre></div>
-<p>To explore the provided datasets in the package, access the documentation usng the <code>help()</code> command.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="c01-intro.html#cb2-1" tabindex="-1"></a><span class="fu">help</span>(<span class="at">package=</span><span class="st">&quot;srvyrexploR&quot;</span>)</span></code></pre></div>
-<p>To load the RECS and ANES datasets, start by running <code>library(srvyrexploR)</code> to load the package. Then, use the <code>data()</code> command to load the datasets into the environment.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="c01-intro.html#cb3-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb3-2"><a href="c01-intro.html#cb3-2" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
-<span id="cb3-3"><a href="c01-intro.html#cb3-3" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
-<span id="cb3-4"><a href="c01-intro.html#cb3-4" tabindex="-1"></a><span class="fu">library</span>(srvyrexploR)</span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="c01-intro.html#cb4-1" tabindex="-1"></a><span class="fu">data</span>(recs_2020)</span>
-<span id="cb4-2"><a href="c01-intro.html#cb4-2" tabindex="-1"></a><span class="fu">data</span>(anes_2020)</span></code></pre></div>
-<p>RECS is a study that provides energy consumption and expenditures data in American households. The Energy Information Administration funds RECS and has been fielded 15 times between 1950 and 2020. The survey has two components - the household survey and the energy supplier survey. In 2020, the household survey was collected by web and paper questionnaires and included questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, respondent demographics, and energy assistance. The energy supplier survey consists of components relating to energy consumption and energy expenditure. Below is an overview of the <code>recs_2020</code> data:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="c01-intro.html#cb5-1" tabindex="-1"></a>recs_2020 <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">&quot;NWEIGHT&quot;</span>))</span></code></pre></div>
-<pre><code>## # A tibble: 18,496 × 57
-##     DOEID ClimateRegion_BA Urbanicity Region REGIONC Division STATE_FIPS
-##     &lt;dbl&gt; &lt;fct&gt;            &lt;fct&gt;      &lt;fct&gt;  &lt;chr&gt;   &lt;fct&gt;    &lt;chr&gt;     
-##  1 100001 Mixed-Dry        Urban Area West   WEST    Mountai… 35        
-##  2 100002 Mixed-Humid      Urban Area South  SOUTH   West So… 05        
-##  3 100003 Mixed-Dry        Urban Area West   WEST    Mountai… 35        
-##  4 100004 Mixed-Humid      Urban Area South  SOUTH   South A… 45        
-##  5 100005 Mixed-Humid      Urban Area North… NORTHE… Middle … 34        
-##  6 100006 Hot-Humid        Urban Area South  SOUTH   West So… 48        
-##  7 100007 Mixed-Humid      Urban Area South  SOUTH   West So… 40        
-##  8 100008 Mixed-Humid      Urban Clu… South  SOUTH   East So… 28        
-##  9 100009 Mixed-Humid      Urban Area South  SOUTH   South A… 11        
-## 10 100010 Hot-Dry          Urban Area West   WEST    Mountai… 04        
-## # ℹ 18,486 more rows
-## # ℹ 50 more variables: state_postal &lt;fct&gt;, state_name &lt;fct&gt;,
-## #   HDD65 &lt;dbl&gt;, CDD65 &lt;dbl&gt;, HDD30YR &lt;dbl&gt;, CDD30YR &lt;dbl&gt;,
-## #   HousingUnitType &lt;fct&gt;, YearMade &lt;ord&gt;, TOTSQFT_EN &lt;dbl&gt;,
-## #   TOTHSQFT &lt;dbl&gt;, TOTCSQFT &lt;dbl&gt;, ZTOTSQFT_EN &lt;fct&gt;, ZYearMade &lt;fct&gt;,
-## #   ZHousingUnitType &lt;fct&gt;, SpaceHeatingUsed &lt;lgl&gt;,
-## #   ZSpaceHeatingUsed &lt;fct&gt;, ACUsed &lt;lgl&gt;, ZACUsed &lt;fct&gt;, …</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="c01-intro.html#cb7-1" tabindex="-1"></a>recs_2020 <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">&quot;NWEIGHT&quot;</span>))</span></code></pre></div>
-<pre><code>## # A tibble: 18,496 × 61
-##    NWEIGHT NWEIGHT1 NWEIGHT2 NWEIGHT3 NWEIGHT4 NWEIGHT5 NWEIGHT6
-##      &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-##  1   3284.    3273.    3349.    3345.    3437.    3416.    3355.
-##  2   9007.    9020.    9081.    9020.    9213.    9117.    9179.
-##  3   5669.    5793.    5914.    5763.    5870.    5721.    5663.
-##  4   5294.    5361.    5362.    5371.    5393.    5328.    5354.
-##  5   9935.   10048.   10262.   10037.    9961.   10108.   10298.
-##  6   7250.    7339.    7435.    7336.    7426.    7309.    7472.
-##  7   5684.    5733.    5831.    5664.    5874.    5906.    5734.
-##  8   9700.    9725.    9774.    9658.   10221.    9792.    9906.
-##  9   1236.    1268.    1263.    1258.    1250.    1267.    1252.
-## 10   7084.    7131.    7287.    7184.    7176.    7198.    7174.
-## # ℹ 18,486 more rows
-## # ℹ 54 more variables: NWEIGHT7 &lt;dbl&gt;, NWEIGHT8 &lt;dbl&gt;, NWEIGHT9 &lt;dbl&gt;,
-## #   NWEIGHT10 &lt;dbl&gt;, NWEIGHT11 &lt;dbl&gt;, NWEIGHT12 &lt;dbl&gt;, NWEIGHT13 &lt;dbl&gt;,
-## #   NWEIGHT14 &lt;dbl&gt;, NWEIGHT15 &lt;dbl&gt;, NWEIGHT16 &lt;dbl&gt;, NWEIGHT17 &lt;dbl&gt;,
-## #   NWEIGHT18 &lt;dbl&gt;, NWEIGHT19 &lt;dbl&gt;, NWEIGHT20 &lt;dbl&gt;, NWEIGHT21 &lt;dbl&gt;,
-## #   NWEIGHT22 &lt;dbl&gt;, NWEIGHT23 &lt;dbl&gt;, NWEIGHT24 &lt;dbl&gt;, NWEIGHT25 &lt;dbl&gt;,
-## #   NWEIGHT26 &lt;dbl&gt;, NWEIGHT27 &lt;dbl&gt;, NWEIGHT28 &lt;dbl&gt;, …</code></pre>
-<p>From this output, we can see that there are 18,496 rows and 118 variables. We can see that there are variables containing an ID (<code>DOEID</code>), geographic information (e.g., <code>Region</code>, <code>state_postal</code>, <code>Urbanicity</code>), along with information about the house, including the type of house (<code>HousingUnitType</code>) and when the house was built (<code>YearMade</code>). Additionally, there is a long list of weighting variables that we will use in the analysis (e.g., <code>NWEIGHT</code>, <code>NWEIGHT1</code>, …, <code>NWEIGHT60</code>). We will discuss using these weighting variables in Chapter <a href="c10-specifying-sample-designs.html#c10-specifying-sample-designs">10</a>. For a more detailed codebook, see Appendix <a href="recs-cb.html#recs-cb">C</a>.</p>
-<p>The ANES is a series study that has collected data from election surveys since 1948. These surveys contain data on public opinion and voting behavior in U.S. presidential elections. The 2020 survey (the data we will be using) was fielded to individuals over the web, through live video interviewing, or over with computer-assisted telephone interviewing (CATI). The survey includes questions on party affiliation, voting choice, and level of trust with the government. Here is an overview of the <code>anes_2020</code> data. First, we show the variables starting with “V” followed by a number; these are the original variables. Then, we show you the remaining variables that we created based on the original data:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="c01-intro.html#cb9-1" tabindex="-1"></a>anes_2020 <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">matches</span>(<span class="st">&quot;^V</span><span class="sc">\\</span><span class="st">d&quot;</span>))</span></code></pre></div>
-<pre><code>## # A tibble: 7,453 × 44
-##    V200001    V200002 V200010b V200010c V200010d V201006 V201023 V201024
-##      &lt;dbl&gt; &lt;hvn_lbll&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;hvn_l&gt; &lt;hvn_l&gt; &lt;hvn_l&gt;
-##  1  200015          3    1.01         2        9       2      -1      -1
-##  2  200022          3    1.16         2       26       3      -1      -1
-##  3  200039          3    0.769        1       41       2      -1      -1
-##  4  200046          3    0.521        2       29       3      -1      -1
-##  5  200053          3    0.966        1       23       2      -1      -1
-##  6  200060          3    0.235        2       37       1      -1      -1
-##  7  200084          3    0.441        1        7       2      -1      -1
-##  8  200091          3    0.769        2       37       3      -1      -1
-##  9  200107          3    1.42         2       32       2       1       2
-## 10  200114          3    1.84         2       41       2      -1      -1
-## # ℹ 7,443 more rows
-## # ℹ 36 more variables: V201025x &lt;hvn_lbll&gt;, V201028 &lt;hvn_lbll&gt;,
-## #   V201029 &lt;hvn_lbll&gt;, V201101 &lt;hvn_lbll&gt;, V201102 &lt;hvn_lbll&gt;,
-## #   V201103 &lt;hvn_lbll&gt;, V201228 &lt;hvn_lbll&gt;, V201229 &lt;hvn_lbll&gt;,
-## #   V201230 &lt;hvn_lbll&gt;, V201231x &lt;hvn_lbll&gt;, V201233 &lt;hvn_lbll&gt;,
-## #   V201237 &lt;hvn_lbll&gt;, V201507x &lt;hvn_lbll&gt;, V201510 &lt;hvn_lbll&gt;,
-## #   V201546 &lt;hvn_lbll&gt;, V201547a &lt;hvn_lbll&gt;, V201547b &lt;hvn_lbll&gt;, …</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="c01-intro.html#cb11-1" tabindex="-1"></a>anes_2020 <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">matches</span>(<span class="st">&quot;^V</span><span class="sc">\\</span><span class="st">d&quot;</span>))</span></code></pre></div>
-<pre><code>## # A tibble: 7,453 × 21
-##    CaseID InterviewMode Weight VarUnit Stratum CampaignInterest    
-##     &lt;dbl&gt; &lt;fct&gt;          &lt;dbl&gt; &lt;fct&gt;   &lt;fct&gt;   &lt;fct&gt;               
-##  1 200015 Web            1.01  2       9       Somewhat interested 
-##  2 200022 Web            1.16  2       26      Not much interested 
-##  3 200039 Web            0.769 1       41      Somewhat interested 
-##  4 200046 Web            0.521 2       29      Not much interested 
-##  5 200053 Web            0.966 1       23      Somewhat interested 
-##  6 200060 Web            0.235 2       37      Very much interested
-##  7 200084 Web            0.441 1       7       Somewhat interested 
-##  8 200091 Web            0.769 2       37      Not much interested 
-##  9 200107 Web            1.42  2       32      Somewhat interested 
-## 10 200114 Web            1.84  2       41      Somewhat interested 
-## # ℹ 7,443 more rows
-## # ℹ 15 more variables: EarlyVote2020 &lt;fct&gt;, VotedPres2016 &lt;fct&gt;,
-## #   VotedPres2016_selection &lt;fct&gt;, PartyID &lt;fct&gt;,
-## #   TrustGovernment &lt;fct&gt;, TrustPeople &lt;fct&gt;, Age &lt;dbl&gt;,
-## #   AgeGroup &lt;fct&gt;, Education &lt;fct&gt;, RaceEth &lt;fct&gt;, Gender &lt;fct&gt;,
-## #   Income &lt;fct&gt;, Income7 &lt;fct&gt;, VotedPres2020 &lt;fct&gt;,
-## #   VotedPres2020_selection &lt;fct&gt;</code></pre>
-<p>From this output we can see that there are 7,453 rows and 65 variables. Most of the variables start with V20, so referencing the documentation for survey will be crucial to not get lost (see Chapter <a href="c03-understanding-survey-data-documentation.html#c03-understanding-survey-data-documentation">3</a>). We have created some more descriptive variables for you to use throughout this book, such as the age (<code>Age</code>) and gender (<code>Gender</code>) of the respondent, along with variables that represent their party affiliation (<code>PartyID</code>). Additionally, we need the variables <code>Weight</code> and <code>Stratum</code> to analyze this data accurately. We will discuss how to use these weighting variables in Chapters <a href="c10-specifying-sample-designs.html#c10-specifying-sample-designs">10</a> and <a href="c03-understanding-survey-data-documentation.html#c03-understanding-survey-data-documentation">3</a>. For a more detailed codebook, see Appendix <a href="anes-cb.html#anes-cb">B</a>.</p>
-<p>In most chapters, you’ll find code that you can follow. Each of these chapters starts with a “setup” section. The setup section includes the code needed to load the necessary packages and datasets in the chapter. We then provide the main idea of the chapter and examples on how to use the functions. Most chapters end with exercises to work through. Solutions to the exercises can be found in the Appendix.</p>
+<div id="what-to-expect" class="section level2 hasAnchor" number="1.2">
+<h2><span class="header-section-number">1.2</span> What to expect<a href="c01-intro.html#what-to-expect" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>This book covers many aspects of survey design and analysis, from understanding how to create design objects to conducting descriptive analysis, statistical tests, and models. We emphasize coding best practices and effective presentation techniques while using real-world data and practical examples to help you gain proficiency in survey analysis.</p>
+<p>Below is a summary of each chapter:</p>
+<ul>
+<li><strong>Chapter <a href="c02-overview-surveys.html#c02-overview-surveys">2</a> - Overview of Surveys</strong>:
+<ul>
+<li>Overview of survey design processes</li>
+<li>References for more in-depth knowledge</li>
+</ul></li>
+<li><strong>Chapter <a href="c03-understanding-survey-data-documentation.html#c03-understanding-survey-data-documentation">3</a> - Understanding Survey Data Documentation</strong>:
+<ul>
+<li>Guide to survey documentation</li>
+</ul></li>
+<li><strong>Chapter <a href="c04-getting-started.html#c04-getting-started">4</a> - Getting started</strong>:
+<ul>
+<li>Installation of packages</li>
+<li>Introduction to the {srvyrexploR} package and its analytic datasets</li>
+<li>Outline of the survey analysis process</li>
+<li>Comparison between the {dplyr} and {srvyr} packages</li>
+</ul></li>
+<li><strong>Chapter <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a> - Descriptive analyses</strong>:
+<ul>
+<li>Calculation of point estimates, standard errors, confidence intervals, and design effects</li>
+</ul></li>
+<li><strong>Chapter <a href="c06-statistical-testing.html#c06-statistical-testing">6</a> - Statistical testing</strong>:
+<ul>
+<li>Statistical testing methods</li>
+<li>Comparison of means and proportions</li>
+<li>Goodness of fit tests, tests of independence, and tests of homogeneity</li>
+</ul></li>
+<li><strong>Chapter <a href="c07-modeling.html#c07-modeling">7</a> - Modeling</strong>:
+<ul>
+<li>Linear regression, ANOVA, and logistic regression modeling</li>
+</ul></li>
+<li><strong>Chapter <a href="c08-communicating-results.html#c08-communicating-results">8</a> - Communicating results</strong>:
+<ul>
+<li>Strategies for communicating survey results</li>
+<li>Tools and guidance for creating publishable tables and graphs</li>
+</ul></li>
+<li><strong>Chapter <a href="c09-reprex-data.html#c09-reprex-data">9</a> - Reproducible research</strong>:
+<ul>
+<li>Various tools and methods for achieving reproducibility</li>
+</ul></li>
+<li><strong>Chapter <a href="c10-specifying-sample-designs.html#c10-specifying-sample-designs">10</a> - Sample designs and replicate weights</strong>:
+<ul>
+<li>Description of common sampling designs and how to specify in R</li>
+<li>Description of replicate weight methods and how to specify in R</li>
+</ul></li>
+<li><strong>Chapter <a href="c11-missing-data.html#c11-missing-data">11</a> - Missing data</strong>:
+<ul>
+<li>Overview of missing data in surveys</li>
+<li>Approaches to dealing with missing data</li>
+</ul></li>
+<li><strong>Chapter <a href="c12-recommendations.html#c12-recommendations">12</a> - Successful survey analysis recommendations</strong>:
+<ul>
+<li>Tips for successful analysis</li>
+<li>Debugging skills</li>
+</ul></li>
+<li><strong>Chapter <a href="c13-ncvs-vignette.html#c13-ncvs-vignette">13</a> - National Crime Victimization Survey Vignette</strong>:
+<ul>
+<li>Vignette on analyzing National Crime Victimization Survey (NCVS) data</li>
+<li>Illustrates analysis requiring multiple files for victimization rates</li>
+</ul></li>
+<li><strong>Chapter <a href="c14-ambarom-vignette.html#c14-ambarom-vignette">14</a> - AmericasBarometer Vignette</strong>:
+<ul>
+<li>Vignette on analyzing AmericasBarometer survey data</li>
+<li>Includes making choropleth maps with survey estimates</li>
+</ul></li>
+</ul>
+<p>The majority of chapters contain code that you can follow. Each of these chapters starts with a “set-up” section, which includes the code needed to load the packages and datasets. We then provide the main idea of the chapter and examples of how to use the functions. Most chapters conclude with exercises to work through. We provide the solutions to the exercises in the online version of the book, available at <a href="https://tidy-survey-r.github.io/">tidy-survey-r.github.io</a>.</p>
+<p>While we provide a brief overview of survey methodology and statistical theory, this book is not intended to be the sole resource for these topics. We reference other materials throughout the book and encourage readers to seek those out for more information.</p>
+</div>
+<div id="prerequisites" class="section level2 hasAnchor" number="1.3">
+<h2><span class="header-section-number">1.3</span> Prerequisites<a href="c01-intro.html#prerequisites" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>To get the most of our this book, we assume that you have already conducted a survey and have the data or obtained a microdata file. Microdata, also known as respondent-level or row-level data, differs from summarized data typically found in tables. It contains individual survey responses, along with analysis weights and design variables such as strata or clusters.</p>
+<p>Additionally, the survey data should already include weights and design variables. These are required to accurately calculate unbiased estimates. The concepts and techniques discussed in this book will help you to extract meaningful insights from your survey data, but will not cover how to create weights in the first place as this is a separate complex topic. If you do not already have weights created for the survey data you are using, we recommend reviewing other resources focused on weight creation such as <span class="citation">Valliant and Dever (<a href="#ref-Valliant2018weights">2018</a>)</span>.</p>
+<p>This book is tailored for analysts already familiar with R and the tidyverse but who may be new to complex survey analysis in R. We anticipate that readers of this book can:</p>
+<ul>
+<li>Install R and their Integrated Development Environment (IDE) of choice, such as RStudio</li>
+<li>Install and load packages from CRAN and GitHub repositories</li>
+<li>Run R code</li>
+<li>Read data from a folder or their working directory</li>
+<li>Understand fundamental tidyverse concepts such as tidy/long/wide data, tibbles, the magrittr pipe (<code>%&gt;%</code>), and tidy selection</li>
+<li>Use the tidyverse packages to wrangle, tidy, and visualize data</li>
+</ul>
+<p>If these concepts or skills are new to you, we recommend starting with introductory resources to cover these topics before reading this book. R for Data Science <span class="citation">(<a href="#ref-wickham2023r4ds">Wickham, Çetinkaya-Rundel, and Grolemund 2023</a>)</span> is a beginner-friendly guide for getting started in data science using R. It offers guidance on preliminary installation steps and basic R syntax, and it introduces tidyverse concepts and packages.</p>
+</div>
+<div id="datasets-used-in-this-book" class="section level2 hasAnchor" number="1.4">
+<h2><span class="header-section-number">1.4</span> Datasets used in this book<a href="c01-intro.html#datasets-used-in-this-book" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>We work with two key datasets throughout the book: the Residential Energy Consumption Survey <span class="citation">(RECS – <a href="#ref-recs-2020-tech">U.S. Energy Information Administration 2023a</a>)</span> and the American National Election Studies <span class="citation">(ANES – <a href="#ref-debell">DeBell 2010</a>)</span>. We introduce and demonstrate the loading and preparation of these datasets in Chapter <a href="c04-getting-started.html#c04-getting-started">4</a>.</p>
+</div>
+<div id="conventions" class="section level2 hasAnchor" number="1.5">
+<h2><span class="header-section-number">1.5</span> Conventions<a href="c01-intro.html#conventions" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Throughout the book, we use the following typographical conventions:</p>
+<ul>
+<li>Package names are surrounded by curly brackets: {srvyr}</li>
+<li>Function names are in constant width text format and include parentheses: <code>survey_mean()</code></li>
+<li>Object and variable names are in constant width text format: <code>anes_des</code></li>
+</ul>
+</div>
+<div id="getting-help" class="section level2 hasAnchor" number="1.6">
+<h2><span class="header-section-number">1.6</span> Getting help<a href="c01-intro.html#getting-help" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>We recommend first trying to resolve errors and issues independently using the tips provided in <strong>Chapter <a href="c12-recommendations.html#c12-recommendations">12</a></strong>.</p>
+<p>If you have questions or face issues while working through the book, please report them to its <a href="https://github.com/tidy-survey-r/tidy-survey-book">GitHub repository</a>.</p>
+<p>There are several community forums for asking questions, including:</p>
+<ul>
+<li>Posit Community: <a href="https://community.rstudio.com/" class="uri">https://community.rstudio.com/</a></li>
+<li>R for Data Science Slack Community: <a href="https://rfordatasci.com/" class="uri">https://rfordatasci.com/</a></li>
+<li>Stack Overflow: <a href="https://stackoverflow.com/" class="uri">https://stackoverflow.com/</a></li>
+</ul>
+</div>
+<div id="colophon" class="section level2 hasAnchor" number="1.7">
+<h2><span class="header-section-number">1.7</span> Colophon<a href="c01-intro.html#colophon" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>This book was written in <a href="http://bookdown.org/">bookdown</a> using <a href="http://www.rstudio.com/ide/">RStudio</a>. The complete source is available on GitHub: <a href="https://github.com/tidy-survey-r/tidy-survey-book" class="uri">https://github.com/tidy-survey-r/tidy-survey-book</a>.</p>
+<p>This version of the book was built with R version 4.3.1 (2023-06-16) and with the packages listed in Table <a href="c01-intro.html#tab:intro-packages-tab">1.1</a>.</p>
+
+<div id="jsbwrgxlvs" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jsbwrgxlvs table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#jsbwrgxlvs thead, #jsbwrgxlvs tbody, #jsbwrgxlvs tfoot, #jsbwrgxlvs tr, #jsbwrgxlvs td, #jsbwrgxlvs th {
+  border-style: none;
+}
+
+#jsbwrgxlvs p {
+  margin: 0;
+  padding: 0;
+}
+
+#jsbwrgxlvs .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#jsbwrgxlvs .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#jsbwrgxlvs .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#jsbwrgxlvs .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#jsbwrgxlvs .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#jsbwrgxlvs .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#jsbwrgxlvs .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#jsbwrgxlvs .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#jsbwrgxlvs .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#jsbwrgxlvs .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#jsbwrgxlvs .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#jsbwrgxlvs .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#jsbwrgxlvs .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#jsbwrgxlvs .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#jsbwrgxlvs .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jsbwrgxlvs .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#jsbwrgxlvs .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#jsbwrgxlvs .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#jsbwrgxlvs .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jsbwrgxlvs .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#jsbwrgxlvs .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jsbwrgxlvs .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#jsbwrgxlvs .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jsbwrgxlvs .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jsbwrgxlvs .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jsbwrgxlvs .gt_left {
+  text-align: left;
+}
+
+#jsbwrgxlvs .gt_center {
+  text-align: center;
+}
+
+#jsbwrgxlvs .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#jsbwrgxlvs .gt_font_normal {
+  font-weight: normal;
+}
+
+#jsbwrgxlvs .gt_font_bold {
+  font-weight: bold;
+}
+
+#jsbwrgxlvs .gt_font_italic {
+  font-style: italic;
+}
+
+#jsbwrgxlvs .gt_super {
+  font-size: 65%;
+}
+
+#jsbwrgxlvs .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#jsbwrgxlvs .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#jsbwrgxlvs .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#jsbwrgxlvs .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#jsbwrgxlvs .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#jsbwrgxlvs .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#jsbwrgxlvs .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <caption><span id="tab:intro-packages-tab">TABLE 1.1: </span>Package versions and source used in building this book</caption>
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Package&lt;/strong&gt;"><strong>Package</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Version&lt;/strong&gt;"><strong>Version</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Source&lt;/strong&gt;"><strong>Source</strong></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="Package" class="gt_row gt_left">bookdown</td>
+<td headers="Version" class="gt_row gt_left">0.34</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">broom</td>
+<td headers="Version" class="gt_row gt_left">1.0.5</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">censusapi</td>
+<td headers="Version" class="gt_row gt_left">0.8.0</td>
+<td headers="Source" class="gt_row gt_left">Github (hrecht/censusapi@15b2b02)</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">DiagrammeR</td>
+<td headers="Version" class="gt_row gt_left">1.0.10</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">dplyr</td>
+<td headers="Version" class="gt_row gt_left">1.1.4</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">forcats</td>
+<td headers="Version" class="gt_row gt_left">1.0.0</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">ggpattern</td>
+<td headers="Version" class="gt_row gt_left">1.0.1</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">ggplot2</td>
+<td headers="Version" class="gt_row gt_left">3.4.2</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">gt</td>
+<td headers="Version" class="gt_row gt_left">0.9.0</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">gtsummary</td>
+<td headers="Version" class="gt_row gt_left">1.7.1</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">haven</td>
+<td headers="Version" class="gt_row gt_left">2.5.2</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">janitor</td>
+<td headers="Version" class="gt_row gt_left">2.2.0</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">kableExtra</td>
+<td headers="Version" class="gt_row gt_left">1.3.4</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">knitr</td>
+<td headers="Version" class="gt_row gt_left">1.43</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">labelled</td>
+<td headers="Version" class="gt_row gt_left">2.12.0</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">lubridate</td>
+<td headers="Version" class="gt_row gt_left">1.9.2</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">Matrix</td>
+<td headers="Version" class="gt_row gt_left">1.6-1</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">naniar</td>
+<td headers="Version" class="gt_row gt_left">1.0.0</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">osfr</td>
+<td headers="Version" class="gt_row gt_left">0.2.9</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">prettyunits</td>
+<td headers="Version" class="gt_row gt_left">1.2.0</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">purrr</td>
+<td headers="Version" class="gt_row gt_left">1.0.2</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">readr</td>
+<td headers="Version" class="gt_row gt_left">2.1.4</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">rmarkdown</td>
+<td headers="Version" class="gt_row gt_left">2.23</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">rnaturalearth</td>
+<td headers="Version" class="gt_row gt_left">0.3.3</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">rnaturalearthdata</td>
+<td headers="Version" class="gt_row gt_left">0.1.0</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">sf</td>
+<td headers="Version" class="gt_row gt_left">1.0-14</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">srvyr</td>
+<td headers="Version" class="gt_row gt_left">1.2.0</td>
+<td headers="Source" class="gt_row gt_left">Github (gergness/srvyr@1917f75)</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">srvyrexploR</td>
+<td headers="Version" class="gt_row gt_left">0.0.0.9000</td>
+<td headers="Source" class="gt_row gt_left">Github (tidy-survey-r/srvyrexploR@914fc0f)</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">stringr</td>
+<td headers="Version" class="gt_row gt_left">1.5.1</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">survey</td>
+<td headers="Version" class="gt_row gt_left">4.2-1</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">survival</td>
+<td headers="Version" class="gt_row gt_left">3.5-7</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">tibble</td>
+<td headers="Version" class="gt_row gt_left">3.2.1</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">tidyr</td>
+<td headers="Version" class="gt_row gt_left">1.3.0</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+    <tr><td headers="Package" class="gt_row gt_left">tidyverse</td>
+<td headers="Version" class="gt_row gt_left">2.0.0</td>
+<td headers="Source" class="gt_row gt_left">NA</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
 
 </div>
 </div>
@@ -657,20 +1217,18 @@ In most chapters, you’ll find code that you can follow. Each of these chapters
 <div id="ref-debell" class="csl-entry">
 DeBell, Matthew. 2010. <span>“How to Analyze ANES Survey Data.”</span> ANES Technical Report Series nes012492. Palo Alto, CA: Stanford University; Ann Arbor, MI: the University of Michigan; <a href="https://electionstudies.org/wp-content/uploads/2018/05/HowToAnalyzeANESData.pdf" class="uri">https://electionstudies.org/wp-content/uploads/2018/05/HowToAnalyzeANESData.pdf</a>.
 </div>
+<div id="ref-gard2023weightsdef" class="csl-entry">
+Gard, Arianna M., Luke W. Hyde, Steven G. Heeringa, Brady T. West, and Colter Mitchell. 2023. <span>“Why Weight? Analytic Approaches for Large-Scale Population Neuroscience Data.”</span> <em>Dev Cogn Neurosci</em>. <a href="https://doi.org/10.1016/j.dcn.2023.101196">https://doi.org/10.1016/j.dcn.2023.101196</a>.
+</div>
 <div id="ref-recs-2020-tech" class="csl-entry">
 ———. 2023a. <span>“<span>2020 Residential Energy Consumption Survey: Household Characteristics Technical Documentation Summary</span>.”</span> <a href="https://www.eia.gov/consumption/residential/data/2020/pdf/2020%20RECS_Methodology%20Report.pdf" class="uri">https://www.eia.gov/consumption/residential/data/2020/pdf/2020%20RECS_Methodology%20Report.pdf</a>.
 </div>
 <div id="ref-Valliant2018weights" class="csl-entry">
 Valliant, Richard, and Jill A. Dever. 2018. <em>Survey Weights: A Step-by-Step Guide to Calculation</em>. Stata Press.
 </div>
+<div id="ref-wickham2023r4ds" class="csl-entry">
+Wickham, Hadley, Mine Çetinkaya-Rundel, and Garrett Grolemund. 2023. <em>R for Data Science</em>. 2nd Edition. <a href="https://r4ds.hadley.nz/" class="uri">https://r4ds.hadley.nz/</a>; O’Reilly.
 </div>
-<div class="footnotes">
-<hr />
-<ol start="1">
-<li id="fn1"><p>If you do not already have weights created for the survey data you are using, we recommend reviewing other resources focused on weight creation such as <span class="citation">Valliant and Dever (<a href="#ref-Valliant2018weights">2018</a>)</span><a href="c01-intro.html#fnref1" class="footnote-back">↩︎</a></p></li>
-<li id="fn2"><p><a href="https://cran.r-project.org/src/contrib/Archive/survey/" class="uri">https://cran.r-project.org/src/contrib/Archive/survey/</a><a href="c01-intro.html#fnref2" class="footnote-back">↩︎</a></p></li>
-<li id="fn3"><p><a href="https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html" class="uri">https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html</a><a href="c01-intro.html#fnref3" class="footnote-back">↩︎</a></p></li>
-</ol>
 </div>
             </section>
 
