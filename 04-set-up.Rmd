@@ -164,7 +164,7 @@ From the output, we can see there are `r nrow(anes_2020 %>% select(-matches("^V\
 
 RECS is a study that measures energy consumption and expenditure in American households. Funded by the Energy Information Administration, the RECS data are collected through interviews with household members and energy suppliers. These interviews take place in person, over the phone, via mail, and on the web with modes changing over time. The survey has been fielded 14 times between 1950 and 2020. It includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance. 
 
-As mentioned above, analysts should read the survey documentation (see Chapter \@ref(c03-understanding-survey-data-documentation)) to understand how the data was collected and implemented. Table \@ref(tab:recs-view-tab) displays the list of variables in the RECS data (not including the weights, which start with `NWEIGHT` and will be described in more detail in Chapter \@ref(c10-specifying-sample-designs)). An overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(recs-cb)`r if (!knitr:::is_html_output()) ')'`. 
+As mentioned above, analysts should read the survey documentation (see Chapter \@ref(c03-understanding-survey-data-documentation)) to understand how the data was collected and implemented. Table \@ref(tab:recs-view-tab) displays the list of variables in the RECS data (not including the weights, which start with `NWEIGHT` and will be described in more detail in Chapter \@ref(c10-sample-designs-replicate-weights)). An overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(recs-cb)`r if (!knitr:::is_html_output()) ')'`. 
 
 (ref:recs-view-tab) List of Variables in the RECS Data
 
@@ -205,7 +205,7 @@ From the output, we can see that there are `r nrow(recs_2020 %>% select(-matches
 
 The design object is the backbone for survey analysis. It is where we specify the sampling design, weights, and other necessary information to ensure we account for errors in the data. Before creating the design object, analysts should carefully review the survey documentation to understand how to create the design object for accurate analysis.
 
-In this chapter, we provide details on how to code the design object for the ANES and RECS data used in the book. However, we only provide a high-level overview to get readers started. For a deeper understanding of creating these design objects for a variety of sampling designs, see Chapter \@ref(c10-specifying-sample-designs).
+In this chapter, we provide details on how to code the design object for the ANES and RECS data used in the book. However, we only provide a high-level overview to get readers started. For a deeper understanding of creating these design objects for a variety of sampling designs, see Chapter \@ref(c10-sample-designs-replicate-weights).
 
 While we recommend conducting exploratory data analysis on the original data before diving into complex survey analysis (see Chapter \@ref(c12-recommendations)), the actual analysis and inference should be performed with the survey design objects instead of the original survey data. For example, the ANES data is called `anes_2020`. If we create a survey design object called `anes_des`, our analyses should begin with `anes_des` and not `anes_2020`.  Using the survey design object ensures that our calculations are appropriately accounting for the details of the survey design.
 
@@ -300,7 +300,7 @@ We can examine this new object to learn more about the survey design, such that 
 
 The RECS documentation [@recs-2020-tech] provides information on the survey's sampling and weighting implications for analysis. The documentation shows the 2020 RECS uses Jackknife weights, where the main analytic weight is `NWEIGHT`, and the Jackknife weights are `NWEIGHT1`-`NWEIGHT60`. We can specify these in the weights and repweights arguments in the survey design object code, respectively.
 
-With Jackknife weights, additional information is required: `type`, `scale`, and `mse`.  Chapter \@ref(c10-specifying-sample-designs) goes into depth about each of these arguments, but to quickly get started, the documentation lets us know that `type=JK1`, `scale=59/60`, and `mse = TRUE`. We can use the following code to create the survey design object: 
+With Jackknife weights, additional information is required: `type`, `scale`, and `mse`.  Chapter \@ref(c10-sample-designs-replicate-weights) goes into depth about each of these arguments, but to quickly get started, the documentation lets us know that `type=JK1`, `scale=59/60`, and `mse = TRUE`. We can use the following code to create the survey design object: 
 
 ```{r}
 #| label: setup-recs-des
@@ -331,7 +331,7 @@ The section above walked through the installation and loading of several package
 
 4. Within `summarize()`, specify variables to calculate, including means, totals, proportions, quantiles, and more
 
-In Section \@ref(setup-des-obj), we follow Step #1 to create the survey design objects for the ANES and RECS data featured in this book. Additional details on how to create design objects can be found in \@ref(c10-specifying-sample-designs). Then, once we have the design object, we can then filter the data to any subpopulation of interest (if needed). It is important to filter the data **after** creating the design object. This ensures that we are accurately accounting for the survey design in our calculations. Finally, we can use `group_by()`, `summarize()`, and other functions from the {survey} and {srvyr} packages to analyze the survey data by estimating means, totals, and so on.
+In Section \@ref(setup-des-obj), we follow Step #1 to create the survey design objects for the ANES and RECS data featured in this book. Additional details on how to create design objects can be found in \@ref(c10-sample-designs-replicate-weights). Then, once we have the design object, we can then filter the data to any subpopulation of interest (if needed). It is important to filter the data **after** creating the design object. This ensures that we are accurately accounting for the survey design in our calculations. Finally, we can use `group_by()`, `summarize()`, and other functions from the {survey} and {srvyr} packages to analyze the survey data by estimating means, totals, and so on.
 
 ## Similarities between {dplyr} and {srvyr} functions {#similarities-dplyr-srvyr}
 
