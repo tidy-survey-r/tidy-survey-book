@@ -27,7 +27,7 @@ library(gt)
 library(prettyunits)
 ```
 
-We will be using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
+We are using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
 
 ```{r}
 #| label: stattest-anes-des
@@ -80,7 +80,7 @@ Let's review an example outside of survey data. If we are flipping a coin, a nul
 
 When we conduct hypothesis testing, the statistical models calculate a p-value, which shows how likely we are to observe the data if the null hypothesis is true. If the p-value (a probability between 0 and 1) is small, we have strong evidence to reject the null hypothesis as it is unlikely to see the data we are observing if the null hypothesis is true. However, if the p-value is large, we say we do not have evidence to reject the null hypothesis. The size of the p-value for this cut off is determined by type 1 error known as $\alpha$.  A common type 1 error value for statistical testing is to use $\alpha = 0.05$.^[For more information on statistical testing, we recommend reviewing introduction to statistics textbooks.] It is common for explanations of statistical testing to refer to confidence level.  The confidence level is the inverse of the type 1 error.  Thus, if $\alpha = 0.05$, the confidence level would be 95%.
 
-The functions in the {survey} package allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and functions:
+The functions in the {survey} package allow for the correct estimation of the variances. This chapter covers the following statistical tests with survey data and functions:
 
 * Comparison of proportions `svyttest()`
 * Comparison of means `svyttest()`
@@ -90,7 +90,7 @@ The functions in the {survey} package allow for the correct estimation of the va
 
 ## Dot Notation {#dot-notation}
 
-Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we will need to use dot (`.`) notation^[This could change in the future if another package is built or {srvyr} is expanded to work with **tidymodels** but no such plans are known at this time.]
+Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we need to use dot (`.`) notation^[This could change in the future if another package is built or {srvyr} is expanded to work with **tidymodels** but no such plans are known at this time.]
 
 Functions that work with the magrittr pipe (`%>%`) have the dataset as the first argument. When we run a function with the pipe, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to cars with six cylinders, we can write the code in at least four different ways:
 
@@ -99,7 +99,7 @@ Functions that work with the magrittr pipe (`%>%`) have the dataset as the first
 3. `mtcars %>% filter(., cyl == 6)`
 4. `mtcars %>% filter(.data = ., cyl == 6)`
 
-Each of these lines of code will produce the same output since the argument that takes the dataset is in the first spot in `filter()`. The first two are probably familiar to those who have worked with the tidyverse. The third option functions the same way as the second one but is explicit that `mtcars` goes into the first argument, and the fourth option indicates that `mtcars` is going into the named argument of `.data`. Here, we are telling R to take what's on the left side of the pipe (`mtcars`) and pipe it into the spot with the dot (`.`)---the first argument.
+Each of these lines of code produces the same output since the argument that takes the dataset is in the first spot in `filter()`. The first two are probably familiar to those who have worked with the tidyverse. The third option functions the same way as the second one but is explicit that `mtcars` goes into the first argument, and the fourth option indicates that `mtcars` is going into the named argument of `.data`. Here, we are telling R to take what's on the left side of the pipe (`mtcars`) and pipe it into the spot with the dot (`.`)---the first argument.
 
 In functions that are not part of the tidyverse, the data argument may not be in the first spot. For example, in `svyttest()`, the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example:
 
@@ -117,7 +117,7 @@ svydata_des %>%
  svyttest(design = ., x ~ y)
 ```
 
-However, the following code will not work as the `svyttest()` function expects the formula as the first argument when arguments are not named:
+However, the following code does not work as the `svyttest()` function expects the formula as the first argument when arguments are not named:
 
 ```r
 svydata_des %>%
@@ -136,9 +136,9 @@ For comparing two estimates, this is called a *two-sample t-test* and we can set
   - $H_0: \mu_1 = \mu_2$ where $\mu_i$ is the mean outcome for group $i$
   - $H_A: \mu_1 \neq \mu_2$
 
-Two sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., North versus South), the t-test run will be an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention).
+Two sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., North versus South), the t-test run is an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention).
 
-The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c10-specifying-sample-designs) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined.
+The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c10-specifying-sample-designs) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package account for these nuances, provided the design object is correctly defined.
 
 ### Syntax {#stattest-ttest-syntax}
 
@@ -146,7 +146,7 @@ When we do not have survey data, we can use the `t.test()` function from the {st
 
   - We need to use the survey design object instead of the original data frame
   - We can only use a formula and not separate x and y data
-  - The confidence level cannot be specified and will always be set to 95%. However, we will show examples of how the confidence level can be changed after running the `svyttest()` function by using the `confint()` function.
+  - The confidence level cannot be specified and is always be set to 95%. However, we show examples of how the confidence level can be changed after running the `svyttest()` function by using the `confint()` function.
 
 Here is the syntax for the `svyttest()` function:
 
@@ -168,14 +168,14 @@ The `formula` argument can take several different forms depending on what we are
 
 1. **One-sample t-test:** 
     a. **Comparison to 0:** `var ~ 0`, where `var` is the measure of interest, and we compare it to the value `0`. For example, we could test if the population mean of household debt is different from `0` given the sample data collected.
-    b. **Comparison to a different value:** `var - value ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `var - 0.25 ~ 0`. Note that specifying the formula as `var ~ 0.25` is not equivalent and will result in a syntax error.
+    b. **Comparison to a different value:** `var - value ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `var - 0.25 ~ 0`. Note that specifying the formula as `var ~ 0.25` is not equivalent and results in a syntax error.
 2. **Two-sample t-test:**
     a. **Unpaired:**
         - **2 level grouping variable:** `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories. For example, we could test if the average age of the population who voted for president in 2020 differed from the age of people who did not vote. In this case, age would be used for `var`, and a binary variable indicating voting activity would be the `groupVar`.
         - **3+ level grouping variable:** `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms where `groupVar` would be the variable holding the values for classroom IDs and `level` is the classroom ID we want to compare to the others.
     b. **Paired:** `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course so `var_1` would be the test score at the beginning of the course and `var_2` would be the score at the end of the course.
     
-The `na.rm` argument defaults to `FALSE`, which means if any data values are missing, the t-test will not compute. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data.
+The `na.rm` argument defaults to `FALSE`, which means if any data values are missing, the t-test does not compute. Throughout this chapter, we always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data.
 
 Let's walk through a few examples using the ANES and RECS data.
 
@@ -297,8 +297,6 @@ tidy(ttest_ex2) %>%
 
 The estimate differs from Example 1 in that the estimate is not displaying \(\mu - 0.90\) but rather \(\mu\), or the difference between the U.S. households that use A/C and the proportion we are comparing to. We can see that there is a difference of `r signif(ttest_ex2$estimate*100,3)` percentage points. Additionally, the t-statistic value in the `statistic` column is `r signif(ttest_ex2$statistic,3)`, and the p-value is `r pretty_p_value(ttest_ex2$p.value)`. These results indicate that the fewer than 90% of U.S. households use A/C in their homes.
 
-<!--Add in callout box about how to use the $ notation to help call out the different values? Maybe indicate how this will be covered more in the reporting chapter? IV: I added a bit up top, not sure if it needs a whole call out box but happy to revisit. IV: Update March 2024, we added R prerequisites in Intro chapter so probably not necessary anymore.-->
-
 #### Example 3: Unpaired two-sample t-test {.unnumbered #stattest-ttest-ex3}
 
 Two additional variables in the RECS data are the electric bill cost (`DOLLAREL`) and whether the house used A/C or not (`ACUsed`).^[Is any air conditioning equipment used in your home?] If we want to know if the U.S. households that used A/C had higher electrical bills compared to those that did not, we could set up the hypothesis as follows:
@@ -417,7 +415,7 @@ Third, **tests of homogeneity** are used to compare two distributions to see if 
   - $H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}$ where $p_{ia}$ is the observed proportion of category $i$ for subgroup $a$, $p_{ib}$ is the observed proportion of category $i$ for subgroup $a$ and $k$ is the number of categories
   - $H_A:$ at least one category of $p_{ia}$ does not match $p_{ib}$
 
-As with t-tests, the difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c10-specifying-sample-designs).
+As with t-tests, the difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c10-specifying-sample-designs).
 
 ### Syntax {#stattest-chi-syntax}
 
@@ -441,11 +439,11 @@ svygofchisq(formula,
 The arguments are:
 
 * `formula`: Formula specifying a single factor variable
-* `p`: Vector of probabilities for the categories of the factor in the correct order. If they probabilities do not sum to 1, they will be rescaled to sum to 1.
+* `p`: Vector of probabilities for the categories of the factor in the correct order. If they probabilities do not sum to 1, they are rescaled to sum to 1.
 * `design`: Survey design object
 * ...: Other arguments to pass on, such as `na.rm`
 
-Based on the order of the arguments, we again must use the dot `(.)` notation if we pipe in the survey design object or explicitly name the arguments as described in Section \@ref(dot-notation). For the goodness of fit tests, the formula will be a single variable `formula = ~var` as we compare the observed data from this variable to the expected data. The expected probabilities are then entered in the `p` argument and need to be a vector of the same length as the number of categories in the variable. For example, if we want to know if the proportion of males and females matches a distribution of 30/70, then the sex variable (with two categories) would be used `formula = ~SEX`, and the proportions would be included as `p = c(.3, .7)`. It is important to note that the variable entered into the formula should be formatted as either a factor or a character. The examples below provide more detail and tips on how to make sure the levels match up correctly.
+Based on the order of the arguments, we again must use the dot `(.)` notation if we pipe in the survey design object or explicitly name the arguments as described in Section \@ref(dot-notation). For the goodness of fit tests, the formula is a single variable `formula = ~var` as we compare the observed data from this variable to the expected data. The expected probabilities are then entered in the `p` argument and need to be a vector of the same length as the number of categories in the variable. For example, if we want to know if the proportion of males and females matches a distribution of 30/70, then the sex variable (with two categories) would be used `formula = ~SEX`, and the proportions would be included as `p = c(.3, .7)`. It is important to note that the variable entered into the formula should be formatted as either a factor or a character. The examples below provide more detail and tips on how to make sure the levels match up correctly.
 
 For tests of homogeneity and independence, the `svychisq()` function should be used. The syntax is as follows:
 
@@ -470,9 +468,9 @@ There are six statistics that are accepted in this formula. For tests of homogen
 
 For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons [@lumley2010complex]. If the data have a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this. The `lincom` and `saddlepoint` statistics are available for more complicated data structures.
 
-The formula argument will always be one-sided, unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula = ~ var_1 + var_2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
+The formula argument is always one-sided, unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula = ~ var_1 + var_2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
 
-Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. If any data values are missing, the $\chi^2$ tests will assume that `NA` is a category and include it in the calculation. Throughout this chapter, we will always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data.
+Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. If any data values are missing, the $\chi^2$ tests assume that `NA` is a category and include it in the calculation. Throughout this chapter, we always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data.
 
 ### Examples {#stattest-chi-examples}
 
@@ -502,7 +500,7 @@ anes_des %>%
   summarize(p = survey_mean())
 ```
 
-Based on this output, we can see that we have different levels than the ACS data provide. Specifically, the education data from ANES include two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we will use the `svygofchisq()` function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
+Based on this output, we can see that we have different levels than the ACS data provide. Specifically, the education data from ANES include two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we use the `svygofchisq()` function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
 
 ```{r}
 #| label: stattest-chi-ex1

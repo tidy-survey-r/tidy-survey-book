@@ -25,7 +25,7 @@ library(srvyrexploR)
 library(broom)
 ```
 
-We will be using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
+We are using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
 
 ```{r}
 #| label: desc-anes-des
@@ -67,31 +67,31 @@ recs_des <- recs_2020 %>%
 
 Descriptive analyses, such as basic counts, cross-tabulations, or means, are one of the first steps in making sense of our survey results. By reviewing the findings, analysts can glean insight into the data, the underlying population, and any unique aspects of the data or population. For example, if only 10% of the survey respondents are male, it could indicate a unique population, a potential error or bias, an intentional survey sampling method, or other factors. Additionally, descriptive analyses allow analysts to provide summaries like means, proportions, or other measures to make estimates about the population. These analyses lay the groundwork for the next steps of running statistical tests or developing models.
 
-We will discuss many different types of descriptive analyses in this chapter. However, it is important to know what type of data we are working with and which statistics are appropriate. In survey data, we typically consider data as one of four main types:
+We discuss many different types of descriptive analyses in this chapter. However, it is important to know what type of data we are working with and which statistics are appropriate. In survey data, we typically consider data as one of four main types:
 
   * Categorical/nominal data: variables with levels or descriptions that cannot be ordered, such as the region of the country (North, South, East, and West)
   * Ordinal data: variables that can be ordered, such as those from a Likert scale (strongly disagree, disagree, agree, and strongly agree)
   * Discrete data: variables that are counted or measured, such as number of children
   * Continuous data, variables that are measured and whose values can lie anywhere on an interval, such as income
 
-This chapter will discuss how to analyze *measures of distribution* (e.g., cross-tabulations), *central tendency* (e.g., means), *relationship* (e.g., ratios), and *dispersion* (e.g., standard deviation).
+This chapter discusses how to analyze *measures of distribution* (e.g., cross-tabulations), *central tendency* (e.g., means), *relationship* (e.g., ratios), and *dispersion* (e.g., standard deviation).
 
-**Measures of distribution** describe how often an event or response occurs. These measures include counts and totals. We will cover the following functions from the {srvyr} package:
+**Measures of distribution** describe how often an event or response occurs. These measures include counts and totals. We cover the following functions from the {srvyr} package:
 
   * Count of observations (`survey_count()` and `survey_tally()`)
   * Summation of variables (`survey_total()`)
 
-**Measures of central tendency** find the central (or average) responses. These measures include means and medians. We will cover the following functions from the {srvyr} package:
+**Measures of central tendency** find the central (or average) responses. These measures include means and medians. We cover the following functions from the {srvyr} package:
 
   * Means and proportions (`survey_mean()` and `survey_prop()`) 
   * Quantiles and medians (`survey_quantile()` and `survey_median()`)
   
-**Measures of relationship** describe how variables relate to each other. These measures include correlations and ratios. We will cover the following functions from the {srvyr} package:
+**Measures of relationship** describe how variables relate to each other. These measures include correlations and ratios. We cover the following functions from the {srvyr} package:
 
   * Correlations (`survey_corr()`)
   * Ratios (`survey_ratio()`)
   
-**Measures of dispersion** describe how data spread around the central tendency for continuous variables. These measures include standard deviations and variances. We will cover the following functions from the {srvyr} package:
+**Measures of dispersion** describe how data spread around the central tendency for continuous variables. These measures include standard deviations and variances. We cover the following functions from the {srvyr} package:
 
   * Variances and standard deviations (`survey_var()` and `survey_sd()`)
 
@@ -102,7 +102,7 @@ To incorporate each of these survey functions, recall the general process for su
 3. Specify domains of analysis using `srvyr::group_by()`, if needed.
 4. Analyze the data with survey-specific functions.
 
-This chapter will walk through how to apply the survey functions in Step 4. Note that unless otherwise specified, our estimates will be weighted as a result of setting up the survey design object. 
+This chapter walks through how to apply the survey functions in Step 4. Note that unless otherwise specified, our estimates are weighted as a result of setting up the survey design object. 
 
 To look at the data by different subgroups, we can choose to filter and/or group the data. It is very important that we filter and group the data only *after* creating the design object. This ensures that the results accurately reflect the survey design. If we filter or group data before creating the survey design object, the data for those cases are not included in the survey design information and estimations of the variance, leading to inaccurate results.
 
@@ -138,7 +138,7 @@ The arguments are:
 * `.drop`: whether to drop empty groups
 * `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var", "cv")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
 
-To generate a count or cross-tabs by different variables, we include them in the (`...`) argument. This argument can take any number of variables and will break down the counts by all combinations of the provided variables. This is similar to `dplyr::count()`. To obtain an estimate of the overall population, we can exclude any variables from the (`...`) argument or use the `survey_tally()` function. While the `survey_tally()` function has a similar syntax to the `survey_count()` function, it does not include the (`...`) or the `.drop` arguments:
+To generate a count or cross-tabs by different variables, we include them in the (`...`) argument. This argument can take any number of variables and breaks down the counts by all combinations of the provided variables. This is similar to `dplyr::count()`. To obtain an estimate of the overall population, we can exclude any variables from the (`...`) argument or use the `survey_tally()` function. While the `survey_tally()` function has a similar syntax to the `survey_count()` function, it does not include the (`...`) or the `.drop` arguments:
 
 ```r
 survey_tally(
@@ -169,13 +169,13 @@ Both functions include the `vartype` argument with four different values:
 The confidence intervals are always calculated using a symmetric t-distribution based method, given by the formula:
 
 $$ \text{estimate} \pm t^*_{df}\times SE$$
-where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of PSUs minus the number of strata. For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we will provide examples using different variability types throughout this chapter.
+where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of PSUs minus the number of strata. For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we provide examples using different variability types throughout this chapter.
 
 ### Examples
 
 #### Example 1: Estimated population count {.unnumbered}
 
-If we want to obtain the estimated number of households in the U.S. (the target population) using the Residential Energy Consumption Survey (RECS) data, we can use `survey_count()`. If we do not specify any variables in the `survey_count()` function, it will output the estimated population count (`n`) and its corresponding standard error (`n_se`).
+If we want to obtain the estimated number of households in the U.S. (the target population) using the Residential Energy Consumption Survey (RECS) data, we can use `survey_count()`. If we do not specify any variables in the `survey_count()` function, it outputs the estimated population count (`n`) and its corresponding standard error (`n_se`).
 
 ```{r}
 #| label: desc-count-overall
@@ -227,7 +227,7 @@ recs_des %>%
 
 When we run the cross-tab, we see there are an estimated `r .est_pop_div %>% filter(Division=="New England") %>% pull(N)` housing units in the New England Division. 
 
-The code will result in an error if we try to use the `survey_count()` syntax with `survey_tally()`:
+The code results in an error if we try to use the `survey_count()` syntax with `survey_tally()`:
 
 ```{r}
 #| label: desc-tally-group-bad
@@ -384,7 +384,7 @@ Both functions have the following arguments and defaults:
 
 There are two main differences in the syntax. The `survey_mean()` function includes the first argument `x`, representing the variable or expression on which the mean should be calculated. The `survey_prop()` does not have an argument to include the variables directly. Instead, prior to `summarize()`, we must use the `group_by()` function to specify the variables of interest for `survey_prop()`. For `survey_mean()`, including a `group_by()` function allows us to obtain the means by different groups.
 
-The other main difference is with the `proportion` argument. The `survey_mean()` function can be used to calculate both means and proportions. Its `proportion` argument defaults to `FALSE`, indicating it is used for calculating means. If we wish to calculate a proportion using `survey_mean()`, we will need to set the `proportion` argument to `TRUE`. In the `survey_prop()` function, the `proportion` argument defaults to `TRUE` because the function is specifically designed for calculating proportions.
+The other main difference is with the `proportion` argument. The `survey_mean()` function can be used to calculate both means and proportions. Its `proportion` argument defaults to `FALSE`, indicating it is used for calculating means. If we wish to calculate a proportion using `survey_mean()`, we need to set the `proportion` argument to `TRUE`. In the `survey_prop()` function, the `proportion` argument defaults to `TRUE` because the function is specifically designed for calculating proportions.
 
 In section \@ref(desc-count-syntax), we provide an overview of different variability types. The confidence interval used for most measures, such as means and counts, is referred to as a Wald-type interval. However, for proportions, a Wald-type interval with a symmetric t-based confidence interval may not provide accurate coverage, especially when dealing with small sample sizes or proportions "near" 0 or 1. We can use other methods to calculate confidence intervals, which we specify using the `prop_method` option in `survey_prop()`. The options include:
 
@@ -395,7 +395,7 @@ In section \@ref(desc-count-syntax), we provide an overview of different variabi
   * `mean`: the Wald-type interval ($\pm t_{df}^*\times SE$)
   * `xlogit`: uses a logit transformation of the proportion, calculates a Wald-type interval, and then back-transforms to the probability scale. This method is the same as those used in SUDAAN and SPSS.
 
-Each option will yield slightly different confidence interval bounds when dealing with proportions. Please note that when working with `survey_mean()`, we do not need to specify a method unless the `proportion` argument is `TRUE`. If `proportion` is `FALSE`, it calculates a symmetric `mean` type of confidence interval.
+Each option yields slightly different confidence interval bounds when dealing with proportions. Please note that when working with `survey_mean()`, we do not need to specify a method unless the `proportion` argument is `TRUE`. If `proportion` is `FALSE`, it calculates a symmetric `mean` type of confidence interval.
 
 ### Examples
 
@@ -421,7 +421,7 @@ recs_des %>%
 
 `r .preg %>% filter(Region=="Northeast") %>% pull(p) %>% signif(3)`% of the households are in the Northeast, `r .preg %>% filter(Region=="Midwest") %>% pull(p) %>% signif(3)`% in the Midwest, and so on. Note that the proportions in column `p` add up to one.
 
-The `survey_prop()` function is essentially the same as using `survey_mean()` with a categorical variable and without specifying a numeric variable in the `x` argument. The following code will give us the same results as above:
+The `survey_prop()` function is essentially the same as using `survey_mean()` with a categorical variable and without specifying a numeric variable in the `x` argument. The following code gives us the same results as above:
 
 ```{r}
 #| label: desc-p-ex2
@@ -454,7 +454,7 @@ recs_des %>%
   summarize(p = survey_prop())
 ```
 
-As noted earlier, we can use both the `survey_prop()` and `survey_mean()` functions, and they will produce the same results.
+As noted earlier, we can use both the `survey_prop()` and `survey_mean()` functions, and they produce the same results.
 
 #### Example 4: Overall mean {.unnumbered}
 
@@ -621,7 +621,7 @@ The 25th percentile for the Northeast region is `r .elbill_quant_gp %>% filter(R
 
 #### Example 3: Minimum and maximum {.unnumbered}
 
-As mentioned in the syntax section, we can specify quantiles of `0` (minimum) and `1` (maximum) and R will calculate these values.  However, these are only the minimum and maximum values in the data, and there is not enough information to determine their standard errors: 
+As mentioned in the syntax section, we can specify quantiles of `0` (minimum) and `1` (maximum) and R calculates these values.  However, these are only the minimum and maximum values in the data, and there is not enough information to determine their standard errors: 
 
 ```{r}
 #| label: desc-quantile-minmax
@@ -1089,7 +1089,7 @@ While the results remain the same, the table is now easier to interpret.
 
 Often, we are interested in a summary statistic across many variables. Useful tools include the `across()` function in {dplyr}, shown a few times above, and the `map()` function in {purrr}.
 
-The `across()` function applies the same function to multiple columns within `summarize()`. This works well with all functions shown above, except for `survey_prop()`. In a later example, we will tackle summarizing multiple proportions.
+The `across()` function applies the same function to multiple columns within `summarize()`. This works well with all functions shown above, except for `survey_prop()`. In a later example, we tackle summarizing multiple proportions.
 
 #### Example 1: `across()` {.unnumbered}
 

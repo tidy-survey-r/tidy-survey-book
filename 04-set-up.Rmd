@@ -164,7 +164,7 @@ From the output, we can see there are `r nrow(anes_2020 %>% select(-matches("^V\
 
 RECS is a study that measures energy consumption and expenditure in American households. Funded by the Energy Information Administration, the RECS data are collected through interviews with household members and energy suppliers. These interviews take place in person, over the phone, via mail, and on the web with modes changing over time. The survey has been fielded 14 times between 1950 and 2020. It includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance. 
 
-As mentioned above, analysts should read the survey documentation (see Chapter \@ref(c03-understanding-survey-data-documentation)) to understand how the data were collected and implemented. Table \@ref(tab:recs-view-tab) displays the list of variables in the RECS data (not including the weights, which start with `NWEIGHT` and will be described in more detail in Chapter \@ref(c10-specifying-sample-designs)). An overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(recs-cb)`r if (!knitr:::is_html_output()) ')'`. 
+As mentioned above, analysts should read the survey documentation (see Chapter \@ref(c03-understanding-survey-data-documentation)) to understand how the data were collected and implemented. Table \@ref(tab:recs-view-tab) displays the list of variables in the RECS data (not including the weights, which start with `NWEIGHT` and are described in more detail in Chapter \@ref(c10-specifying-sample-designs)). An overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(recs-cb)`r if (!knitr:::is_html_output()) ')'`. 
 
 (ref:recs-view-tab) List of Variables in the RECS Data
 
@@ -294,7 +294,7 @@ anes_des <- anes_adjwgt %>%
 anes_des
 ```
 
-We can examine this new object to learn more about the survey design, such that the ANES is a "Stratified 1 - level Cluster Sampling design (with replacement) With (101) clusters". Additionally, the output displays the sampling variables and then lists the remaining variables in the dataset. This design object will be used throughout this book to conduct survey analysis.
+We can examine this new object to learn more about the survey design, such that the ANES is a "Stratified 1 - level Cluster Sampling design (with replacement) With (101) clusters". Additionally, the output displays the sampling variables and then lists the remaining variables in the dataset. This design object is used throughout this book to conduct survey analysis.
 
 #### Residential Energy Consumption Survey (RECS) Design Object {-}
 
@@ -317,7 +317,7 @@ recs_des <- recs_2020 %>%
 recs_des
 ```
 
-Viewing this new object provides information about the survey design, such that the RECS is an "unstratified cluster jacknife (JK1) with 60 replicates and MSE variances".  Additionally, the output shows the sampling variables (`NWEIGHT1`-`NWEIGHT60`) and then lists the remaining variables in the dataset. This design object will be used throughout this book to conduct survey analysis.
+Viewing this new object provides information about the survey design, such that the RECS is an "unstratified cluster jacknife (JK1) with 60 replicates and MSE variances".  Additionally, the output shows the sampling variables (`NWEIGHT1`-`NWEIGHT60`) and then lists the remaining variables in the dataset. This design object is used throughout this book to conduct survey analysis.
 
 ## Survey analysis process {#survey-analysis-process}
 
@@ -384,7 +384,7 @@ towny %>%
             area_median = median(land_area_km2))
 ```
 
-In the code below, we calculate the mean and median of the variable `api00` using `dstrata`. Note the similarity in the syntax. When we dig into the {srvyr} functions later, we will show that the outputs share a similar structure. Each group (if present) generates one row of output, but with additional columns. By default, the standard error of the statistic is also calculated in addition to the statistic itself.
+In the code below, we calculate the mean and median of the variable `api00` using `dstrata`. Note the similarity in the syntax. When we dig into the {srvyr} functions later, we show that the outputs share a similar structure. Each group (if present) generates one row of output, but with additional columns. By default, the standard error of the statistic is also calculated in addition to the statistic itself.
 
 ```{r}
 #| label: setup-srvyr-examp
@@ -462,7 +462,7 @@ dstrata %>%
             .by=stype)
 ```
 
-As mentioned above, {srvyr} functions are meant for `tbl_svy` objects. Attempting to perform data manipulation on non-`tbl_svy` objects, like the `towny` example shown below, will result in an error. Running the code will let us know what the issue is: `Survey context not set`.
+As mentioned above, {srvyr} functions are meant for `tbl_svy` objects. Attempting to perform data manipulation on non-`tbl_svy` objects, like the `towny` example shown below, result in an error. Running the code lets us know what the issue is: `Survey context not set`.
 
 ```{r}
 #| label: setup-nsobj-error
@@ -471,7 +471,7 @@ towny %>%
   summarize(area_mean = survey_mean(land_area_km2))
 ```
 
-A few functions in {srvyr} have counterparts in {dplyr}, such as `srvyr::summarize()` and `srvyr::group_by()`. Unlike {srvyr}-specific verbs, {srvyr} recognizes these parallel functions if applied to a non-survey object. Instead of causing an error, the package will provide the equivalent output from {dplyr}:
+A few functions in {srvyr} have counterparts in {dplyr}, such as `srvyr::summarize()` and `srvyr::group_by()`. Unlike {srvyr}-specific verbs, {srvyr} recognizes these parallel functions if applied to a non-survey object. Instead of causing an error, the package provides the equivalent output from {dplyr}:
 
 ```{r}
 #| label: setup-nsobj-noerr
@@ -479,4 +479,4 @@ towny %>%
   srvyr::summarize(area_mean = mean(land_area_km2))
 ```
 
-Because this book focuses on survey analysis, most of our pipes will stem from a survey object. When we load the {dplyr} and {srvyr} packages, the functions will automatically figure out the class of data and use the appropriate one from {dplyr} or {srvyr}. Therefore, we do not need to include the namespace for each function (e.g., `srvyr::summarize()`). 
+Because this book focuses on survey analysis, most of our pipes stem from a survey object. When we load the {dplyr} and {srvyr} packages, the functions automatically figure out the class of data and use the appropriate one from {dplyr} or {srvyr}. Therefore, we do not need to include the namespace for each function (e.g., `srvyr::summarize()`). 
