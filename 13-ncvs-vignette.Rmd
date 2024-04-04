@@ -571,13 +571,13 @@ The tibbles `hh_vsum_slim`, `pers_vsum_slim`, and `inc_analysis` can now be used
 
 ## Survey design objects
 
-All the data prep above is necessary to prepare the data for survey analysis. At this point, we can create the design objects and finally begin analysis. We will create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person-level data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster/PSU variable for analysis.
+All the data prep above is necessary to prepare the data for survey analysis. At this point, \index{Functions in srvyr!as\_survey\_design|(}we can create the design objects and finally begin analysis. We will create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person-level data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster/PSU variable for analysis.
 
 ```{r}
 #| label: ncvs-vign-desobj
 
 inc_des <- inc_analysis %>%
-  as_survey(
+  as_survey_design(
     weight = NEWWGT,
     strata = V2117,
     ids = V2118,
@@ -585,7 +585,7 @@ inc_des <- inc_analysis %>%
   )
 
 hh_des <- hh_vsum_slim %>%
-  as_survey(
+  as_survey_design(
     weight = WGTHHCY,
     strata = V2117,
     ids = V2118,
@@ -593,13 +593,14 @@ hh_des <- hh_vsum_slim %>%
   )
 
 pers_des <- pers_vsum_slim %>%
-  as_survey(
+  as_survey_design(
     weight = WGTPERCY,
     strata = V2117,
     ids = V2118,
     nest = TRUE
   )
 ```
+\index{Functions in srvyr!as\_survey\_design|)}
 
 ## Calculating estimates
 
@@ -615,7 +616,7 @@ Now that we have prepared our data and created the design objects, we can calcul
 
 ### Estimation 1: Victimization totals {#vic-tot}
 
-There are two ways to calculate victimization totals. Using the incident design object (`inc_des`) is the most straightforward method, but the person (`pers_des`) and household (`hh_des`) design objects can be used as well if the adjustment factor (`ADJINC_WT`) is incorporated. In the example below, the total number of property and violent victimizations is first calculated using the incident file and then using the household and person design objects. The incident file is smaller, and thus, estimation is faster using that file, but the estimates will be the same as illustrated below: \index{Functions in srvyr!survey\_total} \index{Functions in srvyr!summarize}
+There are two ways to calculate victimization totals. Using the incident design object (`inc_des`) is the most straightforward method, but the person (`pers_des`) and household (`hh_des`) design objects can be used as well if the adjustment factor (`ADJINC_WT`) is incorporated. In the example below, the total number of property and violent victimizations is first calculated using the incident file and then using the household and person design objects. The incident file is smaller, and thus, estimation is faster using that file, but the estimates will be the same as illustrated below: \index{Functions in srvyr!survey\_total} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: ncvs-vign-victot-examp
@@ -635,6 +636,7 @@ vt1
 vt2a
 vt2b
 ```
+\index{Functions in srvyr!summarize|)}
 
 The number of victimizations estimated using the incident file is equivalent to the person and household file method.  There are `r prettyNum(vt1$Property_Vzn, big.mark=",")` property incidents and `r prettyNum(vt1$Violent_Vzn, big.mark=",")` violent incidents in a six-month period.
 
@@ -642,7 +644,7 @@ The number of victimizations estimated using the incident file is equivalent to 
 
 Victimization proportions are proportions describing features of a victimization. The key here is that these are questions among victimizations, not among the population. These types of estimates can only be calculated using the incident design object (`inc_des`). 
 
-For example, we could be interested in the percentage of property victimizations reported to the police as shown in the following code with an estimate, the standard error, and 95% confidence interval: \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!filter} \index{Functions in srvyr!summarize}
+For example, we could be interested in the percentage of property victimizations reported to the police as shown in the following code with an estimate, the standard error, and 95% confidence interval: \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!filter|(} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: ncvs-vign-vic-prop-police
@@ -653,7 +655,7 @@ prop1 <- inc_des %>%
 prop1
 ```
 
-Or, the percentage of violent victimizations that are in urban areas: \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!filter} \index{Functions in srvyr!summarize}
+Or, the percentage of violent victimizations that are in urban areas: 
 
 ```{r}
 #| label: ncvs-vign-vic-prop-urban
@@ -663,14 +665,14 @@ prop2 <- inc_des %>%
 
 prop2
 ```
+\index{Functions in srvyr!filter|)} \index{Functions in srvyr!survey\_mean|)}  
 
 In 2021, we estimate that `r formatC(prop1$Pct, digits=1, format="f")`% of property crimes were reported to the police and `r formatC(prop2$Pct, digits=1, format="f")`% of violent crimes occurred in urban areas.
 
 ### Estimation 3: Victimization rates {#vic-rate}
 
 Victimization rates measure the number of victimizations per population. They are not an estimate of the proportion of households or persons who are victimized, which is a prevalence rate described in section \@ref(prev-rate). Victimization rates are estimated using the household (`hh_des`) or person (`pers_des`) design objects depending on the type of crime, and the adjustment factor (`ADJINC_WT`) must be incorporated. We return to the example of property and violent victimizations used in the example for victimization totals (section \@ref(vic-tot)). In the following example, the property victimization totals are calculated as above, as well as the property victimization rate (using `survey_mean()`) and the population size using `survey_total()`. 
-As mentioned in the introduction, victimization rates use the incident weight in the numerator and the person or household weight in the denominator. This is accomplished by calculating the rates with the weight adjustment (`ADJINC_WT`) multiplied by the estimate of interest. Let's look at an example of property victimization. \index{Functions in srvyr!survey\_total} \index{Functions in srvyr!survey\_mean}
- \index{Functions in srvyr!summarize}
+As mentioned in the introduction, victimization rates use the incident weight in the numerator and the person or household weight in the denominator. This is accomplished by calculating the rates with the weight adjustment (`ADJINC_WT`) multiplied by the estimate of interest. Let's look at an example of property victimization. \index{Functions in srvyr!survey\_total} \index{Functions in srvyr!survey\_mean|(}
 
 ```{r}
 #| label: ncvs-vign-vic-rate
@@ -685,6 +687,7 @@ vr_prop <- hh_des %>%
 
 vr_prop
 ```
+\index{Functions in srvyr!survey\_mean|)}  
 
 In the output above, we see the estimate for property victimization rate in 2021 was `r formatC(vr_prop$Property_Rate, format="f", digits=1)` per 1,000 households, which is consistent with calculating as the number of victimizations per 1,000 population as demonstrated in the next chunk:
 
@@ -696,7 +699,7 @@ vr_prop %>%
   mutate(Property_Rate_manual=Property_Vzn/PopSize*1000)
 ```
 
-Victimization rates can also be calculated for particular characteristics of the victimization. In the following example, the rate of aggravated assault with no weapon, with a firearm, with a knife, and with another weapon. \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!summarize}
+Victimization rates can also be calculated for particular characteristics of the victimization. In the following example, the rate of aggravated assault with no weapon, with a firearm, with a knife, and with another weapon. \index{Functions in srvyr!survey\_mean|(} 
 
 ```{r}
 #| label: ncvs-vign-pers-rates-char
@@ -707,7 +710,7 @@ pers_des %>%
   ))
 ```
 
-A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate the violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by()` statement for each categorization separately. Thus, we make a function to do this and then use `map_df()` from the {purrr} package (part of the tidyverse) to loop through the variables. This function takes a demographic variable as its input (`byarvar`) and calculates the violent and aggravated assault vicitimization rate for each level. It then creates some columns with the variable, the level of each variable, and a numeric version of the variable (`LevelNum`) for sorting later. The function is run across multiple variables using `map()` and then stacks the results into a single output using `bind_rows()`. \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!filter} \index{Functions in srvyr!summarize}
+A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate the violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by()` statement for each categorization separately. Thus, we make a function to do this and then use `map_df()` from the {purrr} package (part of the tidyverse) to loop through the variables. This function takes a demographic variable as its input (`byarvar`) and calculates the violent and aggravated assault vicitimization rate for each level. It then creates some columns with the variable, the level of each variable, and a numeric version of the variable (`LevelNum`) for sorting later. The function is run across multiple variables using `map()` and then stacks the results into a single output using `bind_rows()`.  \index{Functions in srvyr!filter|(} 
 
 ```{r}
 #| label: ncvs-vign-rates-demo
@@ -733,6 +736,7 @@ pers_est_df <-
   map(pers_est_by) %>%
   bind_rows()
 ```
+\index{Functions in srvyr!filter|)} \index{Functions in srvyr!survey\_mean|)}
 
 The output from all the estimates is cleanded to create better labels such as going from "RaceHispOrigin" to "Race/Hispanic Origin". Finally, the {gt} package is used to make a publishable table (Table \@ref(tab:ncvs-vign-rates-demo-tab)). Using the functions from the {gt} package, column labels and footnotes are added and estimates are presented to the first decimal place.
 
@@ -818,7 +822,7 @@ vr_gt %>%
 
 ### Estimation 4: Prevalence rates {#prev-rate}
 
-Prevalence rates differ from victimization rates as the numerator is the number of people or households victimized rather than the number of victimizations. To calculate the prevalence rates, we must run another summary of the data by calculating an indicator for whether a person or household is a victim of a particular crime at any point in the year. Below is an example of calculating first the indicator and then the prevalence rate of violent crime and aggravated assault. \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!summarize}
+Prevalence rates differ from victimization rates as the numerator is the number of people or households victimized rather than the number of victimizations. To calculate the prevalence rates, we must run another summary of the data by calculating an indicator for whether a person or household is a victim of a particular crime at any point in the year. Below is an example of calculating first the indicator and then the prevalence rate of violent crime and aggravated assault. \index{Functions in srvyr!survey\_mean|(} 
 
 ```{r}
 #| label: ncvs-vign-prevexamp
@@ -842,12 +846,13 @@ pers_prev_ests <- pers_prev_des %>%
 
 pers_prev_ests
 ```
+\index{Functions in srvyr!survey\_mean|)} 
 
 In the example above, the indicator is multiplied by 100 to return a percentage rather than a proportion. In 2021, we estimate that `r formatC(pers_prev_ests$Violent_Prev, digits=2, format="f")`% of people aged 12 and older were a victim of violent crime in the United States, and `r formatC(pers_prev_ests$AAST_Prev, digits=2, format="f")`% were victims of aggravated assault.
 
 ## Statistical testing
 
-For any of the types of estimates discussed, we can also perform statistical testing. For example, we could test whether property victimization rates are different between properties that are owned versus rented. First, we calculate the point estimates. \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!summarize}
+For any of the types of estimates discussed, we can also perform statistical testing. For example, we could test whether property victimization rates are different between properties that are owned versus rented. First, we calculate the point estimates. \index{Functions in srvyr!survey\_mean|(} 
 
 ```{r}
 #| label: ncvs-vgn-prop-pt-estimates
@@ -860,8 +865,9 @@ prop_tenure <- hh_des %>%
 
 prop_tenure  
 ```
+\index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)} 
 
-The property victimization rate for rented households is `r prop_tenure %>% filter(Tenure=="Rented") %>% pull(Property_Rate) %>% round(1)` per 1,000 households while the property victimization rate for owned households is `r prop_tenure %>% filter(Tenure=="Owned") %>% pull(Property_Rate) %>% round(1)`, which seem very different especially given the non-overlapping confidence intervals. However, survey data is inheriently non-independent so statistical testing cannot be done by comparing confidence intervals. To conduct the statistical test, we first need to create a variable that we will compare which incorporates the adjusted incident weight (`ADJINC_WT`) and then the test can be conducted as discussed in Chapter \@ref(c06-statistical-testing). \index{Functions in survey!svyttest}
+The property victimization rate for rented households is `r prop_tenure %>% filter(Tenure=="Rented") %>% pull(Property_Rate) %>% round(1)` per 1,000 households while the property victimization rate for owned households is `r prop_tenure %>% filter(Tenure=="Owned") %>% pull(Property_Rate) %>% round(1)`, which seem very different especially given the non-overlapping confidence intervals. However, survey data is inheriently non-independent so statistical testing cannot be done by comparing confidence intervals. \index{Functions in survey!svyttest|(}To conduct the statistical test, we first need to create a variable that we will compare which incorporates the adjusted incident weight (`ADJINC_WT`) and then the test can be conducted as discussed in Chapter \@ref(c06-statistical-testing). 
 
 ```{r}
 #| label: ncvs-vgn-prop-stat-test
@@ -902,7 +908,7 @@ prop_tenure_test %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-The output of the statistical test shows the same difference of `r prop_tenure_test$estimate %>% round(1)` between the property victimization rates of renters and owners and the test is highly significant with the p-value of `r prettyunits::pretty_p_value(prop_tenure_test$p.value)`.
+The output of the statistical test shows the same difference of `r prop_tenure_test$estimate %>% round(1)` between the property victimization rates of renters and owners and the test is highly significant with the p-value of `r prettyunits::pretty_p_value(prop_tenure_test$p.value)`. \index{Functions in survey!svyttest|)}
 
 ## Exercises
 

@@ -196,9 +196,9 @@ There are many other visualizations that can be helpful in reviewing the data, a
 
 ## Analysis with missing data
 
-Once we understand the types of missingness, we can begin the analysis of the data. Different missingness types may be handled in different ways.  In most publicly available datasets, researchers will have already calculated weights and imputed missing values if deemed necessary. Those interested in learning more about how to calculate weights and impute data for different missing data mechanisms, we recommended @Kim2021 and @Valliant2018weights.
+Once we understand the types of missingness, we can begin the analysis of the data. Different missingness types may be handled in different ways.  In most publicly available datasets, researchers will have already calculated weights and imputed \index{Imputation} missing values if deemed necessary. Those interested in learning more about how to calculate weights and impute data for different missing data mechanisms, we recommended @Kim2021 and @Valliant2018weights.
 
-Even with weights and imputation, missing data will still most likely exist in the data and need to be accounted for in analysis.  This section provides an overview on how to recode missing data in R, and how to account for skip patterns in analysis.
+Even with weights and imputation\index{Imputation}, missing data will still most likely exist in the data and need to be accounted for in analysis.  This section provides an overview on how to recode missing data in R, and how to account for skip patterns in analysis.
 
 ### Recoding missing data
 
@@ -237,7 +237,7 @@ However it is important to note that at the time of publication, there is no eas
 
 When questions are skipped by design in a survey, it is meaningful that the data is later missing. For example the RECS survey asks people how they control the heat in their home in the winter (`HeatingBehavior`). This is only among those who have heat in their home (`SpaceHeatingUsed`). If no there is no heating equipment used, the value of `HeatingBehavior` is missing. One has several choices when analyzing this data which include 1) only including those with a valid value of `HeatingBehavior` and specifying the universe as those with heat or 2) including those who do not have heat. It is important to specify what population an analysis generalizes to.
 
-Here is example code where we only include those with a valid value of `HeatingBehavior` (choice 1). Note that we use the design object (`recs_des`) then filter to those that are not missing on `HeatingBehavior`. \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!filter} \index{Functions in srvyr!summarize}
+Here is example code where we only include those with a valid value of `HeatingBehavior` (choice 1). Note that we use the design object (`recs_des`) then \index{Functions in srvyr!filter|(}filter to those that are not missing on `HeatingBehavior`. \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: missing-recs-heatcc
@@ -251,8 +251,9 @@ heat_cntl_1 <- recs_des %>%
 
 heat_cntl_1
 ```
+\index{Functions in srvyr!filter|)}
 
-Here is example code where we include those that do not have heat (choice 2). To help understand what we are looking at we have included the output to show both variables `SpaceHeatingUsed` and `HeatingBehavior`. \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!interact} \index{Functions in srvyr!summarize}
+Here is example code where we include those that do not have heat (choice 2). To help understand what we are looking at we have included the output to show both variables `SpaceHeatingUsed` and `HeatingBehavior`. \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!interact|(} 
 
 ```{r}
 #| label: missing-recs-heatpop
@@ -265,6 +266,7 @@ heat_cntl_2 <- recs_des %>%
 
 heat_cntl_2
 ```
+\index{Functions in srvyr!interact|)} \index{Functions in srvyr!summarize|)}
 
 ```{r}
 #| label: missing-recs-heattext
@@ -284,7 +286,7 @@ pct_2 <- heat_cntl_2 %>%
 
 If we ran the first analysis, we would say that `r pct_1`% **of households with heat** use a programmable or smart thermostat for the heating of their home. While if we used the results from the second analysis, we could say that `r pct_2`% of households use a programmable or smart thermostat for the heating of their home. The distinction of the two statements is bolded for emphasis. Skip patterns often change the universe that we are talking about and need to be carefully examined.
 
-Filtering to the correct universe is important when handling these types of missing data.  The `nabular` we created above can also help with this.  If we have `NA_skip` values in the shadow, we can make sure that we filter out all of these values and only include relevant missing.  To do this with survey data we could first create the `nabular`, then create the design object on that data, and then use the shadow variables to assist with filtering the data.  Let's use the `nabular` we created above for ANES 2020 (`anes_2020_shadow`) to create the design object. \index{Functions in srvyr!as\_survey\_design}
+Filtering to the correct universe is important when handling these types of missing data.  The `nabular` we created above can also help with this.  If we have `NA_skip` values in the shadow, we can make sure that we filter out all of these values and only include relevant missing.  To do this with survey data we could first create the `nabular`, then create the \index{Functions in srvyr!as\_survey\_design|(} design object on that data, and then use the shadow variables to assist with filtering the data.  Let's use the `nabular` we created above for ANES 2020 (`anes_2020_shadow`) to create the design object. 
 
 ```{r}
 #| label: missing-anes-shadow-des
@@ -301,8 +303,9 @@ anes_des_shadow <- anes_adjwgt_shadow %>%
     nest = TRUE
   )
 ```
+\index{Functions in srvyr!as\_survey\_design|)}
 
-Then we can use this design object to look at the percent of the population that voted for each candidate in 2016 (`V201103`). First, let's look at the percentages without removing any cases: \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!summarize}
+Then we can use this design object to look at the percent of the population that voted for each candidate in 2016 (`V201103`). First, let's look at the percentages without removing any cases: \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: missing-anes-shadow-ex1
@@ -316,7 +319,7 @@ pres16_select1<-anes_des_shadow %>%
 pres16_select1
 ```
 
-Next, we will look at the percentages removing only those that were missing due to skip patterns (i.e., they did not receive this question). \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!filter} \index{Functions in srvyr!summarize}
+Next, we will look at the percentages removing only those that were missing due to skip patterns (i.e., they did not receive this question). \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!filter|(} 
 
 ```{r}
 #| label: missing-anes-shadow-ex2
@@ -331,7 +334,7 @@ pres16_select2<-anes_des_shadow %>%
 pres16_select2
 ```
 
-Finally, we will look at the percentages removing all missing values both due to skip patterns and due to those who refused to answer the question. \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!filter} \index{Functions in srvyr!summarize}
+Finally, we will look at the percentages removing all missing values both due to skip patterns and due to those who refused to answer the question. \index{Functions in srvyr!survey\_prop}  
 
 ```{r}
 #| label: missing-anes-shadow-ex3
@@ -345,7 +348,7 @@ pres16_select3<-anes_des_shadow %>%
 
 pres16_select3
 ```
-
+\index{Functions in srvyr!filter|)} \index{Functions in srvyr!summarize|)}
 
 ```{r}
 #| label: missing-anes-shadow-gt

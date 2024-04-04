@@ -75,11 +75,11 @@ As we first introduced in Chapter \@ref(c04-getting-started) (Section \@ref(surv
 
 4. Within `summarize()`, specify variables to calculate, including means, totals, proportions, quantiles, and more
 
-The order of these steps matters in survey analysis. For example, if we need to subset the data, we must use `filter()` on our data **after** creating the survey design. If we do this before the survey design is created, we may not be correctly accounting for the study design, resulting in incorrect findings. \index{Functions in srvyr!filter}
+The order of these steps matters in survey analysis. For example, if we need to subset the data, \index{Functions in srvyr!filter}we must use `filter()` on our data **after** creating the survey design. If we do this before the survey design is created, we may not be correctly accounting for the study design, resulting in incorrect findings. 
 
 Additionally, correctly identifying the survey design is one of the most important steps in survey analysis.  Knowing the type of sample design (e.g., clustered, stratified) will help ensure the underlying error structure is correctly calculated and weights are correctly used. Reviewing the documentation (see Chapter \@ref(c03-survey-data-documentation)) will help us understand what variables to use from the data.  Learning about complex design factors such as clustering, stratification, and weighting is foundational to complex survey analysis, and we recommend that all analysts review Chapter \@ref(c10-sample-designs-replicate-weights) before creating their first design object. 
 
-Making sure to use the survey analysis functions from the {srvyr} and {survey} packages is also important in survey analysis. For example, using `mean()` and `survey_mean()` on the same data will result in different findings and outputs. Each of the survey functions from {srvyr} and {survey} impacts standard errors and variance, and we cannot treat complex surveys as unweighted simple random samples if we want to produce unbiased estimates. \index{Functions in srvyr!survey\_mean}
+Making sure to use the survey analysis functions from the {srvyr} and {survey} packages is also important in survey analysis. For example, using `mean()` and \index{Functions in srvyr!survey\_mean}`survey_mean()` on the same data will result in different findings and outputs. Each of the survey functions from {srvyr} and {survey} impacts standard errors and variance, and we cannot treat complex surveys as unweighted simple random samples if we want to produce unbiased estimates. 
 
 ## Begin with descriptive analysis
 
@@ -185,7 +185,7 @@ example_srvy_fct %>%
   count(q_d2_1_fct, q_d2_1)
 ```
 
-This example data also includes a column called `region`, which is imported as a number (`<int>`). This is a good hint to use the questionnaire and codebook along with the data to find out if the values actually reflect a number or are perhaps a coded categorical variable (see Chapter \@ref(c03-survey-data-documentation) for more details). R will calculate the mean even if it is not appropriate, leading to the common mistake of applying an average to categorical values instead of a proportion function. For example, for ease of coding, we may use the `across()` function to calculate the mean across all numeric variables: \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!summarize}
+This example data also includes a column called `region`, which is imported as a number (`<int>`). This is a good hint to use the questionnaire and codebook along with the data to find out if the values actually reflect a number or are perhaps a coded categorical variable (see Chapter \@ref(c03-survey-data-documentation) for more details). R will calculate the mean even if it is not appropriate, leading to the common mistake of applying an average to categorical values instead of a proportion function. For example, for ease of coding, we may use the `across()` function to calculate the mean across all numeric variables: \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: recommendations-example-dat-num-calc
@@ -200,7 +200,7 @@ In this example, if we do not adjust `region` to be a factor variable type, we m
 
 It is common for analysts working in R to come across warning or error messages, and learning how to debug these messages (i.e., find and fix issues) ensures we can proceed with our work and avoid potential mistakes.
 
-We've discussed a few examples in this book. For example, if we calculate an average with `survey_mean()` and get `NA` instead of a number, it may be because our column has missing values. \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!summarize}
+We've discussed a few examples in this book. For example, if we calculate an average with `survey_mean()` and get `NA` instead of a number, it may be because our column has missing values. 
 
 ```{r}
 #| label: recommendations-missing-dat
@@ -208,15 +208,16 @@ example_des %>%
   summarize(mean = survey_mean(q_d1))
 ```
 
-Including the `na.rm = TRUE` would resolve the issue: \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!summarize}
+Including the `na.rm = TRUE` would resolve the issue: 
 
 ```{r}
 #| label: recommendations-missing-dat-fix
 example_des %>%
   summarize(mean = survey_mean(q_d1, na.rm = TRUE))
 ```
+\index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)}
 
-Another common error message that we may see with survey analysis may look something like the following: \index{Functions in survey!svyttest}
+Another common error message that we may see with survey analysis may look something like the following: \index{Functions in survey!svyttest|(}
 
 ```{r}
 #| label: recommendations-desobj-loc
@@ -225,7 +226,7 @@ example_des %>%
   svyttest(q_d1~gender)
 ```
 
-In this case, we need to remember that with functions from the {survey} packages like `svyttest()`, the design object is not the first argument, and we have to use the dot (`.`) notation (see Chapter \@ref(c06-statistical-testing)).  Adding in the named argument of `design=.` will fix this error. \index{Functions in survey!svyttest}
+In this case, we need to remember that with functions from the {survey} packages like `svyttest()`, the design object is not the first argument, and we have to use the dot (`.`) notation (see Chapter \@ref(c06-statistical-testing)).  Adding in the named argument of `design=.` will fix this error. 
 
 ```{r}
 #| label: recommendations-desobj-locfix
@@ -241,7 +242,7 @@ Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]) :
   contrasts can be applied only to factors with 2 or more levels
 ```
 
-We can see that the error has to do with a function requiring a factor with two or more levels and that it has been applied to something else. This ties back to our section on using appropriate variable types. We can check the variable of interest to examine whether it's the correct type.
+We can see that the error has to do with a function requiring a factor with two or more levels and that it has been applied to something else. This ties back to our section on using appropriate variable types. We can check the variable of interest to examine whether it's the correct type. \index{Functions in survey!svyttest|)}
 
 The internet also offers many resources for debugging. Searching for a specific error message can often lead to a solution. In addition, we can post on community forums like [Posit Community](https://forum.posit.co/) for direct help from others.
 

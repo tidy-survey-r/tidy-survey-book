@@ -116,7 +116,7 @@ Table: (\#tab:notation-diffs) Differences in formulas for `:` and `*` code synta
 | \* | `mpg ~ cyl*disp*hp` |$$ \begin{aligned} mpg_i= &\beta_0+\beta_1cyl_{i}+\beta_2disp_{i}+\beta_3hp_{i}+\\&        \beta_4cyl_{i}disp_{i}+\beta_5cyl_{i}hp_{i}+\beta_6disp_{i}hp_{i}+\\&\beta_7cyl_{i}disp_{i}hp_{i}+\epsilon_i\end{aligned}$$ |
 
 
-When using non-survey data such as experimental or observational data, researchers will use the `glm()` function for linear models.  With survey data, however, we use `svyglm()` from the {survey} package to ensure that we account for the survey design and weights in modeling^[There is some debate about whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg]. However, for the purposes of providing complete information on how to analyze complex survey data, this chapter will include weights.].  This allows us to generalize a model to the target population and accounts for the fact that the observations in the survey data may not be independent.  As discussed in Chapter \@ref(c06-statistical-testing), modeling survey data cannot be directly done in {srvyr}, but can be done in the {survey} package [@lumley2010complex; @R-survey]. In this chapter, we will provide syntax and examples for linear models, including ANOVA, normal linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book. \index{Functions in survey!svyglm}
+When using non-survey data such as experimental or observational data, researchers will use the `glm()` function for linear models.  With survey data, however, we use \index{Functions in survey!svyglm|(}`svyglm()` from the {survey} package to ensure that we account for the survey design and weights in modeling^[There is some debate about whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg]. However, for the purposes of providing complete information on how to analyze complex survey data, this chapter will include weights.].  This allows us to generalize a model to the target population and accounts for the fact that the observations in the survey data may not be independent.  As discussed in Chapter \@ref(c06-statistical-testing), modeling survey data cannot be directly done in {srvyr}, but can be done in the {survey} package [@lumley2010complex; @R-survey]. In this chapter, we will provide syntax and examples for linear models, including ANOVA, normal linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book. \index{svyglm|see {Functions in survey}}
 
 ## Analysis of variance (ANOVA)
 
@@ -139,7 +139,7 @@ Some assumptions when using ANOVA on survey data include:
 
 ### Syntax
 
-To perform this type of analysis in R, the general syntax is as follows: \index{Functions in survey!svyglm}
+To perform this type of analysis in R, the general syntax is as follows: 
 
 ``` r
 des_obj %>%
@@ -158,11 +158,11 @@ The arguments are:
 * `na.action`: handling of missing data
 * `df.resid`: degrees of freedom for Wald tests (optional) - defaults to using `degf(design)-(g-1)` where $g$ is the number of groups
 
-The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details). The default for missing data is `na.omit`, this means that we are removing all records with any missing data in either predictors or outcomes from analyses.  There are other options for handling missing data and we recommend looking at the help documentation for `na.omit` (run `help(na.omit)` or `?na.omit`) for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c11-missing-data). \index{Functions in survey!svyglm}
+The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details). The default for missing data is `na.omit`, this means that we are removing all records with any missing data in either predictors or outcomes from analyses.  There are other options for handling missing data and we recommend looking at the help documentation for `na.omit` (run `help(na.omit)` or `?na.omit`) for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c11-missing-data). 
 
 ### Example
 
-Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer. To analyze this data, we filter the respondents to only those using AC (`ACUsed`). Then if we want to see if there are differences by region, we can use `group_by()`. A descriptive analysis of the temperature at night (`SummerTempNight`) set by region and the sample sizes is displayed below. \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!unweighted} \index{Functions in srvyr!filter} \index{Functions in srvyr!summarize}
+Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer. To analyze this data, we filter the respondents to only those using AC (`ACUsed`). Then if we want to see if there are differences by region, we can use `group_by()`. A descriptive analysis of the temperature at night (`SummerTempNight`) set by region and the sample sizes is displayed below. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!unweighted|(} \index{Functions in srvyr!filter|(} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: model-anova-prep
@@ -175,8 +175,9 @@ recs_des %>%
     n_na = unweighted(sum(is.na(SummerTempNight)))
   )
 ```
+\index{Functions in srvyr!filter|)} \index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)} \index{Functions in srvyr!unweighted|)} 
 
-In the following code, we test whether this temperature varies by region by first using `svyglm()` to run the test and then using `broom::tidy()` to display the output. Note that the temperature setting is set to NA when the household does not use air-conditioning, and since the default handling of NAs is `na.action=na.omit`, records that do not use air-conditioning will not be included in this regression. \index{Functions in survey!svyglm}
+In the following code, we test whether this temperature varies by region by first using `svyglm()` to run the test and then using `broom::tidy()` to display the output. Note that the temperature setting is set to NA when the household does not use air-conditioning, and since the default handling of NAs is `na.action=na.omit`, records that do not use air-conditioning will not be included in this regression. 
 
 ```{r}
 #| label: model-anova-ex
@@ -189,7 +190,7 @@ tidy(anova_out)
 
 In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In this output, the intercept represents the reference value of the Northeast region. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, `r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(estimate) %>% signif(3)` (p-value`r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(p.value) %>% pretty_p_value()`) degrees higher than in the Northeast during summer nights and each region sets their thermostats at significantly higher temperatures than the Northeast.
 
-If we wanted to change the reference value we would reorder the factor before modeling using the function `relevel()` from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`.  For example, if we wanted the reference level to be the Midwest region, we could use the following code. Note the usage of the `gt()` function on top of `tidy()` to print a nice looking output table - we will go over more usage of this package in Chapter \@ref(c08-communicating-results). \index{Functions in survey!svyglm}
+If we wanted to change the reference value we would reorder the factor before modeling using the function `relevel()` from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`.  For example, if we wanted the reference level to be the Midwest region, we could use the following code. Note the usage of the `gt()` function on top of `tidy()` to print a nice looking output table - we will go over more usage of this package in Chapter \@ref(c08-communicating-results). 
 
 ```{r}
 #| label: model-anova-ex-relevel
@@ -246,7 +247,7 @@ Assumptions in normal linear regression using survey data include:
 
 ### Syntax
 
-The syntax for this regression uses the same function as ANOVA, but can have more than one variable listed on the right-hand side of the formula: \index{Functions in survey!svyglm}
+The syntax for this regression uses the same function as ANOVA, but can have more than one variable listed on the right-hand side of the formula: 
 
 ``` r
 des_obj %>%
@@ -297,7 +298,7 @@ recs_2020 %>%
   theme_minimal() 
 ```
 
-Given that the plot shows a potential increasing relationship between square footage and electricity expenditure, fitting a model will allow us to determine if the relationship is statistically significant.  The model is fit below with electricity expenditure as the outcome. \index{Functions in survey!svyglm}
+Given that the plot shows a potential increasing relationship between square footage and electricity expenditure, fitting a model will allow us to determine if the relationship is statistically significant.  The model is fit below with electricity expenditure as the outcome. 
 
 ```{r}
 #| label: model-slr-examp
@@ -337,7 +338,7 @@ In the output above, we can see the estimated coefficients (`estimate`), estimat
 This is a very simple model, and there are likely many more factors related to electricity expenditure, including the type of cooling, number of appliances, location, and more. However, starting with one variable models can help researchers understand what potential relationships there are between variables before fitting more complex models.  Often researchers start with known relationships before building models to determine what impact additional variables have on the model.
 
 #### Example 2: Linear regression with multiple variables and interactions {.unnumbered}
-In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning is used (logical/categorical) with all two-way interactions also included.  In this example, we are choosing to fit this model without an intercept (using `-1` in the formula).  This will result in an intercept estimate for each region instead of a single intercept for all data. \index{Functions in survey!svyglm}
+In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning is used (logical/categorical) with all two-way interactions also included.  In this example, we are choosing to fit this model without an intercept (using `-1` in the formula).  This will result in an intercept estimate for each region instead of a single intercept for all data. 
 
 ```{r}
 #| label: model-lmr-examp
@@ -475,7 +476,7 @@ Assumptions in logistic regression using survey data include:
 
 ### Syntax
 
-The syntax for logistic regression is as follows: \index{Functions in survey!svyglm}
+The syntax for logistic regression is as follows: 
 
 ``` r
 des_obj %>%
@@ -496,7 +497,7 @@ The arguments are:
 * `df.resid`: degrees of freedom for Wald tests (optional) - defaults to using `degf(design)-p` where $p$ is the rank of the design matrix
 * `family`: the error distribution/link function to be used in the model
 
-Note `svyglm()` is the same function used in both ANOVA and normal linear regression. However, we've added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion [@mccullagh1989binary; @lumley2010complex; @rcore]. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of three ways with survey data: \index{Functions in survey!svyglm}
+Note `svyglm()` is the same function used in both ANOVA and normal linear regression. However, we've added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion [@mccullagh1989binary; @lumley2010complex; @rcore]. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of three ways with survey data: 
 
   - A two level factor variable where the first level of the factor indicates a "failure" and the second level indicates a "success"
   - A numeric variable which is 1 or 0 where 1 indicates a success
@@ -505,7 +506,7 @@ Note `svyglm()` is the same function used in both ANOVA and normal linear regres
 ### Examples
 
 #### Example 1: Logistic regression with single variable {.unnumbered}
-In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for president in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. We first create a binary outcome for trusting in the government by collapsing "Always" and "Most of the time" into a single factor level, and the other response options ("About half the time", "Some of the time", and "Never") into a second factor level.  Next, a scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data. \index{Functions in srvyr!survey\_mean} \index{Functions in srvyr!summarize}
+In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for president in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. We first create a binary outcome for trusting in the government by collapsing "Always" and "Most of the time" into a single factor level, and the other response options ("About half the time", "Some of the time", and "Never") into a second factor level.  Next, a scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: model-logisticexamp-plot
@@ -538,8 +539,9 @@ anes_des_der %>%
   guides(fill = "none") +
   theme_minimal()
 ```
+\index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)}
 
-By looking at Figure \@ref(fig:model-logisticexamp-plot) it appears that people who voted for Trump are more likely to say that they usually have trust in the government compared to those who voted for Biden and Other candidates. To determine if this insight is accurate, we next we fit the model. \index{Functions in survey!svyglm}
+By looking at Figure \@ref(fig:model-logisticexamp-plot) it appears that people who voted for Trump are more likely to say that they usually have trust in the government compared to those who voted for Biden and Other candidates. To determine if this insight is accurate, we next we fit the model. 
 
 ```{r}
 #| label: model-logisticexamp-model
@@ -633,7 +635,7 @@ logistic_trust_vote %>%
 #### Example 2: Interaction effects {.unnumbered}
 Let's look at another example with interaction effects.  If we're interested in understanding the demographics of people who voted for Biden among all voters in 2020, we could include `EarlyVote2020` and `Gender` in our model.  
 
-First we need to subset the data to 2020 voters and then create an indicator for voted for Biden. \index{Functions in srvyr!filter}
+First we need to subset the data to 2020 voters and then create an indicator for voted for Biden. \index{Functions in srvyr!filter|(}
 ```{r}
 #| label: model-logisticexamp-biden-ind
 anes_des_ind <- anes_des %>% 
@@ -641,8 +643,9 @@ anes_des_ind <- anes_des %>%
   mutate(VoteBiden = case_when(VotedPres2020_selection == "Biden"~1,
                                TRUE ~ 0))
 ```
+\index{Functions in srvyr!filter|)}
 
-Let's first look at the main effects of gender and early voting behavior. \index{Functions in survey!svyglm}
+Let's first look at the main effects of gender and early voting behavior. 
 ```{r}
 #| label: model-logisticexamp-biden-main
 log_biden_main <- anes_des_ind %>%
@@ -678,7 +681,7 @@ tidy(log_biden_main) %>%
 
 This main effect model indicates that respondents with who early voted in 2020 are `r signif(log_biden_main$coefficients[2],3)` (p-value=`r tidy(log_biden_main) %>% slice(2) %>% pull(p.value) %>% pretty_p_value()`) times more likely to vote for Biden compared to respondents who did not early vote in the 2020 election (the reference level). We see that gender is also significant with females more likely to vote for Biden compared to males (p-value=`r tidy(log_biden_main) %>% slice(3) %>% pull(p.value) %>% pretty_p_value()`). 
 
-It is possible that there is an interaction between gender and early voting behavior. To determine this we can create a model that includes the interaction effects: \index{Functions in survey!svyglm}
+It is possible that there is an interaction between gender and early voting behavior. To determine this we can create a model that includes the interaction effects: 
 ```{r}
 #| label: model-logisticexamp-biden-int
 log_biden_int <- anes_des_ind %>%
@@ -749,7 +752,7 @@ log_biden_pred %>%
 
 From this plot we can see that respondents who indicated a male gender had roughly the same probability of voting for Biden regardless of if they voted early or not.  However, females who voted early were more likely to vote for Biden if they voted early than if they did not vote early. 
 
-Interactions in models can be difficult to understand from the coefficients alone. Using these interaction plots can help others understand the nuances of the results, and often can become even more helpful with more than two levels in a given factor (e.g., education or race/ethnicity).
+Interactions in models can be difficult to understand from the coefficients alone. Using these interaction plots can help others understand the nuances of the results, and often can become even more helpful with more than two levels in a given factor (e.g., education or race/ethnicity). \index{Functions in survey!svyglm|)}
 
 ## Exercises
 
