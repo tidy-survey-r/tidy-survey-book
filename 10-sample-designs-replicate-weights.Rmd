@@ -72,6 +72,7 @@ Some common terminology across the designs are:
 
 ### Simple random sample without replacement
 
+\index{Simple random sampling|(}
 The simple random sample (SRS) without replacement is a sampling design where a fixed sample size is selected from a sampling frame, and every possible subsample has an equal probability of selection. Without replacement refers to the fact that once a sampling unit has been selected, it is removed from the sample frame and cannot be selected again.
 
   - **Requirements**: The sampling frame must include the entire population.
@@ -271,7 +272,8 @@ summary(apisrswr_des)
 ```
 \index{Finite population correction|(}
 In the output above, the design object and the object summary are shown. Both note that the sampling is done "with replacement" because no FPC was specified. The probabilities, which are derived from the weights, are summarized in the summary.
-\index{Finite population correction|)}
+\index{Finite population correction|)}\index{Simple random sampling|)}
+
 ### Stratified sampling \index{Stratified sampling|(}
 
 Stratified sampling occurs when a population is divided into mutually exclusive subpopulations (strata), and then samples are selected independently within each stratum.
@@ -472,6 +474,7 @@ nsfg_des <- nsfgdata %>%
 \index{Functions in srvyr!as\_survey\_design|)} \index{Finite population correction|)} \index{Stratified sampling|)}
 ## Replicate weights
 
+\index{Replicate weights|(}
 Replicate weights are often included on analysis files instead of, or in addition to, the design variables (strata and PSUs). Replicate weights are used as another method to estimate variability.  Often researchers choose to use replicate weights to avoid publishing design variables (strata or clustering variables) as a measure to reduce the risk of disclosure. There are several types of replicate weights, including balanced repeated replication (BRR), Fay's BRR, jackknife, and bootstrap methods. An overview of the process for using replicate weights is as follows:
 
 1. Divide the sample into subsample replicates that mirror the design of the sample
@@ -489,6 +492,7 @@ To create the design object for surveys with replicate weights, we use `as_surve
 
 ### Balanced Repeated Replication (BRR) method
 
+\index{Replicate weights!Balanced repeated replication (BRR)|(}
 The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by two but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have one row, two rows, or a multiple of four rows. The size of the Hadamard matrix is determined by the first multiple of 4 greater than or equal to the number of strata.  For example, if a survey had 7 strata, the Hadamard matrix would be an $8\times8$ matrix. Additionally, a survey with 8 strata would also have an $8\times8$ Hadamard matrix. The columns in the matrix specify the strata and the rows specify the replicate. In each replicate (row), a +1 means to use the first PSU and a -1 means to use the second PSU in the estimate. For example, here is a $4\times4$ Hadamard matrix: 
 
 $$ \begin{array}{rrrr} +1 &+1 &+1 &+1\\ +1&-1&+1&-1\\ +1&+1&-1&-1\\ +1 &-1&-1&+1 \end{array} $$
@@ -650,10 +654,11 @@ summary(recs_2015_des)
 ```
 
 
-In specifying the design, the `variables` option was also used to include which variables might be used in analyses. This is optional but can make our object smaller and easier to work with. When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Fay's variance method (rho= 0.5) with 96 replicates and MSE variances`, and the variables are included. No weight or probability summary is included in this output as we have seen in some other design objects.
+In specifying the design, the `variables` option was also used to include which variables might be used in analyses. This is optional but can make our object smaller and easier to work with. When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Fay's variance method (rho= 0.5) with 96 replicates and MSE variances`, and the variables are included. No weight or probability summary is included in this output as we have seen in some other design objects.\index{Replicate weights!Balanced repeated replication (BRR)|)}
 
 ### Jackknife method
 
+\index{Replicate weights!Jackknife|(}
 There are three jackknife estimators implemented in {srvyr} - jackknife 1 (JK1), jackknife n (JKn), and jackknife 2 (JK2). The JK1 method can be used for unstratified designs, and replicates are created by removing one PSU at a time so the number of replicates is the same as the number of PSUs. If there is no clustering, then the PSU is the ultimate sampling unit (e.g., unit). 
 
 The JKn method is used for stratified designs and requires two or more PSUs per stratum. In this case, each replicate is created by deleting one PSU from a single stratum, so the number of replicates is the number of total PSUs across all strata. The JK2 method is a special case of JKn when there are exactly 2 PSUs sampled per stratum. For variance estimation, scaling constants must also be specified. 
@@ -733,10 +738,11 @@ recs_des <- recs_2020 %>%
 ```
 
 
-When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Unstratified cluster jacknife (JK1) with 60 replicates and MSE variances`, and the variables are included. No weight or probability summary is included.
+When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Unstratified cluster jacknife (JK1) with 60 replicates and MSE variances`, and the variables are included. No weight or probability summary is included. \index{Replicate weights!Jackknife|)}
 
 ### Bootstrap method
 
+\index{Replicate weights!Bootstrap|(}
 In bootstrap resampling, replicates are created by selecting random samples of the PSUs with replacement (SRSWR). If there are $M$ PSUs in the sample, then each replicate will be created by selecting a random sample of $M$ PSUs with replacement. Each replicate is created independently, and the weights for each replicate are adjusted to reflect the population, generally using the same method as how the analysis weight was adjusted.  
 
 #### The math {-}
@@ -813,7 +819,7 @@ api1_bs_des
 summary(api1_bs_des) 
 ```
 
-As with other replicate design objects, when printing the object or looking at the summary, the replicate weights are provided along with the data variables.
+As with other replicate design objects, when printing the object or looking at the summary, the replicate weights are provided along with the data variables. \index{Replicate weights|)} \index{Replicate weights!Bootstrap|)}
 
 
 ## Exercises

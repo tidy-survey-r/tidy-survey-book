@@ -171,7 +171,9 @@ Both functions include the `vartype` argument with four different values:
 The confidence intervals are always calculated using a symmetric t-distribution based method, given by the formula:
 
 $$ \text{estimate} \pm t^*_{df}\times SE$$
-where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of PSUs minus the number of strata. For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we will provide examples using different variability types throughout this chapter.
+
+\index{Degrees of freedom|(}
+where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of \index{Replicate weights}replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of PSUs minus the number of strata. For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we will provide examples using different variability types throughout this chapter. \index{Degrees of freedom|)}
 
 ### Examples
 
@@ -274,7 +276,7 @@ The arguments are:
 * `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var", "cv")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
 * `level`: a number or a vector indicating the confidence level, defaults to 0.95
 * `deff`: a logical value stating whether the design effect should be returned, defaults to FALSE (this is described in more detail in Section \@ref(desc-deff))
-* `df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution
+* \index{Degrees of freedom|(}`df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution\index{Degrees of freedom|)}
 
 ### Examples
 
@@ -384,7 +386,7 @@ Both functions have the following arguments and defaults:
   * `level`: a number or a vector indicating the confidence level, defaults to 0.95
   * `prop_method`: Method to calculate the confidence interval for confidence intervals
   * `deff`: a logical value stating whether the design effect should be returned, defaults to FALSE (this is described in more detail in Section \@ref(desc-deff))
-  * `df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution
+  * \index{Degrees of freedom|(}`df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution\index{Degrees of freedom|)}
 
 There are two main differences in the syntax. The `survey_mean()` function includes the first argument `x`, representing the variable or expression on which the mean should be calculated. The `survey_prop()` does not have an argument to include the variables directly. Instead, prior to `summarize()`, we must use the `group_by()` function to specify the variables of interest for `survey_prop()`. For `survey_mean()`, including a `group_by()` function allows us to obtain the means by different groups. 
 
@@ -552,14 +554,15 @@ The arguments available in both functions are:
   * `level`: a number or a vector indicating the confidence level, defaults to 0.95
   * `interval_type`: method for calculating a confidence interval
   * `qrule`: rule for defining quantiles. The default is the lower end of the quantile interval ("math"). The midpoint of the quantile interval is the "school" rule. "hf1" to "hf9" are weighted analogs to type=1 to 9 in `quantile()`. "shahvaish" corresponds to a rule proposed by @shahvaish. See `vignette("qrule", package="survey")` for more information.
-  * `df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution
+  * \index{Degrees of freedom|(}`df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution\index{Degrees of freedom|)}
 
 The only difference between `survey_quantile()` and `survey_median()` is the inclusion of the `quantiles` argument in the `survey_quantile()` function. This argument takes a vector with values between 0 and 1 to indicate which quantiles to calculate. For example, if we wanted the quartiles of a variable, we would provide `quantiles = c(0.25, 0.5, 0.75)`. While we can specify quantiles of 0 and 1, which represent the minimum and maximum, this is not recommended. It only returns the minimum and maximum of the respondents and cannot be extrapolated to the population as there is no valid definition of standard error. 
 
 In Section \@ref(desc-count-syntax), we provide an overview of the different variability types. The interval used in confidence intervals for most measures, such as means and counts, is referred to as a Wald-type interval. However, this is not always the most accurate interval for quantiles. Similar to confidence intervals for proportions, quantiles have various interval types including asin, beta, mean, and xlogit (see Section \@ref(desc-meanprop-syntax)). Quantiles also have two more methods available:
 
   * `score`: the Francisco and Fuller confidence interval based on inverting a score test (only available for design-based survey objects and not replicate-based objects)
-  * `quantile`: based on the replicates of the quantile. This is not valid for jackknife-type replicates but is available for bootstrap and BRR replicates.
+  * `quantile`: \index{Replicate weights|(} \index{Replicate weights!Jackknife|(}\index{Replicate weights!Bootstrap|(}\index{Bootstrap|see {Replicate weights}}\index{Replicate weights!Balanced repeated replication (BRR)|(}\index{Balanced repeated replication (BRR)|see {Replicate weights}}
+based on the replicates of the quantile. This is not valid for jackknife-type replicates but is available for bootstrap and BRR replicates.\index{Replicate weights|)}\index{Replicate weights!Jackknife|)}\index{Replicate weights!Bootstrap|)}\index{Replicate weights!Balanced repeated replication (BRR)|)}
 
 One note with the `score` method is that when there are numerous ties in the data, this method may produce confidence intervals that do not contain the estimate. When dealing with a high propensity for ties (e.g., many respondents have the same age), it is recommended to use another method. SUDAAN, for example, uses the `score` method but adds noise to the values to prevent issues. The documentation in the {survey} package indicates in general, the `score` method may have poorer performance compared to the beta and logit intervals.
 
@@ -732,7 +735,7 @@ The arguments are:
   * `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var", "cv")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
   * `level`: A single number or vector of numbers indicating the confidence level
   * `deff`: A logical value to indicate whether the design effect should be returned (this is described in more detail in Section \@ref(desc-deff))
-  * `df`: (For vartype = "ci" only) A numeric value indicating the degrees of freedom for t-distribution
+  * \index{Degrees of freedom|(}`df`: (For vartype = "ci" only) A numeric value indicating the degrees of freedom for t-distribution\index{Degrees of freedom|)}
 
 ### Examples
 
@@ -825,7 +828,7 @@ The arguments are:
   * `na.rm`: A logical value to indicate whether missing values should be dropped
   * `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var", "cv")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
   * `level`: (For vartype = "ci" only) A single number or vector of numbers indicating the confidence level
-  * `df`: (For vartype = "ci" only) A numeric value indicating the degrees of freedom for t-distribution
+  * \index{Degrees of freedom|(}`df`: (For vartype = "ci" only) A numeric value indicating the degrees of freedom for t-distribution\index{Degrees of freedom|)}
 
 ### Examples
 
@@ -885,7 +888,7 @@ The arguments are:
   * `na.rm`: A logical value to indicate whether missing values should be dropped
   * `vartype`: type(s) of variation estimate to calculate including any of `c("se", "ci", "var")`, defaults to `se` (standard error) (see \@ref(desc-count-syntax) for more information)
   * `level`: (For vartype = "ci" only) A single number or vector of numbers indicating the confidence level.
-  * `df`: (For vartype = "ci" only) A numeric value indicating the degrees of freedom for t-distribution
+  * \index{Degrees of freedom|(}`df`: (For vartype = "ci" only) A numeric value indicating the degrees of freedom for t-distribution\index{Degrees of freedom|)}
 
 ### Examples
 
@@ -960,6 +963,7 @@ It is estimated that American residential households spent an average of `r .elb
 
 ### Subpopulation analysis \index{Functions in srvyr!filter|(} \index{filter|see {Functions in srvyr}}
 
+\index{Subpopulation|(}\index{Domain|see {Subpopulation}}
 We mentioned using `filter()` to subset a survey object for analysis. This operation should be done after creating the survey design object. In rare circumstances, subsetting data before creating the object can lead to incorrect variability estimates. This may occur if subsetting removes an entire Primary Sampling Unit (PSU; see Chapter \@ref(c10-sample-designs-replicate-weights) for more information on PSUs and sample designs). 
 
 Suppose we want estimates of the average amount spent on natural gas among housing units using natural gas (based on the variable `BTUNG`)^[`BTUNG` is derived from the supplier side component of the survey where `BTUNG` represents the natural gas consumption in British thermal units (Btus) in a year]. We first filter records to only include records where `BTUNG > 0` and then find the average amount of money spent. 
@@ -984,7 +988,7 @@ recs_des %>%
 ```
 
 Based on this calculation, the estimated average amount spent on natural gas is `r recs_des  %>% summarize(NG_mean = survey_mean(DOLLARNG, vartype = c("se", "ci"))) %>% mutate(NG_mean =round(NG_mean )) %>% pull(NG_mean) %>% scales::dollar()`.
-\index{Design effect|(}\index{deff|see {Design effect}} \index{Functions in srvyr!filter|)}
+\index{Design effect|(}\index{deff|see {Design effect}} \index{Functions in srvyr!filter|)}\index{Subpopulation|)}
 
 ### Design effects {#desc-deff}
 
