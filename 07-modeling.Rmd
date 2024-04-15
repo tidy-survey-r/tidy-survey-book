@@ -32,7 +32,6 @@ We will be using data from ANES and RECS described in Chapter \@ref(c04-getting-
 #| label: model-anes-des
 #| eval: FALSE
 targetpop <- 231592693
-data(anes_2020)
 
 anes_adjwgt <- anes_2020 %>%
   mutate(Weight = Weight / sum(Weight) * targetpop)
@@ -51,7 +50,6 @@ For RECS, details are included in the RECS documentation and Chapters \@ref(c04-
 ```{r}
 #| label: model-recs-des
 #| eval: FALSE
-data(recs_2020)
 
 recs_des <- recs_2020 %>%
   as_survey_rep(
@@ -83,7 +81,7 @@ For example, a linear formula mathematically notated as
 $$y_i=\beta_0+\beta_1 x_i+\epsilon_i$$ would be specified in R as `y~x` where the intercept is not explicitly included. To fit a model with no intercept, that is,
 
 $$y_i=\beta_1 x_i+\epsilon_i$$
-it can be specified in R as `y~x-1`. Formula notation details in R can be found in the help file for formula^[Use `help(formula)` or `?formula` in R or find the documentation online at <https://stat.ethz.ch/R-manual/R-devel/library/stats/html/formula.html>]. A quick overview of the common formula notation is in Table \@ref(tab:notation-common):
+it can be specified in R as `y~x-1`. Formula notation details in R can be found in the help file for formula^[Use `help(formula)` or `?formula` in R]. A quick overview of the common formula notation is in Table \@ref(tab:notation-common):
 
 Table: (\#tab:notation-common) Common symbols in formula notation
 
@@ -116,7 +114,7 @@ Table: (\#tab:notation-diffs) Differences in formulas for `:` and `*` code synta
 | \* | `mpg ~ cyl*disp*hp` |$$ \begin{aligned} mpg_i= &\beta_0+\beta_1cyl_{i}+\beta_2disp_{i}+\beta_3hp_{i}+\\&        \beta_4cyl_{i}disp_{i}+\beta_5cyl_{i}hp_{i}+\beta_6disp_{i}hp_{i}+\\&\beta_7cyl_{i}disp_{i}hp_{i}+\epsilon_i\end{aligned}$$ |
 
 
-When using non-survey data such as experimental or observational data, researchers will use the `glm()` function for linear models.  With survey data, however, we use `svyglm()` from the {survey} package to ensure that we account for the survey design and weights in modeling^[There is some debate about whether weights should be used in regression [@gelman2007weights; @bollen2016weightsreg]. However, for the purposes of providing complete information on how to analyze complex survey data, this chapter will include weights.].  This allows us to generalize a model to the target population and accounts for the fact that the observations in the survey data may not be independent.  As discussed in Chapter \@ref(c06-statistical-testing), modeling survey data cannot be directly done in {srvyr}, but can be done in the {survey} package [@lumley2010complex; @R-survey]. In this chapter, we will provide syntax and examples for linear models, including ANOVA, normal linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book.
+When using non-survey data such as experimental or observational data, researchers will use the `glm()` function for linear models.  With survey data, however, we use `svyglm()` from the {survey} package to ensure that we account for the survey design and weights in modeling^[There is some debate about whether weights should be used in regression [@bollen2016weightsreg; @gelman2007weights]. However, for the purposes of providing complete information on how to analyze complex survey data, this chapter will include weights.].  This allows us to generalize a model to the target population and accounts for the fact that the observations in the survey data may not be independent.  As discussed in Chapter \@ref(c06-statistical-testing), modeling survey data cannot be directly done in {srvyr}, but can be done in the {survey} package [@lumley2010complex]. In this chapter, we will provide syntax and examples for linear models, including ANOVA, normal linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book.
 
 ## Analysis of variance (ANOVA)
 
@@ -189,7 +187,7 @@ tidy(anova_out)
 
 In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In this output, the intercept represents the reference value of the Northeast region. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, `r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(estimate) %>% signif(3)` (p-value`r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(p.value) %>% pretty_p_value()`) degrees higher than in the Northeast during summer nights and each region sets their thermostats at significantly higher temperatures than the Northeast.
 
-If we wanted to change the reference value we would reorder the factor before modeling using the function `relevel()` from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`.  For example, if we wanted the reference level to be the Midwest region, we could use the following code. Note the usage of the `gt()` function on top of `tidy()` to print a nice looking output table - we will go over more usage of this package in Chapter \@ref(c08-communicating-results).
+If we wanted to change the reference value we would reorder the factor before modeling using the function `relevel()` from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`.  For example, if we wanted the reference level to be the Midwest region, we could use the following code. Note the usage of the `gt()` function on top of `tidy()` to print a nice looking output table [@R-gt; @R-broom] - we will go over more usage of the {gt} package in Chapter \@ref(c08-communicating-results).
 
 ```{r}
 #| label: model-anova-ex-relevel
@@ -232,7 +230,6 @@ Normal linear regression is a more generalized method than ANOVA where we fit a 
 ```{=tex}
 \begin{equation}
 y_i=\beta_0 +\sum_{i=1}^p \beta_i x_i + \epsilon_i
-(\#eq:normallin)
 \end{equation}
 ```
 
@@ -456,7 +453,6 @@ $$ y_i \sim \text{Bernoulli}(\pi_i)$$
 ```{=tex}
 \begin{equation}
 \log \left(\frac{\pi_i}{1-\pi_i} \right)=\beta_0 +\sum_{i=1}^n \beta_i x_i
-(\#eq:logoddlin)
 \end{equation}
 ```
 which can be re-expressed as
@@ -468,7 +464,7 @@ The Bernoulli distribution is a distribution which has an outcome of 0 or 1 give
 Assumptions in logistic regression using survey data include:
 
   - The outcome variable has two levels
-  - There is a linear relationship between the independent variables and the log odds (Equation \@ref(eq:logoddlin))
+  - There is a linear relationship between the independent variables and the log odds ($\log \left(\frac{\pi_i}{1-\pi_i} \right)$)
   - The residuals are homoscedastic, that is, the error term is the same across all values of independent variables
 
 
@@ -496,7 +492,7 @@ The arguments are:
 * `df.resid`: degrees of freedom for Wald tests (optional) - defaults to using `degf(design)-p` where $p$ is the rank of the design matrix
 * `family`: the error distribution/link function to be used in the model
 
-Note `svyglm()` is the same function used in both ANOVA and normal linear regression. However, we've added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion [@mccullagh1989binary; @lumley2010complex; @rcore]. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of three ways with survey data:
+Note `svyglm()` is the same function used in both ANOVA and normal linear regression. However, we've added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion [@lumley2010complex; @mccullagh1989binary;  @R-base]. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of three ways with survey data:
 
   - A two level factor variable where the first level of the factor indicates a "failure" and the second level indicates a "success"
   - A numeric variable which is 1 or 0 where 1 indicates a success
@@ -613,8 +609,7 @@ or_other <-
 
 We can interpret this as saying that the odds of usually trusting the government for someone who voted for Trump is `r signif(or_trump*100, 3)`% as likely to trust the government compared to a person who voted for Biden (the reference level). In comparison, a person who voted for neither Biden nor Trump is `r signif(or_other*100, 3)`% as likely to trust the government as someone who voted for Biden.
 
-<!--What does the second sentence here mean?-->
-As with linear regression, the `augment()` can be used to predict values. By default, the prediction is the link function and not the probability. To predict the probability, add an argument of `type.predict="response"` as demonstrated below:
+As with linear regression, the `augment()` can be used to predict values. By default, the prediction is the link function (logit function in this instance) and not the probability. To predict the probability, add an argument of `type.predict="response"` as demonstrated below:
 
 ```{r}
 #| label: model-logistic-aug
@@ -755,10 +750,10 @@ Interactions in models can be difficult to understand from the coefficients alon
 
 1.  The type of housing unit may have an impact on energy expenses. Is there any relationship between housing unit type (`HousingUnitType`) and total energy expenditure (`TOTALDOL`)? First, find the average energy expenditure by housing unit type as a descriptive analysis and then do the test. The reference level in the comparison should be the housing unit type that is most common.
 
-2.  Does temperature play a role in energy expenditure? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, CDD65=0. While a day that averages 85°F would have CDD80=20 because it is 20 degrees warmer. For each day in the year, this is summed to give an indicator of how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65°F (18.3°C)^[<https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php>]. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.
+2.  Does temperature play a role in electricity expenditure? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, CDD65=0. While a day that averages 85°F (29.4°C) would have CDD65=20 because it is 20 degrees Fahrenheit warmer [@eia-cdd]. For each day in the year, this is summed to give an indicator of how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65°F. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.
 
 3.  Continuing with our results from question 2, create a plot between the actual and predicted expenditures and a residual plot for the predicted expenditures.
 
-4.  Early voting expanded in 2020^[<https://www.npr.org/2020/10/26/927803214/62-million-and-counting-americans-are-breaking-early-voting-records>]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`). Include two-way interactions.
+4.  Early voting expanded in 2020 [@npr-voting-trend]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`). Include two-way interactions.
 
-5.  Continuing from Exercise 1, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.
+5.  Continuing from Exercise 4, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.

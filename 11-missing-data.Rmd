@@ -31,7 +31,6 @@ We will be using data from ANES and RECS. Here is the code to create the design 
 #| label: missing-anes-des
 #| eval: FALSE
 targetpop <- 231592693
-data(anes_2020)
 
 anes_adjwgt <- anes_2020 %>%
   mutate(Weight = Weight / sum(Weight) * targetpop)
@@ -50,8 +49,6 @@ For RECS, details are included in the RECS documentation and Chapter \@ref(c10-s
 ```{r}
 #| label: missing-recs-des
 #| eval: FALSE
-data(recs_2020)
-
 recs_des <- recs_2020 %>%
   as_survey_rep(
     weights = NWEIGHT,
@@ -111,7 +108,7 @@ Here we can see that there are three types of missing data, and that the majorit
 
 ### Visualization of missing data
 
-It can be challenging to look at tables for every variable, and instead may be more efficient to view missing data in a graphical format to help narrow in on patterns or unique variables. The {naniar} package is very useful in exploring missing data visually. It provides quick graphics to explore the missingness patterns in the data. We can use the `vis_miss()` function available in both {visdat} and {naniar} packages to view the amount of missing data by variable.
+It can be challenging to look at tables for every variable, and instead may be more efficient to view missing data in a graphical format to help narrow in on patterns or unique variables. The {naniar} package is very useful in exploring missing data visually. It provides quick graphics to explore the missingness patterns in the data. We can use the `vis_miss()` function available in both {visdat} and {naniar} packages to view the amount of missing data by variable [@visdat2017; @naniar2023].
 
 ```{r}
 #| label: missing-anes-vismiss
@@ -136,7 +133,7 @@ From this visualization, we can start to get a picture of what questions may be 
 Additionally, we can also look at `VotedPres2016_selection` and see that there is a lot of missing data in that variable. Most likely this is due to a skip pattern, and we can look at further graphics to see how it might be related to other variables.  The {naniar} package has multiple visualization functions that can help dive deeper such as the `gg_miss_fct()` function which looks at missing data for all variables by levels of another variable.
 
 ```{r}
-#| lable: missing-anes-ggmissfct
+#| label: missing-anes-ggmissfct
 #| warning: FALSE
 #| fig.cap: "Missingness in variables for each level of `VotedPres2016` in the ANES 2020 data"
 #| fig.alt: "This chart has x-axis 'Voted for President in 2016' with labels Yes, No and NA and has y-axis 'Variable' with labels Age, AgeGroup, CampaignInterest, EarlyVote2020, Education, Gender, Income, Income7, PartyID, RaceEth, TrustGovernment, TrustPeople, VotedPres2016_selection, VotedPres2020 and VotedPres2020_selection. There is a legend indicating fill is used to show pct_miss, ranging from 0 represented by fill very pale blue to 100 shown as fill dark blue. Among those that voted for president in 2016, they had little missing for other variables (light color) but those that did not vote have more missing data in their 2020 voting patterns and their 2016 president selection."
@@ -191,7 +188,7 @@ recs_2020_shadow %>%
 
 This plot indicates that respondents who did not provide a response for the heating behavior question may have a different distribution of total energy cost compared to respondents who did provide a response. This view of the raw data and missingness could indicate some bias in the data. Researchers take these different bias aspects into account when calculating weights and we need to make sure that the weights are incorporated when analyzing the data.
 
-There are many other visualizations that can be helpful in reviewing the data, and we recommend reviewing the {naniar} documentation for more information [@naniar].
+There are many other visualizations that can be helpful in reviewing the data, and we recommend reviewing the {naniar} documentation for more information [@naniar2023].
 
 
 ## Analysis with missing data
@@ -213,7 +210,7 @@ Even within a variable, there can be different reasons for missing data. In publ
   * -2: Other missing reason (question specific)
   * -1: Inapplicable
 
-When we created the derived variables for use in this book, we coded all negative values as `NA` and proceeded to analyze the data.  For most cases this is an appropriate approach as long as you filter the data appropriately to account for skip patterns (see next section). However, the {nanair} package does have the option to code special missing values. For example, if we wanted to have two `NA` values, one that indicated the question was missing by design (e.g., due to skip patterns) and one for the other missing categories we can use the `nabular` format to incorporate these with the `recode_shadow()` function. 
+When we created the derived variables for use in this book, we coded all negative values as `NA` and proceeded to analyze the data.  For most cases this is an appropriate approach as long as you filter the data appropriately to account for skip patterns (see next section). However, the {naniar} package does have the option to code special missing values. For example, if we wanted to have two `NA` values, one that indicated the question was missing by design (e.g., due to skip patterns) and one for the other missing categories we can use the `nabular` format to incorporate these with the `recode_shadow()` function. 
 
 
 ```{r}

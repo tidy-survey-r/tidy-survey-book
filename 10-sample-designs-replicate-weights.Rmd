@@ -25,26 +25,19 @@ library(srvyr)
 library(srvyrexploR)
 ```
 
-To help explain the different types of sample designs, this chapter will use the `api` and `scd` data that are included in the {survey} package:
+To help explain the different types of sample designs, this chapter will use the `api` and `scd` data that are included in the {survey} package [@lumley2010complex]:
 ```{r}
 #| label: samp-setup-surveydata
 data(api)
 data(scd)
 ```
 
-This chapter uses data from the Residential Energy Consumption Survey (RECS) - both 2015 and 2020, so we will use the following code to load the RECS data from the {srvyr.data} package:
-
-```{r}
-#| label: samp-setup-recs 
-#| eval: FALSE
-data(recs_2015)
-data(recs_2020)
-```
+This chapter also uses data from the Residential Energy Consumption Survey (RECS) - both 2015 and 2020, which are included in the {srvyrexploR} package as `recs_2015` and `recs_2020`, respectively [@R-srvyrexploR].
 :::
 
 ## Introduction
 
-The primary reason for using packages like {survey} and {srvyr} is to account for the sampling design or replicate weights into estimates. By incorporating the sampling design or replicate weights, precision estimates (e.g., standard errors and confidence intervals) are appropriately calculated.
+The primary reason for using packages like {survey} and {srvyr} is to account for the sampling design or replicate weights into estimates [@R-srvyr; @lumley2010complex]. By incorporating the sampling design or replicate weights, precision estimates (e.g., standard errors and confidence intervals) are appropriately calculated.
 
 In this chapter, we will introduce common sampling designs and common types of replicate weights, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design or replicate weights. While we will show the math behind the estimates, the functions in these packages will do the calculation. To deeply understand the math and the derivation, refer to @pennstate506, @sarndal2003model, @wolter2007introduction, or @fuller2011sampling (these are listed in order of increasing statistical rigorousness). 
 
@@ -455,7 +448,7 @@ A common method of sampling is to stratify PSUs, select PSUs within the stratum 
 
 ### Example {-}
 
-For example, the 2017-2019 National Survey of Family Growth (NSFG)^[2017-2019 National Survey of Family Growth (NSFG): Sample Design Documentation - https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] had a stratified multi-stage area probability sample: 
+For example, the (2017-2019 National Survey of Family Growth)[ https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf] (NSFG) had a stratified multi-stage area probability sample: 
   1. In the first stage, PSUs are counties or collections of counties and are stratified by Census region/division, size (population), and MSA status. Within each stratum, PSUs were selected via PPS. 
   2. In the second stage, neighborhoods were selected within the sampled PSUs using PPS selection. 
   3. In the third stage, housing units were selected within the sampled neighborhoods. 
@@ -508,7 +501,7 @@ The default option for `mse` is to use the global option of "survey.replicates.m
 
 #### The syntax {-} 
 
-Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 for the person weights in the American Community Survey (ACS) [@acs-pums-2021] or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS) [@recs-2015-micro]. This makes it easy to use some of the tidy selection^[dplyr documentation on tidy-select: https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] functions in R. 
+Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 for the person weights in the American Community Survey (ACS) [@acs-pums-2021] or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS) [@recs-2015-micro]. This makes it easy to use some of the (tidy selection)[https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html] functions in R. 
 
 To specify a BRR design, we need to specify the weight variable (`weights`), the replicate weight variables (`repweights`), the type of replicate weights is BRR (`type = BRR`), and whether the mean squared error should be used (`mse = TRUE`) or not (`mse = FALSE`).  For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, we can use the following syntax (both are equivalent):
 
@@ -820,6 +813,6 @@ As with other replicate design objects, when printing the object or looking at t
 
 For this chapter, the exercises entail reading public documentation to determine how to specify the survey design. While reading the documentation, be on the lookout for description of the weights and the survey design variables or replicate weights.
 
-1. The National Health Interview Survey (NHIS) is an annual household survey conducted by the National Center for Health Statistics (NCHS). The NHIS includes a wide variety of health topics for adults including health status and conditions, functioning and disability, health care access and health service utilization, health-related behaviors, health promotion, mental health, barriers to care, and community engagement. Like many national in-person surveys, the sampling design is a stratified clustered design with details included in the Survey Description^[2022 National Health Interview Survey (NHIS) Survey Description: https://www.cdc.gov/nchs/nhis/2022nhis.htm]. The Survey Description provides information on setting up syntax in SUDAAN, Stata, SPSS, SAS, and R ({survey} package implementation). How would you specify the design using {srvyr} using either `as_survey_design` or `as_survey_rep()`?
+1. The National Health Interview Survey (NHIS) is an annual household survey conducted by the National Center for Health Statistics (NCHS). The NHIS includes a wide variety of health topics for adults including health status and conditions, functioning and disability, health care access and health service utilization, health-related behaviors, health promotion, mental health, barriers to care, and community engagement. Like many national in-person surveys, the sampling design is a stratified clustered design with details included in the Survey Description [@nhis-svy-des]. The Survey Description provides information on setting up syntax in SUDAAN, Stata, SPSS, SAS, and R ({survey} package implementation). You have imported the data and the variable containing the data is: `nhis_adult_data`. How would you specify the design using {srvyr} using either `as_survey_design()` or `as_survey_rep()`?
 
-2. The General Social Survey is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook^[2016-2020 GSS Panel Codebook Release 1a: https://gss.norc.org/Documents/codebook/2016-2020%20GSS%20Panel%20Codebook%20-%20R1a.pdf] provides examples of setting up syntax in SAS and Stata but not R. How would you specify the design in R?
+2. The General Social Survey is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook provides examples of setting up syntax in SAS and Stata but not R [@gss-codebook]. You have imported the data and the variable containing the data is: `gss_data`. How would you specify the design in R using either `as_survey_design()` or `as_survey_rep()`?

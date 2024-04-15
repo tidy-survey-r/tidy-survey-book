@@ -26,14 +26,7 @@ library(srvyrexploR)
 library(gt)
 ```
 
-We will use data from the United States National Crime Victimization Survey (NCVS). Here is the code to read in the three datasets from the {srvyrexploR} package:
-```{r}
-#| label: ncvs-data
-#| cache: TRUE
-data(ncvs_2021_incident)
-data(ncvs_2021_household)
-data(ncvs_2021_person)
-```
+We will use data from the United States National Crime Victimization Survey (NCVS). These data are available in the {srvyrexploR} package as `ncvs_2021_incident`, `ncvs_2021_household`, and `ncvs_2021_person`.
 :::
 
 ## Introduction
@@ -42,7 +35,7 @@ The NCVS is a household survey sponsored by the Bureau of Justice Statistics (BJ
 
 The NCVS has been ongoing since 1992. An earlier survey, the National Crime Survey, was run from 1972 to 1991 [@ncvs_tech_2016]. The survey is administered using a rotating panel. When an address enters the sample, the residents of that address are interviewed every six months for a total of seven interviews. If the initial residents move away from the address during the period, the new residents are included in the survey, as people are not followed when they move. 
 
-NCVS data is publicly available and distributed by Inter-university Consortium for Political and Social Research (ICPSR)^[https://www.icpsr.umich.edu/web/ICPSR/series/95], with data going back to 1992. The vignette in this book will include data from 2021 [@ncvs_data_2021]. The NCVS data structure is complicated, and the User's Guide contains examples for analysis in SAS, SUDAAN, SPSS, and Stata, but not R [@ncvs_user_guide]. This vignette will adapt those examples for R. 
+NCVS data is publicly available and distributed by Inter-university Consortium for Political and Social Research (ICPSR), with data going back to 1992. The vignette in this book will include data from 2021 [@ncvs_data_2021]. The NCVS data structure is complicated, and the User's Guide contains examples for analysis in SAS, SUDAAN, SPSS, and Stata, but not R [@ncvs_user_guide]. This vignette will adapt those examples for R. 
 
 ## Data structure
 
@@ -54,7 +47,7 @@ The data from ICPSR is distributed with five files, each having its unique ident
   - Incident Record - `YEARQ`, `IDHH`, `IDPER`
   - 2021 Collection Year Incident - `YEARQ`, `IDHH`, `IDPER`
 
-We will focus on the household, person, and incident files. From these files, we selected a subset of columns for examples to use in this vignette. We have included data in the {srvyexploR} package with a subset of columns, but you can download the complete files at ICPSR^[https://www.icpsr.umich.edu/web/NACJD/studies/38429].
+We will focus on the household, person, and incident files. From these files, we selected a subset of columns for examples to use in this vignette. We have included data in the {srvyexploR} package with a subset of columns, but you can download the complete files at ICPSR [@ncvs_data_2021].
 
 ## Survey notation
 
@@ -707,7 +700,7 @@ pers_des %>%
   ))
 ```
 
-A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate the violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by()` statement for each categorization separately. Thus, we make a function to do this and then use `map_df()` from the {purrr} package (part of the tidyverse) to loop through the variables. This function takes a demographic variable as its input (`byarvar`) and calculates the violent and aggravated assault vicitimization rate for each level. It then creates some columns with the variable, the level of each variable, and a numeric version of the variable (`LevelNum`) for sorting later. The function is run across multiple variables using `map()` and then stacks the results into a single output using `bind_rows()`.
+A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate the violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by()` statement for each categorization separately. Thus, we make a function to do this and then use `map_df()` from the {purrr} package (part of the tidyverse) to loop through the variables [@R-purrr]. This function takes a demographic variable as its input (`byarvar`) and calculates the violent and aggravated assault victimization rate for each level. It then creates some columns with the variable, the level of each variable, and a numeric version of the variable (`LevelNum`) for sorting later. The function is run across multiple variables using `map()` and then stacks the results into a single output using `bind_rows()`.
 
 ```{r}
 #| label: ncvs-vign-rates-demo
@@ -734,7 +727,7 @@ pers_est_df <-
   bind_rows()
 ```
 
-The output from all the estimates is cleanded to create better labels such as going from "RaceHispOrigin" to "Race/Hispanic Origin". Finally, the {gt} package is used to make a publishable table (Table \@ref(tab:ncvs-vign-rates-demo-tab)). Using the functions from the {gt} package, column labels and footnotes are added and estimates are presented to the first decimal place.
+The output from all the estimates is cleanded to create better labels such as going from "RaceHispOrigin" to "Race/Hispanic Origin". Finally, the {gt} package is used to make a publishable table (Table \@ref(tab:ncvs-vign-rates-demo-tab)). Using the functions from the {gt} package, column labels and footnotes are added and estimates are presented to the first decimal place [@R-gt].
 
 ```{r}
 #| label: ncvs-vgn-rates-demo-gt-create
@@ -906,7 +899,7 @@ The output of the statistical test shows the same difference of `r prop_tenure_t
 
 ## Exercises
 
-1. What proportion of completed motor vehicle thefts are not reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).
+1. What proportion of completed motor vehicle thefts are **not** reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).
 
 2. How many violent crimes occur in each region?
 
