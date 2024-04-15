@@ -23,7 +23,7 @@
 <meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
 
 
-<meta name="date" content="2024-03-31" />
+<meta name="date" content="2024-04-15" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -172,7 +172,6 @@ div.csl-indent {
 <li><a href="./">Exploring Complex Survey Data Analysis in R</a></li>
 
 <li class="divider"></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a></li>
 <li class="part"><span><b>I Intro</b></span></li>
 <li class="chapter" data-level="1" data-path="c01-intro.html"><a href="c01-intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
 <ul>
@@ -524,38 +523,35 @@ div.csl-indent {
 </div>
 <div class="prereqbox">
 <p>For this chapter, load the following packages:</p>
-<div class="sourceCode" id="cb216"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb216-1"><a href="c07-modeling.html#cb216-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb216-2"><a href="c07-modeling.html#cb216-2" tabindex="-1"></a><span class="fu">library</span>(survey) </span>
-<span id="cb216-3"><a href="c07-modeling.html#cb216-3" tabindex="-1"></a><span class="fu">library</span>(srvyr) </span>
-<span id="cb216-4"><a href="c07-modeling.html#cb216-4" tabindex="-1"></a><span class="fu">library</span>(srvyrexploR)</span>
-<span id="cb216-5"><a href="c07-modeling.html#cb216-5" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
-<span id="cb216-6"><a href="c07-modeling.html#cb216-6" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
-<span id="cb216-7"><a href="c07-modeling.html#cb216-7" tabindex="-1"></a><span class="fu">library</span>(prettyunits)</span></code></pre></div>
+<div class="sourceCode" id="cb213"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb213-1"><a href="c07-modeling.html#cb213-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb213-2"><a href="c07-modeling.html#cb213-2" tabindex="-1"></a><span class="fu">library</span>(survey) </span>
+<span id="cb213-3"><a href="c07-modeling.html#cb213-3" tabindex="-1"></a><span class="fu">library</span>(srvyr) </span>
+<span id="cb213-4"><a href="c07-modeling.html#cb213-4" tabindex="-1"></a><span class="fu">library</span>(srvyrexploR)</span>
+<span id="cb213-5"><a href="c07-modeling.html#cb213-5" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb213-6"><a href="c07-modeling.html#cb213-6" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb213-7"><a href="c07-modeling.html#cb213-7" tabindex="-1"></a><span class="fu">library</span>(prettyunits)</span></code></pre></div>
 <p>We will be using data from ANES and RECS described in Chapter <a href="c04-getting-started.html#c04-getting-started">4</a>. As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter <a href="c04-getting-started.html#c04-getting-started">4</a> for more information).</p>
-<div class="sourceCode" id="cb217"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb217-1"><a href="c07-modeling.html#cb217-1" tabindex="-1"></a>targetpop <span class="ot">&lt;-</span> <span class="dv">231592693</span></span>
-<span id="cb217-2"><a href="c07-modeling.html#cb217-2" tabindex="-1"></a><span class="fu">data</span>(anes_2020)</span>
-<span id="cb217-3"><a href="c07-modeling.html#cb217-3" tabindex="-1"></a></span>
-<span id="cb217-4"><a href="c07-modeling.html#cb217-4" tabindex="-1"></a>anes_adjwgt <span class="ot">&lt;-</span> anes_2020 <span class="sc">%&gt;%</span></span>
-<span id="cb217-5"><a href="c07-modeling.html#cb217-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Weight =</span> Weight <span class="sc">/</span> <span class="fu">sum</span>(Weight) <span class="sc">*</span> targetpop)</span>
-<span id="cb217-6"><a href="c07-modeling.html#cb217-6" tabindex="-1"></a></span>
-<span id="cb217-7"><a href="c07-modeling.html#cb217-7" tabindex="-1"></a>anes_des <span class="ot">&lt;-</span> anes_adjwgt <span class="sc">%&gt;%</span></span>
-<span id="cb217-8"><a href="c07-modeling.html#cb217-8" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
-<span id="cb217-9"><a href="c07-modeling.html#cb217-9" tabindex="-1"></a>    <span class="at">weights =</span> Weight,</span>
-<span id="cb217-10"><a href="c07-modeling.html#cb217-10" tabindex="-1"></a>    <span class="at">strata =</span> Stratum,</span>
-<span id="cb217-11"><a href="c07-modeling.html#cb217-11" tabindex="-1"></a>    <span class="at">ids =</span> VarUnit,</span>
-<span id="cb217-12"><a href="c07-modeling.html#cb217-12" tabindex="-1"></a>    <span class="at">nest =</span> <span class="cn">TRUE</span></span>
-<span id="cb217-13"><a href="c07-modeling.html#cb217-13" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb214"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb214-1"><a href="c07-modeling.html#cb214-1" tabindex="-1"></a>targetpop <span class="ot">&lt;-</span> <span class="dv">231592693</span></span>
+<span id="cb214-2"><a href="c07-modeling.html#cb214-2" tabindex="-1"></a></span>
+<span id="cb214-3"><a href="c07-modeling.html#cb214-3" tabindex="-1"></a>anes_adjwgt <span class="ot">&lt;-</span> anes_2020 <span class="sc">%&gt;%</span></span>
+<span id="cb214-4"><a href="c07-modeling.html#cb214-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Weight =</span> Weight <span class="sc">/</span> <span class="fu">sum</span>(Weight) <span class="sc">*</span> targetpop)</span>
+<span id="cb214-5"><a href="c07-modeling.html#cb214-5" tabindex="-1"></a></span>
+<span id="cb214-6"><a href="c07-modeling.html#cb214-6" tabindex="-1"></a>anes_des <span class="ot">&lt;-</span> anes_adjwgt <span class="sc">%&gt;%</span></span>
+<span id="cb214-7"><a href="c07-modeling.html#cb214-7" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
+<span id="cb214-8"><a href="c07-modeling.html#cb214-8" tabindex="-1"></a>    <span class="at">weights =</span> Weight,</span>
+<span id="cb214-9"><a href="c07-modeling.html#cb214-9" tabindex="-1"></a>    <span class="at">strata =</span> Stratum,</span>
+<span id="cb214-10"><a href="c07-modeling.html#cb214-10" tabindex="-1"></a>    <span class="at">ids =</span> VarUnit,</span>
+<span id="cb214-11"><a href="c07-modeling.html#cb214-11" tabindex="-1"></a>    <span class="at">nest =</span> <span class="cn">TRUE</span></span>
+<span id="cb214-12"><a href="c07-modeling.html#cb214-12" tabindex="-1"></a>  )</span></code></pre></div>
 <p>For RECS, details are included in the RECS documentation and Chapters <a href="c04-getting-started.html#c04-getting-started">4</a> and <a href="c10-sample-designs-replicate-weights.html#c10-sample-designs-replicate-weights">10</a>.</p>
-<div class="sourceCode" id="cb218"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb218-1"><a href="c07-modeling.html#cb218-1" tabindex="-1"></a><span class="fu">data</span>(recs_2020)</span>
-<span id="cb218-2"><a href="c07-modeling.html#cb218-2" tabindex="-1"></a></span>
-<span id="cb218-3"><a href="c07-modeling.html#cb218-3" tabindex="-1"></a>recs_des <span class="ot">&lt;-</span> recs_2020 <span class="sc">%&gt;%</span></span>
-<span id="cb218-4"><a href="c07-modeling.html#cb218-4" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb218-5"><a href="c07-modeling.html#cb218-5" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
-<span id="cb218-6"><a href="c07-modeling.html#cb218-6" tabindex="-1"></a>    <span class="at">repweights =</span> NWEIGHT1<span class="sc">:</span>NWEIGHT60,</span>
-<span id="cb218-7"><a href="c07-modeling.html#cb218-7" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;JK1&quot;</span>,</span>
-<span id="cb218-8"><a href="c07-modeling.html#cb218-8" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">59</span><span class="sc">/</span><span class="dv">60</span>,</span>
-<span id="cb218-9"><a href="c07-modeling.html#cb218-9" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
-<span id="cb218-10"><a href="c07-modeling.html#cb218-10" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb215"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb215-1"><a href="c07-modeling.html#cb215-1" tabindex="-1"></a>recs_des <span class="ot">&lt;-</span> recs_2020 <span class="sc">%&gt;%</span></span>
+<span id="cb215-2"><a href="c07-modeling.html#cb215-2" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
+<span id="cb215-3"><a href="c07-modeling.html#cb215-3" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
+<span id="cb215-4"><a href="c07-modeling.html#cb215-4" tabindex="-1"></a>    <span class="at">repweights =</span> NWEIGHT1<span class="sc">:</span>NWEIGHT60,</span>
+<span id="cb215-5"><a href="c07-modeling.html#cb215-5" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;JK1&quot;</span>,</span>
+<span id="cb215-6"><a href="c07-modeling.html#cb215-6" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">59</span><span class="sc">/</span><span class="dv">60</span>,</span>
+<span id="cb215-7"><a href="c07-modeling.html#cb215-7" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
+<span id="cb215-8"><a href="c07-modeling.html#cb215-8" tabindex="-1"></a>  )</span></code></pre></div>
 </div>
 <div id="model-intro" class="section level2 hasAnchor" number="7.1">
 <h2><span class="header-section-number">7.1</span> Introduction<a href="c07-modeling.html#model-intro" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -652,7 +648,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
 </tr>
 </tbody>
 </table>
-<p>When using non-survey data such as experimental or observational data, researchers will use the <code>glm()</code> function for linear models. With survey data, however, we use <code>svyglm()</code> from the {survey} package to ensure that we account for the survey design and weights in modeling<a href="#fn24" class="footnote-ref" id="fnref24"><sup>24</sup></a>. This allows us to generalize a model to the target population and accounts for the fact that the observations in the survey data may not be independent. As discussed in Chapter <a href="c06-statistical-testing.html#c06-statistical-testing">6</a>, modeling survey data cannot be directly done in {srvyr}, but can be done in the {survey} package <span class="citation">(<a href="#ref-lumley2010complex">Lumley 2010</a>, <a href="#ref-R-survey">2023</a>)</span>. In this chapter, we will provide syntax and examples for linear models, including ANOVA, normal linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to <span class="citation">Lumley (<a href="#ref-lumley2010complex">2010</a>)</span>. <span class="citation">Lumley (<a href="#ref-lumley2010complex">2010</a>)</span> also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book.</p>
+<p>When using non-survey data such as experimental or observational data, researchers will use the <code>glm()</code> function for linear models. With survey data, however, we use <code>svyglm()</code> from the {survey} package to ensure that we account for the survey design and weights in modeling<a href="#fn24" class="footnote-ref" id="fnref24"><sup>24</sup></a>. This allows us to generalize a model to the target population and accounts for the fact that the observations in the survey data may not be independent. As discussed in Chapter <a href="c06-statistical-testing.html#c06-statistical-testing">6</a>, modeling survey data cannot be directly done in {srvyr}, but can be done in the {survey} package <span class="citation">(<a href="#ref-lumley2010complex">Lumley 2010</a>)</span>. In this chapter, we will provide syntax and examples for linear models, including ANOVA, normal linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to <span class="citation">Lumley (<a href="#ref-lumley2010complex">2010</a>)</span>. <span class="citation">Lumley (<a href="#ref-lumley2010complex">2010</a>)</span> also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book.</p>
 </div>
 <div id="analysis-of-variance-anova" class="section level2 hasAnchor" number="7.2">
 <h2><span class="header-section-number">7.2</span> Analysis of variance (ANOVA)<a href="c07-modeling.html#analysis-of-variance-anova" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -673,13 +669,13 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
 <div id="syntax-6" class="section level3 hasAnchor" number="7.2.1">
 <h3><span class="header-section-number">7.2.1</span> Syntax<a href="c07-modeling.html#syntax-6" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>To perform this type of analysis in R, the general syntax is as follows:</p>
-<div class="sourceCode" id="cb219"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb219-1"><a href="c07-modeling.html#cb219-1" tabindex="-1"></a>des_obj <span class="sc">%&gt;%</span></span>
-<span id="cb219-2"><a href="c07-modeling.html#cb219-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
-<span id="cb219-3"><a href="c07-modeling.html#cb219-3" tabindex="-1"></a>    <span class="at">formula =</span> outcome <span class="sc">~</span> group,</span>
-<span id="cb219-4"><a href="c07-modeling.html#cb219-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb219-5"><a href="c07-modeling.html#cb219-5" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit,</span>
-<span id="cb219-6"><a href="c07-modeling.html#cb219-6" tabindex="-1"></a>    <span class="at">df.resid =</span> <span class="cn">NULL</span></span>
-<span id="cb219-7"><a href="c07-modeling.html#cb219-7" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb216"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb216-1"><a href="c07-modeling.html#cb216-1" tabindex="-1"></a>des_obj <span class="sc">%&gt;%</span></span>
+<span id="cb216-2"><a href="c07-modeling.html#cb216-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb216-3"><a href="c07-modeling.html#cb216-3" tabindex="-1"></a>    <span class="at">formula =</span> outcome <span class="sc">~</span> group,</span>
+<span id="cb216-4"><a href="c07-modeling.html#cb216-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb216-5"><a href="c07-modeling.html#cb216-5" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit,</span>
+<span id="cb216-6"><a href="c07-modeling.html#cb216-6" tabindex="-1"></a>    <span class="at">df.resid =</span> <span class="cn">NULL</span></span>
+<span id="cb216-7"><a href="c07-modeling.html#cb216-7" tabindex="-1"></a>  )</span></code></pre></div>
 <p>The arguments are:</p>
 <ul>
 <li><code>formula</code>: Formula in the form of <code>outcome~group</code>. The group variable must be a factor or character.</li>
@@ -692,14 +688,14 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
 <div id="example-1" class="section level3 hasAnchor" number="7.2.2">
 <h3><span class="header-section-number">7.2.2</span> Example<a href="c07-modeling.html#example-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Looking at an example will help us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer. To analyze this data, we filter the respondents to only those using AC (<code>ACUsed</code>). Then if we want to see if there are differences by region, we can use <code>group_by()</code>. A descriptive analysis of the temperature at night (<code>SummerTempNight</code>) set by region and the sample sizes is displayed below.</p>
-<div class="sourceCode" id="cb220"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb220-1"><a href="c07-modeling.html#cb220-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb220-2"><a href="c07-modeling.html#cb220-2" tabindex="-1"></a>  <span class="fu">filter</span>(ACUsed) <span class="sc">%&gt;%</span></span>
-<span id="cb220-3"><a href="c07-modeling.html#cb220-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
-<span id="cb220-4"><a href="c07-modeling.html#cb220-4" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb220-5"><a href="c07-modeling.html#cb220-5" tabindex="-1"></a>    <span class="at">SMN =</span> <span class="fu">survey_mean</span>(SummerTempNight, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb220-6"><a href="c07-modeling.html#cb220-6" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">unweighted</span>(<span class="fu">n</span>()),</span>
-<span id="cb220-7"><a href="c07-modeling.html#cb220-7" tabindex="-1"></a>    <span class="at">n_na =</span> <span class="fu">unweighted</span>(<span class="fu">sum</span>(<span class="fu">is.na</span>(SummerTempNight)))</span>
-<span id="cb220-8"><a href="c07-modeling.html#cb220-8" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb217"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb217-1"><a href="c07-modeling.html#cb217-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb217-2"><a href="c07-modeling.html#cb217-2" tabindex="-1"></a>  <span class="fu">filter</span>(ACUsed) <span class="sc">%&gt;%</span></span>
+<span id="cb217-3"><a href="c07-modeling.html#cb217-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
+<span id="cb217-4"><a href="c07-modeling.html#cb217-4" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb217-5"><a href="c07-modeling.html#cb217-5" tabindex="-1"></a>    <span class="at">SMN =</span> <span class="fu">survey_mean</span>(SummerTempNight, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb217-6"><a href="c07-modeling.html#cb217-6" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">unweighted</span>(<span class="fu">n</span>()),</span>
+<span id="cb217-7"><a href="c07-modeling.html#cb217-7" tabindex="-1"></a>    <span class="at">n_na =</span> <span class="fu">unweighted</span>(<span class="fu">sum</span>(<span class="fu">is.na</span>(SummerTempNight)))</span>
+<span id="cb217-8"><a href="c07-modeling.html#cb217-8" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 5
 ##   Region      SMN SMN_se     n  n_na
 ##   &lt;fct&gt;     &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt; &lt;int&gt;
@@ -708,11 +704,11 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
 ## 3 South      71.8 0.0536  6065     0
 ## 4 West       72.5 0.129   3283     0</code></pre>
 <p>In the following code, we test whether this temperature varies by region by first using <code>svyglm()</code> to run the test and then using <code>broom::tidy()</code> to display the output. Note that the temperature setting is set to NA when the household does not use air-conditioning, and since the default handling of NAs is <code>na.action=na.omit</code>, records that do not use air-conditioning will not be included in this regression.</p>
-<div class="sourceCode" id="cb222"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb222-1"><a href="c07-modeling.html#cb222-1" tabindex="-1"></a>anova_out <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb222-2"><a href="c07-modeling.html#cb222-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
-<span id="cb222-3"><a href="c07-modeling.html#cb222-3" tabindex="-1"></a>         <span class="at">formula =</span> SummerTempNight <span class="sc">~</span> Region)</span>
-<span id="cb222-4"><a href="c07-modeling.html#cb222-4" tabindex="-1"></a></span>
-<span id="cb222-5"><a href="c07-modeling.html#cb222-5" tabindex="-1"></a><span class="fu">tidy</span>(anova_out)</span></code></pre></div>
+<div class="sourceCode" id="cb219"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb219-1"><a href="c07-modeling.html#cb219-1" tabindex="-1"></a>anova_out <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb219-2"><a href="c07-modeling.html#cb219-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
+<span id="cb219-3"><a href="c07-modeling.html#cb219-3" tabindex="-1"></a>         <span class="at">formula =</span> SummerTempNight <span class="sc">~</span> Region)</span>
+<span id="cb219-4"><a href="c07-modeling.html#cb219-4" tabindex="-1"></a></span>
+<span id="cb219-5"><a href="c07-modeling.html#cb219-5" tabindex="-1"></a><span class="fu">tidy</span>(anova_out)</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 5
 ##   term          estimate std.error statistic   p.value
 ##   &lt;chr&gt;            &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
@@ -721,33 +717,33 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
 ## 3 RegionSouth       2.05     0.128     16.0  1.36e- 22
 ## 4 RegionWest        2.80     0.177     15.9  2.27e- 22</code></pre>
 <p>In the output above, we can see the estimated coefficients (<code>estimate</code>), estimated standard errors of the coefficients (<code>std.error</code>), the t-statistic (<code>statistic</code>), and the p-value for each coefficient. In this output, the intercept represents the reference value of the Northeast region. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, 1.34 (p-value&lt;0.0001) degrees higher than in the Northeast during summer nights and each region sets their thermostats at significantly higher temperatures than the Northeast.</p>
-<p>If we wanted to change the reference value we would reorder the factor before modeling using the function <code>relevel()</code> from {stats} or using one of many factor ordering functions in {forcats} such as <code>fct_relevel()</code> or <code>fct_infreq()</code>. For example, if we wanted the reference level to be the Midwest region, we could use the following code. Note the usage of the <code>gt()</code> function on top of <code>tidy()</code> to print a nice looking output table - we will go over more usage of this package in Chapter <a href="c08-communicating-results.html#c08-communicating-results">8</a>.</p>
-<div class="sourceCode" id="cb224"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb224-1"><a href="c07-modeling.html#cb224-1" tabindex="-1"></a>anova_out_relevel <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb224-2"><a href="c07-modeling.html#cb224-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Region=</span><span class="fu">fct_relevel</span>(Region, <span class="st">&quot;Midwest&quot;</span>, <span class="at">after =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb224-3"><a href="c07-modeling.html#cb224-3" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
-<span id="cb224-4"><a href="c07-modeling.html#cb224-4" tabindex="-1"></a>         <span class="at">formula =</span> SummerTempNight <span class="sc">~</span> Region)</span></code></pre></div>
-<div class="sourceCode" id="cb225"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb225-1"><a href="c07-modeling.html#cb225-1" tabindex="-1"></a><span class="fu">tidy</span>(anova_out_relevel) <span class="sc">%&gt;%</span></span>
-<span id="cb225-2"><a href="c07-modeling.html#cb225-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
-<span id="cb225-3"><a href="c07-modeling.html#cb225-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb225-4"><a href="c07-modeling.html#cb225-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
+<p>If we wanted to change the reference value we would reorder the factor before modeling using the function <code>relevel()</code> from {stats} or using one of many factor ordering functions in {forcats} such as <code>fct_relevel()</code> or <code>fct_infreq()</code>. For example, if we wanted the reference level to be the Midwest region, we could use the following code. Note the usage of the <code>gt()</code> function on top of <code>tidy()</code> to print a nice looking output table <span class="citation">(<a href="#ref-R-gt">Iannone et al. 2023</a>; <a href="#ref-R-broom">Robinson, Hayes, and Couch 2023</a>)</span> - we will go over more usage of the {gt} package in Chapter <a href="c08-communicating-results.html#c08-communicating-results">8</a>.</p>
+<div class="sourceCode" id="cb221"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb221-1"><a href="c07-modeling.html#cb221-1" tabindex="-1"></a>anova_out_relevel <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb221-2"><a href="c07-modeling.html#cb221-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Region=</span><span class="fu">fct_relevel</span>(Region, <span class="st">&quot;Midwest&quot;</span>, <span class="at">after =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb221-3"><a href="c07-modeling.html#cb221-3" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
+<span id="cb221-4"><a href="c07-modeling.html#cb221-4" tabindex="-1"></a>         <span class="at">formula =</span> SummerTempNight <span class="sc">~</span> Region)</span></code></pre></div>
+<div class="sourceCode" id="cb222"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb222-1"><a href="c07-modeling.html#cb222-1" tabindex="-1"></a><span class="fu">tidy</span>(anova_out_relevel) <span class="sc">%&gt;%</span></span>
+<span id="cb222-2"><a href="c07-modeling.html#cb222-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
+<span id="cb222-3"><a href="c07-modeling.html#cb222-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb222-4"><a href="c07-modeling.html#cb222-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="aqompkbzjg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#aqompkbzjg table {
+<div id="mbwkryeemc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#mbwkryeemc table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#aqompkbzjg thead, #aqompkbzjg tbody, #aqompkbzjg tfoot, #aqompkbzjg tr, #aqompkbzjg td, #aqompkbzjg th {
+#mbwkryeemc thead, #mbwkryeemc tbody, #mbwkryeemc tfoot, #mbwkryeemc tr, #mbwkryeemc td, #mbwkryeemc th {
   border-style: none;
 }
 
-#aqompkbzjg p {
+#mbwkryeemc p {
   margin: 0;
   padding: 0;
 }
 
-#aqompkbzjg .gt_table {
+#mbwkryeemc .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -773,12 +769,12 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-left-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_caption {
+#mbwkryeemc .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#aqompkbzjg .gt_title {
+#mbwkryeemc .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -790,7 +786,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-bottom-width: 0;
 }
 
-#aqompkbzjg .gt_subtitle {
+#mbwkryeemc .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -802,7 +798,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-top-width: 0;
 }
 
-#aqompkbzjg .gt_heading {
+#mbwkryeemc .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -814,13 +810,13 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-right-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_bottom_border {
+#mbwkryeemc .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_col_headings {
+#mbwkryeemc .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -835,7 +831,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-right-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_col_heading {
+#mbwkryeemc .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -855,7 +851,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   overflow-x: hidden;
 }
 
-#aqompkbzjg .gt_column_spanner_outer {
+#mbwkryeemc .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -867,15 +863,15 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   padding-right: 4px;
 }
 
-#aqompkbzjg .gt_column_spanner_outer:first-child {
+#mbwkryeemc .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#aqompkbzjg .gt_column_spanner_outer:last-child {
+#mbwkryeemc .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#aqompkbzjg .gt_column_spanner {
+#mbwkryeemc .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -887,11 +883,11 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   width: 100%;
 }
 
-#aqompkbzjg .gt_spanner_row {
+#mbwkryeemc .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#aqompkbzjg .gt_group_heading {
+#mbwkryeemc .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -917,7 +913,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   text-align: left;
 }
 
-#aqompkbzjg .gt_empty_group_heading {
+#mbwkryeemc .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -932,15 +928,15 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   vertical-align: middle;
 }
 
-#aqompkbzjg .gt_from_md > :first-child {
+#mbwkryeemc .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#aqompkbzjg .gt_from_md > :last-child {
+#mbwkryeemc .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#aqompkbzjg .gt_row {
+#mbwkryeemc .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -959,7 +955,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   overflow-x: hidden;
 }
 
-#aqompkbzjg .gt_stub {
+#mbwkryeemc .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -972,7 +968,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   padding-right: 5px;
 }
 
-#aqompkbzjg .gt_stub_row_group {
+#mbwkryeemc .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -986,15 +982,15 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   vertical-align: top;
 }
 
-#aqompkbzjg .gt_row_group_first td {
+#mbwkryeemc .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#aqompkbzjg .gt_row_group_first th {
+#mbwkryeemc .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#aqompkbzjg .gt_summary_row {
+#mbwkryeemc .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1004,16 +1000,16 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   padding-right: 5px;
 }
 
-#aqompkbzjg .gt_first_summary_row {
+#mbwkryeemc .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_first_summary_row.thick {
+#mbwkryeemc .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#aqompkbzjg .gt_last_summary_row {
+#mbwkryeemc .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1023,7 +1019,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-bottom-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_grand_summary_row {
+#mbwkryeemc .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1033,7 +1029,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   padding-right: 5px;
 }
 
-#aqompkbzjg .gt_first_grand_summary_row {
+#mbwkryeemc .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1043,7 +1039,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-top-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_last_grand_summary_row_top {
+#mbwkryeemc .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1053,11 +1049,11 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-bottom-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_striped {
+#mbwkryeemc .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#aqompkbzjg .gt_table_body {
+#mbwkryeemc .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1066,7 +1062,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-bottom-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_footnotes {
+#mbwkryeemc .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1080,7 +1076,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-right-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_footnote {
+#mbwkryeemc .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1089,7 +1085,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   padding-right: 5px;
 }
 
-#aqompkbzjg .gt_sourcenotes {
+#mbwkryeemc .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1103,7 +1099,7 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   border-right-color: #D3D3D3;
 }
 
-#aqompkbzjg .gt_sourcenote {
+#mbwkryeemc .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1111,63 +1107,63 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
   padding-right: 5px;
 }
 
-#aqompkbzjg .gt_left {
+#mbwkryeemc .gt_left {
   text-align: left;
 }
 
-#aqompkbzjg .gt_center {
+#mbwkryeemc .gt_center {
   text-align: center;
 }
 
-#aqompkbzjg .gt_right {
+#mbwkryeemc .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#aqompkbzjg .gt_font_normal {
+#mbwkryeemc .gt_font_normal {
   font-weight: normal;
 }
 
-#aqompkbzjg .gt_font_bold {
+#mbwkryeemc .gt_font_bold {
   font-weight: bold;
 }
 
-#aqompkbzjg .gt_font_italic {
+#mbwkryeemc .gt_font_italic {
   font-style: italic;
 }
 
-#aqompkbzjg .gt_super {
+#mbwkryeemc .gt_super {
   font-size: 65%;
 }
 
-#aqompkbzjg .gt_footnote_marks {
+#mbwkryeemc .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#aqompkbzjg .gt_asterisk {
+#mbwkryeemc .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#aqompkbzjg .gt_indent_1 {
+#mbwkryeemc .gt_indent_1 {
   text-indent: 5px;
 }
 
-#aqompkbzjg .gt_indent_2 {
+#mbwkryeemc .gt_indent_2 {
   text-indent: 10px;
 }
 
-#aqompkbzjg .gt_indent_3 {
+#mbwkryeemc .gt_indent_3 {
   text-indent: 15px;
 }
 
-#aqompkbzjg .gt_indent_4 {
+#mbwkryeemc .gt_indent_4 {
   text-indent: 20px;
 }
 
-#aqompkbzjg .gt_indent_5 {
+#mbwkryeemc .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1215,9 +1211,8 @@ it can be specified in R as <code>y~x-1</code>. Formula notation details in R ca
 <div id="normal-linear-regression" class="section level2 hasAnchor" number="7.3">
 <h2><span class="header-section-number">7.3</span> Normal linear regression<a href="c07-modeling.html#normal-linear-regression" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Normal linear regression is a more generalized method than ANOVA where we fit a model of a continuous outcome with any number of categorical or continuous predictors whereas ANOVA only has categorical predictors and is similarly specified as:</p>
-<span class="math display" id="eq:normallin">\[\begin{equation}
+<span class="math display">\[\begin{equation}
 y_i=\beta_0 +\sum_{i=1}^p \beta_i x_i + \epsilon_i
-\tag{7.1}
 \end{equation}\]</span>
 <p>where <span class="math inline">\(y_i\)</span> is the outcome, <span class="math inline">\(\beta_0\)</span> is an intercept, <span class="math inline">\(x_1, \cdots, x_n\)</span> are the predictors with <span class="math inline">\(\beta_1, \cdots, \beta_p\)</span> as the associated coefficients, and <span class="math inline">\(\epsilon_i\)</span> is the error.</p>
 <p>Assumptions in normal linear regression using survey data include:</p>
@@ -1229,13 +1224,13 @@ y_i=\beta_0 +\sum_{i=1}^p \beta_i x_i + \epsilon_i
 <div id="syntax-7" class="section level3 hasAnchor" number="7.3.1">
 <h3><span class="header-section-number">7.3.1</span> Syntax<a href="c07-modeling.html#syntax-7" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The syntax for this regression uses the same function as ANOVA, but can have more than one variable listed on the right-hand side of the formula:</p>
-<div class="sourceCode" id="cb226"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb226-1"><a href="c07-modeling.html#cb226-1" tabindex="-1"></a>des_obj <span class="sc">%&gt;%</span></span>
-<span id="cb226-2"><a href="c07-modeling.html#cb226-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
-<span id="cb226-3"><a href="c07-modeling.html#cb226-3" tabindex="-1"></a>    <span class="at">formula =</span> outcomevar <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">+</span> x3,</span>
-<span id="cb226-4"><a href="c07-modeling.html#cb226-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb226-5"><a href="c07-modeling.html#cb226-5" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit,</span>
-<span id="cb226-6"><a href="c07-modeling.html#cb226-6" tabindex="-1"></a>    <span class="at">df.resid =</span> <span class="cn">NULL</span></span>
-<span id="cb226-7"><a href="c07-modeling.html#cb226-7" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb223"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb223-1"><a href="c07-modeling.html#cb223-1" tabindex="-1"></a>des_obj <span class="sc">%&gt;%</span></span>
+<span id="cb223-2"><a href="c07-modeling.html#cb223-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb223-3"><a href="c07-modeling.html#cb223-3" tabindex="-1"></a>    <span class="at">formula =</span> outcomevar <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">+</span> x3,</span>
+<span id="cb223-4"><a href="c07-modeling.html#cb223-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb223-5"><a href="c07-modeling.html#cb223-5" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit,</span>
+<span id="cb223-6"><a href="c07-modeling.html#cb223-6" tabindex="-1"></a>    <span class="at">df.resid =</span> <span class="cn">NULL</span></span>
+<span id="cb223-7"><a href="c07-modeling.html#cb223-7" tabindex="-1"></a>  )</span></code></pre></div>
 <p>The arguments are:</p>
 <ul>
 <li><code>formula</code>: Formula in the form of <code>y~x</code></li>
@@ -1250,23 +1245,23 @@ y_i=\beta_0 +\sum_{i=1}^p \beta_i x_i + \epsilon_i
 <div id="example-1-linear-regression-with-single-variable" class="section level4 unnumbered hasAnchor">
 <h4>Example 1: Linear regression with single variable<a href="c07-modeling.html#example-1-linear-regression-with-single-variable" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>On RECS, we can obtain information on the square footage of homes and the electric bills. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to determine whether it is reasonable to assume a linear relationship. In Figure <a href="c07-modeling.html#fig:model-plot-sf-elbill">7.1</a>, each hexagon represents the weighted count of households in the bin, and we can see a general positive linear trend (as the square footage increases so does the amount of money spent on electricity).</p>
-<div class="sourceCode" id="cb227"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb227-1"><a href="c07-modeling.html#cb227-1" tabindex="-1"></a>recs_2020 <span class="sc">%&gt;%</span></span>
-<span id="cb227-2"><a href="c07-modeling.html#cb227-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(</span>
-<span id="cb227-3"><a href="c07-modeling.html#cb227-3" tabindex="-1"></a>    <span class="at">x =</span> TOTSQFT_EN,</span>
-<span id="cb227-4"><a href="c07-modeling.html#cb227-4" tabindex="-1"></a>    <span class="at">y =</span> DOLLAREL,</span>
-<span id="cb227-5"><a href="c07-modeling.html#cb227-5" tabindex="-1"></a>    <span class="at">weight =</span> NWEIGHT <span class="sc">/</span> <span class="dv">1000000</span></span>
-<span id="cb227-6"><a href="c07-modeling.html#cb227-6" tabindex="-1"></a>  )) <span class="sc">+</span></span>
-<span id="cb227-7"><a href="c07-modeling.html#cb227-7" tabindex="-1"></a>  <span class="fu">geom_hex</span>() <span class="sc">+</span></span>
-<span id="cb227-8"><a href="c07-modeling.html#cb227-8" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
-<span id="cb227-9"><a href="c07-modeling.html#cb227-9" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;colorbar&quot;</span>,</span>
-<span id="cb227-10"><a href="c07-modeling.html#cb227-10" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Housing Units</span><span class="sc">\n</span><span class="st">(Millions)&quot;</span>,</span>
-<span id="cb227-11"><a href="c07-modeling.html#cb227-11" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span>comma,</span>
-<span id="cb227-12"><a href="c07-modeling.html#cb227-12" tabindex="-1"></a>    <span class="at">colors =</span> book_colors[<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>)]</span>
-<span id="cb227-13"><a href="c07-modeling.html#cb227-13" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb227-14"><a href="c07-modeling.html#cb227-14" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Total square footage&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Amount spent on electricity&quot;</span>) <span class="sc">+</span></span>
-<span id="cb227-15"><a href="c07-modeling.html#cb227-15" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">dollar_format</span>()) <span class="sc">+</span></span>
-<span id="cb227-16"><a href="c07-modeling.html#cb227-16" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">comma_format</span>()) <span class="sc">+</span></span>
-<span id="cb227-17"><a href="c07-modeling.html#cb227-17" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() </span></code></pre></div>
+<div class="sourceCode" id="cb224"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb224-1"><a href="c07-modeling.html#cb224-1" tabindex="-1"></a>recs_2020 <span class="sc">%&gt;%</span></span>
+<span id="cb224-2"><a href="c07-modeling.html#cb224-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(</span>
+<span id="cb224-3"><a href="c07-modeling.html#cb224-3" tabindex="-1"></a>    <span class="at">x =</span> TOTSQFT_EN,</span>
+<span id="cb224-4"><a href="c07-modeling.html#cb224-4" tabindex="-1"></a>    <span class="at">y =</span> DOLLAREL,</span>
+<span id="cb224-5"><a href="c07-modeling.html#cb224-5" tabindex="-1"></a>    <span class="at">weight =</span> NWEIGHT <span class="sc">/</span> <span class="dv">1000000</span></span>
+<span id="cb224-6"><a href="c07-modeling.html#cb224-6" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb224-7"><a href="c07-modeling.html#cb224-7" tabindex="-1"></a>  <span class="fu">geom_hex</span>() <span class="sc">+</span></span>
+<span id="cb224-8"><a href="c07-modeling.html#cb224-8" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
+<span id="cb224-9"><a href="c07-modeling.html#cb224-9" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;colorbar&quot;</span>,</span>
+<span id="cb224-10"><a href="c07-modeling.html#cb224-10" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Housing Units</span><span class="sc">\n</span><span class="st">(Millions)&quot;</span>,</span>
+<span id="cb224-11"><a href="c07-modeling.html#cb224-11" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span>comma,</span>
+<span id="cb224-12"><a href="c07-modeling.html#cb224-12" tabindex="-1"></a>    <span class="at">colors =</span> book_colors[<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>)]</span>
+<span id="cb224-13"><a href="c07-modeling.html#cb224-13" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb224-14"><a href="c07-modeling.html#cb224-14" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Total square footage&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Amount spent on electricity&quot;</span>) <span class="sc">+</span></span>
+<span id="cb224-15"><a href="c07-modeling.html#cb224-15" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">dollar_format</span>()) <span class="sc">+</span></span>
+<span id="cb224-16"><a href="c07-modeling.html#cb224-16" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">comma_format</span>()) <span class="sc">+</span></span>
+<span id="cb224-17"><a href="c07-modeling.html#cb224-17" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() </span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:model-plot-sf-elbill"></span>
 <img src="bookdown_files/figure-html/model-plot-sf-elbill-1.png" alt="Hex chart where each hexagon represents a number of housing units at a point. x-axis is 'Total square footage' ranging from 0 to 7,500 and y-axis is 'Amount spent on electricity' ranging from $0 to 8,000. The trend is relatively linear and positve. A high concentration of points have square footage between 0 and 2,500 square feet as well as between electricity expenditure between $0 and 2,000" width="672" />
 <p class="caption">
@@ -1274,32 +1269,32 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
 </p>
 </div>
 <p>Given that the plot shows a potential increasing relationship between square footage and electricity expenditure, fitting a model will allow us to determine if the relationship is statistically significant. The model is fit below with electricity expenditure as the outcome.</p>
-<div class="sourceCode" id="cb228"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb228-1"><a href="c07-modeling.html#cb228-1" tabindex="-1"></a>m_electric_sqft <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb228-2"><a href="c07-modeling.html#cb228-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
-<span id="cb228-3"><a href="c07-modeling.html#cb228-3" tabindex="-1"></a>         <span class="at">formula =</span> DOLLAREL <span class="sc">~</span> TOTSQFT_EN,</span>
-<span id="cb228-4"><a href="c07-modeling.html#cb228-4" tabindex="-1"></a>         <span class="at">na.action =</span> na.omit)</span></code></pre></div>
-<div class="sourceCode" id="cb229"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb229-1"><a href="c07-modeling.html#cb229-1" tabindex="-1"></a><span class="fu">tidy</span>(m_electric_sqft) <span class="sc">%&gt;%</span></span>
-<span id="cb229-2"><a href="c07-modeling.html#cb229-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
-<span id="cb229-3"><a href="c07-modeling.html#cb229-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb229-4"><a href="c07-modeling.html#cb229-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb225"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb225-1"><a href="c07-modeling.html#cb225-1" tabindex="-1"></a>m_electric_sqft <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb225-2"><a href="c07-modeling.html#cb225-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
+<span id="cb225-3"><a href="c07-modeling.html#cb225-3" tabindex="-1"></a>         <span class="at">formula =</span> DOLLAREL <span class="sc">~</span> TOTSQFT_EN,</span>
+<span id="cb225-4"><a href="c07-modeling.html#cb225-4" tabindex="-1"></a>         <span class="at">na.action =</span> na.omit)</span></code></pre></div>
+<div class="sourceCode" id="cb226"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb226-1"><a href="c07-modeling.html#cb226-1" tabindex="-1"></a><span class="fu">tidy</span>(m_electric_sqft) <span class="sc">%&gt;%</span></span>
+<span id="cb226-2"><a href="c07-modeling.html#cb226-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
+<span id="cb226-3"><a href="c07-modeling.html#cb226-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb226-4"><a href="c07-modeling.html#cb226-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="ypfaxppznx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ypfaxppznx table {
+<div id="aafohkkjqa" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#aafohkkjqa table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ypfaxppznx thead, #ypfaxppznx tbody, #ypfaxppznx tfoot, #ypfaxppznx tr, #ypfaxppznx td, #ypfaxppznx th {
+#aafohkkjqa thead, #aafohkkjqa tbody, #aafohkkjqa tfoot, #aafohkkjqa tr, #aafohkkjqa td, #aafohkkjqa th {
   border-style: none;
 }
 
-#ypfaxppznx p {
+#aafohkkjqa p {
   margin: 0;
   padding: 0;
 }
 
-#ypfaxppznx .gt_table {
+#aafohkkjqa .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1325,12 +1320,12 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-left-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_caption {
+#aafohkkjqa .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ypfaxppznx .gt_title {
+#aafohkkjqa .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1342,7 +1337,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-bottom-width: 0;
 }
 
-#ypfaxppznx .gt_subtitle {
+#aafohkkjqa .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1354,7 +1349,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-top-width: 0;
 }
 
-#ypfaxppznx .gt_heading {
+#aafohkkjqa .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1366,13 +1361,13 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-right-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_bottom_border {
+#aafohkkjqa .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_col_headings {
+#aafohkkjqa .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1387,7 +1382,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-right-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_col_heading {
+#aafohkkjqa .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1407,7 +1402,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   overflow-x: hidden;
 }
 
-#ypfaxppznx .gt_column_spanner_outer {
+#aafohkkjqa .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1419,15 +1414,15 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 4px;
 }
 
-#ypfaxppznx .gt_column_spanner_outer:first-child {
+#aafohkkjqa .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ypfaxppznx .gt_column_spanner_outer:last-child {
+#aafohkkjqa .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ypfaxppznx .gt_column_spanner {
+#aafohkkjqa .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1439,11 +1434,11 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   width: 100%;
 }
 
-#ypfaxppznx .gt_spanner_row {
+#aafohkkjqa .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ypfaxppznx .gt_group_heading {
+#aafohkkjqa .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1469,7 +1464,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   text-align: left;
 }
 
-#ypfaxppznx .gt_empty_group_heading {
+#aafohkkjqa .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1484,15 +1479,15 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   vertical-align: middle;
 }
 
-#ypfaxppznx .gt_from_md > :first-child {
+#aafohkkjqa .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ypfaxppznx .gt_from_md > :last-child {
+#aafohkkjqa .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ypfaxppznx .gt_row {
+#aafohkkjqa .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1511,7 +1506,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   overflow-x: hidden;
 }
 
-#ypfaxppznx .gt_stub {
+#aafohkkjqa .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1524,7 +1519,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 5px;
 }
 
-#ypfaxppznx .gt_stub_row_group {
+#aafohkkjqa .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1538,15 +1533,15 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   vertical-align: top;
 }
 
-#ypfaxppznx .gt_row_group_first td {
+#aafohkkjqa .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ypfaxppznx .gt_row_group_first th {
+#aafohkkjqa .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ypfaxppznx .gt_summary_row {
+#aafohkkjqa .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1556,16 +1551,16 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 5px;
 }
 
-#ypfaxppznx .gt_first_summary_row {
+#aafohkkjqa .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_first_summary_row.thick {
+#aafohkkjqa .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ypfaxppznx .gt_last_summary_row {
+#aafohkkjqa .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1575,7 +1570,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-bottom-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_grand_summary_row {
+#aafohkkjqa .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1585,7 +1580,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 5px;
 }
 
-#ypfaxppznx .gt_first_grand_summary_row {
+#aafohkkjqa .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1595,7 +1590,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-top-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_last_grand_summary_row_top {
+#aafohkkjqa .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1605,11 +1600,11 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-bottom-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_striped {
+#aafohkkjqa .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ypfaxppznx .gt_table_body {
+#aafohkkjqa .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1618,7 +1613,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-bottom-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_footnotes {
+#aafohkkjqa .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1632,7 +1627,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-right-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_footnote {
+#aafohkkjqa .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1641,7 +1636,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 5px;
 }
 
-#ypfaxppznx .gt_sourcenotes {
+#aafohkkjqa .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1655,7 +1650,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-right-color: #D3D3D3;
 }
 
-#ypfaxppznx .gt_sourcenote {
+#aafohkkjqa .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1663,63 +1658,63 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 5px;
 }
 
-#ypfaxppznx .gt_left {
+#aafohkkjqa .gt_left {
   text-align: left;
 }
 
-#ypfaxppznx .gt_center {
+#aafohkkjqa .gt_center {
   text-align: center;
 }
 
-#ypfaxppznx .gt_right {
+#aafohkkjqa .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ypfaxppznx .gt_font_normal {
+#aafohkkjqa .gt_font_normal {
   font-weight: normal;
 }
 
-#ypfaxppznx .gt_font_bold {
+#aafohkkjqa .gt_font_bold {
   font-weight: bold;
 }
 
-#ypfaxppznx .gt_font_italic {
+#aafohkkjqa .gt_font_italic {
   font-style: italic;
 }
 
-#ypfaxppznx .gt_super {
+#aafohkkjqa .gt_super {
   font-size: 65%;
 }
 
-#ypfaxppznx .gt_footnote_marks {
+#aafohkkjqa .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ypfaxppznx .gt_asterisk {
+#aafohkkjqa .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ypfaxppznx .gt_indent_1 {
+#aafohkkjqa .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ypfaxppznx .gt_indent_2 {
+#aafohkkjqa .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ypfaxppznx .gt_indent_3 {
+#aafohkkjqa .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ypfaxppznx .gt_indent_4 {
+#aafohkkjqa .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ypfaxppznx .gt_indent_5 {
+#aafohkkjqa .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1757,34 +1752,34 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
 <div id="example-2-linear-regression-with-multiple-variables-and-interactions" class="section level4 unnumbered hasAnchor">
 <h4>Example 2: Linear regression with multiple variables and interactions<a href="c07-modeling.html#example-2-linear-regression-with-multiple-variables-and-interactions" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning is used (logical/categorical) with all two-way interactions also included. In this example, we are choosing to fit this model without an intercept (using <code>-1</code> in the formula). This will result in an intercept estimate for each region instead of a single intercept for all data.</p>
-<div class="sourceCode" id="cb230"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb230-1"><a href="c07-modeling.html#cb230-1" tabindex="-1"></a>m_electric_multi <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb230-2"><a href="c07-modeling.html#cb230-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
-<span id="cb230-3"><a href="c07-modeling.html#cb230-3" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb230-4"><a href="c07-modeling.html#cb230-4" tabindex="-1"></a>    <span class="at">formula =</span> DOLLAREL <span class="sc">~</span> (Region <span class="sc">+</span> Urbanicity <span class="sc">+</span> TOTSQFT_EN <span class="sc">+</span> ACUsed)<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">1</span>, </span>
-<span id="cb230-5"><a href="c07-modeling.html#cb230-5" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit</span>
-<span id="cb230-6"><a href="c07-modeling.html#cb230-6" tabindex="-1"></a>  )</span></code></pre></div>
-<div class="sourceCode" id="cb231"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb231-1"><a href="c07-modeling.html#cb231-1" tabindex="-1"></a><span class="fu">tidy</span>(m_electric_multi) <span class="sc">%&gt;%</span></span>
-<span id="cb231-2"><a href="c07-modeling.html#cb231-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
-<span id="cb231-3"><a href="c07-modeling.html#cb231-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb231-4"><a href="c07-modeling.html#cb231-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb227"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb227-1"><a href="c07-modeling.html#cb227-1" tabindex="-1"></a>m_electric_multi <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb227-2"><a href="c07-modeling.html#cb227-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb227-3"><a href="c07-modeling.html#cb227-3" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb227-4"><a href="c07-modeling.html#cb227-4" tabindex="-1"></a>    <span class="at">formula =</span> DOLLAREL <span class="sc">~</span> (Region <span class="sc">+</span> Urbanicity <span class="sc">+</span> TOTSQFT_EN <span class="sc">+</span> ACUsed)<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">1</span>, </span>
+<span id="cb227-5"><a href="c07-modeling.html#cb227-5" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit</span>
+<span id="cb227-6"><a href="c07-modeling.html#cb227-6" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb228"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb228-1"><a href="c07-modeling.html#cb228-1" tabindex="-1"></a><span class="fu">tidy</span>(m_electric_multi) <span class="sc">%&gt;%</span></span>
+<span id="cb228-2"><a href="c07-modeling.html#cb228-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
+<span id="cb228-3"><a href="c07-modeling.html#cb228-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb228-4"><a href="c07-modeling.html#cb228-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="icigczvbsp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#icigczvbsp table {
+<div id="xkzsauqegh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#xkzsauqegh table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#icigczvbsp thead, #icigczvbsp tbody, #icigczvbsp tfoot, #icigczvbsp tr, #icigczvbsp td, #icigczvbsp th {
+#xkzsauqegh thead, #xkzsauqegh tbody, #xkzsauqegh tfoot, #xkzsauqegh tr, #xkzsauqegh td, #xkzsauqegh th {
   border-style: none;
 }
 
-#icigczvbsp p {
+#xkzsauqegh p {
   margin: 0;
   padding: 0;
 }
 
-#icigczvbsp .gt_table {
+#xkzsauqegh .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1810,12 +1805,12 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-left-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_caption {
+#xkzsauqegh .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#icigczvbsp .gt_title {
+#xkzsauqegh .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1827,7 +1822,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-bottom-width: 0;
 }
 
-#icigczvbsp .gt_subtitle {
+#xkzsauqegh .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1839,7 +1834,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-top-width: 0;
 }
 
-#icigczvbsp .gt_heading {
+#xkzsauqegh .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1851,13 +1846,13 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-right-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_bottom_border {
+#xkzsauqegh .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_col_headings {
+#xkzsauqegh .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1872,7 +1867,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-right-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_col_heading {
+#xkzsauqegh .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1892,7 +1887,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   overflow-x: hidden;
 }
 
-#icigczvbsp .gt_column_spanner_outer {
+#xkzsauqegh .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1904,15 +1899,15 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 4px;
 }
 
-#icigczvbsp .gt_column_spanner_outer:first-child {
+#xkzsauqegh .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#icigczvbsp .gt_column_spanner_outer:last-child {
+#xkzsauqegh .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#icigczvbsp .gt_column_spanner {
+#xkzsauqegh .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1924,11 +1919,11 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   width: 100%;
 }
 
-#icigczvbsp .gt_spanner_row {
+#xkzsauqegh .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#icigczvbsp .gt_group_heading {
+#xkzsauqegh .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1954,7 +1949,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   text-align: left;
 }
 
-#icigczvbsp .gt_empty_group_heading {
+#xkzsauqegh .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1969,15 +1964,15 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   vertical-align: middle;
 }
 
-#icigczvbsp .gt_from_md > :first-child {
+#xkzsauqegh .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#icigczvbsp .gt_from_md > :last-child {
+#xkzsauqegh .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#icigczvbsp .gt_row {
+#xkzsauqegh .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1996,7 +1991,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   overflow-x: hidden;
 }
 
-#icigczvbsp .gt_stub {
+#xkzsauqegh .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2009,7 +2004,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 5px;
 }
 
-#icigczvbsp .gt_stub_row_group {
+#xkzsauqegh .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2023,15 +2018,15 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   vertical-align: top;
 }
 
-#icigczvbsp .gt_row_group_first td {
+#xkzsauqegh .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#icigczvbsp .gt_row_group_first th {
+#xkzsauqegh .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#icigczvbsp .gt_summary_row {
+#xkzsauqegh .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2041,16 +2036,16 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 5px;
 }
 
-#icigczvbsp .gt_first_summary_row {
+#xkzsauqegh .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_first_summary_row.thick {
+#xkzsauqegh .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#icigczvbsp .gt_last_summary_row {
+#xkzsauqegh .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2060,7 +2055,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-bottom-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_grand_summary_row {
+#xkzsauqegh .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2070,7 +2065,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 5px;
 }
 
-#icigczvbsp .gt_first_grand_summary_row {
+#xkzsauqegh .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2080,7 +2075,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-top-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_last_grand_summary_row_top {
+#xkzsauqegh .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2090,11 +2085,11 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-bottom-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_striped {
+#xkzsauqegh .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#icigczvbsp .gt_table_body {
+#xkzsauqegh .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2103,7 +2098,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-bottom-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_footnotes {
+#xkzsauqegh .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2117,7 +2112,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-right-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_footnote {
+#xkzsauqegh .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2126,7 +2121,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 5px;
 }
 
-#icigczvbsp .gt_sourcenotes {
+#xkzsauqegh .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2140,7 +2135,7 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   border-right-color: #D3D3D3;
 }
 
-#icigczvbsp .gt_sourcenote {
+#xkzsauqegh .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2148,63 +2143,63 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
   padding-right: 5px;
 }
 
-#icigczvbsp .gt_left {
+#xkzsauqegh .gt_left {
   text-align: left;
 }
 
-#icigczvbsp .gt_center {
+#xkzsauqegh .gt_center {
   text-align: center;
 }
 
-#icigczvbsp .gt_right {
+#xkzsauqegh .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#icigczvbsp .gt_font_normal {
+#xkzsauqegh .gt_font_normal {
   font-weight: normal;
 }
 
-#icigczvbsp .gt_font_bold {
+#xkzsauqegh .gt_font_bold {
   font-weight: bold;
 }
 
-#icigczvbsp .gt_font_italic {
+#xkzsauqegh .gt_font_italic {
   font-style: italic;
 }
 
-#icigczvbsp .gt_super {
+#xkzsauqegh .gt_super {
   font-size: 65%;
 }
 
-#icigczvbsp .gt_footnote_marks {
+#xkzsauqegh .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#icigczvbsp .gt_asterisk {
+#xkzsauqegh .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#icigczvbsp .gt_indent_1 {
+#xkzsauqegh .gt_indent_1 {
   text-indent: 5px;
 }
 
-#icigczvbsp .gt_indent_2 {
+#xkzsauqegh .gt_indent_2 {
   text-indent: 10px;
 }
 
-#icigczvbsp .gt_indent_3 {
+#xkzsauqegh .gt_indent_3 {
   text-indent: 15px;
 }
 
-#icigczvbsp .gt_indent_4 {
+#xkzsauqegh .gt_indent_4 {
   text-indent: 20px;
 }
 
-#icigczvbsp .gt_indent_5 {
+#xkzsauqegh .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2352,20 +2347,20 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
 </table>
 </div>
 <p>As shown above, there are many terms in this model. To test whether coefficients for a term are different from zero, the function <code>regTermTest()</code> can be used. For example, in the above regression, we can test whether the interaction of region and urbanicity is significant as follows:</p>
-<div class="sourceCode" id="cb232"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb232-1"><a href="c07-modeling.html#cb232-1" tabindex="-1"></a>urb_reg_test <span class="ot">&lt;-</span> <span class="fu">regTermTest</span>(m_electric_multi, <span class="sc">~</span>Urbanicity<span class="sc">:</span>Region)</span>
-<span id="cb232-2"><a href="c07-modeling.html#cb232-2" tabindex="-1"></a>urb_reg_test</span></code></pre></div>
+<div class="sourceCode" id="cb229"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb229-1"><a href="c07-modeling.html#cb229-1" tabindex="-1"></a>urb_reg_test <span class="ot">&lt;-</span> <span class="fu">regTermTest</span>(m_electric_multi, <span class="sc">~</span>Urbanicity<span class="sc">:</span>Region)</span>
+<span id="cb229-2"><a href="c07-modeling.html#cb229-2" tabindex="-1"></a>urb_reg_test</span></code></pre></div>
 <pre><code>## Wald test for Urbanicity:Region
 ##  in svyglm(design = ., formula = DOLLAREL ~ (Region + Urbanicity + 
 ##     TOTSQFT_EN + ACUsed)^2 - 1, na.action = na.omit)
 ## F =  6.851  on  6  and  35  df: p= 7.2e-05</code></pre>
 <p>This output indicates there is a significant interaction between urbanicity and region (p-value=&lt;0.0001).</p>
 <p>To examine the predictions, residuals, and more from the model, the function <code>augment()</code> from {broom} can be used. The <code>augment()</code> function will return a tibble with the independent and dependent variables and other fit statistics. The <code>augment()</code> function has not been specifically written for objects of class <code>svyglm</code>, and as such, a warning will be displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using <code>augment()</code>. To obtain the standard error of the predicted values (<code>.se.fit</code>) we need to use the <code>attr()</code> function on the predicted values (<code>.fitted</code>) created by <code>augment()</code>. Additionally, the predicted values created are outputted as a <code>svrep</code> type of data. If we want to plot the predicted values, we need to use <code>as.numeric()</code> to get the predicted values into a numeric format to work with. However, it is important to note that this adjustment must be completed <strong>after</strong> the standard error adjustment.</p>
-<div class="sourceCode" id="cb234"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb234-1"><a href="c07-modeling.html#cb234-1" tabindex="-1"></a>fitstats <span class="ot">&lt;-</span></span>
-<span id="cb234-2"><a href="c07-modeling.html#cb234-2" tabindex="-1"></a>  <span class="fu">augment</span>(m_electric_multi) <span class="sc">%&gt;%</span></span>
-<span id="cb234-3"><a href="c07-modeling.html#cb234-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
-<span id="cb234-4"><a href="c07-modeling.html#cb234-4" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) </span>
-<span id="cb234-5"><a href="c07-modeling.html#cb234-5" tabindex="-1"></a></span>
-<span id="cb234-6"><a href="c07-modeling.html#cb234-6" tabindex="-1"></a>fitstats</span></code></pre></div>
+<div class="sourceCode" id="cb231"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb231-1"><a href="c07-modeling.html#cb231-1" tabindex="-1"></a>fitstats <span class="ot">&lt;-</span></span>
+<span id="cb231-2"><a href="c07-modeling.html#cb231-2" tabindex="-1"></a>  <span class="fu">augment</span>(m_electric_multi) <span class="sc">%&gt;%</span></span>
+<span id="cb231-3"><a href="c07-modeling.html#cb231-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
+<span id="cb231-4"><a href="c07-modeling.html#cb231-4" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) </span>
+<span id="cb231-5"><a href="c07-modeling.html#cb231-5" tabindex="-1"></a></span>
+<span id="cb231-6"><a href="c07-modeling.html#cb231-6" tabindex="-1"></a>fitstats</span></code></pre></div>
 <pre><code>## # A tibble: 18,496 × 13
 ##    DOLLAREL Region    Urbanicity   TOTSQFT_EN ACUsed `(weights)` .fitted
 ##       &lt;dbl&gt; &lt;fct&gt;     &lt;fct&gt;             &lt;dbl&gt; &lt;lgl&gt;        &lt;dbl&gt;   &lt;dbl&gt;
@@ -2383,15 +2378,15 @@ FIGURE 7.1: Relationship between square footage and dollars spent on electricity
 ## # ℹ 6 more variables: .resid &lt;dbl&gt;, .hat &lt;dbl&gt;, .sigma &lt;dbl&gt;,
 ## #   .cooksd &lt;dbl&gt;, .std.resid &lt;dbl&gt;, .se.fit &lt;dbl&gt;</code></pre>
 <p>These results can then be used in a variety of ways, including examining residual plots as illustrated in the code below and Figure <a href="c07-modeling.html#fig:model-aug-examp-plot">7.2</a>. In the residual plot, we look for any patterns in the data. If we do see patterns, this may indicate a violation of the heteroscedasticity assumption and the standard errors of the coefficients may be incorrect. In Figure <a href="c07-modeling.html#fig:model-aug-examp-plot">7.2</a>, we do not see a strong pattern indicating that our assumption of heteroscedasticity may hold.</p>
-<div class="sourceCode" id="cb236"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb236-1"><a href="c07-modeling.html#cb236-1" tabindex="-1"></a>fitstats <span class="sc">%&gt;%</span></span>
-<span id="cb236-2"><a href="c07-modeling.html#cb236-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> .fitted, .resid)) <span class="sc">+</span></span>
-<span id="cb236-3"><a href="c07-modeling.html#cb236-3" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb236-4"><a href="c07-modeling.html#cb236-4" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
-<span id="cb236-5"><a href="c07-modeling.html#cb236-5" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb236-6"><a href="c07-modeling.html#cb236-6" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Fitted value of electricity cost&quot;</span>) <span class="sc">+</span></span>
-<span id="cb236-7"><a href="c07-modeling.html#cb236-7" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Residual of model&quot;</span>) <span class="sc">+</span></span>
-<span id="cb236-8"><a href="c07-modeling.html#cb236-8" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">dollar_format</span>()) <span class="sc">+</span></span>
-<span id="cb236-9"><a href="c07-modeling.html#cb236-9" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">dollar_format</span>()) </span></code></pre></div>
+<div class="sourceCode" id="cb233"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb233-1"><a href="c07-modeling.html#cb233-1" tabindex="-1"></a>fitstats <span class="sc">%&gt;%</span></span>
+<span id="cb233-2"><a href="c07-modeling.html#cb233-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> .fitted, .resid)) <span class="sc">+</span></span>
+<span id="cb233-3"><a href="c07-modeling.html#cb233-3" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb233-4"><a href="c07-modeling.html#cb233-4" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
+<span id="cb233-5"><a href="c07-modeling.html#cb233-5" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb233-6"><a href="c07-modeling.html#cb233-6" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Fitted value of electricity cost&quot;</span>) <span class="sc">+</span></span>
+<span id="cb233-7"><a href="c07-modeling.html#cb233-7" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Residual of model&quot;</span>) <span class="sc">+</span></span>
+<span id="cb233-8"><a href="c07-modeling.html#cb233-8" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">dollar_format</span>()) <span class="sc">+</span></span>
+<span id="cb233-9"><a href="c07-modeling.html#cb233-9" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">dollar_format</span>()) </span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:model-aug-examp-plot"></span>
 <img src="bookdown_files/figure-html/model-aug-examp-plot-1.png" alt="Residual scatter plot with a x-axis of 'Fitted value of electricity cost' ranging between approximately $0 and $4,000 and a y-axis with the 'Residual of model' ranging from approximatley -$3,000 to $5,000. The points create a slight megaphone shape with largest residuals in the middle of the x-range. A red line is drawn horizontally at y=0." width="672" />
 <p class="caption">
@@ -2399,27 +2394,27 @@ FIGURE 7.2: Residual plot of electric cost model with covariates Region, Urbanic
 </p>
 </div>
 <p>Additionally, <code>augment()</code> can be used to predict outcomes for data not used in modeling. Perhaps, we would like to predict the energy expenditure for a home in an urban area in the south that uses air-conditioning and is 2,500 square feet. To do this, we first make a tibble including that additional data and then use the <code>newdata</code> argument in the <code>augment()</code> function. As before, to obtain the standard error of the predicted values we need to use the <code>attr()</code> function.</p>
-<div class="sourceCode" id="cb237"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb237-1"><a href="c07-modeling.html#cb237-1" tabindex="-1"></a>add_data <span class="ot">&lt;-</span> recs_2020 <span class="sc">%&gt;%</span> </span>
-<span id="cb237-2"><a href="c07-modeling.html#cb237-2" tabindex="-1"></a>  <span class="fu">select</span>(DOEID, Region, Urbanicity,</span>
-<span id="cb237-3"><a href="c07-modeling.html#cb237-3" tabindex="-1"></a>         TOTSQFT_EN, ACUsed,</span>
-<span id="cb237-4"><a href="c07-modeling.html#cb237-4" tabindex="-1"></a>         DOLLAREL) <span class="sc">%&gt;%</span></span>
-<span id="cb237-5"><a href="c07-modeling.html#cb237-5" tabindex="-1"></a>  <span class="fu">rbind</span>(</span>
-<span id="cb237-6"><a href="c07-modeling.html#cb237-6" tabindex="-1"></a>    <span class="fu">tibble</span>(</span>
-<span id="cb237-7"><a href="c07-modeling.html#cb237-7" tabindex="-1"></a>      <span class="at">DOEID =</span> <span class="cn">NA</span>,</span>
-<span id="cb237-8"><a href="c07-modeling.html#cb237-8" tabindex="-1"></a>      <span class="at">Region =</span> <span class="st">&quot;South&quot;</span>,</span>
-<span id="cb237-9"><a href="c07-modeling.html#cb237-9" tabindex="-1"></a>      <span class="at">Urbanicity =</span> <span class="st">&quot;Urban Area&quot;</span>,</span>
-<span id="cb237-10"><a href="c07-modeling.html#cb237-10" tabindex="-1"></a>      <span class="at">TOTSQFT_EN =</span> <span class="dv">2500</span>,</span>
-<span id="cb237-11"><a href="c07-modeling.html#cb237-11" tabindex="-1"></a>      <span class="at">ACUsed =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb237-12"><a href="c07-modeling.html#cb237-12" tabindex="-1"></a>      <span class="at">DOLLAREL =</span> <span class="cn">NA</span></span>
-<span id="cb237-13"><a href="c07-modeling.html#cb237-13" tabindex="-1"></a>    )</span>
-<span id="cb237-14"><a href="c07-modeling.html#cb237-14" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
-<span id="cb237-15"><a href="c07-modeling.html#cb237-15" tabindex="-1"></a>  <span class="fu">tail</span>(<span class="dv">1</span>)</span>
-<span id="cb237-16"><a href="c07-modeling.html#cb237-16" tabindex="-1"></a></span>
-<span id="cb237-17"><a href="c07-modeling.html#cb237-17" tabindex="-1"></a>pred_data <span class="ot">&lt;-</span> <span class="fu">augment</span>(m_electric_multi, <span class="at">newdata =</span> add_data) <span class="sc">%&gt;%</span></span>
-<span id="cb237-18"><a href="c07-modeling.html#cb237-18" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
-<span id="cb237-19"><a href="c07-modeling.html#cb237-19" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) </span>
-<span id="cb237-20"><a href="c07-modeling.html#cb237-20" tabindex="-1"></a></span>
-<span id="cb237-21"><a href="c07-modeling.html#cb237-21" tabindex="-1"></a>pred_data </span></code></pre></div>
+<div class="sourceCode" id="cb234"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb234-1"><a href="c07-modeling.html#cb234-1" tabindex="-1"></a>add_data <span class="ot">&lt;-</span> recs_2020 <span class="sc">%&gt;%</span> </span>
+<span id="cb234-2"><a href="c07-modeling.html#cb234-2" tabindex="-1"></a>  <span class="fu">select</span>(DOEID, Region, Urbanicity,</span>
+<span id="cb234-3"><a href="c07-modeling.html#cb234-3" tabindex="-1"></a>         TOTSQFT_EN, ACUsed,</span>
+<span id="cb234-4"><a href="c07-modeling.html#cb234-4" tabindex="-1"></a>         DOLLAREL) <span class="sc">%&gt;%</span></span>
+<span id="cb234-5"><a href="c07-modeling.html#cb234-5" tabindex="-1"></a>  <span class="fu">rbind</span>(</span>
+<span id="cb234-6"><a href="c07-modeling.html#cb234-6" tabindex="-1"></a>    <span class="fu">tibble</span>(</span>
+<span id="cb234-7"><a href="c07-modeling.html#cb234-7" tabindex="-1"></a>      <span class="at">DOEID =</span> <span class="cn">NA</span>,</span>
+<span id="cb234-8"><a href="c07-modeling.html#cb234-8" tabindex="-1"></a>      <span class="at">Region =</span> <span class="st">&quot;South&quot;</span>,</span>
+<span id="cb234-9"><a href="c07-modeling.html#cb234-9" tabindex="-1"></a>      <span class="at">Urbanicity =</span> <span class="st">&quot;Urban Area&quot;</span>,</span>
+<span id="cb234-10"><a href="c07-modeling.html#cb234-10" tabindex="-1"></a>      <span class="at">TOTSQFT_EN =</span> <span class="dv">2500</span>,</span>
+<span id="cb234-11"><a href="c07-modeling.html#cb234-11" tabindex="-1"></a>      <span class="at">ACUsed =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb234-12"><a href="c07-modeling.html#cb234-12" tabindex="-1"></a>      <span class="at">DOLLAREL =</span> <span class="cn">NA</span></span>
+<span id="cb234-13"><a href="c07-modeling.html#cb234-13" tabindex="-1"></a>    )</span>
+<span id="cb234-14"><a href="c07-modeling.html#cb234-14" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb234-15"><a href="c07-modeling.html#cb234-15" tabindex="-1"></a>  <span class="fu">tail</span>(<span class="dv">1</span>)</span>
+<span id="cb234-16"><a href="c07-modeling.html#cb234-16" tabindex="-1"></a></span>
+<span id="cb234-17"><a href="c07-modeling.html#cb234-17" tabindex="-1"></a>pred_data <span class="ot">&lt;-</span> <span class="fu">augment</span>(m_electric_multi, <span class="at">newdata =</span> add_data) <span class="sc">%&gt;%</span></span>
+<span id="cb234-18"><a href="c07-modeling.html#cb234-18" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
+<span id="cb234-19"><a href="c07-modeling.html#cb234-19" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) </span>
+<span id="cb234-20"><a href="c07-modeling.html#cb234-20" tabindex="-1"></a></span>
+<span id="cb234-21"><a href="c07-modeling.html#cb234-21" tabindex="-1"></a>pred_data </span></code></pre></div>
 <pre><code>## # A tibble: 1 × 8
 ##   DOEID Region Urbanicity TOTSQFT_EN ACUsed DOLLAREL .fitted .se.fit
 ##   &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;           &lt;dbl&gt; &lt;lgl&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
@@ -2433,9 +2428,8 @@ FIGURE 7.2: Residual plot of electric cost model with covariates Region, Urbanic
 <p>Logistic regression is used to model binary outcomes such as whether or not someone voted. There are several instances where an outcome may not be originally binary but is collapsed into being binary. For example, given that gender is often asked in surveys with multiple response options and not a binary scale, many researchers now code gender in logistic modeling as cis-male compared to not cis-male. We could also convert a 4-point likert scale that has levels of “Strongly Agree”, “Agree”, “Disagree”, and “Strongly Disagree” to group the agreement levels into one group and disagreement levels into a second group.</p>
 <p>Logistic regression is a specific case of the generalized linear model (GLM). A GLM uses a link function to link the response variable to the linear model. If we tried to use a normal linear regression with a binary outcome, many assumptions are not held - namely the response is not continuous. Logistic regression allows us to link a linear model between the covariates and a propensity of an outcome. In logistic regression, the link model is the logit function. Specifically, the model is specified as follows:</p>
 <p><span class="math display">\[ y_i \sim \text{Bernoulli}(\pi_i)\]</span></p>
-<span class="math display" id="eq:logoddlin">\[\begin{equation}
+<span class="math display">\[\begin{equation}
 \log \left(\frac{\pi_i}{1-\pi_i} \right)=\beta_0 +\sum_{i=1}^n \beta_i x_i
-\tag{7.2}
 \end{equation}\]</span>
 <p>which can be re-expressed as</p>
 <p><span class="math display">\[ \pi_i=\frac{\exp \left(\beta_0 +\sum_{i=1}^n \beta_i x_i \right)}{1+\exp \left(\beta_0 +\sum_{i=1}^n \beta_i x_i \right)}.\]</span> where <span class="math inline">\(y_i\)</span> is the outcome, <span class="math inline">\(\beta_0\)</span> is an intercept, and <span class="math inline">\(x_1, \cdots, x_n\)</span> are the predictors with <span class="math inline">\(\beta_1, \cdots, \beta_n\)</span> as the associated coefficients.</p>
@@ -2443,20 +2437,20 @@ FIGURE 7.2: Residual plot of electric cost model with covariates Region, Urbanic
 <p>Assumptions in logistic regression using survey data include:</p>
 <ul>
 <li>The outcome variable has two levels</li>
-<li>There is a linear relationship between the independent variables and the log odds (Equation <a href="c07-modeling.html#eq:logoddlin">(7.2)</a>)</li>
+<li>There is a linear relationship between the independent variables and the log odds (<span class="math inline">\(\log \left(\frac{\pi_i}{1-\pi_i} \right)\)</span>)</li>
 <li>The residuals are homoscedastic, that is, the error term is the same across all values of independent variables</li>
 </ul>
 <div id="syntax-8" class="section level3 hasAnchor" number="7.4.1">
 <h3><span class="header-section-number">7.4.1</span> Syntax<a href="c07-modeling.html#syntax-8" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The syntax for logistic regression is as follows:</p>
-<div class="sourceCode" id="cb239"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb239-1"><a href="c07-modeling.html#cb239-1" tabindex="-1"></a>des_obj <span class="sc">%&gt;%</span></span>
-<span id="cb239-2"><a href="c07-modeling.html#cb239-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
-<span id="cb239-3"><a href="c07-modeling.html#cb239-3" tabindex="-1"></a>    <span class="at">formula =</span> outcomevar <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">+</span> x3,</span>
-<span id="cb239-4"><a href="c07-modeling.html#cb239-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb239-5"><a href="c07-modeling.html#cb239-5" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit,</span>
-<span id="cb239-6"><a href="c07-modeling.html#cb239-6" tabindex="-1"></a>    <span class="at">df.resid =</span> <span class="cn">NULL</span>,</span>
-<span id="cb239-7"><a href="c07-modeling.html#cb239-7" tabindex="-1"></a>    <span class="at">family =</span> quasibinomial</span>
-<span id="cb239-8"><a href="c07-modeling.html#cb239-8" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb236"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb236-1"><a href="c07-modeling.html#cb236-1" tabindex="-1"></a>des_obj <span class="sc">%&gt;%</span></span>
+<span id="cb236-2"><a href="c07-modeling.html#cb236-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
+<span id="cb236-3"><a href="c07-modeling.html#cb236-3" tabindex="-1"></a>    <span class="at">formula =</span> outcomevar <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">+</span> x3,</span>
+<span id="cb236-4"><a href="c07-modeling.html#cb236-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb236-5"><a href="c07-modeling.html#cb236-5" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit,</span>
+<span id="cb236-6"><a href="c07-modeling.html#cb236-6" tabindex="-1"></a>    <span class="at">df.resid =</span> <span class="cn">NULL</span>,</span>
+<span id="cb236-7"><a href="c07-modeling.html#cb236-7" tabindex="-1"></a>    <span class="at">family =</span> quasibinomial</span>
+<span id="cb236-8"><a href="c07-modeling.html#cb236-8" tabindex="-1"></a>  )</span></code></pre></div>
 <p>The arguments are:</p>
 <ul>
 <li><code>formula</code>: Formula in the form of <code>y~x</code></li>
@@ -2465,7 +2459,7 @@ FIGURE 7.2: Residual plot of electric cost model with covariates Region, Urbanic
 <li><code>df.resid</code>: degrees of freedom for Wald tests (optional) - defaults to using <code>degf(design)-p</code> where <span class="math inline">\(p\)</span> is the rank of the design matrix</li>
 <li><code>family</code>: the error distribution/link function to be used in the model</li>
 </ul>
-<p>Note <code>svyglm()</code> is the same function used in both ANOVA and normal linear regression. However, we’ve added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion <span class="citation">(<a href="#ref-mccullagh1989binary">McCullagh and Nelder 1989</a>; <a href="#ref-lumley2010complex">Lumley 2010</a>; <a href="#ref-rcore">R Core Team 2023</a>)</span>. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of three ways with survey data:</p>
+<p>Note <code>svyglm()</code> is the same function used in both ANOVA and normal linear regression. However, we’ve added the link function quasibinomial. While we can use the binomial link function, it is recommended to use the quasibinomial as our weights may not be integers, and the quasibinomial also allows for overdispersion <span class="citation">(<a href="#ref-lumley2010complex">Lumley 2010</a>; <a href="#ref-mccullagh1989binary">McCullagh and Nelder 1989</a>; <a href="#ref-R-base">R Core Team 2023</a>)</span>. The quasibinomial family has a default logit link which is what is specified in the equations above. When specifying the outcome variable, it will likely be specified in one of three ways with survey data:</p>
 <ul>
 <li>A two level factor variable where the first level of the factor indicates a “failure” and the second level indicates a “success”</li>
 <li>A numeric variable which is 1 or 0 where 1 indicates a success</li>
@@ -2477,31 +2471,31 @@ FIGURE 7.2: Residual plot of electric cost model with covariates Region, Urbanic
 <div id="example-1-logistic-regression-with-single-variable" class="section level4 unnumbered hasAnchor">
 <h4>Example 1: Logistic regression with single variable<a href="c07-modeling.html#example-1-logistic-regression-with-single-variable" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government<a href="#fn25" class="footnote-ref" id="fnref25"><sup>25</sup></a> by who someone voted for president in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an “Other” category. We first create a binary outcome for trusting in the government by collapsing “Always” and “Most of the time” into a single factor level, and the other response options (“About half the time”, “Some of the time”, and “Never”) into a second factor level. Next, a scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data.</p>
-<div class="sourceCode" id="cb240"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb240-1"><a href="c07-modeling.html#cb240-1" tabindex="-1"></a>anes_des_der <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb240-2"><a href="c07-modeling.html#cb240-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustGovernmentUsually =</span> <span class="fu">case_when</span>(</span>
-<span id="cb240-3"><a href="c07-modeling.html#cb240-3" tabindex="-1"></a>    <span class="fu">is.na</span>(TrustGovernment) <span class="sc">~</span> <span class="cn">NA</span>,</span>
-<span id="cb240-4"><a href="c07-modeling.html#cb240-4" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> TrustGovernment <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Always&quot;</span>, <span class="st">&quot;Most of the time&quot;</span>)</span>
-<span id="cb240-5"><a href="c07-modeling.html#cb240-5" tabindex="-1"></a>  ))</span>
-<span id="cb240-6"><a href="c07-modeling.html#cb240-6" tabindex="-1"></a></span>
-<span id="cb240-7"><a href="c07-modeling.html#cb240-7" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb240-8"><a href="c07-modeling.html#cb240-8" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection) <span class="sc">%&gt;%</span></span>
-<span id="cb240-9"><a href="c07-modeling.html#cb240-9" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">pct_trust =</span> <span class="fu">survey_mean</span>(TrustGovernmentUsually,</span>
-<span id="cb240-10"><a href="c07-modeling.html#cb240-10" tabindex="-1"></a>                                    <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb240-11"><a href="c07-modeling.html#cb240-11" tabindex="-1"></a>                                    <span class="at">proportion =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb240-12"><a href="c07-modeling.html#cb240-12" tabindex="-1"></a>                                    <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>),</span>
-<span id="cb240-13"><a href="c07-modeling.html#cb240-13" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb240-14"><a href="c07-modeling.html#cb240-14" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">complete.cases</span>(.)) <span class="sc">%&gt;%</span></span>
-<span id="cb240-15"><a href="c07-modeling.html#cb240-15" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, <span class="at">y =</span> pct_trust, </span>
-<span id="cb240-16"><a href="c07-modeling.html#cb240-16" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
-<span id="cb240-17"><a href="c07-modeling.html#cb240-17" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
-<span id="cb240-18"><a href="c07-modeling.html#cb240-18" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low, <span class="at">ymax =</span> pct_trust_upp), </span>
-<span id="cb240-19"><a href="c07-modeling.html#cb240-19" tabindex="-1"></a>                <span class="at">width =</span> .<span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb240-20"><a href="c07-modeling.html#cb240-20" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#0b3954&quot;</span>, <span class="st">&quot;#bfd7ea&quot;</span>, <span class="st">&quot;#8d6b94&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb240-21"><a href="c07-modeling.html#cb240-21" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Election choice (2020)&quot;</span>) <span class="sc">+</span></span>
-<span id="cb240-22"><a href="c07-modeling.html#cb240-22" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Usually trust the government&quot;</span>) <span class="sc">+</span></span>
-<span id="cb240-23"><a href="c07-modeling.html#cb240-23" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
-<span id="cb240-24"><a href="c07-modeling.html#cb240-24" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>) <span class="sc">+</span></span>
-<span id="cb240-25"><a href="c07-modeling.html#cb240-25" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb237"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb237-1"><a href="c07-modeling.html#cb237-1" tabindex="-1"></a>anes_des_der <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb237-2"><a href="c07-modeling.html#cb237-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustGovernmentUsually =</span> <span class="fu">case_when</span>(</span>
+<span id="cb237-3"><a href="c07-modeling.html#cb237-3" tabindex="-1"></a>    <span class="fu">is.na</span>(TrustGovernment) <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb237-4"><a href="c07-modeling.html#cb237-4" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> TrustGovernment <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Always&quot;</span>, <span class="st">&quot;Most of the time&quot;</span>)</span>
+<span id="cb237-5"><a href="c07-modeling.html#cb237-5" tabindex="-1"></a>  ))</span>
+<span id="cb237-6"><a href="c07-modeling.html#cb237-6" tabindex="-1"></a></span>
+<span id="cb237-7"><a href="c07-modeling.html#cb237-7" tabindex="-1"></a>anes_des_der <span class="sc">%&gt;%</span></span>
+<span id="cb237-8"><a href="c07-modeling.html#cb237-8" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection) <span class="sc">%&gt;%</span></span>
+<span id="cb237-9"><a href="c07-modeling.html#cb237-9" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">pct_trust =</span> <span class="fu">survey_mean</span>(TrustGovernmentUsually,</span>
+<span id="cb237-10"><a href="c07-modeling.html#cb237-10" tabindex="-1"></a>                                    <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb237-11"><a href="c07-modeling.html#cb237-11" tabindex="-1"></a>                                    <span class="at">proportion =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb237-12"><a href="c07-modeling.html#cb237-12" tabindex="-1"></a>                                    <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>),</span>
+<span id="cb237-13"><a href="c07-modeling.html#cb237-13" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb237-14"><a href="c07-modeling.html#cb237-14" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">complete.cases</span>(.)) <span class="sc">%&gt;%</span></span>
+<span id="cb237-15"><a href="c07-modeling.html#cb237-15" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection, <span class="at">y =</span> pct_trust, </span>
+<span id="cb237-16"><a href="c07-modeling.html#cb237-16" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
+<span id="cb237-17"><a href="c07-modeling.html#cb237-17" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
+<span id="cb237-18"><a href="c07-modeling.html#cb237-18" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low, <span class="at">ymax =</span> pct_trust_upp), </span>
+<span id="cb237-19"><a href="c07-modeling.html#cb237-19" tabindex="-1"></a>                <span class="at">width =</span> .<span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb237-20"><a href="c07-modeling.html#cb237-20" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#0b3954&quot;</span>, <span class="st">&quot;#bfd7ea&quot;</span>, <span class="st">&quot;#8d6b94&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb237-21"><a href="c07-modeling.html#cb237-21" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Election choice (2020)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb237-22"><a href="c07-modeling.html#cb237-22" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Usually trust the government&quot;</span>) <span class="sc">+</span></span>
+<span id="cb237-23"><a href="c07-modeling.html#cb237-23" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb237-24"><a href="c07-modeling.html#cb237-24" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>) <span class="sc">+</span></span>
+<span id="cb237-25"><a href="c07-modeling.html#cb237-25" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:model-logisticexamp-plot"></span>
 <img src="bookdown_files/figure-html/model-logisticexamp-plot-1.png" alt="Bar chart with x-axis of election choice with levels of Biden, Trump, and Other and y-axis of 'Usually trust the government' ranging from 0% to 20%. Bar 1 is centered at 1, and length is from 0 to 0.12 with fill color dark blue which maps to VotedPres2020_selection = Biden. Bar 2 is centered at 2, and length is from 0 to 0.17 with fill color very pale blue which maps to VotedPres2020_selection = Trump. Bar 3 is centered at 3, and length is from 0 to 0.06 with fill color moderate purple which maps to VotedPres2020_selection = Other. Error bars are drawn as well with the width of the Biden and Trump error bars being similar and the error bar for Other being significantly wider." width="672" />
 <p class="caption">
@@ -2509,32 +2503,32 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
 </p>
 </div>
 <p>By looking at Figure <a href="c07-modeling.html#fig:model-logisticexamp-plot">7.3</a> it appears that people who voted for Trump are more likely to say that they usually have trust in the government compared to those who voted for Biden and Other candidates. To determine if this insight is accurate, we next we fit the model.</p>
-<div class="sourceCode" id="cb241"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb241-1"><a href="c07-modeling.html#cb241-1" tabindex="-1"></a>logistic_trust_vote <span class="ot">&lt;-</span> anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb241-2"><a href="c07-modeling.html#cb241-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
-<span id="cb241-3"><a href="c07-modeling.html#cb241-3" tabindex="-1"></a>         <span class="at">formula =</span> TrustGovernmentUsually <span class="sc">~</span> VotedPres2020_selection,</span>
-<span id="cb241-4"><a href="c07-modeling.html#cb241-4" tabindex="-1"></a>         <span class="at">family =</span> quasibinomial) </span></code></pre></div>
-<div class="sourceCode" id="cb242"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb242-1"><a href="c07-modeling.html#cb242-1" tabindex="-1"></a><span class="fu">tidy</span>(logistic_trust_vote) <span class="sc">%&gt;%</span></span>
-<span id="cb242-2"><a href="c07-modeling.html#cb242-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
-<span id="cb242-3"><a href="c07-modeling.html#cb242-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb242-4"><a href="c07-modeling.html#cb242-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb238"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb238-1"><a href="c07-modeling.html#cb238-1" tabindex="-1"></a>logistic_trust_vote <span class="ot">&lt;-</span> anes_des_der <span class="sc">%&gt;%</span></span>
+<span id="cb238-2"><a href="c07-modeling.html#cb238-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
+<span id="cb238-3"><a href="c07-modeling.html#cb238-3" tabindex="-1"></a>         <span class="at">formula =</span> TrustGovernmentUsually <span class="sc">~</span> VotedPres2020_selection,</span>
+<span id="cb238-4"><a href="c07-modeling.html#cb238-4" tabindex="-1"></a>         <span class="at">family =</span> quasibinomial) </span></code></pre></div>
+<div class="sourceCode" id="cb239"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb239-1"><a href="c07-modeling.html#cb239-1" tabindex="-1"></a><span class="fu">tidy</span>(logistic_trust_vote) <span class="sc">%&gt;%</span></span>
+<span id="cb239-2"><a href="c07-modeling.html#cb239-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
+<span id="cb239-3"><a href="c07-modeling.html#cb239-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb239-4"><a href="c07-modeling.html#cb239-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="ljncxretwp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ljncxretwp table {
+<div id="kuimwwhxwj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#kuimwwhxwj table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ljncxretwp thead, #ljncxretwp tbody, #ljncxretwp tfoot, #ljncxretwp tr, #ljncxretwp td, #ljncxretwp th {
+#kuimwwhxwj thead, #kuimwwhxwj tbody, #kuimwwhxwj tfoot, #kuimwwhxwj tr, #kuimwwhxwj td, #kuimwwhxwj th {
   border-style: none;
 }
 
-#ljncxretwp p {
+#kuimwwhxwj p {
   margin: 0;
   padding: 0;
 }
 
-#ljncxretwp .gt_table {
+#kuimwwhxwj .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2560,12 +2554,12 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-left-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_caption {
+#kuimwwhxwj .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ljncxretwp .gt_title {
+#kuimwwhxwj .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2577,7 +2571,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-width: 0;
 }
 
-#ljncxretwp .gt_subtitle {
+#kuimwwhxwj .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2589,7 +2583,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-top-width: 0;
 }
 
-#ljncxretwp .gt_heading {
+#kuimwwhxwj .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2601,13 +2595,13 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_bottom_border {
+#kuimwwhxwj .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_col_headings {
+#kuimwwhxwj .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2622,7 +2616,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_col_heading {
+#kuimwwhxwj .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2642,7 +2636,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   overflow-x: hidden;
 }
 
-#ljncxretwp .gt_column_spanner_outer {
+#kuimwwhxwj .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2654,15 +2648,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 4px;
 }
 
-#ljncxretwp .gt_column_spanner_outer:first-child {
+#kuimwwhxwj .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ljncxretwp .gt_column_spanner_outer:last-child {
+#kuimwwhxwj .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ljncxretwp .gt_column_spanner {
+#kuimwwhxwj .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2674,11 +2668,11 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   width: 100%;
 }
 
-#ljncxretwp .gt_spanner_row {
+#kuimwwhxwj .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ljncxretwp .gt_group_heading {
+#kuimwwhxwj .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2704,7 +2698,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   text-align: left;
 }
 
-#ljncxretwp .gt_empty_group_heading {
+#kuimwwhxwj .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2719,15 +2713,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   vertical-align: middle;
 }
 
-#ljncxretwp .gt_from_md > :first-child {
+#kuimwwhxwj .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ljncxretwp .gt_from_md > :last-child {
+#kuimwwhxwj .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ljncxretwp .gt_row {
+#kuimwwhxwj .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2746,7 +2740,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   overflow-x: hidden;
 }
 
-#ljncxretwp .gt_stub {
+#kuimwwhxwj .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2759,7 +2753,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#ljncxretwp .gt_stub_row_group {
+#kuimwwhxwj .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2773,15 +2767,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   vertical-align: top;
 }
 
-#ljncxretwp .gt_row_group_first td {
+#kuimwwhxwj .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ljncxretwp .gt_row_group_first th {
+#kuimwwhxwj .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ljncxretwp .gt_summary_row {
+#kuimwwhxwj .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2791,16 +2785,16 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#ljncxretwp .gt_first_summary_row {
+#kuimwwhxwj .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_first_summary_row.thick {
+#kuimwwhxwj .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ljncxretwp .gt_last_summary_row {
+#kuimwwhxwj .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2810,7 +2804,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_grand_summary_row {
+#kuimwwhxwj .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2820,7 +2814,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#ljncxretwp .gt_first_grand_summary_row {
+#kuimwwhxwj .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2830,7 +2824,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-top-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_last_grand_summary_row_top {
+#kuimwwhxwj .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2840,11 +2834,11 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_striped {
+#kuimwwhxwj .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ljncxretwp .gt_table_body {
+#kuimwwhxwj .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2853,7 +2847,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_footnotes {
+#kuimwwhxwj .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2867,7 +2861,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_footnote {
+#kuimwwhxwj .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2876,7 +2870,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#ljncxretwp .gt_sourcenotes {
+#kuimwwhxwj .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2890,7 +2884,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#ljncxretwp .gt_sourcenote {
+#kuimwwhxwj .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2898,63 +2892,63 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#ljncxretwp .gt_left {
+#kuimwwhxwj .gt_left {
   text-align: left;
 }
 
-#ljncxretwp .gt_center {
+#kuimwwhxwj .gt_center {
   text-align: center;
 }
 
-#ljncxretwp .gt_right {
+#kuimwwhxwj .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ljncxretwp .gt_font_normal {
+#kuimwwhxwj .gt_font_normal {
   font-weight: normal;
 }
 
-#ljncxretwp .gt_font_bold {
+#kuimwwhxwj .gt_font_bold {
   font-weight: bold;
 }
 
-#ljncxretwp .gt_font_italic {
+#kuimwwhxwj .gt_font_italic {
   font-style: italic;
 }
 
-#ljncxretwp .gt_super {
+#kuimwwhxwj .gt_super {
   font-size: 65%;
 }
 
-#ljncxretwp .gt_footnote_marks {
+#kuimwwhxwj .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ljncxretwp .gt_asterisk {
+#kuimwwhxwj .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ljncxretwp .gt_indent_1 {
+#kuimwwhxwj .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ljncxretwp .gt_indent_2 {
+#kuimwwhxwj .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ljncxretwp .gt_indent_3 {
+#kuimwwhxwj .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ljncxretwp .gt_indent_4 {
+#kuimwwhxwj .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ljncxretwp .gt_indent_5 {
+#kuimwwhxwj .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2993,28 +2987,28 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
 </div>
 <p>In the output above, we can see the estimated coefficients (<code>estimate</code>), estimated standard errors of the coefficients (<code>std.error</code>), the t-statistic (<code>statistic</code>), and the p-value for each coefficient. This output indicates that respondents who voted for Trump are 0.435 times more likely to usually have trust in the government compared to those who voted for Biden (the reference level).</p>
 <p>Sometimes it is easier to talk about the odds instead of the likelihood. To do this, we need to exponentiate the coefficients. We can use the same <code>tidy()</code> function, but include the argument <code>exponentiate = TRUE</code> to see the odds.</p>
-<div class="sourceCode" id="cb243"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb243-1"><a href="c07-modeling.html#cb243-1" tabindex="-1"></a><span class="fu">tidy</span>(logistic_trust_vote, <span class="at">exponentiate =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb243-2"><a href="c07-modeling.html#cb243-2" tabindex="-1"></a>  <span class="fu">select</span>(term, estimate) <span class="sc">%&gt;%</span></span>
-<span id="cb243-3"><a href="c07-modeling.html#cb243-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb243-4"><a href="c07-modeling.html#cb243-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb240"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb240-1"><a href="c07-modeling.html#cb240-1" tabindex="-1"></a><span class="fu">tidy</span>(logistic_trust_vote, <span class="at">exponentiate =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb240-2"><a href="c07-modeling.html#cb240-2" tabindex="-1"></a>  <span class="fu">select</span>(term, estimate) <span class="sc">%&gt;%</span></span>
+<span id="cb240-3"><a href="c07-modeling.html#cb240-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb240-4"><a href="c07-modeling.html#cb240-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="coceljfdpb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#coceljfdpb table {
+<div id="dmzxsiwhwj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#dmzxsiwhwj table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#coceljfdpb thead, #coceljfdpb tbody, #coceljfdpb tfoot, #coceljfdpb tr, #coceljfdpb td, #coceljfdpb th {
+#dmzxsiwhwj thead, #dmzxsiwhwj tbody, #dmzxsiwhwj tfoot, #dmzxsiwhwj tr, #dmzxsiwhwj td, #dmzxsiwhwj th {
   border-style: none;
 }
 
-#coceljfdpb p {
+#dmzxsiwhwj p {
   margin: 0;
   padding: 0;
 }
 
-#coceljfdpb .gt_table {
+#dmzxsiwhwj .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3040,12 +3034,12 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-left-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_caption {
+#dmzxsiwhwj .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#coceljfdpb .gt_title {
+#dmzxsiwhwj .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3057,7 +3051,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-width: 0;
 }
 
-#coceljfdpb .gt_subtitle {
+#dmzxsiwhwj .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3069,7 +3063,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-top-width: 0;
 }
 
-#coceljfdpb .gt_heading {
+#dmzxsiwhwj .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3081,13 +3075,13 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_bottom_border {
+#dmzxsiwhwj .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_col_headings {
+#dmzxsiwhwj .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3102,7 +3096,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_col_heading {
+#dmzxsiwhwj .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3122,7 +3116,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   overflow-x: hidden;
 }
 
-#coceljfdpb .gt_column_spanner_outer {
+#dmzxsiwhwj .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3134,15 +3128,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 4px;
 }
 
-#coceljfdpb .gt_column_spanner_outer:first-child {
+#dmzxsiwhwj .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#coceljfdpb .gt_column_spanner_outer:last-child {
+#dmzxsiwhwj .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#coceljfdpb .gt_column_spanner {
+#dmzxsiwhwj .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3154,11 +3148,11 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   width: 100%;
 }
 
-#coceljfdpb .gt_spanner_row {
+#dmzxsiwhwj .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#coceljfdpb .gt_group_heading {
+#dmzxsiwhwj .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3184,7 +3178,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   text-align: left;
 }
 
-#coceljfdpb .gt_empty_group_heading {
+#dmzxsiwhwj .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3199,15 +3193,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   vertical-align: middle;
 }
 
-#coceljfdpb .gt_from_md > :first-child {
+#dmzxsiwhwj .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#coceljfdpb .gt_from_md > :last-child {
+#dmzxsiwhwj .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#coceljfdpb .gt_row {
+#dmzxsiwhwj .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3226,7 +3220,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   overflow-x: hidden;
 }
 
-#coceljfdpb .gt_stub {
+#dmzxsiwhwj .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3239,7 +3233,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#coceljfdpb .gt_stub_row_group {
+#dmzxsiwhwj .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3253,15 +3247,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   vertical-align: top;
 }
 
-#coceljfdpb .gt_row_group_first td {
+#dmzxsiwhwj .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#coceljfdpb .gt_row_group_first th {
+#dmzxsiwhwj .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#coceljfdpb .gt_summary_row {
+#dmzxsiwhwj .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3271,16 +3265,16 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#coceljfdpb .gt_first_summary_row {
+#dmzxsiwhwj .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_first_summary_row.thick {
+#dmzxsiwhwj .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#coceljfdpb .gt_last_summary_row {
+#dmzxsiwhwj .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3290,7 +3284,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_grand_summary_row {
+#dmzxsiwhwj .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3300,7 +3294,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#coceljfdpb .gt_first_grand_summary_row {
+#dmzxsiwhwj .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3310,7 +3304,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-top-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_last_grand_summary_row_top {
+#dmzxsiwhwj .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3320,11 +3314,11 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_striped {
+#dmzxsiwhwj .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#coceljfdpb .gt_table_body {
+#dmzxsiwhwj .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3333,7 +3327,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_footnotes {
+#dmzxsiwhwj .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3347,7 +3341,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_footnote {
+#dmzxsiwhwj .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3356,7 +3350,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#coceljfdpb .gt_sourcenotes {
+#dmzxsiwhwj .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3370,7 +3364,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#coceljfdpb .gt_sourcenote {
+#dmzxsiwhwj .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3378,63 +3372,63 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#coceljfdpb .gt_left {
+#dmzxsiwhwj .gt_left {
   text-align: left;
 }
 
-#coceljfdpb .gt_center {
+#dmzxsiwhwj .gt_center {
   text-align: center;
 }
 
-#coceljfdpb .gt_right {
+#dmzxsiwhwj .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#coceljfdpb .gt_font_normal {
+#dmzxsiwhwj .gt_font_normal {
   font-weight: normal;
 }
 
-#coceljfdpb .gt_font_bold {
+#dmzxsiwhwj .gt_font_bold {
   font-weight: bold;
 }
 
-#coceljfdpb .gt_font_italic {
+#dmzxsiwhwj .gt_font_italic {
   font-style: italic;
 }
 
-#coceljfdpb .gt_super {
+#dmzxsiwhwj .gt_super {
   font-size: 65%;
 }
 
-#coceljfdpb .gt_footnote_marks {
+#dmzxsiwhwj .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#coceljfdpb .gt_asterisk {
+#dmzxsiwhwj .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#coceljfdpb .gt_indent_1 {
+#dmzxsiwhwj .gt_indent_1 {
   text-indent: 5px;
 }
 
-#coceljfdpb .gt_indent_2 {
+#dmzxsiwhwj .gt_indent_2 {
   text-indent: 10px;
 }
 
-#coceljfdpb .gt_indent_3 {
+#dmzxsiwhwj .gt_indent_3 {
   text-indent: 15px;
 }
 
-#coceljfdpb .gt_indent_4 {
+#dmzxsiwhwj .gt_indent_4 {
   text-indent: 20px;
 }
 
-#coceljfdpb .gt_indent_5 {
+#dmzxsiwhwj .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -3460,16 +3454,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
 </table>
 </div>
 <p>We can interpret this as saying that the odds of usually trusting the government for someone who voted for Trump is 154% as likely to trust the government compared to a person who voted for Biden (the reference level). In comparison, a person who voted for neither Biden nor Trump is 52% as likely to trust the government as someone who voted for Biden.</p>
-<!--What does the second sentence here mean?-->
-<p>As with linear regression, the <code>augment()</code> can be used to predict values. By default, the prediction is the link function and not the probability. To predict the probability, add an argument of <code>type.predict="response"</code> as demonstrated below:</p>
-<div class="sourceCode" id="cb244"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb244-1"><a href="c07-modeling.html#cb244-1" tabindex="-1"></a>logistic_trust_vote <span class="sc">%&gt;%</span></span>
-<span id="cb244-2"><a href="c07-modeling.html#cb244-2" tabindex="-1"></a>  <span class="fu">augment</span>(<span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb244-3"><a href="c07-modeling.html#cb244-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
-<span id="cb244-4"><a href="c07-modeling.html#cb244-4" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) <span class="sc">%&gt;%</span></span>
-<span id="cb244-5"><a href="c07-modeling.html#cb244-5" tabindex="-1"></a>  <span class="fu">select</span>(TrustGovernmentUsually,</span>
-<span id="cb244-6"><a href="c07-modeling.html#cb244-6" tabindex="-1"></a>         VotedPres2020_selection,</span>
-<span id="cb244-7"><a href="c07-modeling.html#cb244-7" tabindex="-1"></a>         .fitted,</span>
-<span id="cb244-8"><a href="c07-modeling.html#cb244-8" tabindex="-1"></a>         .se.fit) </span></code></pre></div>
+<p>As with linear regression, the <code>augment()</code> can be used to predict values. By default, the prediction is the link function (logit function in this instance) and not the probability. To predict the probability, add an argument of <code>type.predict="response"</code> as demonstrated below:</p>
+<div class="sourceCode" id="cb241"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb241-1"><a href="c07-modeling.html#cb241-1" tabindex="-1"></a>logistic_trust_vote <span class="sc">%&gt;%</span></span>
+<span id="cb241-2"><a href="c07-modeling.html#cb241-2" tabindex="-1"></a>  <span class="fu">augment</span>(<span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb241-3"><a href="c07-modeling.html#cb241-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
+<span id="cb241-4"><a href="c07-modeling.html#cb241-4" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) <span class="sc">%&gt;%</span></span>
+<span id="cb241-5"><a href="c07-modeling.html#cb241-5" tabindex="-1"></a>  <span class="fu">select</span>(TrustGovernmentUsually,</span>
+<span id="cb241-6"><a href="c07-modeling.html#cb241-6" tabindex="-1"></a>         VotedPres2020_selection,</span>
+<span id="cb241-7"><a href="c07-modeling.html#cb241-7" tabindex="-1"></a>         .fitted,</span>
+<span id="cb241-8"><a href="c07-modeling.html#cb241-8" tabindex="-1"></a>         .se.fit) </span></code></pre></div>
 <pre><code>## # A tibble: 6,212 × 4
 ##    TrustGovernmentUsually VotedPres2020_selection .fitted .se.fit
 ##    &lt;lgl&gt;                  &lt;fct&gt;                     &lt;dbl&gt;   &lt;dbl&gt;
@@ -3489,38 +3482,38 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
 <h4>Example 2: Interaction effects<a href="c07-modeling.html#example-2-interaction-effects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>Let’s look at another example with interaction effects. If we’re interested in understanding the demographics of people who voted for Biden among all voters in 2020, we could include <code>EarlyVote2020</code> and <code>Gender</code> in our model.</p>
 <p>First we need to subset the data to 2020 voters and then create an indicator for voted for Biden.</p>
-<div class="sourceCode" id="cb246"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb246-1"><a href="c07-modeling.html#cb246-1" tabindex="-1"></a>anes_des_ind <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span> </span>
-<span id="cb246-2"><a href="c07-modeling.html#cb246-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(VotedPres2020_selection)) <span class="sc">%&gt;%</span></span>
-<span id="cb246-3"><a href="c07-modeling.html#cb246-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">VoteBiden =</span> <span class="fu">case_when</span>(VotedPres2020_selection <span class="sc">==</span> <span class="st">&quot;Biden&quot;</span><span class="sc">~</span><span class="dv">1</span>,</span>
-<span id="cb246-4"><a href="c07-modeling.html#cb246-4" tabindex="-1"></a>                               <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">0</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb243"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb243-1"><a href="c07-modeling.html#cb243-1" tabindex="-1"></a>anes_des_ind <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span> </span>
+<span id="cb243-2"><a href="c07-modeling.html#cb243-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(VotedPres2020_selection)) <span class="sc">%&gt;%</span></span>
+<span id="cb243-3"><a href="c07-modeling.html#cb243-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">VoteBiden =</span> <span class="fu">case_when</span>(VotedPres2020_selection <span class="sc">==</span> <span class="st">&quot;Biden&quot;</span><span class="sc">~</span><span class="dv">1</span>,</span>
+<span id="cb243-4"><a href="c07-modeling.html#cb243-4" tabindex="-1"></a>                               <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">0</span>))</span></code></pre></div>
 <p>Let’s first look at the main effects of gender and early voting behavior.</p>
-<div class="sourceCode" id="cb247"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb247-1"><a href="c07-modeling.html#cb247-1" tabindex="-1"></a>log_biden_main <span class="ot">&lt;-</span> anes_des_ind <span class="sc">%&gt;%</span></span>
-<span id="cb247-2"><a href="c07-modeling.html#cb247-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">EarlyVote2020 =</span> <span class="fu">fct_relevel</span>(EarlyVote2020, <span class="st">&quot;No&quot;</span>, <span class="at">after =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb247-3"><a href="c07-modeling.html#cb247-3" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
-<span id="cb247-4"><a href="c07-modeling.html#cb247-4" tabindex="-1"></a>         <span class="at">formula =</span> VoteBiden <span class="sc">~</span> EarlyVote2020 <span class="sc">+</span> Gender,</span>
-<span id="cb247-5"><a href="c07-modeling.html#cb247-5" tabindex="-1"></a>         <span class="at">family =</span> quasibinomial) </span></code></pre></div>
-<div class="sourceCode" id="cb248"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb248-1"><a href="c07-modeling.html#cb248-1" tabindex="-1"></a><span class="fu">tidy</span>(log_biden_main) <span class="sc">%&gt;%</span></span>
-<span id="cb248-2"><a href="c07-modeling.html#cb248-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
-<span id="cb248-3"><a href="c07-modeling.html#cb248-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb248-4"><a href="c07-modeling.html#cb248-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb244"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb244-1"><a href="c07-modeling.html#cb244-1" tabindex="-1"></a>log_biden_main <span class="ot">&lt;-</span> anes_des_ind <span class="sc">%&gt;%</span></span>
+<span id="cb244-2"><a href="c07-modeling.html#cb244-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">EarlyVote2020 =</span> <span class="fu">fct_relevel</span>(EarlyVote2020, <span class="st">&quot;No&quot;</span>, <span class="at">after =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb244-3"><a href="c07-modeling.html#cb244-3" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
+<span id="cb244-4"><a href="c07-modeling.html#cb244-4" tabindex="-1"></a>         <span class="at">formula =</span> VoteBiden <span class="sc">~</span> EarlyVote2020 <span class="sc">+</span> Gender,</span>
+<span id="cb244-5"><a href="c07-modeling.html#cb244-5" tabindex="-1"></a>         <span class="at">family =</span> quasibinomial) </span></code></pre></div>
+<div class="sourceCode" id="cb245"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb245-1"><a href="c07-modeling.html#cb245-1" tabindex="-1"></a><span class="fu">tidy</span>(log_biden_main) <span class="sc">%&gt;%</span></span>
+<span id="cb245-2"><a href="c07-modeling.html#cb245-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
+<span id="cb245-3"><a href="c07-modeling.html#cb245-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb245-4"><a href="c07-modeling.html#cb245-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="idnxrpfaof" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#idnxrpfaof table {
+<div id="mepprgekjt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#mepprgekjt table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#idnxrpfaof thead, #idnxrpfaof tbody, #idnxrpfaof tfoot, #idnxrpfaof tr, #idnxrpfaof td, #idnxrpfaof th {
+#mepprgekjt thead, #mepprgekjt tbody, #mepprgekjt tfoot, #mepprgekjt tr, #mepprgekjt td, #mepprgekjt th {
   border-style: none;
 }
 
-#idnxrpfaof p {
+#mepprgekjt p {
   margin: 0;
   padding: 0;
 }
 
-#idnxrpfaof .gt_table {
+#mepprgekjt .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3546,12 +3539,12 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-left-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_caption {
+#mepprgekjt .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#idnxrpfaof .gt_title {
+#mepprgekjt .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3563,7 +3556,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-width: 0;
 }
 
-#idnxrpfaof .gt_subtitle {
+#mepprgekjt .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3575,7 +3568,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-top-width: 0;
 }
 
-#idnxrpfaof .gt_heading {
+#mepprgekjt .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3587,13 +3580,13 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_bottom_border {
+#mepprgekjt .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_col_headings {
+#mepprgekjt .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3608,7 +3601,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_col_heading {
+#mepprgekjt .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3628,7 +3621,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   overflow-x: hidden;
 }
 
-#idnxrpfaof .gt_column_spanner_outer {
+#mepprgekjt .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3640,15 +3633,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 4px;
 }
 
-#idnxrpfaof .gt_column_spanner_outer:first-child {
+#mepprgekjt .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#idnxrpfaof .gt_column_spanner_outer:last-child {
+#mepprgekjt .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#idnxrpfaof .gt_column_spanner {
+#mepprgekjt .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3660,11 +3653,11 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   width: 100%;
 }
 
-#idnxrpfaof .gt_spanner_row {
+#mepprgekjt .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#idnxrpfaof .gt_group_heading {
+#mepprgekjt .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3690,7 +3683,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   text-align: left;
 }
 
-#idnxrpfaof .gt_empty_group_heading {
+#mepprgekjt .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3705,15 +3698,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   vertical-align: middle;
 }
 
-#idnxrpfaof .gt_from_md > :first-child {
+#mepprgekjt .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#idnxrpfaof .gt_from_md > :last-child {
+#mepprgekjt .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#idnxrpfaof .gt_row {
+#mepprgekjt .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3732,7 +3725,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   overflow-x: hidden;
 }
 
-#idnxrpfaof .gt_stub {
+#mepprgekjt .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3745,7 +3738,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#idnxrpfaof .gt_stub_row_group {
+#mepprgekjt .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3759,15 +3752,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   vertical-align: top;
 }
 
-#idnxrpfaof .gt_row_group_first td {
+#mepprgekjt .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#idnxrpfaof .gt_row_group_first th {
+#mepprgekjt .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#idnxrpfaof .gt_summary_row {
+#mepprgekjt .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3777,16 +3770,16 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#idnxrpfaof .gt_first_summary_row {
+#mepprgekjt .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_first_summary_row.thick {
+#mepprgekjt .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#idnxrpfaof .gt_last_summary_row {
+#mepprgekjt .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3796,7 +3789,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_grand_summary_row {
+#mepprgekjt .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3806,7 +3799,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#idnxrpfaof .gt_first_grand_summary_row {
+#mepprgekjt .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3816,7 +3809,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-top-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_last_grand_summary_row_top {
+#mepprgekjt .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3826,11 +3819,11 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_striped {
+#mepprgekjt .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#idnxrpfaof .gt_table_body {
+#mepprgekjt .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3839,7 +3832,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_footnotes {
+#mepprgekjt .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3853,7 +3846,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_footnote {
+#mepprgekjt .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3862,7 +3855,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#idnxrpfaof .gt_sourcenotes {
+#mepprgekjt .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3876,7 +3869,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#idnxrpfaof .gt_sourcenote {
+#mepprgekjt .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3884,63 +3877,63 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#idnxrpfaof .gt_left {
+#mepprgekjt .gt_left {
   text-align: left;
 }
 
-#idnxrpfaof .gt_center {
+#mepprgekjt .gt_center {
   text-align: center;
 }
 
-#idnxrpfaof .gt_right {
+#mepprgekjt .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#idnxrpfaof .gt_font_normal {
+#mepprgekjt .gt_font_normal {
   font-weight: normal;
 }
 
-#idnxrpfaof .gt_font_bold {
+#mepprgekjt .gt_font_bold {
   font-weight: bold;
 }
 
-#idnxrpfaof .gt_font_italic {
+#mepprgekjt .gt_font_italic {
   font-style: italic;
 }
 
-#idnxrpfaof .gt_super {
+#mepprgekjt .gt_super {
   font-size: 65%;
 }
 
-#idnxrpfaof .gt_footnote_marks {
+#mepprgekjt .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#idnxrpfaof .gt_asterisk {
+#mepprgekjt .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#idnxrpfaof .gt_indent_1 {
+#mepprgekjt .gt_indent_1 {
   text-indent: 5px;
 }
 
-#idnxrpfaof .gt_indent_2 {
+#mepprgekjt .gt_indent_2 {
   text-indent: 10px;
 }
 
-#idnxrpfaof .gt_indent_3 {
+#mepprgekjt .gt_indent_3 {
   text-indent: 15px;
 }
 
-#idnxrpfaof .gt_indent_4 {
+#mepprgekjt .gt_indent_4 {
   text-indent: 20px;
 }
 
-#idnxrpfaof .gt_indent_5 {
+#mepprgekjt .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -3979,33 +3972,33 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
 </div>
 <p>This main effect model indicates that respondents with who early voted in 2020 are 0.528 (p-value=0.1338) times more likely to vote for Biden compared to respondents who did not early vote in the 2020 election (the reference level). We see that gender is also significant with females more likely to vote for Biden compared to males (p-value=0.0005).</p>
 <p>It is possible that there is an interaction between gender and early voting behavior. To determine this we can create a model that includes the interaction effects:</p>
-<div class="sourceCode" id="cb249"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb249-1"><a href="c07-modeling.html#cb249-1" tabindex="-1"></a>log_biden_int <span class="ot">&lt;-</span> anes_des_ind <span class="sc">%&gt;%</span></span>
-<span id="cb249-2"><a href="c07-modeling.html#cb249-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">EarlyVote2020 =</span> <span class="fu">fct_relevel</span>(EarlyVote2020, <span class="st">&quot;No&quot;</span>, <span class="at">after =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb249-3"><a href="c07-modeling.html#cb249-3" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
-<span id="cb249-4"><a href="c07-modeling.html#cb249-4" tabindex="-1"></a>         <span class="at">formula =</span> VoteBiden <span class="sc">~</span> (EarlyVote2020 <span class="sc">+</span> Gender)<span class="sc">^</span><span class="dv">2</span>,</span>
-<span id="cb249-5"><a href="c07-modeling.html#cb249-5" tabindex="-1"></a>         <span class="at">family =</span> quasibinomial) </span></code></pre></div>
-<div class="sourceCode" id="cb250"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb250-1"><a href="c07-modeling.html#cb250-1" tabindex="-1"></a><span class="fu">tidy</span>(log_biden_int) <span class="sc">%&gt;%</span></span>
-<span id="cb250-2"><a href="c07-modeling.html#cb250-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
-<span id="cb250-3"><a href="c07-modeling.html#cb250-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb250-4"><a href="c07-modeling.html#cb250-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb246"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb246-1"><a href="c07-modeling.html#cb246-1" tabindex="-1"></a>log_biden_int <span class="ot">&lt;-</span> anes_des_ind <span class="sc">%&gt;%</span></span>
+<span id="cb246-2"><a href="c07-modeling.html#cb246-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">EarlyVote2020 =</span> <span class="fu">fct_relevel</span>(EarlyVote2020, <span class="st">&quot;No&quot;</span>, <span class="at">after =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb246-3"><a href="c07-modeling.html#cb246-3" tabindex="-1"></a>  <span class="fu">svyglm</span>(<span class="at">design =</span> .,</span>
+<span id="cb246-4"><a href="c07-modeling.html#cb246-4" tabindex="-1"></a>         <span class="at">formula =</span> VoteBiden <span class="sc">~</span> (EarlyVote2020 <span class="sc">+</span> Gender)<span class="sc">^</span><span class="dv">2</span>,</span>
+<span id="cb246-5"><a href="c07-modeling.html#cb246-5" tabindex="-1"></a>         <span class="at">family =</span> quasibinomial) </span></code></pre></div>
+<div class="sourceCode" id="cb247"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb247-1"><a href="c07-modeling.html#cb247-1" tabindex="-1"></a><span class="fu">tidy</span>(log_biden_int) <span class="sc">%&gt;%</span></span>
+<span id="cb247-2"><a href="c07-modeling.html#cb247-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
+<span id="cb247-3"><a href="c07-modeling.html#cb247-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb247-4"><a href="c07-modeling.html#cb247-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="nmkgtfhqsg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#nmkgtfhqsg table {
+<div id="allpgzriha" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#allpgzriha table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#nmkgtfhqsg thead, #nmkgtfhqsg tbody, #nmkgtfhqsg tfoot, #nmkgtfhqsg tr, #nmkgtfhqsg td, #nmkgtfhqsg th {
+#allpgzriha thead, #allpgzriha tbody, #allpgzriha tfoot, #allpgzriha tr, #allpgzriha td, #allpgzriha th {
   border-style: none;
 }
 
-#nmkgtfhqsg p {
+#allpgzriha p {
   margin: 0;
   padding: 0;
 }
 
-#nmkgtfhqsg .gt_table {
+#allpgzriha .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4031,12 +4024,12 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-left-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_caption {
+#allpgzriha .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#nmkgtfhqsg .gt_title {
+#allpgzriha .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4048,7 +4041,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-width: 0;
 }
 
-#nmkgtfhqsg .gt_subtitle {
+#allpgzriha .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4060,7 +4053,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-top-width: 0;
 }
 
-#nmkgtfhqsg .gt_heading {
+#allpgzriha .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4072,13 +4065,13 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_bottom_border {
+#allpgzriha .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_col_headings {
+#allpgzriha .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4093,7 +4086,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_col_heading {
+#allpgzriha .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4113,7 +4106,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   overflow-x: hidden;
 }
 
-#nmkgtfhqsg .gt_column_spanner_outer {
+#allpgzriha .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4125,15 +4118,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 4px;
 }
 
-#nmkgtfhqsg .gt_column_spanner_outer:first-child {
+#allpgzriha .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#nmkgtfhqsg .gt_column_spanner_outer:last-child {
+#allpgzriha .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#nmkgtfhqsg .gt_column_spanner {
+#allpgzriha .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4145,11 +4138,11 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   width: 100%;
 }
 
-#nmkgtfhqsg .gt_spanner_row {
+#allpgzriha .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#nmkgtfhqsg .gt_group_heading {
+#allpgzriha .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4175,7 +4168,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   text-align: left;
 }
 
-#nmkgtfhqsg .gt_empty_group_heading {
+#allpgzriha .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4190,15 +4183,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   vertical-align: middle;
 }
 
-#nmkgtfhqsg .gt_from_md > :first-child {
+#allpgzriha .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#nmkgtfhqsg .gt_from_md > :last-child {
+#allpgzriha .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#nmkgtfhqsg .gt_row {
+#allpgzriha .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4217,7 +4210,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   overflow-x: hidden;
 }
 
-#nmkgtfhqsg .gt_stub {
+#allpgzriha .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4230,7 +4223,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#nmkgtfhqsg .gt_stub_row_group {
+#allpgzriha .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4244,15 +4237,15 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   vertical-align: top;
 }
 
-#nmkgtfhqsg .gt_row_group_first td {
+#allpgzriha .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#nmkgtfhqsg .gt_row_group_first th {
+#allpgzriha .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#nmkgtfhqsg .gt_summary_row {
+#allpgzriha .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4262,16 +4255,16 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#nmkgtfhqsg .gt_first_summary_row {
+#allpgzriha .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_first_summary_row.thick {
+#allpgzriha .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#nmkgtfhqsg .gt_last_summary_row {
+#allpgzriha .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4281,7 +4274,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_grand_summary_row {
+#allpgzriha .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4291,7 +4284,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#nmkgtfhqsg .gt_first_grand_summary_row {
+#allpgzriha .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4301,7 +4294,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-top-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_last_grand_summary_row_top {
+#allpgzriha .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4311,11 +4304,11 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_striped {
+#allpgzriha .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#nmkgtfhqsg .gt_table_body {
+#allpgzriha .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4324,7 +4317,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-bottom-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_footnotes {
+#allpgzriha .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4338,7 +4331,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_footnote {
+#allpgzriha .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4347,7 +4340,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#nmkgtfhqsg .gt_sourcenotes {
+#allpgzriha .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4361,7 +4354,7 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   border-right-color: #D3D3D3;
 }
 
-#nmkgtfhqsg .gt_sourcenote {
+#allpgzriha .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4369,63 +4362,63 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
   padding-right: 5px;
 }
 
-#nmkgtfhqsg .gt_left {
+#allpgzriha .gt_left {
   text-align: left;
 }
 
-#nmkgtfhqsg .gt_center {
+#allpgzriha .gt_center {
   text-align: center;
 }
 
-#nmkgtfhqsg .gt_right {
+#allpgzriha .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#nmkgtfhqsg .gt_font_normal {
+#allpgzriha .gt_font_normal {
   font-weight: normal;
 }
 
-#nmkgtfhqsg .gt_font_bold {
+#allpgzriha .gt_font_bold {
   font-weight: bold;
 }
 
-#nmkgtfhqsg .gt_font_italic {
+#allpgzriha .gt_font_italic {
   font-style: italic;
 }
 
-#nmkgtfhqsg .gt_super {
+#allpgzriha .gt_super {
   font-size: 65%;
 }
 
-#nmkgtfhqsg .gt_footnote_marks {
+#allpgzriha .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#nmkgtfhqsg .gt_asterisk {
+#allpgzriha .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#nmkgtfhqsg .gt_indent_1 {
+#allpgzriha .gt_indent_1 {
   text-indent: 5px;
 }
 
-#nmkgtfhqsg .gt_indent_2 {
+#allpgzriha .gt_indent_2 {
   text-indent: 10px;
 }
 
-#nmkgtfhqsg .gt_indent_3 {
+#allpgzriha .gt_indent_3 {
   text-indent: 15px;
 }
 
-#nmkgtfhqsg .gt_indent_4 {
+#allpgzriha .gt_indent_4 {
   text-indent: 20px;
 }
 
-#nmkgtfhqsg .gt_indent_5 {
+#allpgzriha .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -4468,27 +4461,27 @@ FIGURE 7.3: Relationship between candidate selection and trust in government, AN
 </table>
 </div>
 <p>The results from the interaction model show that the interaction between early voting behavior and gender is significant. To better understand what this interaction means, we will want to plot the predicted probabilities with an interaction plot. Let’s first obtain the predicted probabilities for each possible combination of variables using the <code>augment()</code> function.</p>
-<div class="sourceCode" id="cb251"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb251-1"><a href="c07-modeling.html#cb251-1" tabindex="-1"></a>log_biden_pred <span class="ot">&lt;-</span> log_biden_int <span class="sc">%&gt;%</span></span>
-<span id="cb251-2"><a href="c07-modeling.html#cb251-2" tabindex="-1"></a>  <span class="fu">augment</span>(<span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb251-3"><a href="c07-modeling.html#cb251-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
-<span id="cb251-4"><a href="c07-modeling.html#cb251-4" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) <span class="sc">%&gt;%</span></span>
-<span id="cb251-5"><a href="c07-modeling.html#cb251-5" tabindex="-1"></a>  <span class="fu">select</span>(VoteBiden, EarlyVote2020, Gender, .fitted, .se.fit) </span></code></pre></div>
+<div class="sourceCode" id="cb248"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb248-1"><a href="c07-modeling.html#cb248-1" tabindex="-1"></a>log_biden_pred <span class="ot">&lt;-</span> log_biden_int <span class="sc">%&gt;%</span></span>
+<span id="cb248-2"><a href="c07-modeling.html#cb248-2" tabindex="-1"></a>  <span class="fu">augment</span>(<span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb248-3"><a href="c07-modeling.html#cb248-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
+<span id="cb248-4"><a href="c07-modeling.html#cb248-4" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) <span class="sc">%&gt;%</span></span>
+<span id="cb248-5"><a href="c07-modeling.html#cb248-5" tabindex="-1"></a>  <span class="fu">select</span>(VoteBiden, EarlyVote2020, Gender, .fitted, .se.fit) </span></code></pre></div>
 <p>To create an interaction plot, the y-axis will be the predicted probabilities, and one of our x-variables will be on the x-axis and the other will be represented by multiple lines. Figure <a href="c07-modeling.html#fig:model-logisticexamp-biden-plot">7.4</a> shows the interaction plot with gender on the x-axis and early voting behavior represented by the lines.</p>
-<div class="sourceCode" id="cb252"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb252-1"><a href="c07-modeling.html#cb252-1" tabindex="-1"></a>log_biden_pred <span class="sc">%&gt;%</span> </span>
-<span id="cb252-2"><a href="c07-modeling.html#cb252-2" tabindex="-1"></a>  <span class="fu">filter</span>(VoteBiden<span class="sc">==</span><span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb252-3"><a href="c07-modeling.html#cb252-3" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb252-4"><a href="c07-modeling.html#cb252-4" tabindex="-1"></a>  <span class="fu">arrange</span>(Gender, EarlyVote2020) <span class="sc">%&gt;%</span> </span>
-<span id="cb252-5"><a href="c07-modeling.html#cb252-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">EarlyVote2020 =</span> <span class="fu">fct_reorder2</span>(EarlyVote2020, Gender, .fitted)) <span class="sc">%&gt;%</span></span>
-<span id="cb252-6"><a href="c07-modeling.html#cb252-6" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Gender, <span class="at">y =</span> .fitted, <span class="at">group =</span> EarlyVote2020,</span>
-<span id="cb252-7"><a href="c07-modeling.html#cb252-7" tabindex="-1"></a>             <span class="at">color =</span> EarlyVote2020, <span class="at">linetype =</span> EarlyVote2020)) <span class="sc">+</span></span>
-<span id="cb252-8"><a href="c07-modeling.html#cb252-8" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">1.1</span>) <span class="sc">+</span></span>
-<span id="cb252-9"><a href="c07-modeling.html#cb252-9" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> book_colors[<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">4</span>)]) <span class="sc">+</span></span>
-<span id="cb252-10"><a href="c07-modeling.html#cb252-10" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Predicted Probability of Voting for Biden&quot;</span>) <span class="sc">+</span></span>
-<span id="cb252-11"><a href="c07-modeling.html#cb252-11" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color=</span><span class="st">&quot;Voted Early&quot;</span>,</span>
-<span id="cb252-12"><a href="c07-modeling.html#cb252-12" tabindex="-1"></a>       <span class="at">linetype=</span><span class="st">&quot;Voted Early&quot;</span>) <span class="sc">+</span></span>
-<span id="cb252-13"><a href="c07-modeling.html#cb252-13" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb252-14"><a href="c07-modeling.html#cb252-14" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>) <span class="sc">+</span></span>
-<span id="cb252-15"><a href="c07-modeling.html#cb252-15" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb249"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb249-1"><a href="c07-modeling.html#cb249-1" tabindex="-1"></a>log_biden_pred <span class="sc">%&gt;%</span> </span>
+<span id="cb249-2"><a href="c07-modeling.html#cb249-2" tabindex="-1"></a>  <span class="fu">filter</span>(VoteBiden<span class="sc">==</span><span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb249-3"><a href="c07-modeling.html#cb249-3" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb249-4"><a href="c07-modeling.html#cb249-4" tabindex="-1"></a>  <span class="fu">arrange</span>(Gender, EarlyVote2020) <span class="sc">%&gt;%</span> </span>
+<span id="cb249-5"><a href="c07-modeling.html#cb249-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">EarlyVote2020 =</span> <span class="fu">fct_reorder2</span>(EarlyVote2020, Gender, .fitted)) <span class="sc">%&gt;%</span></span>
+<span id="cb249-6"><a href="c07-modeling.html#cb249-6" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Gender, <span class="at">y =</span> .fitted, <span class="at">group =</span> EarlyVote2020,</span>
+<span id="cb249-7"><a href="c07-modeling.html#cb249-7" tabindex="-1"></a>             <span class="at">color =</span> EarlyVote2020, <span class="at">linetype =</span> EarlyVote2020)) <span class="sc">+</span></span>
+<span id="cb249-8"><a href="c07-modeling.html#cb249-8" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">1.1</span>) <span class="sc">+</span></span>
+<span id="cb249-9"><a href="c07-modeling.html#cb249-9" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> book_colors[<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">4</span>)]) <span class="sc">+</span></span>
+<span id="cb249-10"><a href="c07-modeling.html#cb249-10" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Predicted Probability of Voting for Biden&quot;</span>) <span class="sc">+</span></span>
+<span id="cb249-11"><a href="c07-modeling.html#cb249-11" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color=</span><span class="st">&quot;Voted Early&quot;</span>,</span>
+<span id="cb249-12"><a href="c07-modeling.html#cb249-12" tabindex="-1"></a>       <span class="at">linetype=</span><span class="st">&quot;Voted Early&quot;</span>) <span class="sc">+</span></span>
+<span id="cb249-13"><a href="c07-modeling.html#cb249-13" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb249-14"><a href="c07-modeling.html#cb249-14" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>) <span class="sc">+</span></span>
+<span id="cb249-15"><a href="c07-modeling.html#cb249-15" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:model-logisticexamp-biden-plot"></span>
 <img src="bookdown_files/figure-html/model-logisticexamp-biden-plot-1.png" alt="Line plot with x-axis as Male and Female (left to right) and y-axis as 'Predicted Probability of Voting for Biden'. There are two lines for early voting indicators with lines being from top to bottom: Did Not Early Vote and Did Early Vote. The line representing did not early vote is roughly parallel with similar predicted probabilities between males and females. For those who did early vote, females have higher predicted probability of voting for Biden than males." width="672" />
 <p class="caption">
@@ -4504,10 +4497,10 @@ FIGURE 7.4: Interaction Plot of Gender and Early Voting Predicting the Probabili
 <h2><span class="header-section-number">7.5</span> Exercises<a href="c07-modeling.html#exercises-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <ol style="list-style-type: decimal">
 <li><p>The type of housing unit may have an impact on energy expenses. Is there any relationship between housing unit type (<code>HousingUnitType</code>) and total energy expenditure (<code>TOTALDOL</code>)? First, find the average energy expenditure by housing unit type as a descriptive analysis and then do the test. The reference level in the comparison should be the housing unit type that is most common.</p></li>
-<li><p>Does temperature play a role in energy expenditure? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, CDD65=0. While a day that averages 85°F would have CDD80=20 because it is 20 degrees warmer. For each day in the year, this is summed to give an indicator of how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65°F (18.3°C)<a href="#fn26" class="footnote-ref" id="fnref26"><sup>26</sup></a>. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.</p></li>
+<li><p>Does temperature play a role in electricity expenditure? Cooling degree days are a measure of how hot a place is. CDD65 for a given day indicates the number of degrees Fahrenheit warmer than 65°F (18.3°C) it is in a location. On a day that averages 65°F and below, CDD65=0. While a day that averages 85°F (29.4°C) would have CDD65=20 because it is 20 degrees Fahrenheit warmer <span class="citation">(<a href="#ref-eia-cdd">U.S. Energy Information Administration 2023d</a>)</span>. For each day in the year, this is summed to give an indicator of how hot the place is throughout the year. Similarly, HDD65 indicates the days colder than 65°F. Can energy expenditure be predicted using these temperature indicators along with square footage? Is there a significant relationship? Include main effects and two-way interactions.</p></li>
 <li><p>Continuing with our results from question 2, create a plot between the actual and predicted expenditures and a residual plot for the predicted expenditures.</p></li>
-<li><p>Early voting expanded in 2020<a href="#fn27" class="footnote-ref" id="fnref27"><sup>27</sup></a>. Build a logistic model predicting early voting in 2020 (<code>EarlyVote2020</code>) using age (<code>Age</code>), education (<code>Education</code>), and party identification (<code>PartyID</code>). Include two-way interactions.</p></li>
-<li><p>Continuing from Exercise 1, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.</p></li>
+<li><p>Early voting expanded in 2020 <span class="citation">(<a href="#ref-npr-voting-trend">Sprunt 2020</a>)</span>. Build a logistic model predicting early voting in 2020 (<code>EarlyVote2020</code>) using age (<code>Age</code>), education (<code>Education</code>), and party identification (<code>PartyID</code>). Include two-way interactions.</p></li>
+<li><p>Continuing from Exercise 4, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.</p></li>
 </ol>
 
 </div>
@@ -4523,27 +4516,34 @@ Bollen, Kenneth A., Paul P. Biemer, Alan F. Karr, Stephen Tueller, and Marcus E.
 <div id="ref-gelman2007weights" class="csl-entry">
 Gelman, Andrew. 2007. <span>“<span class="nocase">Struggles with Survey Weighting and Regression Modeling</span>.”</span> <em>Statistical Science</em> 22 (2): 153–64. <a href="https://doi.org/10.1214/088342306000000691">https://doi.org/10.1214/088342306000000691</a>.
 </div>
-<div id="ref-lumley2010complex" class="csl-entry">
-Lumley, Thomas. 2010. <em>Complex Surveys: A Guide to Analysis Using r: A Guide to Analysis Using r</em>. John Wiley; Sons.
+<div id="ref-R-gt" class="csl-entry">
+Iannone, Richard, Joe Cheng, Barret Schloerke, Ellis Hughes, Alexandra Lauer, and JooYoung Seo. 2023. <em><span class="nocase">gt</span>: Easily Create Presentation-Ready Display Tables</em>.
 </div>
-<div id="ref-R-survey" class="csl-entry">
-———. 2023. <em>Survey: Analysis of Complex Survey Samples</em>. <a href="http://r-survey.r-forge.r-project.org/survey/">http://r-survey.r-forge.r-project.org/survey/</a>.
+<div id="ref-lumley2010complex" class="csl-entry">
+Lumley, Thomas. 2010. <em>Complex Surveys: A Guide to Analysis Using <span>R</span></em>. John Wiley; Sons.
 </div>
 <div id="ref-mccullagh1989binary" class="csl-entry">
 McCullagh, Peter, and John Ashworth Nelder. 1989. <span>“Binary Data.”</span> In <em>Generalized Linear Models</em>, 98–148. Springer.
 </div>
-<div id="ref-rcore" class="csl-entry">
-R Core Team. 2023. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
+<div id="ref-R-base" class="csl-entry">
+R Core Team. 2023. <em><span>R</span>: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-R-broom" class="csl-entry">
+Robinson, David, Alex Hayes, and Simon Couch. 2023. <em><span class="nocase">broom</span>: Convert Statistical Objects into Tidy Tibbles</em>.
+</div>
+<div id="ref-npr-voting-trend" class="csl-entry">
+Sprunt, Barbara. 2020. <span>“93 Million and Counting: Americans Are Shattering Early Voting Records.”</span> <em>National Public Radio</em>.
+</div>
+<div id="ref-eia-cdd" class="csl-entry">
+———. 2023d. <span>“Units and Calculators Explained: Degree Days.”</span> <a href="https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php" class="uri">https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php</a>.
 </div>
 </div>
 <div class="footnotes">
 <hr />
 <ol start="23">
-<li id="fn23"><p>Use <code>help(formula)</code> or <code>?formula</code> in R or find the documentation online at <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/formula.html" class="uri">https://stat.ethz.ch/R-manual/R-devel/library/stats/html/formula.html</a><a href="c07-modeling.html#fnref23" class="footnote-back">↩︎</a></p></li>
-<li id="fn24"><p>There is some debate about whether weights should be used in regression <span class="citation">(<a href="#ref-gelman2007weights">Gelman 2007</a>; <a href="#ref-bollen2016weightsreg">Bollen et al. 2016</a>)</span>. However, for the purposes of providing complete information on how to analyze complex survey data, this chapter will include weights.<a href="c07-modeling.html#fnref24" class="footnote-back">↩︎</a></p></li>
+<li id="fn23"><p>Use <code>help(formula)</code> or <code>?formula</code> in R<a href="c07-modeling.html#fnref23" class="footnote-back">↩︎</a></p></li>
+<li id="fn24"><p>There is some debate about whether weights should be used in regression <span class="citation">(<a href="#ref-bollen2016weightsreg">Bollen et al. 2016</a>; <a href="#ref-gelman2007weights">Gelman 2007</a>)</span>. However, for the purposes of providing complete information on how to analyze complex survey data, this chapter will include weights.<a href="c07-modeling.html#fnref24" class="footnote-back">↩︎</a></p></li>
 <li id="fn25"><p>Question: How often can you trust the federal government in Washington to do what is right?<a href="c07-modeling.html#fnref25" class="footnote-back">↩︎</a></p></li>
-<li id="fn26"><p><a href="https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php" class="uri">https://www.eia.gov/energyexplained/units-and-calculators/degree-days.php</a><a href="c07-modeling.html#fnref26" class="footnote-back">↩︎</a></p></li>
-<li id="fn27"><p><a href="https://www.npr.org/2020/10/26/927803214/62-million-and-counting-americans-are-breaking-early-voting-records" class="uri">https://www.npr.org/2020/10/26/927803214/62-million-and-counting-americans-are-breaking-early-voting-records</a><a href="c07-modeling.html#fnref27" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
             </section>

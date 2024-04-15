@@ -23,7 +23,7 @@
 <meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
 
 
-<meta name="date" content="2024-03-31" />
+<meta name="date" content="2024-04-15" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -172,7 +172,6 @@ div.csl-indent {
 <li><a href="./">Exploring Complex Survey Data Analysis in R</a></li>
 
 <li class="divider"></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a></li>
 <li class="part"><span><b>I Intro</b></span></li>
 <li class="chapter" data-level="1" data-path="c01-intro.html"><a href="c01-intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
 <ul>
@@ -524,31 +523,31 @@ div.csl-indent {
 </div>
 <div class="prereqbox">
 <p>For this chapter, load the following packages:</p>
-<div class="sourceCode" id="cb478"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb478-1"><a href="c14-ambarom-vignette.html#cb478-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb478-2"><a href="c14-ambarom-vignette.html#cb478-2" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
-<span id="cb478-3"><a href="c14-ambarom-vignette.html#cb478-3" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
-<span id="cb478-4"><a href="c14-ambarom-vignette.html#cb478-4" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb478-5"><a href="c14-ambarom-vignette.html#cb478-5" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
-<span id="cb478-6"><a href="c14-ambarom-vignette.html#cb478-6" tabindex="-1"></a><span class="fu">library</span>(rnaturalearthdata)</span>
-<span id="cb478-7"><a href="c14-ambarom-vignette.html#cb478-7" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
-<span id="cb478-8"><a href="c14-ambarom-vignette.html#cb478-8" tabindex="-1"></a><span class="fu">library</span>(ggpattern)</span></code></pre></div>
-<p>In this vignette, we use a subset of data from the 2021 AmericasBarometer survey. Download the raw files, available on the <a href="http://datasets.americasbarometer.org/database/index.php">LAPOP website</a>. We work with version 1.2 of the data, and there are separate files for each of the 22 countries. To read all files into R while ignoring the Stata labels, we recommend running code like this:</p>
-<div class="sourceCode" id="cb479"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb479-1"><a href="c14-ambarom-vignette.html#cb479-1" tabindex="-1"></a>stata_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="fu">here</span>(<span class="st">&quot;RawData&quot;</span>, <span class="st">&quot;LAPOP_2021&quot;</span>), <span class="st">&quot;*.dta&quot;</span>)</span>
-<span id="cb479-2"><a href="c14-ambarom-vignette.html#cb479-2" tabindex="-1"></a></span>
-<span id="cb479-3"><a href="c14-ambarom-vignette.html#cb479-3" tabindex="-1"></a>read_stata_unlabeled <span class="ot">&lt;-</span> <span class="cf">function</span>(file) {</span>
-<span id="cb479-4"><a href="c14-ambarom-vignette.html#cb479-4" tabindex="-1"></a>  <span class="fu">read_stata</span>(file) <span class="sc">%&gt;%</span></span>
-<span id="cb479-5"><a href="c14-ambarom-vignette.html#cb479-5" tabindex="-1"></a>    <span class="fu">zap_labels</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb479-6"><a href="c14-ambarom-vignette.html#cb479-6" tabindex="-1"></a>    <span class="fu">zap_label</span>()</span>
-<span id="cb479-7"><a href="c14-ambarom-vignette.html#cb479-7" tabindex="-1"></a>}</span>
-<span id="cb479-8"><a href="c14-ambarom-vignette.html#cb479-8" tabindex="-1"></a></span>
-<span id="cb479-9"><a href="c14-ambarom-vignette.html#cb479-9" tabindex="-1"></a>ambarom_in <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">&quot;RawData&quot;</span>, <span class="st">&quot;LAPOP_2021&quot;</span>, stata_files) <span class="sc">%&gt;%</span></span>
-<span id="cb479-10"><a href="c14-ambarom-vignette.html#cb479-10" tabindex="-1"></a>  <span class="fu">map_df</span>(read_stata_unlabeled) <span class="sc">%&gt;%</span></span>
-<span id="cb479-11"><a href="c14-ambarom-vignette.html#cb479-11" tabindex="-1"></a>  <span class="fu">select</span>(pais, strata, upm, weight1500, strata, core_a_core_b,</span>
-<span id="cb479-12"><a href="c14-ambarom-vignette.html#cb479-12" tabindex="-1"></a>         q2, q1tb, covid2at, a4, idio2, idio2cov, it1, jc13,</span>
-<span id="cb479-13"><a href="c14-ambarom-vignette.html#cb479-13" tabindex="-1"></a>         m1, mil10a, mil10e, ccch1, ccch3, ccus1, ccus3,</span>
-<span id="cb479-14"><a href="c14-ambarom-vignette.html#cb479-14" tabindex="-1"></a>         edr, ocup4a, q14, q11n, q12c, q12bn,</span>
-<span id="cb479-15"><a href="c14-ambarom-vignette.html#cb479-15" tabindex="-1"></a>         <span class="fu">starts_with</span>(<span class="st">&quot;covidedu1&quot;</span>), gi0n,</span>
-<span id="cb479-16"><a href="c14-ambarom-vignette.html#cb479-16" tabindex="-1"></a>         r15, r18n, r18) </span></code></pre></div>
+<div class="sourceCode" id="cb473"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb473-1"><a href="c14-ambarom-vignette.html#cb473-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb473-2"><a href="c14-ambarom-vignette.html#cb473-2" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
+<span id="cb473-3"><a href="c14-ambarom-vignette.html#cb473-3" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
+<span id="cb473-4"><a href="c14-ambarom-vignette.html#cb473-4" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb473-5"><a href="c14-ambarom-vignette.html#cb473-5" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
+<span id="cb473-6"><a href="c14-ambarom-vignette.html#cb473-6" tabindex="-1"></a><span class="fu">library</span>(rnaturalearthdata)</span>
+<span id="cb473-7"><a href="c14-ambarom-vignette.html#cb473-7" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb473-8"><a href="c14-ambarom-vignette.html#cb473-8" tabindex="-1"></a><span class="fu">library</span>(ggpattern)</span></code></pre></div>
+<p>In this vignette, we use a subset of data from the 2021 AmericasBarometer survey. Download the raw files, available on the <a href="http://datasets.americasbarometer.org/database/index.php">LAPOP website</a>. We work with version 1.2 of the data, and there are separate files for each of the 22 countries. To read all files into R while ignoring the Stata labels, we recommend running code like this using <code>read_stata()</code> function from the {haven} package to import the data <span class="citation">(<a href="#ref-R-haven">Wickham, Miller, and Smith 2023</a>)</span>:</p>
+<div class="sourceCode" id="cb474"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb474-1"><a href="c14-ambarom-vignette.html#cb474-1" tabindex="-1"></a>stata_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="fu">here</span>(<span class="st">&quot;RawData&quot;</span>, <span class="st">&quot;LAPOP_2021&quot;</span>), <span class="st">&quot;*.dta&quot;</span>)</span>
+<span id="cb474-2"><a href="c14-ambarom-vignette.html#cb474-2" tabindex="-1"></a></span>
+<span id="cb474-3"><a href="c14-ambarom-vignette.html#cb474-3" tabindex="-1"></a>read_stata_unlabeled <span class="ot">&lt;-</span> <span class="cf">function</span>(file) {</span>
+<span id="cb474-4"><a href="c14-ambarom-vignette.html#cb474-4" tabindex="-1"></a>  <span class="fu">read_stata</span>(file) <span class="sc">%&gt;%</span></span>
+<span id="cb474-5"><a href="c14-ambarom-vignette.html#cb474-5" tabindex="-1"></a>    <span class="fu">zap_labels</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb474-6"><a href="c14-ambarom-vignette.html#cb474-6" tabindex="-1"></a>    <span class="fu">zap_label</span>()</span>
+<span id="cb474-7"><a href="c14-ambarom-vignette.html#cb474-7" tabindex="-1"></a>}</span>
+<span id="cb474-8"><a href="c14-ambarom-vignette.html#cb474-8" tabindex="-1"></a></span>
+<span id="cb474-9"><a href="c14-ambarom-vignette.html#cb474-9" tabindex="-1"></a>ambarom_in <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">&quot;RawData&quot;</span>, <span class="st">&quot;LAPOP_2021&quot;</span>, stata_files) <span class="sc">%&gt;%</span></span>
+<span id="cb474-10"><a href="c14-ambarom-vignette.html#cb474-10" tabindex="-1"></a>  <span class="fu">map_df</span>(read_stata_unlabeled) <span class="sc">%&gt;%</span></span>
+<span id="cb474-11"><a href="c14-ambarom-vignette.html#cb474-11" tabindex="-1"></a>  <span class="fu">select</span>(pais, strata, upm, weight1500, strata, core_a_core_b,</span>
+<span id="cb474-12"><a href="c14-ambarom-vignette.html#cb474-12" tabindex="-1"></a>         q2, q1tb, covid2at, a4, idio2, idio2cov, it1, jc13,</span>
+<span id="cb474-13"><a href="c14-ambarom-vignette.html#cb474-13" tabindex="-1"></a>         m1, mil10a, mil10e, ccch1, ccch3, ccus1, ccus3,</span>
+<span id="cb474-14"><a href="c14-ambarom-vignette.html#cb474-14" tabindex="-1"></a>         edr, ocup4a, q14, q11n, q12c, q12bn,</span>
+<span id="cb474-15"><a href="c14-ambarom-vignette.html#cb474-15" tabindex="-1"></a>         <span class="fu">starts_with</span>(<span class="st">&quot;covidedu1&quot;</span>), gi0n,</span>
+<span id="cb474-16"><a href="c14-ambarom-vignette.html#cb474-16" tabindex="-1"></a>         r15, r18n, r18) </span></code></pre></div>
 <p>The code above reads all <code>.dta</code> files and combines them into one tibble.</p>
 </div>
 <div id="introduction-12" class="section level2 hasAnchor" number="14.1">
@@ -564,52 +563,52 @@ div.csl-indent {
 <div id="preparing-files" class="section level2 hasAnchor" number="14.3">
 <h2><span class="header-section-number">14.3</span> Preparing files<a href="c14-ambarom-vignette.html#preparing-files" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Many of the variables are coded as numeric and do not have intuitive variable names, so the next step is to create derived variables and wrangle the data for analysis. Using the core questionnaire as a codebook, we reference the factor descriptions to create derived variables with informative names:</p>
-<div class="sourceCode" id="cb480"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb480-1"><a href="c14-ambarom-vignette.html#cb480-1" tabindex="-1"></a>ambarom <span class="ot">&lt;-</span> ambarom_in <span class="sc">%&gt;%</span></span>
-<span id="cb480-2"><a href="c14-ambarom-vignette.html#cb480-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb480-3"><a href="c14-ambarom-vignette.html#cb480-3" tabindex="-1"></a>    <span class="at">Country =</span> <span class="fu">factor</span>(</span>
-<span id="cb480-4"><a href="c14-ambarom-vignette.html#cb480-4" tabindex="-1"></a>      <span class="fu">case_match</span>(pais,</span>
-<span id="cb480-5"><a href="c14-ambarom-vignette.html#cb480-5" tabindex="-1"></a>                 <span class="dv">1</span> <span class="sc">~</span> <span class="st">&quot;Mexico&quot;</span>,</span>
-<span id="cb480-6"><a href="c14-ambarom-vignette.html#cb480-6" tabindex="-1"></a>                 <span class="dv">2</span> <span class="sc">~</span> <span class="st">&quot;Guatemala&quot;</span>,</span>
-<span id="cb480-7"><a href="c14-ambarom-vignette.html#cb480-7" tabindex="-1"></a>                 <span class="dv">3</span> <span class="sc">~</span> <span class="st">&quot;El Salvador&quot;</span>,</span>
-<span id="cb480-8"><a href="c14-ambarom-vignette.html#cb480-8" tabindex="-1"></a>                 <span class="dv">4</span> <span class="sc">~</span> <span class="st">&quot;Honduras&quot;</span>,</span>
-<span id="cb480-9"><a href="c14-ambarom-vignette.html#cb480-9" tabindex="-1"></a>                 <span class="dv">5</span> <span class="sc">~</span> <span class="st">&quot;Nicaragua&quot;</span>,</span>
-<span id="cb480-10"><a href="c14-ambarom-vignette.html#cb480-10" tabindex="-1"></a>                 <span class="dv">6</span> <span class="sc">~</span> <span class="st">&quot;Costa Rica&quot;</span>,</span>
-<span id="cb480-11"><a href="c14-ambarom-vignette.html#cb480-11" tabindex="-1"></a>                 <span class="dv">7</span> <span class="sc">~</span> <span class="st">&quot;Panama&quot;</span>,</span>
-<span id="cb480-12"><a href="c14-ambarom-vignette.html#cb480-12" tabindex="-1"></a>                 <span class="dv">8</span> <span class="sc">~</span> <span class="st">&quot;Colombia&quot;</span>,</span>
-<span id="cb480-13"><a href="c14-ambarom-vignette.html#cb480-13" tabindex="-1"></a>                 <span class="dv">9</span> <span class="sc">~</span> <span class="st">&quot;Ecuador&quot;</span>,</span>
-<span id="cb480-14"><a href="c14-ambarom-vignette.html#cb480-14" tabindex="-1"></a>                 <span class="dv">10</span> <span class="sc">~</span> <span class="st">&quot;Bolivia&quot;</span>,</span>
-<span id="cb480-15"><a href="c14-ambarom-vignette.html#cb480-15" tabindex="-1"></a>                 <span class="dv">11</span> <span class="sc">~</span> <span class="st">&quot;Peru&quot;</span>,</span>
-<span id="cb480-16"><a href="c14-ambarom-vignette.html#cb480-16" tabindex="-1"></a>                 <span class="dv">12</span> <span class="sc">~</span> <span class="st">&quot;Paraguay&quot;</span>,</span>
-<span id="cb480-17"><a href="c14-ambarom-vignette.html#cb480-17" tabindex="-1"></a>                 <span class="dv">13</span> <span class="sc">~</span> <span class="st">&quot;Chile&quot;</span>,</span>
-<span id="cb480-18"><a href="c14-ambarom-vignette.html#cb480-18" tabindex="-1"></a>                 <span class="dv">14</span> <span class="sc">~</span> <span class="st">&quot;Uruguay&quot;</span>,</span>
-<span id="cb480-19"><a href="c14-ambarom-vignette.html#cb480-19" tabindex="-1"></a>                 <span class="dv">15</span> <span class="sc">~</span> <span class="st">&quot;Brazil&quot;</span>,</span>
-<span id="cb480-20"><a href="c14-ambarom-vignette.html#cb480-20" tabindex="-1"></a>                 <span class="dv">17</span> <span class="sc">~</span> <span class="st">&quot;Argentina&quot;</span>,</span>
-<span id="cb480-21"><a href="c14-ambarom-vignette.html#cb480-21" tabindex="-1"></a>                 <span class="dv">21</span> <span class="sc">~</span> <span class="st">&quot;Dominican Republic&quot;</span>,</span>
-<span id="cb480-22"><a href="c14-ambarom-vignette.html#cb480-22" tabindex="-1"></a>                 <span class="dv">22</span> <span class="sc">~</span> <span class="st">&quot;Haiti&quot;</span>,</span>
-<span id="cb480-23"><a href="c14-ambarom-vignette.html#cb480-23" tabindex="-1"></a>                 <span class="dv">23</span> <span class="sc">~</span> <span class="st">&quot;Jamaica&quot;</span>,</span>
-<span id="cb480-24"><a href="c14-ambarom-vignette.html#cb480-24" tabindex="-1"></a>                 <span class="dv">24</span> <span class="sc">~</span> <span class="st">&quot;Guyana&quot;</span>,</span>
-<span id="cb480-25"><a href="c14-ambarom-vignette.html#cb480-25" tabindex="-1"></a>                 <span class="dv">40</span> <span class="sc">~</span> <span class="st">&quot;United States&quot;</span>,</span>
-<span id="cb480-26"><a href="c14-ambarom-vignette.html#cb480-26" tabindex="-1"></a>                 <span class="dv">41</span> <span class="sc">~</span> <span class="st">&quot;Canada&quot;</span>)),</span>
-<span id="cb480-27"><a href="c14-ambarom-vignette.html#cb480-27" tabindex="-1"></a>    <span class="at">CovidWorry =</span> <span class="fu">fct_reorder</span>(</span>
-<span id="cb480-28"><a href="c14-ambarom-vignette.html#cb480-28" tabindex="-1"></a>      <span class="fu">case_match</span>(covid2at,</span>
-<span id="cb480-29"><a href="c14-ambarom-vignette.html#cb480-29" tabindex="-1"></a>                 <span class="dv">1</span> <span class="sc">~</span> <span class="st">&quot;Very worried&quot;</span>,</span>
-<span id="cb480-30"><a href="c14-ambarom-vignette.html#cb480-30" tabindex="-1"></a>                 <span class="dv">2</span> <span class="sc">~</span> <span class="st">&quot;Somewhat worried&quot;</span>,</span>
-<span id="cb480-31"><a href="c14-ambarom-vignette.html#cb480-31" tabindex="-1"></a>                 <span class="dv">3</span> <span class="sc">~</span> <span class="st">&quot;A little worried&quot;</span>,</span>
-<span id="cb480-32"><a href="c14-ambarom-vignette.html#cb480-32" tabindex="-1"></a>                 <span class="dv">4</span> <span class="sc">~</span> <span class="st">&quot;Not worried at all&quot;</span>),</span>
-<span id="cb480-33"><a href="c14-ambarom-vignette.html#cb480-33" tabindex="-1"></a>      covid2at,</span>
-<span id="cb480-34"><a href="c14-ambarom-vignette.html#cb480-34" tabindex="-1"></a>      <span class="at">.na_rm =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb480-35"><a href="c14-ambarom-vignette.html#cb480-35" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb480-36"><a href="c14-ambarom-vignette.html#cb480-36" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Educ_NotInSchool =</span> covidedu1_1,</span>
-<span id="cb480-37"><a href="c14-ambarom-vignette.html#cb480-37" tabindex="-1"></a>         <span class="at">Educ_NormalSchool =</span> covidedu1_2,</span>
-<span id="cb480-38"><a href="c14-ambarom-vignette.html#cb480-38" tabindex="-1"></a>         <span class="at">Educ_VirtualSchool =</span> covidedu1_3,</span>
-<span id="cb480-39"><a href="c14-ambarom-vignette.html#cb480-39" tabindex="-1"></a>         <span class="at">Educ_Hybrid =</span> covidedu1_4,</span>
-<span id="cb480-40"><a href="c14-ambarom-vignette.html#cb480-40" tabindex="-1"></a>         <span class="at">Educ_NoSchool =</span> covidedu1_5,</span>
-<span id="cb480-41"><a href="c14-ambarom-vignette.html#cb480-41" tabindex="-1"></a>         <span class="at">BroadbandInternet =</span> r18n,</span>
-<span id="cb480-42"><a href="c14-ambarom-vignette.html#cb480-42" tabindex="-1"></a>         <span class="at">Internet =</span> r18)</span></code></pre></div>
+<div class="sourceCode" id="cb475"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb475-1"><a href="c14-ambarom-vignette.html#cb475-1" tabindex="-1"></a>ambarom <span class="ot">&lt;-</span> ambarom_in <span class="sc">%&gt;%</span></span>
+<span id="cb475-2"><a href="c14-ambarom-vignette.html#cb475-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb475-3"><a href="c14-ambarom-vignette.html#cb475-3" tabindex="-1"></a>    <span class="at">Country =</span> <span class="fu">factor</span>(</span>
+<span id="cb475-4"><a href="c14-ambarom-vignette.html#cb475-4" tabindex="-1"></a>      <span class="fu">case_match</span>(pais,</span>
+<span id="cb475-5"><a href="c14-ambarom-vignette.html#cb475-5" tabindex="-1"></a>                 <span class="dv">1</span> <span class="sc">~</span> <span class="st">&quot;Mexico&quot;</span>,</span>
+<span id="cb475-6"><a href="c14-ambarom-vignette.html#cb475-6" tabindex="-1"></a>                 <span class="dv">2</span> <span class="sc">~</span> <span class="st">&quot;Guatemala&quot;</span>,</span>
+<span id="cb475-7"><a href="c14-ambarom-vignette.html#cb475-7" tabindex="-1"></a>                 <span class="dv">3</span> <span class="sc">~</span> <span class="st">&quot;El Salvador&quot;</span>,</span>
+<span id="cb475-8"><a href="c14-ambarom-vignette.html#cb475-8" tabindex="-1"></a>                 <span class="dv">4</span> <span class="sc">~</span> <span class="st">&quot;Honduras&quot;</span>,</span>
+<span id="cb475-9"><a href="c14-ambarom-vignette.html#cb475-9" tabindex="-1"></a>                 <span class="dv">5</span> <span class="sc">~</span> <span class="st">&quot;Nicaragua&quot;</span>,</span>
+<span id="cb475-10"><a href="c14-ambarom-vignette.html#cb475-10" tabindex="-1"></a>                 <span class="dv">6</span> <span class="sc">~</span> <span class="st">&quot;Costa Rica&quot;</span>,</span>
+<span id="cb475-11"><a href="c14-ambarom-vignette.html#cb475-11" tabindex="-1"></a>                 <span class="dv">7</span> <span class="sc">~</span> <span class="st">&quot;Panama&quot;</span>,</span>
+<span id="cb475-12"><a href="c14-ambarom-vignette.html#cb475-12" tabindex="-1"></a>                 <span class="dv">8</span> <span class="sc">~</span> <span class="st">&quot;Colombia&quot;</span>,</span>
+<span id="cb475-13"><a href="c14-ambarom-vignette.html#cb475-13" tabindex="-1"></a>                 <span class="dv">9</span> <span class="sc">~</span> <span class="st">&quot;Ecuador&quot;</span>,</span>
+<span id="cb475-14"><a href="c14-ambarom-vignette.html#cb475-14" tabindex="-1"></a>                 <span class="dv">10</span> <span class="sc">~</span> <span class="st">&quot;Bolivia&quot;</span>,</span>
+<span id="cb475-15"><a href="c14-ambarom-vignette.html#cb475-15" tabindex="-1"></a>                 <span class="dv">11</span> <span class="sc">~</span> <span class="st">&quot;Peru&quot;</span>,</span>
+<span id="cb475-16"><a href="c14-ambarom-vignette.html#cb475-16" tabindex="-1"></a>                 <span class="dv">12</span> <span class="sc">~</span> <span class="st">&quot;Paraguay&quot;</span>,</span>
+<span id="cb475-17"><a href="c14-ambarom-vignette.html#cb475-17" tabindex="-1"></a>                 <span class="dv">13</span> <span class="sc">~</span> <span class="st">&quot;Chile&quot;</span>,</span>
+<span id="cb475-18"><a href="c14-ambarom-vignette.html#cb475-18" tabindex="-1"></a>                 <span class="dv">14</span> <span class="sc">~</span> <span class="st">&quot;Uruguay&quot;</span>,</span>
+<span id="cb475-19"><a href="c14-ambarom-vignette.html#cb475-19" tabindex="-1"></a>                 <span class="dv">15</span> <span class="sc">~</span> <span class="st">&quot;Brazil&quot;</span>,</span>
+<span id="cb475-20"><a href="c14-ambarom-vignette.html#cb475-20" tabindex="-1"></a>                 <span class="dv">17</span> <span class="sc">~</span> <span class="st">&quot;Argentina&quot;</span>,</span>
+<span id="cb475-21"><a href="c14-ambarom-vignette.html#cb475-21" tabindex="-1"></a>                 <span class="dv">21</span> <span class="sc">~</span> <span class="st">&quot;Dominican Republic&quot;</span>,</span>
+<span id="cb475-22"><a href="c14-ambarom-vignette.html#cb475-22" tabindex="-1"></a>                 <span class="dv">22</span> <span class="sc">~</span> <span class="st">&quot;Haiti&quot;</span>,</span>
+<span id="cb475-23"><a href="c14-ambarom-vignette.html#cb475-23" tabindex="-1"></a>                 <span class="dv">23</span> <span class="sc">~</span> <span class="st">&quot;Jamaica&quot;</span>,</span>
+<span id="cb475-24"><a href="c14-ambarom-vignette.html#cb475-24" tabindex="-1"></a>                 <span class="dv">24</span> <span class="sc">~</span> <span class="st">&quot;Guyana&quot;</span>,</span>
+<span id="cb475-25"><a href="c14-ambarom-vignette.html#cb475-25" tabindex="-1"></a>                 <span class="dv">40</span> <span class="sc">~</span> <span class="st">&quot;United States&quot;</span>,</span>
+<span id="cb475-26"><a href="c14-ambarom-vignette.html#cb475-26" tabindex="-1"></a>                 <span class="dv">41</span> <span class="sc">~</span> <span class="st">&quot;Canada&quot;</span>)),</span>
+<span id="cb475-27"><a href="c14-ambarom-vignette.html#cb475-27" tabindex="-1"></a>    <span class="at">CovidWorry =</span> <span class="fu">fct_reorder</span>(</span>
+<span id="cb475-28"><a href="c14-ambarom-vignette.html#cb475-28" tabindex="-1"></a>      <span class="fu">case_match</span>(covid2at,</span>
+<span id="cb475-29"><a href="c14-ambarom-vignette.html#cb475-29" tabindex="-1"></a>                 <span class="dv">1</span> <span class="sc">~</span> <span class="st">&quot;Very worried&quot;</span>,</span>
+<span id="cb475-30"><a href="c14-ambarom-vignette.html#cb475-30" tabindex="-1"></a>                 <span class="dv">2</span> <span class="sc">~</span> <span class="st">&quot;Somewhat worried&quot;</span>,</span>
+<span id="cb475-31"><a href="c14-ambarom-vignette.html#cb475-31" tabindex="-1"></a>                 <span class="dv">3</span> <span class="sc">~</span> <span class="st">&quot;A little worried&quot;</span>,</span>
+<span id="cb475-32"><a href="c14-ambarom-vignette.html#cb475-32" tabindex="-1"></a>                 <span class="dv">4</span> <span class="sc">~</span> <span class="st">&quot;Not worried at all&quot;</span>),</span>
+<span id="cb475-33"><a href="c14-ambarom-vignette.html#cb475-33" tabindex="-1"></a>      covid2at,</span>
+<span id="cb475-34"><a href="c14-ambarom-vignette.html#cb475-34" tabindex="-1"></a>      <span class="at">.na_rm =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb475-35"><a href="c14-ambarom-vignette.html#cb475-35" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb475-36"><a href="c14-ambarom-vignette.html#cb475-36" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Educ_NotInSchool =</span> covidedu1_1,</span>
+<span id="cb475-37"><a href="c14-ambarom-vignette.html#cb475-37" tabindex="-1"></a>         <span class="at">Educ_NormalSchool =</span> covidedu1_2,</span>
+<span id="cb475-38"><a href="c14-ambarom-vignette.html#cb475-38" tabindex="-1"></a>         <span class="at">Educ_VirtualSchool =</span> covidedu1_3,</span>
+<span id="cb475-39"><a href="c14-ambarom-vignette.html#cb475-39" tabindex="-1"></a>         <span class="at">Educ_Hybrid =</span> covidedu1_4,</span>
+<span id="cb475-40"><a href="c14-ambarom-vignette.html#cb475-40" tabindex="-1"></a>         <span class="at">Educ_NoSchool =</span> covidedu1_5,</span>
+<span id="cb475-41"><a href="c14-ambarom-vignette.html#cb475-41" tabindex="-1"></a>         <span class="at">BroadbandInternet =</span> r18n,</span>
+<span id="cb475-42"><a href="c14-ambarom-vignette.html#cb475-42" tabindex="-1"></a>         <span class="at">Internet =</span> r18)</span></code></pre></div>
 <p>At this point, it is a good time to check the cross-tabs between the original and newly derived variables. These tables help us confirm that we have correctly matched the numeric data from the original dataset to the renamed factor data in the new dataset. For instance, let’s check the original variable <code>pais</code> and the derived variable <code>Country</code>. We can consult the questionnaire or codebook to confirm that Argentina is coded as <code>17</code>, Bolivia as <code>10</code>, etc. Similarly, for <code>CovidWorry</code> and <code>covid2at</code>, we can verify that <code>Very worried</code> is coded as <code>1</code>, and so on for the other variables.</p>
-<div class="sourceCode" id="cb481"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb481-1"><a href="c14-ambarom-vignette.html#cb481-1" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span></span>
-<span id="cb481-2"><a href="c14-ambarom-vignette.html#cb481-2" tabindex="-1"></a>  <span class="fu">count</span>(Country, pais) <span class="sc">%&gt;%</span></span>
-<span id="cb481-3"><a href="c14-ambarom-vignette.html#cb481-3" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">22</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb476"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb476-1"><a href="c14-ambarom-vignette.html#cb476-1" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span></span>
+<span id="cb476-2"><a href="c14-ambarom-vignette.html#cb476-2" tabindex="-1"></a>  <span class="fu">count</span>(Country, pais) <span class="sc">%&gt;%</span></span>
+<span id="cb476-3"><a href="c14-ambarom-vignette.html#cb476-3" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">22</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 22 × 3
 ##    Country             pais     n
 ##    &lt;fct&gt;              &lt;dbl&gt; &lt;int&gt;
@@ -635,8 +634,8 @@ div.csl-indent {
 ## 20 Peru                  11  3038
 ## 21 United States         40  1500
 ## 22 Uruguay               14  3009</code></pre>
-<div class="sourceCode" id="cb483"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb483-1"><a href="c14-ambarom-vignette.html#cb483-1" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span></span>
-<span id="cb483-2"><a href="c14-ambarom-vignette.html#cb483-2" tabindex="-1"></a>  <span class="fu">count</span>(CovidWorry, covid2at)</span></code></pre></div>
+<div class="sourceCode" id="cb478"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb478-1"><a href="c14-ambarom-vignette.html#cb478-1" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span></span>
+<span id="cb478-2"><a href="c14-ambarom-vignette.html#cb478-2" tabindex="-1"></a>  <span class="fu">count</span>(CovidWorry, covid2at)</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 3
 ##   CovidWorry         covid2at     n
 ##   &lt;fct&gt;                 &lt;dbl&gt; &lt;int&gt;
@@ -649,10 +648,10 @@ div.csl-indent {
 <div id="survey-design-objects-1" class="section level2 hasAnchor" number="14.4">
 <h2><span class="header-section-number">14.4</span> Survey design objects<a href="c14-ambarom-vignette.html#survey-design-objects-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The technical report is the best reference for understanding how to specify the sampling design in R <span class="citation">(<a href="#ref-lapop-tech">LAPOP 2021c</a>)</span>. The data includes two weights: <code>wt</code> and <code>weight1500</code>. The first weight variable is specific to each country and sums to the sample size, but it is calibrated to reflect each country’s demographics. The second weight variable sums to 1500 for each country and is recommended for multi-country analyses. Although not explicitly stated in the documentation, the Stata syntax example (<code>svyset upm [pw=weight1500], strata(strata)</code>) indicates the variable <code>upm</code> is a clustering variable and <code>strata</code> is the strata variable. Therefore, the design object is created in R as follows:</p>
-<div class="sourceCode" id="cb485"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb485-1"><a href="c14-ambarom-vignette.html#cb485-1" tabindex="-1"></a>ambarom_des <span class="ot">&lt;-</span> ambarom <span class="sc">%&gt;%</span></span>
-<span id="cb485-2"><a href="c14-ambarom-vignette.html#cb485-2" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">ids =</span> upm,</span>
-<span id="cb485-3"><a href="c14-ambarom-vignette.html#cb485-3" tabindex="-1"></a>                   <span class="at">strata =</span> strata,</span>
-<span id="cb485-4"><a href="c14-ambarom-vignette.html#cb485-4" tabindex="-1"></a>                   <span class="at">weight =</span> weight1500)</span></code></pre></div>
+<div class="sourceCode" id="cb480"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb480-1"><a href="c14-ambarom-vignette.html#cb480-1" tabindex="-1"></a>ambarom_des <span class="ot">&lt;-</span> ambarom <span class="sc">%&gt;%</span></span>
+<span id="cb480-2"><a href="c14-ambarom-vignette.html#cb480-2" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">ids =</span> upm,</span>
+<span id="cb480-3"><a href="c14-ambarom-vignette.html#cb480-3" tabindex="-1"></a>                   <span class="at">strata =</span> strata,</span>
+<span id="cb480-4"><a href="c14-ambarom-vignette.html#cb480-4" tabindex="-1"></a>                   <span class="at">weight =</span> weight1500)</span></code></pre></div>
 <p>One interesting thing to note is that these weight variables can provide estimates for comparing countries but not for multi-country estimates. The reason is that the weights do not account for the different sizes of countries. For example, Canada has about 10% of the population of the United States, but an estimate that uses records from both countries would weigh them equally.</p>
 </div>
 <div id="ambarom-estimates" class="section level2 hasAnchor" number="14.5">
@@ -660,7 +659,7 @@ div.csl-indent {
 <p>When calculating estimates from the data, we use the survey design object <code>ambarom_des</code> and then apply the <code>survey_mean()</code> function. The next sections walk through a few examples.</p>
 <div id="example-worried-about-covid" class="section level3 hasAnchor" number="14.5.1">
 <h3><span class="header-section-number">14.5.1</span> Example: Worried about COVID<a href="c14-ambarom-vignette.html#example-worried-about-covid" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>This survey was administered between March and August of 2021, with the specific timing varying by country<a href="#fn36" class="footnote-ref" id="fnref36"><sup>36</sup></a>. Given the state of the pandemic at that time, several questions about COVID were included. The first question about COVID asked:</p>
+<p>This survey was administered between March and August of 2021, with the specific timing varying by country<a href="#fn28" class="footnote-ref" id="fnref28"><sup>28</sup></a>. Given the state of the pandemic at that time, several questions about COVID were included. The first question about COVID asked:</p>
 <blockquote>
 <p>How worried are you about the possibility that you or someone in your household will get sick from coronavirus in the next 3 months?</p>
 <ul>
@@ -670,16 +669,16 @@ div.csl-indent {
 <li>Not worried at all</li>
 </ul>
 </blockquote>
-<p>If we are interested in those who are very worried or somewhat worried, we can create a new variable (<code>CovidWorry_bin</code>) that groups levels of the original question using the <code>fct_collapse()</code> function from the {forcats} package. We then use the <code>survey_count()</code> function to understand how responses are distributed across each category of the original variable (<code>CovidWorry</code>) and the new variable (<code>CovidWorry_bin</code>).</p>
-<div class="sourceCode" id="cb486"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb486-1"><a href="c14-ambarom-vignette.html#cb486-1" tabindex="-1"></a>covid_worry_collapse <span class="ot">&lt;-</span> ambarom_des <span class="sc">%&gt;%</span></span>
-<span id="cb486-2"><a href="c14-ambarom-vignette.html#cb486-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">CovidWorry_bin =</span> <span class="fu">fct_collapse</span>(</span>
-<span id="cb486-3"><a href="c14-ambarom-vignette.html#cb486-3" tabindex="-1"></a>    CovidWorry,</span>
-<span id="cb486-4"><a href="c14-ambarom-vignette.html#cb486-4" tabindex="-1"></a>    <span class="at">WorriedHi =</span> <span class="fu">c</span>(<span class="st">&quot;Very worried&quot;</span>, <span class="st">&quot;Somewhat worried&quot;</span>),</span>
-<span id="cb486-5"><a href="c14-ambarom-vignette.html#cb486-5" tabindex="-1"></a>    <span class="at">WorriedLo =</span> <span class="fu">c</span>(<span class="st">&quot;A little worried&quot;</span>, <span class="st">&quot;Not worried at all&quot;</span>)</span>
-<span id="cb486-6"><a href="c14-ambarom-vignette.html#cb486-6" tabindex="-1"></a>  ))</span>
-<span id="cb486-7"><a href="c14-ambarom-vignette.html#cb486-7" tabindex="-1"></a></span>
-<span id="cb486-8"><a href="c14-ambarom-vignette.html#cb486-8" tabindex="-1"></a>covid_worry_collapse <span class="sc">%&gt;%</span></span>
-<span id="cb486-9"><a href="c14-ambarom-vignette.html#cb486-9" tabindex="-1"></a>  <span class="fu">survey_count</span>(CovidWorry_bin, CovidWorry)</span></code></pre></div>
+<p>If we are interested in those who are very worried or somewhat worried, we can create a new variable (<code>CovidWorry_bin</code>) that groups levels of the original question using the <code>fct_collapse()</code> function from the {forcats} package <span class="citation">(<a href="#ref-R-forcats">Wickham 2023a</a>)</span>. We then use the <code>survey_count()</code> function to understand how responses are distributed across each category of the original variable (<code>CovidWorry</code>) and the new variable (<code>CovidWorry_bin</code>).</p>
+<div class="sourceCode" id="cb481"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb481-1"><a href="c14-ambarom-vignette.html#cb481-1" tabindex="-1"></a>covid_worry_collapse <span class="ot">&lt;-</span> ambarom_des <span class="sc">%&gt;%</span></span>
+<span id="cb481-2"><a href="c14-ambarom-vignette.html#cb481-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">CovidWorry_bin =</span> <span class="fu">fct_collapse</span>(</span>
+<span id="cb481-3"><a href="c14-ambarom-vignette.html#cb481-3" tabindex="-1"></a>    CovidWorry,</span>
+<span id="cb481-4"><a href="c14-ambarom-vignette.html#cb481-4" tabindex="-1"></a>    <span class="at">WorriedHi =</span> <span class="fu">c</span>(<span class="st">&quot;Very worried&quot;</span>, <span class="st">&quot;Somewhat worried&quot;</span>),</span>
+<span id="cb481-5"><a href="c14-ambarom-vignette.html#cb481-5" tabindex="-1"></a>    <span class="at">WorriedLo =</span> <span class="fu">c</span>(<span class="st">&quot;A little worried&quot;</span>, <span class="st">&quot;Not worried at all&quot;</span>)</span>
+<span id="cb481-6"><a href="c14-ambarom-vignette.html#cb481-6" tabindex="-1"></a>  ))</span>
+<span id="cb481-7"><a href="c14-ambarom-vignette.html#cb481-7" tabindex="-1"></a></span>
+<span id="cb481-8"><a href="c14-ambarom-vignette.html#cb481-8" tabindex="-1"></a>covid_worry_collapse <span class="sc">%&gt;%</span></span>
+<span id="cb481-9"><a href="c14-ambarom-vignette.html#cb481-9" tabindex="-1"></a>  <span class="fu">survey_count</span>(CovidWorry_bin, CovidWorry)</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 4
 ##   CovidWorry_bin CovidWorry              n  n_se
 ##   &lt;fct&gt;          &lt;fct&gt;               &lt;dbl&gt; &lt;dbl&gt;
@@ -689,12 +688,12 @@ div.csl-indent {
 ## 4 WorriedLo      Not worried at all  4840.  59.7
 ## 5 &lt;NA&gt;           &lt;NA&gt;                3518.  42.2</code></pre>
 <p>With this new variable, we can now use <code>survey_mean()</code> to calculate the percentage of people in each country who are either very or somewhat worried about COVID. There are missing data, as indicated in the <code>survey_count()</code> output above, so we need to use <code>na.rm = TRUE</code> in the <code>survey_mean()</code> function to handle the missing values.</p>
-<div class="sourceCode" id="cb488"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb488-1"><a href="c14-ambarom-vignette.html#cb488-1" tabindex="-1"></a>covid_worry_country_ests <span class="ot">&lt;-</span> covid_worry_collapse <span class="sc">%&gt;%</span></span>
-<span id="cb488-2"><a href="c14-ambarom-vignette.html#cb488-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span></span>
-<span id="cb488-3"><a href="c14-ambarom-vignette.html#cb488-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>(CovidWorry_bin <span class="sc">==</span> <span class="st">&quot;WorriedHi&quot;</span>,</span>
-<span id="cb488-4"><a href="c14-ambarom-vignette.html#cb488-4" tabindex="-1"></a>                            <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>)</span>
-<span id="cb488-5"><a href="c14-ambarom-vignette.html#cb488-5" tabindex="-1"></a></span>
-<span id="cb488-6"><a href="c14-ambarom-vignette.html#cb488-6" tabindex="-1"></a>covid_worry_country_ests</span></code></pre></div>
+<div class="sourceCode" id="cb483"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb483-1"><a href="c14-ambarom-vignette.html#cb483-1" tabindex="-1"></a>covid_worry_country_ests <span class="ot">&lt;-</span> covid_worry_collapse <span class="sc">%&gt;%</span></span>
+<span id="cb483-2"><a href="c14-ambarom-vignette.html#cb483-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span></span>
+<span id="cb483-3"><a href="c14-ambarom-vignette.html#cb483-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>(CovidWorry_bin <span class="sc">==</span> <span class="st">&quot;WorriedHi&quot;</span>,</span>
+<span id="cb483-4"><a href="c14-ambarom-vignette.html#cb483-4" tabindex="-1"></a>                            <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb483-5"><a href="c14-ambarom-vignette.html#cb483-5" tabindex="-1"></a></span>
+<span id="cb483-6"><a href="c14-ambarom-vignette.html#cb483-6" tabindex="-1"></a>covid_worry_country_ests</span></code></pre></div>
 <pre><code>## # A tibble: 22 × 3
 ##    Country                p  p_se
 ##    &lt;fct&gt;              &lt;dbl&gt; &lt;dbl&gt;
@@ -709,14 +708,14 @@ div.csl-indent {
 ##  9 Ecuador             71.7 0.967
 ## 10 El Salvador         52.5 1.02 
 ## # ℹ 12 more rows</code></pre>
-<p>To view the results for all countries, we can use the {gt} package to create Table <a href="c14-ambarom-vignette.html#tab:ambarom-worry-tab">14.1</a>.</p>
-<div class="sourceCode" id="cb490"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb490-1"><a href="c14-ambarom-vignette.html#cb490-1" tabindex="-1"></a>covid_worry_country_ests_gt <span class="ot">&lt;-</span> covid_worry_country_ests <span class="sc">%&gt;%</span></span>
-<span id="cb490-2"><a href="c14-ambarom-vignette.html#cb490-2" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Country&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb490-3"><a href="c14-ambarom-vignette.html#cb490-3" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="at">p =</span> <span class="st">&quot;Percent&quot;</span>,</span>
-<span id="cb490-4"><a href="c14-ambarom-vignette.html#cb490-4" tabindex="-1"></a>             <span class="at">p_se =</span> <span class="st">&quot;SE&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb490-5"><a href="c14-ambarom-vignette.html#cb490-5" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb490-6"><a href="c14-ambarom-vignette.html#cb490-6" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;AmericasBarometer Surveys, 2021&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb491"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb491-1"><a href="c14-ambarom-vignette.html#cb491-1" tabindex="-1"></a>covid_worry_country_ests_gt</span></code></pre></div>
+<p>To view the results for all countries, we can use the {gt} package to create Table <a href="c14-ambarom-vignette.html#tab:ambarom-worry-tab">14.1</a> <span class="citation">(<a href="#ref-R-gt">Iannone et al. 2023</a>)</span>.</p>
+<div class="sourceCode" id="cb485"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb485-1"><a href="c14-ambarom-vignette.html#cb485-1" tabindex="-1"></a>covid_worry_country_ests_gt <span class="ot">&lt;-</span> covid_worry_country_ests <span class="sc">%&gt;%</span></span>
+<span id="cb485-2"><a href="c14-ambarom-vignette.html#cb485-2" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Country&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb485-3"><a href="c14-ambarom-vignette.html#cb485-3" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="at">p =</span> <span class="st">&quot;Percent&quot;</span>,</span>
+<span id="cb485-4"><a href="c14-ambarom-vignette.html#cb485-4" tabindex="-1"></a>             <span class="at">p_se =</span> <span class="st">&quot;SE&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb485-5"><a href="c14-ambarom-vignette.html#cb485-5" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb485-6"><a href="c14-ambarom-vignette.html#cb485-6" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;AmericasBarometer Surveys, 2021&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb486"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb486-1"><a href="c14-ambarom-vignette.html#cb486-1" tabindex="-1"></a>covid_worry_country_ests_gt</span></code></pre></div>
 
 <div id="ismfkpkdnv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#ismfkpkdnv table {
@@ -1264,11 +1263,11 @@ div.csl-indent {
 <li>Yes, they switched to a combination of virtual and in-person classes: <code>Educ_Hybrid</code></li>
 </ul>
 <p>The unweighted cross-tab for these responses is included below. It reveals a wide range of impacts, where many combinations of effects on education are possible.</p>
-<div class="sourceCode" id="cb492"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb492-1"><a href="c14-ambarom-vignette.html#cb492-1" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span></span>
-<span id="cb492-2"><a href="c14-ambarom-vignette.html#cb492-2" tabindex="-1"></a>  <span class="fu">filter</span>(Educ_NotInSchool <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb492-3"><a href="c14-ambarom-vignette.html#cb492-3" tabindex="-1"></a>  <span class="fu">count</span>(Educ_NormalSchool,</span>
-<span id="cb492-4"><a href="c14-ambarom-vignette.html#cb492-4" tabindex="-1"></a>        Educ_VirtualSchool,</span>
-<span id="cb492-5"><a href="c14-ambarom-vignette.html#cb492-5" tabindex="-1"></a>        Educ_Hybrid)</span></code></pre></div>
+<div class="sourceCode" id="cb487"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb487-1"><a href="c14-ambarom-vignette.html#cb487-1" tabindex="-1"></a>ambarom <span class="sc">%&gt;%</span></span>
+<span id="cb487-2"><a href="c14-ambarom-vignette.html#cb487-2" tabindex="-1"></a>  <span class="fu">filter</span>(Educ_NotInSchool <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb487-3"><a href="c14-ambarom-vignette.html#cb487-3" tabindex="-1"></a>  <span class="fu">count</span>(Educ_NormalSchool,</span>
+<span id="cb487-4"><a href="c14-ambarom-vignette.html#cb487-4" tabindex="-1"></a>        Educ_VirtualSchool,</span>
+<span id="cb487-5"><a href="c14-ambarom-vignette.html#cb487-5" tabindex="-1"></a>        Educ_Hybrid)</span></code></pre></div>
 <pre><code>## # A tibble: 8 × 4
 ##   Educ_NormalSchool Educ_VirtualSchool Educ_Hybrid     n
 ##               &lt;dbl&gt;              &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt;
@@ -1287,21 +1286,21 @@ div.csl-indent {
 <li>What percentage of households indicated that they cut ties with their school?</li>
 </ul>
 <p>To find the answers, we create indicators for the first two questions, make national estimates for all three questions, and then construct a summary table for easy viewing. First, we create and inspect the indicators and their distributions using <code>survey_count()</code>.</p>
-<div class="sourceCode" id="cb494"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb494-1"><a href="c14-ambarom-vignette.html#cb494-1" tabindex="-1"></a>ambarom_des_educ <span class="ot">&lt;-</span> ambarom_des <span class="sc">%&gt;%</span></span>
-<span id="cb494-2"><a href="c14-ambarom-vignette.html#cb494-2" tabindex="-1"></a>  <span class="fu">filter</span>(Educ_NotInSchool <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb494-3"><a href="c14-ambarom-vignette.html#cb494-3" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb494-4"><a href="c14-ambarom-vignette.html#cb494-4" tabindex="-1"></a>    <span class="at">Educ_OnlyNormal =</span> (Educ_NormalSchool <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span></span>
-<span id="cb494-5"><a href="c14-ambarom-vignette.html#cb494-5" tabindex="-1"></a>                         Educ_VirtualSchool <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span></span>
-<span id="cb494-6"><a href="c14-ambarom-vignette.html#cb494-6" tabindex="-1"></a>                         Educ_Hybrid <span class="sc">==</span> <span class="dv">0</span>),</span>
-<span id="cb494-7"><a href="c14-ambarom-vignette.html#cb494-7" tabindex="-1"></a>    <span class="at">Educ_MediumChange =</span> (Educ_VirtualSchool <span class="sc">==</span> <span class="dv">1</span> <span class="sc">|</span></span>
-<span id="cb494-8"><a href="c14-ambarom-vignette.html#cb494-8" tabindex="-1"></a>                           Educ_Hybrid <span class="sc">==</span> <span class="dv">1</span>)</span>
-<span id="cb494-9"><a href="c14-ambarom-vignette.html#cb494-9" tabindex="-1"></a>  )</span>
-<span id="cb494-10"><a href="c14-ambarom-vignette.html#cb494-10" tabindex="-1"></a></span>
-<span id="cb494-11"><a href="c14-ambarom-vignette.html#cb494-11" tabindex="-1"></a>ambarom_des_educ <span class="sc">%&gt;%</span></span>
-<span id="cb494-12"><a href="c14-ambarom-vignette.html#cb494-12" tabindex="-1"></a>  <span class="fu">survey_count</span>(Educ_OnlyNormal,</span>
-<span id="cb494-13"><a href="c14-ambarom-vignette.html#cb494-13" tabindex="-1"></a>               Educ_NormalSchool,</span>
-<span id="cb494-14"><a href="c14-ambarom-vignette.html#cb494-14" tabindex="-1"></a>               Educ_VirtualSchool,</span>
-<span id="cb494-15"><a href="c14-ambarom-vignette.html#cb494-15" tabindex="-1"></a>               Educ_Hybrid)</span></code></pre></div>
+<div class="sourceCode" id="cb489"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb489-1"><a href="c14-ambarom-vignette.html#cb489-1" tabindex="-1"></a>ambarom_des_educ <span class="ot">&lt;-</span> ambarom_des <span class="sc">%&gt;%</span></span>
+<span id="cb489-2"><a href="c14-ambarom-vignette.html#cb489-2" tabindex="-1"></a>  <span class="fu">filter</span>(Educ_NotInSchool <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb489-3"><a href="c14-ambarom-vignette.html#cb489-3" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb489-4"><a href="c14-ambarom-vignette.html#cb489-4" tabindex="-1"></a>    <span class="at">Educ_OnlyNormal =</span> (Educ_NormalSchool <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span></span>
+<span id="cb489-5"><a href="c14-ambarom-vignette.html#cb489-5" tabindex="-1"></a>                         Educ_VirtualSchool <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span></span>
+<span id="cb489-6"><a href="c14-ambarom-vignette.html#cb489-6" tabindex="-1"></a>                         Educ_Hybrid <span class="sc">==</span> <span class="dv">0</span>),</span>
+<span id="cb489-7"><a href="c14-ambarom-vignette.html#cb489-7" tabindex="-1"></a>    <span class="at">Educ_MediumChange =</span> (Educ_VirtualSchool <span class="sc">==</span> <span class="dv">1</span> <span class="sc">|</span></span>
+<span id="cb489-8"><a href="c14-ambarom-vignette.html#cb489-8" tabindex="-1"></a>                           Educ_Hybrid <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb489-9"><a href="c14-ambarom-vignette.html#cb489-9" tabindex="-1"></a>  )</span>
+<span id="cb489-10"><a href="c14-ambarom-vignette.html#cb489-10" tabindex="-1"></a></span>
+<span id="cb489-11"><a href="c14-ambarom-vignette.html#cb489-11" tabindex="-1"></a>ambarom_des_educ <span class="sc">%&gt;%</span></span>
+<span id="cb489-12"><a href="c14-ambarom-vignette.html#cb489-12" tabindex="-1"></a>  <span class="fu">survey_count</span>(Educ_OnlyNormal,</span>
+<span id="cb489-13"><a href="c14-ambarom-vignette.html#cb489-13" tabindex="-1"></a>               Educ_NormalSchool,</span>
+<span id="cb489-14"><a href="c14-ambarom-vignette.html#cb489-14" tabindex="-1"></a>               Educ_VirtualSchool,</span>
+<span id="cb489-15"><a href="c14-ambarom-vignette.html#cb489-15" tabindex="-1"></a>               Educ_Hybrid)</span></code></pre></div>
 <pre><code>## # A tibble: 8 × 6
 ##   Educ_OnlyNormal Educ_NormalSchool Educ_VirtualSchool Educ_Hybrid
 ##   &lt;lgl&gt;                       &lt;dbl&gt;              &lt;dbl&gt;       &lt;dbl&gt;
@@ -1314,10 +1313,10 @@ div.csl-indent {
 ## 7 FALSE                           1                  1           1
 ## 8 TRUE                            1                  0           0
 ## # ℹ 2 more variables: n &lt;dbl&gt;, n_se &lt;dbl&gt;</code></pre>
-<div class="sourceCode" id="cb496"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb496-1"><a href="c14-ambarom-vignette.html#cb496-1" tabindex="-1"></a>ambarom_des_educ <span class="sc">%&gt;%</span></span>
-<span id="cb496-2"><a href="c14-ambarom-vignette.html#cb496-2" tabindex="-1"></a>  <span class="fu">survey_count</span>(Educ_MediumChange,</span>
-<span id="cb496-3"><a href="c14-ambarom-vignette.html#cb496-3" tabindex="-1"></a>               Educ_VirtualSchool,</span>
-<span id="cb496-4"><a href="c14-ambarom-vignette.html#cb496-4" tabindex="-1"></a>               Educ_Hybrid)</span></code></pre></div>
+<div class="sourceCode" id="cb491"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb491-1"><a href="c14-ambarom-vignette.html#cb491-1" tabindex="-1"></a>ambarom_des_educ <span class="sc">%&gt;%</span></span>
+<span id="cb491-2"><a href="c14-ambarom-vignette.html#cb491-2" tabindex="-1"></a>  <span class="fu">survey_count</span>(Educ_MediumChange,</span>
+<span id="cb491-3"><a href="c14-ambarom-vignette.html#cb491-3" tabindex="-1"></a>               Educ_VirtualSchool,</span>
+<span id="cb491-4"><a href="c14-ambarom-vignette.html#cb491-4" tabindex="-1"></a>               Educ_Hybrid)</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 5
 ##   Educ_MediumChange Educ_VirtualSchool Educ_Hybrid     n  n_se
 ##   &lt;lgl&gt;                          &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
@@ -1326,16 +1325,16 @@ div.csl-indent {
 ## 3 TRUE                               1           0 3812. 49.4 
 ## 4 TRUE                               1           1  136.  9.86</code></pre>
 <p>Next, we group the data by country and calculate the population estimates for our three questions.</p>
-<div class="sourceCode" id="cb498"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb498-1"><a href="c14-ambarom-vignette.html#cb498-1" tabindex="-1"></a>covid_educ_ests <span class="ot">&lt;-</span></span>
-<span id="cb498-2"><a href="c14-ambarom-vignette.html#cb498-2" tabindex="-1"></a>  ambarom_des_educ <span class="sc">%&gt;%</span></span>
-<span id="cb498-3"><a href="c14-ambarom-vignette.html#cb498-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span></span>
-<span id="cb498-4"><a href="c14-ambarom-vignette.html#cb498-4" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb498-5"><a href="c14-ambarom-vignette.html#cb498-5" tabindex="-1"></a>    <span class="at">p_onlynormal =</span> <span class="fu">survey_mean</span>(Educ_OnlyNormal, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>,</span>
-<span id="cb498-6"><a href="c14-ambarom-vignette.html#cb498-6" tabindex="-1"></a>    <span class="at">p_mediumchange =</span> <span class="fu">survey_mean</span>(Educ_MediumChange, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>,</span>
-<span id="cb498-7"><a href="c14-ambarom-vignette.html#cb498-7" tabindex="-1"></a>    <span class="at">p_noschool =</span> <span class="fu">survey_mean</span>(Educ_NoSchool, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>,</span>
-<span id="cb498-8"><a href="c14-ambarom-vignette.html#cb498-8" tabindex="-1"></a>  ) </span>
-<span id="cb498-9"><a href="c14-ambarom-vignette.html#cb498-9" tabindex="-1"></a></span>
-<span id="cb498-10"><a href="c14-ambarom-vignette.html#cb498-10" tabindex="-1"></a>covid_educ_ests</span></code></pre></div>
+<div class="sourceCode" id="cb493"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb493-1"><a href="c14-ambarom-vignette.html#cb493-1" tabindex="-1"></a>covid_educ_ests <span class="ot">&lt;-</span></span>
+<span id="cb493-2"><a href="c14-ambarom-vignette.html#cb493-2" tabindex="-1"></a>  ambarom_des_educ <span class="sc">%&gt;%</span></span>
+<span id="cb493-3"><a href="c14-ambarom-vignette.html#cb493-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span></span>
+<span id="cb493-4"><a href="c14-ambarom-vignette.html#cb493-4" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb493-5"><a href="c14-ambarom-vignette.html#cb493-5" tabindex="-1"></a>    <span class="at">p_onlynormal =</span> <span class="fu">survey_mean</span>(Educ_OnlyNormal, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb493-6"><a href="c14-ambarom-vignette.html#cb493-6" tabindex="-1"></a>    <span class="at">p_mediumchange =</span> <span class="fu">survey_mean</span>(Educ_MediumChange, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb493-7"><a href="c14-ambarom-vignette.html#cb493-7" tabindex="-1"></a>    <span class="at">p_noschool =</span> <span class="fu">survey_mean</span>(Educ_NoSchool, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb493-8"><a href="c14-ambarom-vignette.html#cb493-8" tabindex="-1"></a>  ) </span>
+<span id="cb493-9"><a href="c14-ambarom-vignette.html#cb493-9" tabindex="-1"></a></span>
+<span id="cb493-10"><a href="c14-ambarom-vignette.html#cb493-10" tabindex="-1"></a>covid_educ_ests</span></code></pre></div>
 <pre><code>## # A tibble: 16 × 7
 ##    Country p_onlynormal p_onlynormal_se p_mediumchange p_mediumchange_se
 ##    &lt;fct&gt;          &lt;dbl&gt;           &lt;dbl&gt;          &lt;dbl&gt;             &lt;dbl&gt;
@@ -1357,25 +1356,25 @@ div.csl-indent {
 ## 16 Uruguay        8.60            1.40           84.3              2.02 
 ## # ℹ 2 more variables: p_noschool &lt;dbl&gt;, p_noschool_se &lt;dbl&gt;</code></pre>
 <p>Finally, to view the results for all countries, we can use the {gt} package to construct Table <a href="c14-ambarom-vignette.html#tab:ambarom-covid-ed-der-tab">14.2</a>.</p>
-<div class="sourceCode" id="cb500"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb500-1"><a href="c14-ambarom-vignette.html#cb500-1" tabindex="-1"></a>covid_educ_ests_gt <span class="ot">&lt;-</span> covid_educ_ests <span class="sc">%&gt;%</span></span>
-<span id="cb500-2"><a href="c14-ambarom-vignette.html#cb500-2" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Country&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb500-3"><a href="c14-ambarom-vignette.html#cb500-3" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
-<span id="cb500-4"><a href="c14-ambarom-vignette.html#cb500-4" tabindex="-1"></a>    <span class="at">p_onlynormal =</span> <span class="st">&quot;%&quot;</span>,</span>
-<span id="cb500-5"><a href="c14-ambarom-vignette.html#cb500-5" tabindex="-1"></a>    <span class="at">p_onlynormal_se =</span> <span class="st">&quot;SE&quot;</span>,</span>
-<span id="cb500-6"><a href="c14-ambarom-vignette.html#cb500-6" tabindex="-1"></a>    <span class="at">p_mediumchange =</span> <span class="st">&quot;%&quot;</span>,</span>
-<span id="cb500-7"><a href="c14-ambarom-vignette.html#cb500-7" tabindex="-1"></a>    <span class="at">p_mediumchange_se =</span> <span class="st">&quot;SE&quot;</span>,</span>
-<span id="cb500-8"><a href="c14-ambarom-vignette.html#cb500-8" tabindex="-1"></a>    <span class="at">p_noschool =</span> <span class="st">&quot;%&quot;</span>,</span>
-<span id="cb500-9"><a href="c14-ambarom-vignette.html#cb500-9" tabindex="-1"></a>    <span class="at">p_noschool_se =</span> <span class="st">&quot;SE&quot;</span></span>
-<span id="cb500-10"><a href="c14-ambarom-vignette.html#cb500-10" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb500-11"><a href="c14-ambarom-vignette.html#cb500-11" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Normal school only&quot;</span>,</span>
-<span id="cb500-12"><a href="c14-ambarom-vignette.html#cb500-12" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;p_onlynormal&quot;</span>, <span class="st">&quot;p_onlynormal_se&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb500-13"><a href="c14-ambarom-vignette.html#cb500-13" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Medium change&quot;</span>,</span>
-<span id="cb500-14"><a href="c14-ambarom-vignette.html#cb500-14" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;p_mediumchange&quot;</span>, <span class="st">&quot;p_mediumchange_se&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb500-15"><a href="c14-ambarom-vignette.html#cb500-15" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Cut ties with school&quot;</span>,</span>
-<span id="cb500-16"><a href="c14-ambarom-vignette.html#cb500-16" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;p_noschool&quot;</span>, <span class="st">&quot;p_noschool_se&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb500-17"><a href="c14-ambarom-vignette.html#cb500-17" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb500-18"><a href="c14-ambarom-vignette.html#cb500-18" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;AmericasBarometer Surveys, 2021&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb501"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb501-1"><a href="c14-ambarom-vignette.html#cb501-1" tabindex="-1"></a>covid_educ_ests_gt</span></code></pre></div>
+<div class="sourceCode" id="cb495"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb495-1"><a href="c14-ambarom-vignette.html#cb495-1" tabindex="-1"></a>covid_educ_ests_gt <span class="ot">&lt;-</span> covid_educ_ests <span class="sc">%&gt;%</span></span>
+<span id="cb495-2"><a href="c14-ambarom-vignette.html#cb495-2" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Country&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb495-3"><a href="c14-ambarom-vignette.html#cb495-3" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
+<span id="cb495-4"><a href="c14-ambarom-vignette.html#cb495-4" tabindex="-1"></a>    <span class="at">p_onlynormal =</span> <span class="st">&quot;%&quot;</span>,</span>
+<span id="cb495-5"><a href="c14-ambarom-vignette.html#cb495-5" tabindex="-1"></a>    <span class="at">p_onlynormal_se =</span> <span class="st">&quot;SE&quot;</span>,</span>
+<span id="cb495-6"><a href="c14-ambarom-vignette.html#cb495-6" tabindex="-1"></a>    <span class="at">p_mediumchange =</span> <span class="st">&quot;%&quot;</span>,</span>
+<span id="cb495-7"><a href="c14-ambarom-vignette.html#cb495-7" tabindex="-1"></a>    <span class="at">p_mediumchange_se =</span> <span class="st">&quot;SE&quot;</span>,</span>
+<span id="cb495-8"><a href="c14-ambarom-vignette.html#cb495-8" tabindex="-1"></a>    <span class="at">p_noschool =</span> <span class="st">&quot;%&quot;</span>,</span>
+<span id="cb495-9"><a href="c14-ambarom-vignette.html#cb495-9" tabindex="-1"></a>    <span class="at">p_noschool_se =</span> <span class="st">&quot;SE&quot;</span></span>
+<span id="cb495-10"><a href="c14-ambarom-vignette.html#cb495-10" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb495-11"><a href="c14-ambarom-vignette.html#cb495-11" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Normal school only&quot;</span>,</span>
+<span id="cb495-12"><a href="c14-ambarom-vignette.html#cb495-12" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;p_onlynormal&quot;</span>, <span class="st">&quot;p_onlynormal_se&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb495-13"><a href="c14-ambarom-vignette.html#cb495-13" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Medium change&quot;</span>,</span>
+<span id="cb495-14"><a href="c14-ambarom-vignette.html#cb495-14" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;p_mediumchange&quot;</span>, <span class="st">&quot;p_mediumchange_se&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb495-15"><a href="c14-ambarom-vignette.html#cb495-15" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Cut ties with school&quot;</span>,</span>
+<span id="cb495-16"><a href="c14-ambarom-vignette.html#cb495-16" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;p_noschool&quot;</span>, <span class="st">&quot;p_noschool_se&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb495-17"><a href="c14-ambarom-vignette.html#cb495-17" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb495-18"><a href="c14-ambarom-vignette.html#cb495-18" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;AmericasBarometer Surveys, 2021&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb496"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb496-1"><a href="c14-ambarom-vignette.html#cb496-1" tabindex="-1"></a>covid_educ_ests_gt</span></code></pre></div>
 
 <div id="zpnruhcqur" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#zpnruhcqur table {
@@ -1969,36 +1968,36 @@ div.csl-indent {
 </div>
 <div id="ambarom-maps" class="section level2 hasAnchor" number="14.6">
 <h2><span class="header-section-number">14.6</span> Mapping survey data<a href="c14-ambarom-vignette.html#ambarom-maps" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>While the table effectively presents the data, a map could also be insightful. To generate maps of the countries, we can use the package {rnaturalearth} and subset North and South America with the <code>ne_countries()</code> function. The function returns an sf (simple features) object with many columns, but most importantly, <code>soverignt</code> (sovereignty), <code>geounit</code> (country or territory), and <code>geometry</code> (the shape). For an example of the difference between sovereignty and country/territory, the United States, Puerto Rico, and the US Virgin Islands are all separate units with the same sovereignty. A map without data is plotted in Figure <a href="c14-ambarom-vignette.html#fig:ambarom-americas-map">14.1</a>.</p>
-<div class="sourceCode" id="cb502"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb502-1"><a href="c14-ambarom-vignette.html#cb502-1" tabindex="-1"></a>country_shape <span class="ot">&lt;-</span></span>
-<span id="cb502-2"><a href="c14-ambarom-vignette.html#cb502-2" tabindex="-1"></a>  <span class="fu">ne_countries</span>(</span>
-<span id="cb502-3"><a href="c14-ambarom-vignette.html#cb502-3" tabindex="-1"></a>    <span class="at">scale =</span> <span class="st">&quot;medium&quot;</span>,</span>
-<span id="cb502-4"><a href="c14-ambarom-vignette.html#cb502-4" tabindex="-1"></a>    <span class="at">returnclass =</span> <span class="st">&quot;sf&quot;</span>,</span>
-<span id="cb502-5"><a href="c14-ambarom-vignette.html#cb502-5" tabindex="-1"></a>    <span class="at">continent =</span> <span class="fu">c</span>(<span class="st">&quot;North America&quot;</span>, <span class="st">&quot;South America&quot;</span>)</span>
-<span id="cb502-6"><a href="c14-ambarom-vignette.html#cb502-6" tabindex="-1"></a>  )</span>
-<span id="cb502-7"><a href="c14-ambarom-vignette.html#cb502-7" tabindex="-1"></a></span>
-<span id="cb502-8"><a href="c14-ambarom-vignette.html#cb502-8" tabindex="-1"></a>country_shape <span class="sc">%&gt;%</span></span>
-<span id="cb502-9"><a href="c14-ambarom-vignette.html#cb502-9" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb502-10"><a href="c14-ambarom-vignette.html#cb502-10" tabindex="-1"></a>  <span class="fu">geom_sf</span>()</span></code></pre></div>
+<p>While the table effectively presents the data, a map could also be insightful. To generate maps of the countries, we can use the package {rnaturalearth} and subset North and South America with the <code>ne_countries()</code> function <span class="citation">(<a href="#ref-R-rnaturalearth">Massicotte and South 2023</a>)</span>. The function returns an sf (simple features) object with many columns <span class="citation">(<a href="#ref-sf2023">Pebesma and Bivand 2023</a>)</span>, but most importantly, <code>soverignt</code> (sovereignty), <code>geounit</code> (country or territory), and <code>geometry</code> (the shape). For an example of the difference between sovereignty and country/territory, the United States, Puerto Rico, and the US Virgin Islands are all separate units with the same sovereignty. A map without data is plotted in Figure <a href="c14-ambarom-vignette.html#fig:ambarom-americas-map">14.1</a> using <code>geom_sf()</code> from the {ggplot2} package which plots sf objects <span class="citation">(<a href="#ref-ggplot22016">Wickham 2016</a>)</span>.</p>
+<div class="sourceCode" id="cb497"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb497-1"><a href="c14-ambarom-vignette.html#cb497-1" tabindex="-1"></a>country_shape <span class="ot">&lt;-</span></span>
+<span id="cb497-2"><a href="c14-ambarom-vignette.html#cb497-2" tabindex="-1"></a>  <span class="fu">ne_countries</span>(</span>
+<span id="cb497-3"><a href="c14-ambarom-vignette.html#cb497-3" tabindex="-1"></a>    <span class="at">scale =</span> <span class="st">&quot;medium&quot;</span>,</span>
+<span id="cb497-4"><a href="c14-ambarom-vignette.html#cb497-4" tabindex="-1"></a>    <span class="at">returnclass =</span> <span class="st">&quot;sf&quot;</span>,</span>
+<span id="cb497-5"><a href="c14-ambarom-vignette.html#cb497-5" tabindex="-1"></a>    <span class="at">continent =</span> <span class="fu">c</span>(<span class="st">&quot;North America&quot;</span>, <span class="st">&quot;South America&quot;</span>)</span>
+<span id="cb497-6"><a href="c14-ambarom-vignette.html#cb497-6" tabindex="-1"></a>  )</span>
+<span id="cb497-7"><a href="c14-ambarom-vignette.html#cb497-7" tabindex="-1"></a></span>
+<span id="cb497-8"><a href="c14-ambarom-vignette.html#cb497-8" tabindex="-1"></a>country_shape <span class="sc">%&gt;%</span></span>
+<span id="cb497-9"><a href="c14-ambarom-vignette.html#cb497-9" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb497-10"><a href="c14-ambarom-vignette.html#cb497-10" tabindex="-1"></a>  <span class="fu">geom_sf</span>()</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:ambarom-americas-map"></span>
 <img src="bookdown_files/figure-html/ambarom-americas-map-1.png" alt="Map of North and South America" width="672" />
 <p class="caption">
 FIGURE 14.1: Map of North and South America
 </p>
 </div>
-<p>The map in Figure <a href="c14-ambarom-vignette.html#fig:ambarom-americas-map">14.1</a> appears very wide due to the Aleutian islands in Alaska extending into the Eastern Hemisphere. We can crop the shapefile to include only the Western Hemisphere, which removes some of the trailing islands of Alaska.</p>
-<div class="sourceCode" id="cb503"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb503-1"><a href="c14-ambarom-vignette.html#cb503-1" tabindex="-1"></a>country_shape_crop <span class="ot">&lt;-</span> country_shape <span class="sc">%&gt;%</span></span>
-<span id="cb503-2"><a href="c14-ambarom-vignette.html#cb503-2" tabindex="-1"></a>  <span class="fu">st_crop</span>(<span class="fu">c</span>(<span class="at">xmin =</span> <span class="sc">-</span><span class="dv">180</span>,</span>
-<span id="cb503-3"><a href="c14-ambarom-vignette.html#cb503-3" tabindex="-1"></a>            <span class="at">xmax =</span> <span class="dv">0</span>,</span>
-<span id="cb503-4"><a href="c14-ambarom-vignette.html#cb503-4" tabindex="-1"></a>            <span class="at">ymin =</span> <span class="sc">-</span><span class="dv">90</span>,</span>
-<span id="cb503-5"><a href="c14-ambarom-vignette.html#cb503-5" tabindex="-1"></a>            <span class="at">ymax =</span> <span class="dv">90</span>)) </span></code></pre></div>
+<p>The map in Figure <a href="c14-ambarom-vignette.html#fig:ambarom-americas-map">14.1</a> appears very wide due to the Aleutian islands in Alaska extending into the Eastern Hemisphere. We can crop the shapefile to include only the Western Hemisphere, which removes some of the trailing islands of Alaska using <code>st_crop()</code> from the {sf} package.</p>
+<div class="sourceCode" id="cb498"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb498-1"><a href="c14-ambarom-vignette.html#cb498-1" tabindex="-1"></a>country_shape_crop <span class="ot">&lt;-</span> country_shape <span class="sc">%&gt;%</span></span>
+<span id="cb498-2"><a href="c14-ambarom-vignette.html#cb498-2" tabindex="-1"></a>  <span class="fu">st_crop</span>(<span class="fu">c</span>(<span class="at">xmin =</span> <span class="sc">-</span><span class="dv">180</span>,</span>
+<span id="cb498-3"><a href="c14-ambarom-vignette.html#cb498-3" tabindex="-1"></a>            <span class="at">xmax =</span> <span class="dv">0</span>,</span>
+<span id="cb498-4"><a href="c14-ambarom-vignette.html#cb498-4" tabindex="-1"></a>            <span class="at">ymin =</span> <span class="sc">-</span><span class="dv">90</span>,</span>
+<span id="cb498-5"><a href="c14-ambarom-vignette.html#cb498-5" tabindex="-1"></a>            <span class="at">ymax =</span> <span class="dv">90</span>)) </span></code></pre></div>
 <p>Now that we have the necessary shape files, our next step is to match our survey data to the map. Countries can be named differently (e.g., “U.S”, “U.S.A”, “United States”). To make sure we can visualize our survey data on the map, we need to match the country names in both the survey data and the map data. To do this, we can use the <code>anti_join()</code> function to identify the countries in the survey data that aren’t in the map data. For example, as shown below, the United States is referred to as “United States” in the survey data but “United States of America” in the map data. Table <a href="c14-ambarom-vignette.html#tab:ambarom-map-merge-check-1-tab">14.3</a> shows the countries in the survey data but not the map data and Table <a href="c14-ambarom-vignette.html#tab:ambarom-map-merge-check-2-tab">14.4</a> shows the countries in the map data but not the survey data.</p>
-<div class="sourceCode" id="cb504"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb504-1"><a href="c14-ambarom-vignette.html#cb504-1" tabindex="-1"></a>survey_country_list <span class="ot">&lt;-</span> ambarom <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(Country)</span>
-<span id="cb504-2"><a href="c14-ambarom-vignette.html#cb504-2" tabindex="-1"></a></span>
-<span id="cb504-3"><a href="c14-ambarom-vignette.html#cb504-3" tabindex="-1"></a>survey_country_list_gt <span class="ot">&lt;-</span> survey_country_list <span class="sc">%&gt;%</span></span>
-<span id="cb504-4"><a href="c14-ambarom-vignette.html#cb504-4" tabindex="-1"></a>  <span class="fu">anti_join</span>(country_shape_crop, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;Country&quot;</span> <span class="ot">=</span> <span class="st">&quot;geounit&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb504-5"><a href="c14-ambarom-vignette.html#cb504-5" tabindex="-1"></a>  <span class="fu">gt</span>()</span></code></pre></div>
-<div class="sourceCode" id="cb505"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb505-1"><a href="c14-ambarom-vignette.html#cb505-1" tabindex="-1"></a>survey_country_list_gt</span></code></pre></div>
+<div class="sourceCode" id="cb499"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb499-1"><a href="c14-ambarom-vignette.html#cb499-1" tabindex="-1"></a>survey_country_list <span class="ot">&lt;-</span> ambarom <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(Country)</span>
+<span id="cb499-2"><a href="c14-ambarom-vignette.html#cb499-2" tabindex="-1"></a></span>
+<span id="cb499-3"><a href="c14-ambarom-vignette.html#cb499-3" tabindex="-1"></a>survey_country_list_gt <span class="ot">&lt;-</span> survey_country_list <span class="sc">%&gt;%</span></span>
+<span id="cb499-4"><a href="c14-ambarom-vignette.html#cb499-4" tabindex="-1"></a>  <span class="fu">anti_join</span>(country_shape_crop, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;Country&quot;</span> <span class="ot">=</span> <span class="st">&quot;geounit&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb499-5"><a href="c14-ambarom-vignette.html#cb499-5" tabindex="-1"></a>  <span class="fu">gt</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb500"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb500-1"><a href="c14-ambarom-vignette.html#cb500-1" tabindex="-1"></a>survey_country_list_gt</span></code></pre></div>
 
 <div id="sgxskozkog" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#sgxskozkog table {
@@ -2455,12 +2454,12 @@ FIGURE 14.1: Map of North and South America
   
 </table>
 </div>
-<div class="sourceCode" id="cb506"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb506-1"><a href="c14-ambarom-vignette.html#cb506-1" tabindex="-1"></a>map_country_list_gt<span class="ot">&lt;-</span>country_shape_crop <span class="sc">%&gt;%</span> <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb506-2"><a href="c14-ambarom-vignette.html#cb506-2" tabindex="-1"></a>  <span class="fu">select</span>(geounit, sovereignt) <span class="sc">%&gt;%</span></span>
-<span id="cb506-3"><a href="c14-ambarom-vignette.html#cb506-3" tabindex="-1"></a>  <span class="fu">anti_join</span>(survey_country_list, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span> <span class="ot">=</span> <span class="st">&quot;Country&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb506-4"><a href="c14-ambarom-vignette.html#cb506-4" tabindex="-1"></a>  <span class="fu">arrange</span>(geounit) <span class="sc">%&gt;%</span></span>
-<span id="cb506-5"><a href="c14-ambarom-vignette.html#cb506-5" tabindex="-1"></a>  <span class="fu">gt</span>()</span></code></pre></div>
-<div class="sourceCode" id="cb507"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb507-1"><a href="c14-ambarom-vignette.html#cb507-1" tabindex="-1"></a>map_country_list_gt</span></code></pre></div>
+<div class="sourceCode" id="cb501"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb501-1"><a href="c14-ambarom-vignette.html#cb501-1" tabindex="-1"></a>map_country_list_gt<span class="ot">&lt;-</span>country_shape_crop <span class="sc">%&gt;%</span> <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb501-2"><a href="c14-ambarom-vignette.html#cb501-2" tabindex="-1"></a>  <span class="fu">select</span>(geounit, sovereignt) <span class="sc">%&gt;%</span></span>
+<span id="cb501-3"><a href="c14-ambarom-vignette.html#cb501-3" tabindex="-1"></a>  <span class="fu">anti_join</span>(survey_country_list, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span> <span class="ot">=</span> <span class="st">&quot;Country&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb501-4"><a href="c14-ambarom-vignette.html#cb501-4" tabindex="-1"></a>  <span class="fu">arrange</span>(geounit) <span class="sc">%&gt;%</span></span>
+<span id="cb501-5"><a href="c14-ambarom-vignette.html#cb501-5" tabindex="-1"></a>  <span class="fu">gt</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb502"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb502-1"><a href="c14-ambarom-vignette.html#cb502-1" tabindex="-1"></a>map_country_list_gt</span></code></pre></div>
 
 <div id="ibkckwmzsj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#ibkckwmzsj table {
@@ -2978,64 +2977,64 @@ FIGURE 14.1: Map of North and South America
 </table>
 </div>
 <p>There are several ways to fix the mismatched names for a successful join. The simplest solution is to rename the data in the shape object before merging. Since only one country name in the survey data differs from the map data, we rename the map data accordingly.</p>
-<div class="sourceCode" id="cb508"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb508-1"><a href="c14-ambarom-vignette.html#cb508-1" tabindex="-1"></a>country_shape_upd <span class="ot">&lt;-</span> country_shape_crop <span class="sc">%&gt;%</span></span>
-<span id="cb508-2"><a href="c14-ambarom-vignette.html#cb508-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">geounit =</span> <span class="fu">if_else</span>(geounit <span class="sc">==</span> <span class="st">&quot;United States of America&quot;</span>, </span>
-<span id="cb508-3"><a href="c14-ambarom-vignette.html#cb508-3" tabindex="-1"></a>                           <span class="st">&quot;United States&quot;</span>, geounit))</span></code></pre></div>
-<p>Now that the country names match, we can merge the survey and map data and then plot the data. We begin with the map file and merge it with the survey estimates generated in Section <a href="c14-ambarom-vignette.html#ambarom-estimates">14.5</a> (<code>covid_worry_country_ests</code> and <code>covid_educ_ests</code>). We use the tidyverse function of <code>full_join()</code>, which joins the rows in the map data and the survey estimates based on the columns <code>geounit</code> and <code>Country</code>. A full join keeps all the rows from both datasets, matching rows when possible. For any rows without matches, the function fills in an <code>NA</code> for the missing value.</p>
-<div class="sourceCode" id="cb509"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb509-1"><a href="c14-ambarom-vignette.html#cb509-1" tabindex="-1"></a>covid_sf <span class="ot">&lt;-</span> country_shape_upd <span class="sc">%&gt;%</span></span>
-<span id="cb509-2"><a href="c14-ambarom-vignette.html#cb509-2" tabindex="-1"></a>  <span class="fu">full_join</span>(covid_worry_country_ests, </span>
-<span id="cb509-3"><a href="c14-ambarom-vignette.html#cb509-3" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span> <span class="ot">=</span> <span class="st">&quot;Country&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb509-4"><a href="c14-ambarom-vignette.html#cb509-4" tabindex="-1"></a>  <span class="fu">full_join</span>(covid_educ_ests,</span>
-<span id="cb509-5"><a href="c14-ambarom-vignette.html#cb509-5" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span> <span class="ot">=</span> <span class="st">&quot;Country&quot;</span>))</span></code></pre></div>
-<p>After the merge, we create two figures that display the population estimates for the percentage of people worried about COVID (Figure <a href="c14-ambarom-vignette.html#fig:ambarom-make-maps-covid">14.2</a>) and the percentage of households with at least one child participating in virtual or hybrid learning (Figure <a href="c14-ambarom-vignette.html#fig:ambarom-make-maps-covid-ed">14.3</a>).</p>
-<div class="sourceCode" id="cb510"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb510-1"><a href="c14-ambarom-vignette.html#cb510-1" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb510-2"><a href="c14-ambarom-vignette.html#cb510-2" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> covid_sf,</span>
-<span id="cb510-3"><a href="c14-ambarom-vignette.html#cb510-3" tabindex="-1"></a>          <span class="fu">aes</span>(<span class="at">fill =</span> p, <span class="at">geometry =</span> geometry),</span>
-<span id="cb510-4"><a href="c14-ambarom-vignette.html#cb510-4" tabindex="-1"></a>          <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span>) <span class="sc">+</span></span>
-<span id="cb510-5"><a href="c14-ambarom-vignette.html#cb510-5" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
-<span id="cb510-6"><a href="c14-ambarom-vignette.html#cb510-6" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;colorbar&quot;</span>,</span>
-<span id="cb510-7"><a href="c14-ambarom-vignette.html#cb510-7" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Percent&quot;</span>,</span>
-<span id="cb510-8"><a href="c14-ambarom-vignette.html#cb510-8" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span>comma,</span>
-<span id="cb510-9"><a href="c14-ambarom-vignette.html#cb510-9" tabindex="-1"></a>    <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087e8b&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>),</span>
-<span id="cb510-10"><a href="c14-ambarom-vignette.html#cb510-10" tabindex="-1"></a>    <span class="at">na.value =</span> <span class="cn">NA</span></span>
-<span id="cb510-11"><a href="c14-ambarom-vignette.html#cb510-11" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb510-12"><a href="c14-ambarom-vignette.html#cb510-12" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(</span>
-<span id="cb510-13"><a href="c14-ambarom-vignette.html#cb510-13" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">filter</span>(covid_sf, <span class="fu">is.na</span>(p)),</span>
-<span id="cb510-14"><a href="c14-ambarom-vignette.html#cb510-14" tabindex="-1"></a>    <span class="at">pattern =</span> <span class="st">&quot;crosshatch&quot;</span>,</span>
-<span id="cb510-15"><a href="c14-ambarom-vignette.html#cb510-15" tabindex="-1"></a>    <span class="at">pattern_fill =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
-<span id="cb510-16"><a href="c14-ambarom-vignette.html#cb510-16" tabindex="-1"></a>    <span class="at">pattern_color =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
-<span id="cb510-17"><a href="c14-ambarom-vignette.html#cb510-17" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NA</span>,</span>
-<span id="cb510-18"><a href="c14-ambarom-vignette.html#cb510-18" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
-<span id="cb510-19"><a href="c14-ambarom-vignette.html#cb510-19" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb510-20"><a href="c14-ambarom-vignette.html#cb510-20" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb503"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb503-1"><a href="c14-ambarom-vignette.html#cb503-1" tabindex="-1"></a>country_shape_upd <span class="ot">&lt;-</span> country_shape_crop <span class="sc">%&gt;%</span></span>
+<span id="cb503-2"><a href="c14-ambarom-vignette.html#cb503-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">geounit =</span> <span class="fu">if_else</span>(geounit <span class="sc">==</span> <span class="st">&quot;United States of America&quot;</span>, </span>
+<span id="cb503-3"><a href="c14-ambarom-vignette.html#cb503-3" tabindex="-1"></a>                           <span class="st">&quot;United States&quot;</span>, geounit))</span></code></pre></div>
+<p>Now that the country names match, we can merge the survey and map data and then plot the data. We begin with the map file and merge it with the survey estimates generated in Section <a href="c14-ambarom-vignette.html#ambarom-estimates">14.5</a> (<code>covid_worry_country_ests</code> and <code>covid_educ_ests</code>). We use the {sf} function of <code>full_join()</code>, which joins the rows in the map data and the survey estimates based on the columns <code>geounit</code> and <code>Country</code>. A full join keeps all the rows from both datasets, matching rows when possible. For any rows without matches, the function fills in an <code>NA</code> for the missing value <span class="citation">(<a href="#ref-sf2023">Pebesma and Bivand 2023</a>)</span>.</p>
+<div class="sourceCode" id="cb504"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb504-1"><a href="c14-ambarom-vignette.html#cb504-1" tabindex="-1"></a>covid_sf <span class="ot">&lt;-</span> country_shape_upd <span class="sc">%&gt;%</span></span>
+<span id="cb504-2"><a href="c14-ambarom-vignette.html#cb504-2" tabindex="-1"></a>  <span class="fu">full_join</span>(covid_worry_country_ests, </span>
+<span id="cb504-3"><a href="c14-ambarom-vignette.html#cb504-3" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span> <span class="ot">=</span> <span class="st">&quot;Country&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb504-4"><a href="c14-ambarom-vignette.html#cb504-4" tabindex="-1"></a>  <span class="fu">full_join</span>(covid_educ_ests,</span>
+<span id="cb504-5"><a href="c14-ambarom-vignette.html#cb504-5" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geounit&quot;</span> <span class="ot">=</span> <span class="st">&quot;Country&quot;</span>))</span></code></pre></div>
+<p>After the merge, we create two figures that display the population estimates for the percentage of people worried about COVID (Figure <a href="c14-ambarom-vignette.html#fig:ambarom-make-maps-covid">14.2</a>) and the percentage of households with at least one child participating in virtual or hybrid learning (Figure <a href="c14-ambarom-vignette.html#fig:ambarom-make-maps-covid-ed">14.3</a>). We also add a cross-hatching pattern to the countries without any data using the <code>geom_sf_pattern()</code> function from the {ggpattern} package <span class="citation">(<a href="#ref-R-ggpattern">FC, Davis, and ggplot2 authors 2022</a>)</span>.</p>
+<div class="sourceCode" id="cb505"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb505-1"><a href="c14-ambarom-vignette.html#cb505-1" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb505-2"><a href="c14-ambarom-vignette.html#cb505-2" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> covid_sf,</span>
+<span id="cb505-3"><a href="c14-ambarom-vignette.html#cb505-3" tabindex="-1"></a>          <span class="fu">aes</span>(<span class="at">fill =</span> p, <span class="at">geometry =</span> geometry),</span>
+<span id="cb505-4"><a href="c14-ambarom-vignette.html#cb505-4" tabindex="-1"></a>          <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span>) <span class="sc">+</span></span>
+<span id="cb505-5"><a href="c14-ambarom-vignette.html#cb505-5" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
+<span id="cb505-6"><a href="c14-ambarom-vignette.html#cb505-6" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;colorbar&quot;</span>,</span>
+<span id="cb505-7"><a href="c14-ambarom-vignette.html#cb505-7" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Percent&quot;</span>,</span>
+<span id="cb505-8"><a href="c14-ambarom-vignette.html#cb505-8" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span>comma,</span>
+<span id="cb505-9"><a href="c14-ambarom-vignette.html#cb505-9" tabindex="-1"></a>    <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087e8b&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>),</span>
+<span id="cb505-10"><a href="c14-ambarom-vignette.html#cb505-10" tabindex="-1"></a>    <span class="at">na.value =</span> <span class="cn">NA</span></span>
+<span id="cb505-11"><a href="c14-ambarom-vignette.html#cb505-11" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb505-12"><a href="c14-ambarom-vignette.html#cb505-12" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(</span>
+<span id="cb505-13"><a href="c14-ambarom-vignette.html#cb505-13" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">filter</span>(covid_sf, <span class="fu">is.na</span>(p)),</span>
+<span id="cb505-14"><a href="c14-ambarom-vignette.html#cb505-14" tabindex="-1"></a>    <span class="at">pattern =</span> <span class="st">&quot;crosshatch&quot;</span>,</span>
+<span id="cb505-15"><a href="c14-ambarom-vignette.html#cb505-15" tabindex="-1"></a>    <span class="at">pattern_fill =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
+<span id="cb505-16"><a href="c14-ambarom-vignette.html#cb505-16" tabindex="-1"></a>    <span class="at">pattern_color =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
+<span id="cb505-17"><a href="c14-ambarom-vignette.html#cb505-17" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NA</span>,</span>
+<span id="cb505-18"><a href="c14-ambarom-vignette.html#cb505-18" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
+<span id="cb505-19"><a href="c14-ambarom-vignette.html#cb505-19" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb505-20"><a href="c14-ambarom-vignette.html#cb505-20" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:ambarom-make-maps-covid"></span>
 <img src="bookdown_files/figure-html/ambarom-make-maps-covid-1.png" alt="Percent of households worried someone in their household will get COVID-19 in the next 3 months by country" width="672" />
 <p class="caption">
 FIGURE 14.2: Percent of households worried someone in their household will get COVID-19 in the next 3 months by country
 </p>
 </div>
-<div class="sourceCode" id="cb511"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb511-1"><a href="c14-ambarom-vignette.html#cb511-1" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb511-2"><a href="c14-ambarom-vignette.html#cb511-2" tabindex="-1"></a>  <span class="fu">geom_sf</span>(</span>
-<span id="cb511-3"><a href="c14-ambarom-vignette.html#cb511-3" tabindex="-1"></a>    <span class="at">data =</span> covid_sf,</span>
-<span id="cb511-4"><a href="c14-ambarom-vignette.html#cb511-4" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">fill =</span> p_mediumchange, <span class="at">geometry =</span> geometry),</span>
-<span id="cb511-5"><a href="c14-ambarom-vignette.html#cb511-5" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
-<span id="cb511-6"><a href="c14-ambarom-vignette.html#cb511-6" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb511-7"><a href="c14-ambarom-vignette.html#cb511-7" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
-<span id="cb511-8"><a href="c14-ambarom-vignette.html#cb511-8" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;colorbar&quot;</span>,</span>
-<span id="cb511-9"><a href="c14-ambarom-vignette.html#cb511-9" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Percent&quot;</span>,</span>
-<span id="cb511-10"><a href="c14-ambarom-vignette.html#cb511-10" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span>comma,</span>
-<span id="cb511-11"><a href="c14-ambarom-vignette.html#cb511-11" tabindex="-1"></a>    <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087e8b&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>),</span>
-<span id="cb511-12"><a href="c14-ambarom-vignette.html#cb511-12" tabindex="-1"></a>    <span class="at">na.value =</span> <span class="cn">NA</span></span>
-<span id="cb511-13"><a href="c14-ambarom-vignette.html#cb511-13" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb511-14"><a href="c14-ambarom-vignette.html#cb511-14" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(</span>
-<span id="cb511-15"><a href="c14-ambarom-vignette.html#cb511-15" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">filter</span>(covid_sf, <span class="fu">is.na</span>(p_mediumchange)),</span>
-<span id="cb511-16"><a href="c14-ambarom-vignette.html#cb511-16" tabindex="-1"></a>    <span class="at">pattern =</span> <span class="st">&quot;crosshatch&quot;</span>,</span>
-<span id="cb511-17"><a href="c14-ambarom-vignette.html#cb511-17" tabindex="-1"></a>    <span class="at">pattern_fill =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
-<span id="cb511-18"><a href="c14-ambarom-vignette.html#cb511-18" tabindex="-1"></a>    <span class="at">pattern_color =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
-<span id="cb511-19"><a href="c14-ambarom-vignette.html#cb511-19" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NA</span>,</span>
-<span id="cb511-20"><a href="c14-ambarom-vignette.html#cb511-20" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
-<span id="cb511-21"><a href="c14-ambarom-vignette.html#cb511-21" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb511-22"><a href="c14-ambarom-vignette.html#cb511-22" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb506"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb506-1"><a href="c14-ambarom-vignette.html#cb506-1" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb506-2"><a href="c14-ambarom-vignette.html#cb506-2" tabindex="-1"></a>  <span class="fu">geom_sf</span>(</span>
+<span id="cb506-3"><a href="c14-ambarom-vignette.html#cb506-3" tabindex="-1"></a>    <span class="at">data =</span> covid_sf,</span>
+<span id="cb506-4"><a href="c14-ambarom-vignette.html#cb506-4" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">fill =</span> p_mediumchange, <span class="at">geometry =</span> geometry),</span>
+<span id="cb506-5"><a href="c14-ambarom-vignette.html#cb506-5" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
+<span id="cb506-6"><a href="c14-ambarom-vignette.html#cb506-6" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb506-7"><a href="c14-ambarom-vignette.html#cb506-7" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
+<span id="cb506-8"><a href="c14-ambarom-vignette.html#cb506-8" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;colorbar&quot;</span>,</span>
+<span id="cb506-9"><a href="c14-ambarom-vignette.html#cb506-9" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Percent&quot;</span>,</span>
+<span id="cb506-10"><a href="c14-ambarom-vignette.html#cb506-10" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span>comma,</span>
+<span id="cb506-11"><a href="c14-ambarom-vignette.html#cb506-11" tabindex="-1"></a>    <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087e8b&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>),</span>
+<span id="cb506-12"><a href="c14-ambarom-vignette.html#cb506-12" tabindex="-1"></a>    <span class="at">na.value =</span> <span class="cn">NA</span></span>
+<span id="cb506-13"><a href="c14-ambarom-vignette.html#cb506-13" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb506-14"><a href="c14-ambarom-vignette.html#cb506-14" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(</span>
+<span id="cb506-15"><a href="c14-ambarom-vignette.html#cb506-15" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">filter</span>(covid_sf, <span class="fu">is.na</span>(p_mediumchange)),</span>
+<span id="cb506-16"><a href="c14-ambarom-vignette.html#cb506-16" tabindex="-1"></a>    <span class="at">pattern =</span> <span class="st">&quot;crosshatch&quot;</span>,</span>
+<span id="cb506-17"><a href="c14-ambarom-vignette.html#cb506-17" tabindex="-1"></a>    <span class="at">pattern_fill =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
+<span id="cb506-18"><a href="c14-ambarom-vignette.html#cb506-18" tabindex="-1"></a>    <span class="at">pattern_color =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
+<span id="cb506-19"><a href="c14-ambarom-vignette.html#cb506-19" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NA</span>,</span>
+<span id="cb506-20"><a href="c14-ambarom-vignette.html#cb506-20" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
+<span id="cb506-21"><a href="c14-ambarom-vignette.html#cb506-21" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb506-22"><a href="c14-ambarom-vignette.html#cb506-22" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:ambarom-make-maps-covid-ed"></span>
 <img src="bookdown_files/figure-html/ambarom-make-maps-covid-ed-1.png" alt="Percent of households who had at least one child participate in virtual or hybrid learning" width="672" />
 <p class="caption">
@@ -3043,31 +3042,31 @@ FIGURE 14.3: Percent of households who had at least one child participate in vir
 </p>
 </div>
 <p>In Figure <a href="c14-ambarom-vignette.html#fig:ambarom-make-maps-covid-ed">14.3</a>, we observe missing data (represented by the crosshatch pattern) for Canada, Mexico, and the United States. The questionnaires indicate that these three countries did not include the education question in the survey. To focus on countries with available data, we can remove North America from the map and show only Central and South America. We do this below by restricting the shape files to Latin America and the Caribbean, as depicted in Figure <a href="c14-ambarom-vignette.html#fig:ambarom-make-maps-covid-ed-c-s">14.4</a>.</p>
-<div class="sourceCode" id="cb512"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb512-1"><a href="c14-ambarom-vignette.html#cb512-1" tabindex="-1"></a>covid_c_s <span class="ot">&lt;-</span> covid_sf <span class="sc">%&gt;%</span></span>
-<span id="cb512-2"><a href="c14-ambarom-vignette.html#cb512-2" tabindex="-1"></a>  <span class="fu">filter</span>(region_wb <span class="sc">==</span> <span class="st">&quot;Latin America &amp; Caribbean&quot;</span>)</span>
-<span id="cb512-3"><a href="c14-ambarom-vignette.html#cb512-3" tabindex="-1"></a></span>
-<span id="cb512-4"><a href="c14-ambarom-vignette.html#cb512-4" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb512-5"><a href="c14-ambarom-vignette.html#cb512-5" tabindex="-1"></a>  <span class="fu">geom_sf</span>(</span>
-<span id="cb512-6"><a href="c14-ambarom-vignette.html#cb512-6" tabindex="-1"></a>    <span class="at">data =</span> covid_c_s,</span>
-<span id="cb512-7"><a href="c14-ambarom-vignette.html#cb512-7" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">fill =</span> p_mediumchange, <span class="at">geometry =</span> geometry),</span>
-<span id="cb512-8"><a href="c14-ambarom-vignette.html#cb512-8" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
-<span id="cb512-9"><a href="c14-ambarom-vignette.html#cb512-9" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb512-10"><a href="c14-ambarom-vignette.html#cb512-10" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
-<span id="cb512-11"><a href="c14-ambarom-vignette.html#cb512-11" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;colorbar&quot;</span>,</span>
-<span id="cb512-12"><a href="c14-ambarom-vignette.html#cb512-12" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Percent&quot;</span>,</span>
-<span id="cb512-13"><a href="c14-ambarom-vignette.html#cb512-13" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span>comma,</span>
-<span id="cb512-14"><a href="c14-ambarom-vignette.html#cb512-14" tabindex="-1"></a>    <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087e8b&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>),</span>
-<span id="cb512-15"><a href="c14-ambarom-vignette.html#cb512-15" tabindex="-1"></a>    <span class="at">na.value =</span> <span class="cn">NA</span></span>
-<span id="cb512-16"><a href="c14-ambarom-vignette.html#cb512-16" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb512-17"><a href="c14-ambarom-vignette.html#cb512-17" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(</span>
-<span id="cb512-18"><a href="c14-ambarom-vignette.html#cb512-18" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">filter</span>(covid_c_s, <span class="fu">is.na</span>(p_mediumchange)),</span>
-<span id="cb512-19"><a href="c14-ambarom-vignette.html#cb512-19" tabindex="-1"></a>    <span class="at">pattern =</span> <span class="st">&quot;crosshatch&quot;</span>,</span>
-<span id="cb512-20"><a href="c14-ambarom-vignette.html#cb512-20" tabindex="-1"></a>    <span class="at">pattern_fill =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
-<span id="cb512-21"><a href="c14-ambarom-vignette.html#cb512-21" tabindex="-1"></a>    <span class="at">pattern_color =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
-<span id="cb512-22"><a href="c14-ambarom-vignette.html#cb512-22" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NA</span>,</span>
-<span id="cb512-23"><a href="c14-ambarom-vignette.html#cb512-23" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
-<span id="cb512-24"><a href="c14-ambarom-vignette.html#cb512-24" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb512-25"><a href="c14-ambarom-vignette.html#cb512-25" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb507"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb507-1"><a href="c14-ambarom-vignette.html#cb507-1" tabindex="-1"></a>covid_c_s <span class="ot">&lt;-</span> covid_sf <span class="sc">%&gt;%</span></span>
+<span id="cb507-2"><a href="c14-ambarom-vignette.html#cb507-2" tabindex="-1"></a>  <span class="fu">filter</span>(region_wb <span class="sc">==</span> <span class="st">&quot;Latin America &amp; Caribbean&quot;</span>)</span>
+<span id="cb507-3"><a href="c14-ambarom-vignette.html#cb507-3" tabindex="-1"></a></span>
+<span id="cb507-4"><a href="c14-ambarom-vignette.html#cb507-4" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb507-5"><a href="c14-ambarom-vignette.html#cb507-5" tabindex="-1"></a>  <span class="fu">geom_sf</span>(</span>
+<span id="cb507-6"><a href="c14-ambarom-vignette.html#cb507-6" tabindex="-1"></a>    <span class="at">data =</span> covid_c_s,</span>
+<span id="cb507-7"><a href="c14-ambarom-vignette.html#cb507-7" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">fill =</span> p_mediumchange, <span class="at">geometry =</span> geometry),</span>
+<span id="cb507-8"><a href="c14-ambarom-vignette.html#cb507-8" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
+<span id="cb507-9"><a href="c14-ambarom-vignette.html#cb507-9" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb507-10"><a href="c14-ambarom-vignette.html#cb507-10" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
+<span id="cb507-11"><a href="c14-ambarom-vignette.html#cb507-11" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;colorbar&quot;</span>,</span>
+<span id="cb507-12"><a href="c14-ambarom-vignette.html#cb507-12" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Percent&quot;</span>,</span>
+<span id="cb507-13"><a href="c14-ambarom-vignette.html#cb507-13" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span>comma,</span>
+<span id="cb507-14"><a href="c14-ambarom-vignette.html#cb507-14" tabindex="-1"></a>    <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087e8b&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>),</span>
+<span id="cb507-15"><a href="c14-ambarom-vignette.html#cb507-15" tabindex="-1"></a>    <span class="at">na.value =</span> <span class="cn">NA</span></span>
+<span id="cb507-16"><a href="c14-ambarom-vignette.html#cb507-16" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb507-17"><a href="c14-ambarom-vignette.html#cb507-17" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(</span>
+<span id="cb507-18"><a href="c14-ambarom-vignette.html#cb507-18" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">filter</span>(covid_c_s, <span class="fu">is.na</span>(p_mediumchange)),</span>
+<span id="cb507-19"><a href="c14-ambarom-vignette.html#cb507-19" tabindex="-1"></a>    <span class="at">pattern =</span> <span class="st">&quot;crosshatch&quot;</span>,</span>
+<span id="cb507-20"><a href="c14-ambarom-vignette.html#cb507-20" tabindex="-1"></a>    <span class="at">pattern_fill =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
+<span id="cb507-21"><a href="c14-ambarom-vignette.html#cb507-21" tabindex="-1"></a>    <span class="at">pattern_color =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
+<span id="cb507-22"><a href="c14-ambarom-vignette.html#cb507-22" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NA</span>,</span>
+<span id="cb507-23"><a href="c14-ambarom-vignette.html#cb507-23" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
+<span id="cb507-24"><a href="c14-ambarom-vignette.html#cb507-24" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb507-25"><a href="c14-ambarom-vignette.html#cb507-25" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:ambarom-make-maps-covid-ed-c-s"></span>
 <img src="bookdown_files/figure-html/ambarom-make-maps-covid-ed-c-s-1.png" alt="Percent of  households who had at least one child participate in virtual or hybrid learning, Central and South America" width="672" />
 <p class="caption">
@@ -3079,7 +3078,7 @@ FIGURE 14.4: Percent of households who had at least one child participate in vir
 <div id="exercises-4" class="section level2 hasAnchor" number="14.7">
 <h2><span class="header-section-number">14.7</span> Exercises<a href="c14-ambarom-vignette.html#exercises-4" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <ol style="list-style-type: decimal">
-<li><p>Calculate the percentage of households with broadband internet and those with any internet at home, including from a phone or tablet. Hint: if you come across countries with 0% internet usage, you may want to filter by something first.</p></li>
+<li><p>Calculate the percentage of households with broadband internet in and those with any internet at home, including from a phone or tablet in Latin America and the Caribbean. Hint: if you come across countries with 0% internet usage, you may want to filter by something first.</p></li>
 <li><p>Create a faceted map showing both broadband internet and any internet usage.</p></li>
 </ol>
 
@@ -3090,6 +3089,12 @@ FIGURE 14.4: Percent of households who had at least one child participate in vir
 
 <h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-R-ggpattern" class="csl-entry">
+FC, Mike, Trevor L Davis, and ggplot2 authors. 2022. <em><span class="nocase">ggpattern</span>: Ggplot2 Pattern Geoms</em>.
+</div>
+<div id="ref-R-gt" class="csl-entry">
+Iannone, Richard, Joe Cheng, Barret Schloerke, Ellis Hughes, Alexandra Lauer, and JooYoung Seo. 2023. <em><span class="nocase">gt</span>: Easily Create Presentation-Ready Display Tables</em>.
+</div>
 <div id="ref-lapop-can" class="csl-entry">
 LAPOP. 2021a. <span>“AmericasBarometer 2021 - Canada: Technical Information.”</span> Vanderbilt University; <a href="http://datasets.americasbarometer.org/database/files/ABCAN2021-Technical-Report-v1.0-FINAL-eng-110921.pdf" class="uri">http://datasets.americasbarometer.org/database/files/ABCAN2021-Technical-Report-v1.0-FINAL-eng-110921.pdf</a>.
 </div>
@@ -3108,11 +3113,26 @@ LAPOP. 2021a. <span>“AmericasBarometer 2021 - Canada: Technical Information.�
 <div id="ref-lapop" class="csl-entry">
 ———. 2023b. <span>“The AmericasBarometer by the LAPOP Lab.”</span> <a href="www.vanderbilt.edu/lapop" class="uri">www.vanderbilt.edu/lapop</a>.
 </div>
+<div id="ref-R-rnaturalearth" class="csl-entry">
+Massicotte, Philippe, and Andy South. 2023. <em><span class="nocase">rnaturalearth</span>: World Map Data from Natural Earth</em>. <a href="https://docs.ropensci.org/rnaturalearth/
+https://github.com/ropensci/rnaturalearth">https://docs.ropensci.org/rnaturalearth/
+<div id="ref-sf2023" class="csl-entry">
+Pebesma, Edzer, and Roger Bivand. 2023. <em><span class="nocase">Spatial Data Science: With applications in R</span></em>. <span>Chapman and Hall/CRC</span>. <a href="https://doi.org/10.1201/9780429459016">https://doi.org/10.1201/9780429459016</a>.
+</div>
+<div id="ref-ggplot22016" class="csl-entry">
+Wickham, Hadley. 2016. <em>Ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York. <a href="https://ggplot2.tidyverse.org">https://ggplot2.tidyverse.org</a>.
+</div>
+<div id="ref-R-forcats" class="csl-entry">
+———. 2023a. <em><span class="nocase">forcats</span>: Tools for Working with Categorical Variables (Factors)</em>.
+</div>
+<div id="ref-R-haven" class="csl-entry">
+Wickham, Hadley, Evan Miller, and Danny Smith. 2023. <em><span class="nocase">haven</span>: Import and Export SPSS, Stata and SAS Files</em>.
+</div>
 </div>
 <div class="footnotes">
 <hr />
-<ol start="36">
-<li id="fn36"><p>See Table 2 in <span class="citation">LAPOP (<a href="#ref-lapop-tech">2021c</a>)</span> for dates by country<a href="c14-ambarom-vignette.html#fnref36" class="footnote-back">↩︎</a></p></li>
+<ol start="28">
+<li id="fn28"><p>See Table 2 in <span class="citation">LAPOP (<a href="#ref-lapop-tech">2021c</a>)</span> for dates by country<a href="c14-ambarom-vignette.html#fnref28" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
             </section>

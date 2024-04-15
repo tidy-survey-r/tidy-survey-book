@@ -23,7 +23,7 @@
 <meta name="author" content="Stephanie Zimmer, Rebecca J. Powell, and Isabella Velásquez" />
 
 
-<meta name="date" content="2024-03-31" />
+<meta name="date" content="2024-04-15" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -172,7 +172,6 @@ div.csl-indent {
 <li><a href="./">Exploring Complex Survey Data Analysis in R</a></li>
 
 <li class="divider"></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a></li>
 <li class="part"><span><b>I Intro</b></span></li>
 <li class="chapter" data-level="1" data-path="c01-intro.html"><a href="c01-intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
 <ul>
@@ -524,38 +523,35 @@ div.csl-indent {
 </div>
 <div class="prereqbox">
 <p>For this chapter, load the following packages:</p>
-<div class="sourceCode" id="cb160"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb160-1"><a href="c06-statistical-testing.html#cb160-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb160-2"><a href="c06-statistical-testing.html#cb160-2" tabindex="-1"></a><span class="fu">library</span>(survey) </span>
-<span id="cb160-3"><a href="c06-statistical-testing.html#cb160-3" tabindex="-1"></a><span class="fu">library</span>(srvyr) </span>
-<span id="cb160-4"><a href="c06-statistical-testing.html#cb160-4" tabindex="-1"></a><span class="fu">library</span>(srvyrexploR)</span>
-<span id="cb160-5"><a href="c06-statistical-testing.html#cb160-5" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
-<span id="cb160-6"><a href="c06-statistical-testing.html#cb160-6" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
-<span id="cb160-7"><a href="c06-statistical-testing.html#cb160-7" tabindex="-1"></a><span class="fu">library</span>(prettyunits)</span></code></pre></div>
+<div class="sourceCode" id="cb159"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb159-1"><a href="c06-statistical-testing.html#cb159-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb159-2"><a href="c06-statistical-testing.html#cb159-2" tabindex="-1"></a><span class="fu">library</span>(survey) </span>
+<span id="cb159-3"><a href="c06-statistical-testing.html#cb159-3" tabindex="-1"></a><span class="fu">library</span>(srvyr) </span>
+<span id="cb159-4"><a href="c06-statistical-testing.html#cb159-4" tabindex="-1"></a><span class="fu">library</span>(srvyrexploR)</span>
+<span id="cb159-5"><a href="c06-statistical-testing.html#cb159-5" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb159-6"><a href="c06-statistical-testing.html#cb159-6" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb159-7"><a href="c06-statistical-testing.html#cb159-7" tabindex="-1"></a><span class="fu">library</span>(prettyunits)</span></code></pre></div>
 <p>We will be using data from ANES and RECS described in Chapter <a href="c04-getting-started.html#c04-getting-started">4</a>. As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter <a href="c04-getting-started.html#c04-getting-started">4</a> for more information).</p>
-<div class="sourceCode" id="cb161"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb161-1"><a href="c06-statistical-testing.html#cb161-1" tabindex="-1"></a>targetpop <span class="ot">&lt;-</span> <span class="dv">231592693</span></span>
-<span id="cb161-2"><a href="c06-statistical-testing.html#cb161-2" tabindex="-1"></a><span class="fu">data</span>(anes_2020)</span>
-<span id="cb161-3"><a href="c06-statistical-testing.html#cb161-3" tabindex="-1"></a></span>
-<span id="cb161-4"><a href="c06-statistical-testing.html#cb161-4" tabindex="-1"></a>anes_adjwgt <span class="ot">&lt;-</span> anes_2020 <span class="sc">%&gt;%</span></span>
-<span id="cb161-5"><a href="c06-statistical-testing.html#cb161-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Weight =</span> Weight <span class="sc">/</span> <span class="fu">sum</span>(Weight) <span class="sc">*</span> targetpop)</span>
-<span id="cb161-6"><a href="c06-statistical-testing.html#cb161-6" tabindex="-1"></a></span>
-<span id="cb161-7"><a href="c06-statistical-testing.html#cb161-7" tabindex="-1"></a>anes_des <span class="ot">&lt;-</span> anes_adjwgt <span class="sc">%&gt;%</span></span>
-<span id="cb161-8"><a href="c06-statistical-testing.html#cb161-8" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
-<span id="cb161-9"><a href="c06-statistical-testing.html#cb161-9" tabindex="-1"></a>    <span class="at">weights =</span> Weight,</span>
-<span id="cb161-10"><a href="c06-statistical-testing.html#cb161-10" tabindex="-1"></a>    <span class="at">strata =</span> Stratum,</span>
-<span id="cb161-11"><a href="c06-statistical-testing.html#cb161-11" tabindex="-1"></a>    <span class="at">ids =</span> VarUnit,</span>
-<span id="cb161-12"><a href="c06-statistical-testing.html#cb161-12" tabindex="-1"></a>    <span class="at">nest =</span> <span class="cn">TRUE</span></span>
-<span id="cb161-13"><a href="c06-statistical-testing.html#cb161-13" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb160"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb160-1"><a href="c06-statistical-testing.html#cb160-1" tabindex="-1"></a>targetpop <span class="ot">&lt;-</span> <span class="dv">231592693</span></span>
+<span id="cb160-2"><a href="c06-statistical-testing.html#cb160-2" tabindex="-1"></a></span>
+<span id="cb160-3"><a href="c06-statistical-testing.html#cb160-3" tabindex="-1"></a>anes_adjwgt <span class="ot">&lt;-</span> anes_2020 <span class="sc">%&gt;%</span></span>
+<span id="cb160-4"><a href="c06-statistical-testing.html#cb160-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Weight =</span> Weight <span class="sc">/</span> <span class="fu">sum</span>(Weight) <span class="sc">*</span> targetpop)</span>
+<span id="cb160-5"><a href="c06-statistical-testing.html#cb160-5" tabindex="-1"></a></span>
+<span id="cb160-6"><a href="c06-statistical-testing.html#cb160-6" tabindex="-1"></a>anes_des <span class="ot">&lt;-</span> anes_adjwgt <span class="sc">%&gt;%</span></span>
+<span id="cb160-7"><a href="c06-statistical-testing.html#cb160-7" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
+<span id="cb160-8"><a href="c06-statistical-testing.html#cb160-8" tabindex="-1"></a>    <span class="at">weights =</span> Weight,</span>
+<span id="cb160-9"><a href="c06-statistical-testing.html#cb160-9" tabindex="-1"></a>    <span class="at">strata =</span> Stratum,</span>
+<span id="cb160-10"><a href="c06-statistical-testing.html#cb160-10" tabindex="-1"></a>    <span class="at">ids =</span> VarUnit,</span>
+<span id="cb160-11"><a href="c06-statistical-testing.html#cb160-11" tabindex="-1"></a>    <span class="at">nest =</span> <span class="cn">TRUE</span></span>
+<span id="cb160-12"><a href="c06-statistical-testing.html#cb160-12" tabindex="-1"></a>  )</span></code></pre></div>
 <p>For RECS, details are included in the RECS documentation and Chapters <a href="c04-getting-started.html#c04-getting-started">4</a> and <a href="c10-sample-designs-replicate-weights.html#c10-sample-designs-replicate-weights">10</a>.</p>
-<div class="sourceCode" id="cb162"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb162-1"><a href="c06-statistical-testing.html#cb162-1" tabindex="-1"></a><span class="fu">data</span>(recs_2020)</span>
-<span id="cb162-2"><a href="c06-statistical-testing.html#cb162-2" tabindex="-1"></a></span>
-<span id="cb162-3"><a href="c06-statistical-testing.html#cb162-3" tabindex="-1"></a>recs_des <span class="ot">&lt;-</span> recs_2020 <span class="sc">%&gt;%</span></span>
-<span id="cb162-4"><a href="c06-statistical-testing.html#cb162-4" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
-<span id="cb162-5"><a href="c06-statistical-testing.html#cb162-5" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
-<span id="cb162-6"><a href="c06-statistical-testing.html#cb162-6" tabindex="-1"></a>    <span class="at">repweights =</span> NWEIGHT1<span class="sc">:</span>NWEIGHT60,</span>
-<span id="cb162-7"><a href="c06-statistical-testing.html#cb162-7" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;JK1&quot;</span>,</span>
-<span id="cb162-8"><a href="c06-statistical-testing.html#cb162-8" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">59</span><span class="sc">/</span><span class="dv">60</span>,</span>
-<span id="cb162-9"><a href="c06-statistical-testing.html#cb162-9" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
-<span id="cb162-10"><a href="c06-statistical-testing.html#cb162-10" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb161"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb161-1"><a href="c06-statistical-testing.html#cb161-1" tabindex="-1"></a>recs_des <span class="ot">&lt;-</span> recs_2020 <span class="sc">%&gt;%</span></span>
+<span id="cb161-2"><a href="c06-statistical-testing.html#cb161-2" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
+<span id="cb161-3"><a href="c06-statistical-testing.html#cb161-3" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
+<span id="cb161-4"><a href="c06-statistical-testing.html#cb161-4" tabindex="-1"></a>    <span class="at">repweights =</span> NWEIGHT1<span class="sc">:</span>NWEIGHT60,</span>
+<span id="cb161-5"><a href="c06-statistical-testing.html#cb161-5" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;JK1&quot;</span>,</span>
+<span id="cb161-6"><a href="c06-statistical-testing.html#cb161-6" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">59</span><span class="sc">/</span><span class="dv">60</span>,</span>
+<span id="cb161-7"><a href="c06-statistical-testing.html#cb161-7" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
+<span id="cb161-8"><a href="c06-statistical-testing.html#cb161-8" tabindex="-1"></a>  )</span></code></pre></div>
 </div>
 <div id="introduction-5" class="section level2 hasAnchor" number="6.1">
 <h2><span class="header-section-number">6.1</span> Introduction<a href="c06-statistical-testing.html#introduction-5" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -568,7 +564,7 @@ div.csl-indent {
 <li><span class="math inline">\(H_A: \rho_{heads} \neq \rho_{tails}\)</span></li>
 </ul>
 <p>When we conduct hypothesis testing, the statistical models calculate a p-value, which shows how likely we are to observe the data if the null hypothesis is true. If the p-value (a probability between 0 and 1) is small, we have strong evidence to reject the null hypothesis as it is unlikely to see the data we are observing if the null hypothesis is true. However, if the p-value is large, we say we do not have evidence to reject the null hypothesis. The size of the p-value for this cut off is determined by type 1 error known as <span class="math inline">\(\alpha\)</span>. A common type 1 error value for statistical testing is to use <span class="math inline">\(\alpha = 0.05\)</span>.<a href="#fn12" class="footnote-ref" id="fnref12"><sup>12</sup></a> It is common for explanations of statistical testing to refer to confidence level. The confidence level is the inverse of the type 1 error. Thus, if <span class="math inline">\(\alpha = 0.05\)</span>, the confidence level would be 95%.</p>
-<p>The functions in the {survey} package allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and functions:</p>
+<p>The functions in the {survey} package allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and the following functions from the {survey} package<span class="citation">(<a href="#ref-lumley2010complex">Lumley 2010</a>)</span>:</p>
 <ul>
 <li>Comparison of proportions <code>svyttest()</code></li>
 <li>Comparison of means <code>svyttest()</code></li>
@@ -589,15 +585,15 @@ div.csl-indent {
 </ol>
 <p>Each of these lines of code will produce the same output since the argument that takes the data is in the first spot in <code>filter()</code>. The first two are probably familiar to those who have worked with the tidyverse. The third option functions the same way as the second one but is explicit that <code>mtcars</code> goes into the first argument, and the fourth option indicates that <code>mtcars</code> is going into the named argument of <code>.data</code>. Here, we are telling R to take what’s on the left side of the pipe (<code>mtcars</code>) and pipe it into the spot with the dot (<code>.</code>)—the first argument.</p>
 <p>In functions that are not part of the tidyverse, the data argument may not be in the first spot. For example, in <code>svyttest()</code>, the data argument is in the second spot, which means we need to place the dot (<code>.</code>) in the second spot and not the first. For example:</p>
-<div class="sourceCode" id="cb163"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb163-1"><a href="c06-statistical-testing.html#cb163-1" tabindex="-1"></a>svydata_des <span class="sc">%&gt;%</span></span>
-<span id="cb163-2"><a href="c06-statistical-testing.html#cb163-2" tabindex="-1"></a> <span class="fu">svyttest</span>(x <span class="sc">~</span> y, .)</span></code></pre></div>
+<div class="sourceCode" id="cb162"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb162-1"><a href="c06-statistical-testing.html#cb162-1" tabindex="-1"></a>svydata_des <span class="sc">%&gt;%</span></span>
+<span id="cb162-2"><a href="c06-statistical-testing.html#cb162-2" tabindex="-1"></a> <span class="fu">svyttest</span>(x <span class="sc">~</span> y, .)</span></code></pre></div>
 <p>By default, the pipe places the left-hand object in the first argument spot. Placing the dot (<code>.</code>) in the second argument spot indicates that the survey design object <code>svydata_des</code> should be used in the second argument and not the first.</p>
 <p>Alternatively, named arguments could be used to place the dot first as named arguments can appear at any location, as in the following:</p>
-<div class="sourceCode" id="cb164"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb164-1"><a href="c06-statistical-testing.html#cb164-1" tabindex="-1"></a>svydata_des <span class="sc">%&gt;%</span></span>
-<span id="cb164-2"><a href="c06-statistical-testing.html#cb164-2" tabindex="-1"></a> <span class="fu">svyttest</span>(<span class="at">design =</span> ., x <span class="sc">~</span> y)</span></code></pre></div>
+<div class="sourceCode" id="cb163"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb163-1"><a href="c06-statistical-testing.html#cb163-1" tabindex="-1"></a>svydata_des <span class="sc">%&gt;%</span></span>
+<span id="cb163-2"><a href="c06-statistical-testing.html#cb163-2" tabindex="-1"></a> <span class="fu">svyttest</span>(<span class="at">design =</span> ., x <span class="sc">~</span> y)</span></code></pre></div>
 <p>However, the following code will not work as the <code>svyttest()</code> function expects the formula as the first argument when arguments are not named:</p>
-<div class="sourceCode" id="cb165"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb165-1"><a href="c06-statistical-testing.html#cb165-1" tabindex="-1"></a>svydata_des <span class="sc">%&gt;%</span></span>
-<span id="cb165-2"><a href="c06-statistical-testing.html#cb165-2" tabindex="-1"></a> <span class="fu">svyttest</span>(., x <span class="sc">~</span> y)</span></code></pre></div>
+<div class="sourceCode" id="cb164"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb164-1"><a href="c06-statistical-testing.html#cb164-1" tabindex="-1"></a>svydata_des <span class="sc">%&gt;%</span></span>
+<span id="cb164-2"><a href="c06-statistical-testing.html#cb164-2" tabindex="-1"></a> <span class="fu">svyttest</span>(., x <span class="sc">~</span> y)</span></code></pre></div>
 </div>
 <div id="stattest-ttest" class="section level2 hasAnchor" number="6.3">
 <h2><span class="header-section-number">6.3</span> Comparison of proportions and means<a href="c06-statistical-testing.html#stattest-ttest" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -622,9 +618,9 @@ div.csl-indent {
 <li>The confidence level cannot be specified and will always be set to 95%. However, we will show examples of how the confidence level can be changed after running the <code>svyttest()</code> function by using the <code>confint()</code> function.</li>
 </ul>
 <p>Here is the syntax for the <code>svyttest()</code> function:</p>
-<div class="sourceCode" id="cb166"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb166-1"><a href="c06-statistical-testing.html#cb166-1" tabindex="-1"></a><span class="fu">svyttest</span>(formula,</span>
-<span id="cb166-2"><a href="c06-statistical-testing.html#cb166-2" tabindex="-1"></a>         design,</span>
-<span id="cb166-3"><a href="c06-statistical-testing.html#cb166-3" tabindex="-1"></a>         ...)</span></code></pre></div>
+<div class="sourceCode" id="cb165"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb165-1"><a href="c06-statistical-testing.html#cb165-1" tabindex="-1"></a><span class="fu">svyttest</span>(formula,</span>
+<span id="cb165-2"><a href="c06-statistical-testing.html#cb165-2" tabindex="-1"></a>         design,</span>
+<span id="cb165-3"><a href="c06-statistical-testing.html#cb165-3" tabindex="-1"></a>         ...)</span></code></pre></div>
 <p>The arguments are:</p>
 <ul>
 <li><code>formula</code>: Formula, <code>outcome~group</code> for two-sample, <code>outcome~0</code> or <code>outcome~1</code> for one-sample. The group variable must be a factor or character with two levels, or be coded 0/1 or 1/2. We give more details on formula set-up below for different types of tests.</li>
@@ -662,14 +658,14 @@ div.csl-indent {
 <li><span class="math inline">\(H_A: \mu \neq 68\)</span></li>
 </ul>
 <p>To conduct this in R, we use <code>svyttest()</code> and subtract the temperature on the left-hand side of the formula:</p>
-<div class="sourceCode" id="cb167"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb167-1"><a href="c06-statistical-testing.html#cb167-1" tabindex="-1"></a>ttest_ex1 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb167-2"><a href="c06-statistical-testing.html#cb167-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
-<span id="cb167-3"><a href="c06-statistical-testing.html#cb167-3" tabindex="-1"></a>    <span class="at">formula =</span> SummerTempNight <span class="sc">-</span> <span class="dv">68</span> <span class="sc">~</span> <span class="dv">0</span>,</span>
-<span id="cb167-4"><a href="c06-statistical-testing.html#cb167-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb167-5"><a href="c06-statistical-testing.html#cb167-5" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
-<span id="cb167-6"><a href="c06-statistical-testing.html#cb167-6" tabindex="-1"></a>  )</span>
-<span id="cb167-7"><a href="c06-statistical-testing.html#cb167-7" tabindex="-1"></a></span>
-<span id="cb167-8"><a href="c06-statistical-testing.html#cb167-8" tabindex="-1"></a>ttest_ex1</span></code></pre></div>
+<div class="sourceCode" id="cb166"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb166-1"><a href="c06-statistical-testing.html#cb166-1" tabindex="-1"></a>ttest_ex1 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb166-2"><a href="c06-statistical-testing.html#cb166-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
+<span id="cb166-3"><a href="c06-statistical-testing.html#cb166-3" tabindex="-1"></a>    <span class="at">formula =</span> SummerTempNight <span class="sc">-</span> <span class="dv">68</span> <span class="sc">~</span> <span class="dv">0</span>,</span>
+<span id="cb166-4"><a href="c06-statistical-testing.html#cb166-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb166-5"><a href="c06-statistical-testing.html#cb166-5" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb166-6"><a href="c06-statistical-testing.html#cb166-6" tabindex="-1"></a>  )</span>
+<span id="cb166-7"><a href="c06-statistical-testing.html#cb166-7" tabindex="-1"></a></span>
+<span id="cb166-8"><a href="c06-statistical-testing.html#cb166-8" tabindex="-1"></a>ttest_ex1</span></code></pre></div>
 <pre><code>## 
 ##  Design-based one-sample t-test
 ## 
@@ -683,24 +679,24 @@ div.csl-indent {
 ## 3.367</code></pre>
 <p>To pull out specific output, we can use R’s built-in <code>$</code> operator. For instance, to obtain the estimate <span class="math inline">\(\mu - 68\)</span>, we run <code>ttest_ex1$estimate</code>.</p>
 <p>If we want the average, we take our t-test estimate and add it to 68:</p>
-<div class="sourceCode" id="cb169"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb169-1"><a href="c06-statistical-testing.html#cb169-1" tabindex="-1"></a>ttest_ex1<span class="sc">$</span>estimate <span class="sc">+</span> <span class="dv">68</span></span></code></pre></div>
+<div class="sourceCode" id="cb168"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb168-1"><a href="c06-statistical-testing.html#cb168-1" tabindex="-1"></a>ttest_ex1<span class="sc">$</span>estimate <span class="sc">+</span> <span class="dv">68</span></span></code></pre></div>
 <pre><code>##  mean 
 ## 71.37</code></pre>
 <p>Or, we can use the <code>survey_mean()</code> function described in Chapter <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a>:</p>
-<div class="sourceCode" id="cb171"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb171-1"><a href="c06-statistical-testing.html#cb171-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb171-2"><a href="c06-statistical-testing.html#cb171-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mu =</span> <span class="fu">survey_mean</span>(SummerTempNight, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb170"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb170-1"><a href="c06-statistical-testing.html#cb170-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb170-2"><a href="c06-statistical-testing.html#cb170-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mu =</span> <span class="fu">survey_mean</span>(SummerTempNight, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 2
 ##      mu  mu_se
 ##   &lt;dbl&gt;  &lt;dbl&gt;
 ## 1  71.4 0.0397</code></pre>
 <p>The result is the same in both methods, so we see that the average temperature U.S. households set their thermostat to in the summer at night is 71.4<span class="math inline">\(^\circ\)</span>F. Looking at the output from <code>svyttest()</code>, the t-statistic is 84.8, and the p-value is <span class="math inline">\(&lt;0.0001\)</span>, indicating that the average is statistically different from 68<span class="math inline">\(^\circ\)</span>F at an <span class="math inline">\(\alpha\)</span> level of <span class="math inline">\(0.05\)</span>.</p>
 <p>If we want an 80% confidence interval for the test statistic, we can use the function <code>confint()</code> to change the confidence level. Below, we print both the original 95% confidence interval and the 80% confidence interval:</p>
-<div class="sourceCode" id="cb173"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb173-1"><a href="c06-statistical-testing.html#cb173-1" tabindex="-1"></a><span class="fu">confint</span>(ttest_ex1, <span class="at">level =</span> <span class="fl">0.95</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb172"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb172-1"><a href="c06-statistical-testing.html#cb172-1" tabindex="-1"></a><span class="fu">confint</span>(ttest_ex1, <span class="at">level =</span> <span class="fl">0.95</span>)</span></code></pre></div>
 <pre><code>##                                  2.5 % 97.5 %
 ## as.numeric(SummerTempNight - 68) 3.288  3.447
 ## attr(,&quot;conf.level&quot;)
 ## [1] 0.95</code></pre>
-<div class="sourceCode" id="cb175"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb175-1"><a href="c06-statistical-testing.html#cb175-1" tabindex="-1"></a><span class="fu">confint</span>(ttest_ex1, <span class="at">level =</span> <span class="fl">0.8</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb174"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb174-1"><a href="c06-statistical-testing.html#cb174-1" tabindex="-1"></a><span class="fu">confint</span>(ttest_ex1, <span class="at">level =</span> <span class="fl">0.8</span>)</span></code></pre></div>
 <pre><code>## [1] 3.316 3.419
 ## attr(,&quot;conf.level&quot;)
 ## [1] 0.8</code></pre>
@@ -709,11 +705,11 @@ div.csl-indent {
 <div id="stattest-ttest-ex2" class="section level4 unnumbered hasAnchor">
 <h4>Example 2: One-sample t-test for proportion<a href="c06-statistical-testing.html#stattest-ttest-ex2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>RECS asked respondents if they use any air conditioning (AC) in their home.<a href="#fn16" class="footnote-ref" id="fnref16"><sup>16</sup></a> In our data, we call this variable <code>ACUsed</code>. Let’s look at the proportion of U.S. households that use AC in their homes using the <code>survey_prop()</code> function we learned in Chapter <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a>.</p>
-<div class="sourceCode" id="cb177"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb177-1"><a href="c06-statistical-testing.html#cb177-1" tabindex="-1"></a>acprop <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb177-2"><a href="c06-statistical-testing.html#cb177-2" tabindex="-1"></a>  <span class="fu">group_by</span>(ACUsed) <span class="sc">%&gt;%</span></span>
-<span id="cb177-3"><a href="c06-statistical-testing.html#cb177-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_prop</span>())</span>
-<span id="cb177-4"><a href="c06-statistical-testing.html#cb177-4" tabindex="-1"></a></span>
-<span id="cb177-5"><a href="c06-statistical-testing.html#cb177-5" tabindex="-1"></a>acprop</span></code></pre></div>
+<div class="sourceCode" id="cb176"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb176-1"><a href="c06-statistical-testing.html#cb176-1" tabindex="-1"></a>acprop <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb176-2"><a href="c06-statistical-testing.html#cb176-2" tabindex="-1"></a>  <span class="fu">group_by</span>(ACUsed) <span class="sc">%&gt;%</span></span>
+<span id="cb176-3"><a href="c06-statistical-testing.html#cb176-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_prop</span>())</span>
+<span id="cb176-4"><a href="c06-statistical-testing.html#cb176-4" tabindex="-1"></a></span>
+<span id="cb176-5"><a href="c06-statistical-testing.html#cb176-5" tabindex="-1"></a>acprop</span></code></pre></div>
 <pre><code>## # A tibble: 2 × 3
 ##   ACUsed     p    p_se
 ##   &lt;lgl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
@@ -725,14 +721,14 @@ div.csl-indent {
 <li><span class="math inline">\(H_A: p \neq 0.90\)</span></li>
 </ul>
 <p>To conduct this in R, we use the <code>svyttest()</code> function as follows:</p>
-<div class="sourceCode" id="cb179"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb179-1"><a href="c06-statistical-testing.html#cb179-1" tabindex="-1"></a>ttest_ex2 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb179-2"><a href="c06-statistical-testing.html#cb179-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
-<span id="cb179-3"><a href="c06-statistical-testing.html#cb179-3" tabindex="-1"></a>    <span class="at">formula =</span> (ACUsed <span class="sc">==</span> <span class="cn">TRUE</span>) <span class="sc">-</span> <span class="fl">0.90</span> <span class="sc">~</span> <span class="dv">0</span>,</span>
-<span id="cb179-4"><a href="c06-statistical-testing.html#cb179-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb179-5"><a href="c06-statistical-testing.html#cb179-5" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
-<span id="cb179-6"><a href="c06-statistical-testing.html#cb179-6" tabindex="-1"></a>  )</span>
-<span id="cb179-7"><a href="c06-statistical-testing.html#cb179-7" tabindex="-1"></a></span>
-<span id="cb179-8"><a href="c06-statistical-testing.html#cb179-8" tabindex="-1"></a>ttest_ex2</span></code></pre></div>
+<div class="sourceCode" id="cb178"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb178-1"><a href="c06-statistical-testing.html#cb178-1" tabindex="-1"></a>ttest_ex2 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb178-2"><a href="c06-statistical-testing.html#cb178-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
+<span id="cb178-3"><a href="c06-statistical-testing.html#cb178-3" tabindex="-1"></a>    <span class="at">formula =</span> (ACUsed <span class="sc">==</span> <span class="cn">TRUE</span>) <span class="sc">-</span> <span class="fl">0.90</span> <span class="sc">~</span> <span class="dv">0</span>,</span>
+<span id="cb178-4"><a href="c06-statistical-testing.html#cb178-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb178-5"><a href="c06-statistical-testing.html#cb178-5" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb178-6"><a href="c06-statistical-testing.html#cb178-6" tabindex="-1"></a>  )</span>
+<span id="cb178-7"><a href="c06-statistical-testing.html#cb178-7" tabindex="-1"></a></span>
+<span id="cb178-8"><a href="c06-statistical-testing.html#cb178-8" tabindex="-1"></a>ttest_ex2</span></code></pre></div>
 <pre><code>## 
 ##  Design-based one-sample t-test
 ## 
@@ -744,36 +740,36 @@ div.csl-indent {
 ## sample estimates:
 ##     mean 
 ## -0.01348</code></pre>
-<p>The output from the <code>svyttest()</code> function can be a bit hard to read. Using the {broom} package from tidymodels, a collection of packages for modeling using the tidyverse principles, we can clean up the output into a tibble to more easily understand what the test tells us.</p>
-<div class="sourceCode" id="cb181"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb181-1"><a href="c06-statistical-testing.html#cb181-1" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(ttest_ex2)</span></code></pre></div>
+<p>The output from the <code>svyttest()</code> function can be a bit hard to read. Using the <code>tidy()</code> function from the {broom} package, we can clean up the output into a tibble to more easily understand what the test tells us <span class="citation">(<a href="#ref-R-broom">Robinson, Hayes, and Couch 2023</a>)</span>.</p>
+<div class="sourceCode" id="cb180"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb180-1"><a href="c06-statistical-testing.html#cb180-1" tabindex="-1"></a><span class="fu">tidy</span>(ttest_ex2)</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 8
 ##   estimate statistic   p.value parameter conf.low conf.high method      
 ##      &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;       
 ## 1  -0.0135     -4.40 0.0000466        58  -0.0196  -0.00735 Design-base…
 ## # ℹ 1 more variable: alternative &lt;chr&gt;</code></pre>
-<p>The ‘tidied’ output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter <a href="c08-communicating-results.html#c08-communicating-results">8</a>. The function <code>pretty_p_value()</code> comes from the {prettyunits} package and converts numeric p-values to characters and, by default prints four decimal places and displays any p-value less than 0.0001 as <code>"&lt;0.0001"</code> though another minimum display p-value can be specified.</p>
-<div class="sourceCode" id="cb183"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb183-1"><a href="c06-statistical-testing.html#cb183-1" tabindex="-1"></a><span class="fu">tidy</span>(ttest_ex2) <span class="sc">%&gt;%</span></span>
-<span id="cb183-2"><a href="c06-statistical-testing.html#cb183-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value =</span> <span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
-<span id="cb183-3"><a href="c06-statistical-testing.html#cb183-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb183-4"><a href="c06-statistical-testing.html#cb183-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
+<p>The ‘tidied’ output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter <a href="c08-communicating-results.html#c08-communicating-results">8</a>. The function <code>pretty_p_value()</code> comes from the {prettyunits} package and converts numeric p-values to characters and, by default prints four decimal places and displays any p-value less than 0.0001 as <code>"&lt;0.0001"</code> though another minimum display p-value can be specified <span class="citation">(<a href="#ref-R-prettyunits">Csardi 2023</a>)</span>.</p>
+<div class="sourceCode" id="cb182"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb182-1"><a href="c06-statistical-testing.html#cb182-1" tabindex="-1"></a><span class="fu">tidy</span>(ttest_ex2) <span class="sc">%&gt;%</span></span>
+<span id="cb182-2"><a href="c06-statistical-testing.html#cb182-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value =</span> <span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
+<span id="cb182-3"><a href="c06-statistical-testing.html#cb182-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb182-4"><a href="c06-statistical-testing.html#cb182-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="jeqcrdqnrd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#jeqcrdqnrd table {
+<div id="bexrzeukjy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#bexrzeukjy table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#jeqcrdqnrd thead, #jeqcrdqnrd tbody, #jeqcrdqnrd tfoot, #jeqcrdqnrd tr, #jeqcrdqnrd td, #jeqcrdqnrd th {
+#bexrzeukjy thead, #bexrzeukjy tbody, #bexrzeukjy tfoot, #bexrzeukjy tr, #bexrzeukjy td, #bexrzeukjy th {
   border-style: none;
 }
 
-#jeqcrdqnrd p {
+#bexrzeukjy p {
   margin: 0;
   padding: 0;
 }
 
-#jeqcrdqnrd .gt_table {
+#bexrzeukjy .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -799,12 +795,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_caption {
+#bexrzeukjy .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#jeqcrdqnrd .gt_title {
+#bexrzeukjy .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -816,7 +812,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#jeqcrdqnrd .gt_subtitle {
+#bexrzeukjy .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -828,7 +824,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#jeqcrdqnrd .gt_heading {
+#bexrzeukjy .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -840,13 +836,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_bottom_border {
+#bexrzeukjy .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_col_headings {
+#bexrzeukjy .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -861,7 +857,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_col_heading {
+#bexrzeukjy .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -881,7 +877,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#jeqcrdqnrd .gt_column_spanner_outer {
+#bexrzeukjy .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -893,15 +889,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#jeqcrdqnrd .gt_column_spanner_outer:first-child {
+#bexrzeukjy .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#jeqcrdqnrd .gt_column_spanner_outer:last-child {
+#bexrzeukjy .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#jeqcrdqnrd .gt_column_spanner {
+#bexrzeukjy .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -913,11 +909,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#jeqcrdqnrd .gt_spanner_row {
+#bexrzeukjy .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#jeqcrdqnrd .gt_group_heading {
+#bexrzeukjy .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -943,7 +939,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#jeqcrdqnrd .gt_empty_group_heading {
+#bexrzeukjy .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -958,15 +954,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#jeqcrdqnrd .gt_from_md > :first-child {
+#bexrzeukjy .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#jeqcrdqnrd .gt_from_md > :last-child {
+#bexrzeukjy .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#jeqcrdqnrd .gt_row {
+#bexrzeukjy .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -985,7 +981,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#jeqcrdqnrd .gt_stub {
+#bexrzeukjy .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -998,7 +994,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#jeqcrdqnrd .gt_stub_row_group {
+#bexrzeukjy .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1012,15 +1008,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#jeqcrdqnrd .gt_row_group_first td {
+#bexrzeukjy .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#jeqcrdqnrd .gt_row_group_first th {
+#bexrzeukjy .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#jeqcrdqnrd .gt_summary_row {
+#bexrzeukjy .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1030,16 +1026,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#jeqcrdqnrd .gt_first_summary_row {
+#bexrzeukjy .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_first_summary_row.thick {
+#bexrzeukjy .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#jeqcrdqnrd .gt_last_summary_row {
+#bexrzeukjy .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1049,7 +1045,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_grand_summary_row {
+#bexrzeukjy .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1059,7 +1055,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#jeqcrdqnrd .gt_first_grand_summary_row {
+#bexrzeukjy .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1069,7 +1065,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_last_grand_summary_row_top {
+#bexrzeukjy .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1079,11 +1075,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_striped {
+#bexrzeukjy .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#jeqcrdqnrd .gt_table_body {
+#bexrzeukjy .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1092,7 +1088,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_footnotes {
+#bexrzeukjy .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1106,7 +1102,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_footnote {
+#bexrzeukjy .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1115,7 +1111,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#jeqcrdqnrd .gt_sourcenotes {
+#bexrzeukjy .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1129,7 +1125,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#jeqcrdqnrd .gt_sourcenote {
+#bexrzeukjy .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1137,63 +1133,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#jeqcrdqnrd .gt_left {
+#bexrzeukjy .gt_left {
   text-align: left;
 }
 
-#jeqcrdqnrd .gt_center {
+#bexrzeukjy .gt_center {
   text-align: center;
 }
 
-#jeqcrdqnrd .gt_right {
+#bexrzeukjy .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#jeqcrdqnrd .gt_font_normal {
+#bexrzeukjy .gt_font_normal {
   font-weight: normal;
 }
 
-#jeqcrdqnrd .gt_font_bold {
+#bexrzeukjy .gt_font_bold {
   font-weight: bold;
 }
 
-#jeqcrdqnrd .gt_font_italic {
+#bexrzeukjy .gt_font_italic {
   font-style: italic;
 }
 
-#jeqcrdqnrd .gt_super {
+#bexrzeukjy .gt_super {
   font-size: 65%;
 }
 
-#jeqcrdqnrd .gt_footnote_marks {
+#bexrzeukjy .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#jeqcrdqnrd .gt_asterisk {
+#bexrzeukjy .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#jeqcrdqnrd .gt_indent_1 {
+#bexrzeukjy .gt_indent_1 {
   text-indent: 5px;
 }
 
-#jeqcrdqnrd .gt_indent_2 {
+#bexrzeukjy .gt_indent_2 {
   text-indent: 10px;
 }
 
-#jeqcrdqnrd .gt_indent_3 {
+#bexrzeukjy .gt_indent_3 {
   text-indent: 15px;
 }
 
-#jeqcrdqnrd .gt_indent_4 {
+#bexrzeukjy .gt_indent_4 {
   text-indent: 20px;
 }
 
-#jeqcrdqnrd .gt_indent_5 {
+#bexrzeukjy .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1227,7 +1223,6 @@ div.csl-indent {
 </table>
 </div>
 <p>The estimate differs from Example 1 in that the estimate is not displaying <span class="math inline">\(\mu - 0.90\)</span> but rather <span class="math inline">\(\mu\)</span>, or the difference between the U.S. households that use AC and the proportion we are comparing to. We can see that there is a difference of -1.35 percentage points. Additionally, the t-statistic value in the <code>statistic</code> column is -4.4, and the p-value is &lt;0.0001. These results indicate that the fewer than 90% of U.S. households use AC in their homes.</p>
-<!--Add in callout box about how to use the $ notation to help call out the different values? Maybe indicate how this will be covered more in the reporting chapter? IV: I added a bit up top, not sure if it needs a whole call out box but happy to revisit. IV: Update March 2024, we added R prerequisites in Intro chapter so probably not necessary anymore.-->
 </div>
 <div id="stattest-ttest-ex3" class="section level4 unnumbered hasAnchor">
 <h4>Example 3: Unpaired two-sample t-test<a href="c06-statistical-testing.html#stattest-ttest-ex3" class="anchor-section" aria-label="Anchor link to header"></a></h4>
@@ -1237,48 +1232,41 @@ div.csl-indent {
 <li><span class="math inline">\(H_A: \mu_{AC} \neq \mu_{noAC}\)</span></li>
 </ul>
 <p>Let’s take a quick look at the data to see the format the data are in:</p>
-<div class="sourceCode" id="cb184"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb184-1"><a href="c06-statistical-testing.html#cb184-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb184-2"><a href="c06-statistical-testing.html#cb184-2" tabindex="-1"></a>  <span class="fu">group_by</span>(ACUsed) <span class="sc">%&gt;%</span></span>
-<span id="cb184-3"><a href="c06-statistical-testing.html#cb184-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean =</span> <span class="fu">survey_mean</span>(DOLLAREL, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb183"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb183-1"><a href="c06-statistical-testing.html#cb183-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb183-2"><a href="c06-statistical-testing.html#cb183-2" tabindex="-1"></a>  <span class="fu">group_by</span>(ACUsed) <span class="sc">%&gt;%</span></span>
+<span id="cb183-3"><a href="c06-statistical-testing.html#cb183-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean =</span> <span class="fu">survey_mean</span>(DOLLAREL, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
 <pre><code>## # A tibble: 2 × 3
 ##   ACUsed  mean mean_se
 ##   &lt;lgl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
 ## 1 FALSE  1056.   16.0 
 ## 2 TRUE   1422.    5.69</code></pre>
 <p>To conduct this in R, we use <code>svyttest()</code>:</p>
-<div class="sourceCode" id="cb186"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb186-1"><a href="c06-statistical-testing.html#cb186-1" tabindex="-1"></a>ttest_ex3 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb186-2"><a href="c06-statistical-testing.html#cb186-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(<span class="at">formula =</span> DOLLAREL <span class="sc">~</span> ACUsed,</span>
-<span id="cb186-3"><a href="c06-statistical-testing.html#cb186-3" tabindex="-1"></a>           <span class="at">design =</span> .,</span>
-<span id="cb186-4"><a href="c06-statistical-testing.html#cb186-4" tabindex="-1"></a>           <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb186-5"><a href="c06-statistical-testing.html#cb186-5" tabindex="-1"></a></span>
-<span id="cb186-6"><a href="c06-statistical-testing.html#cb186-6" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(ttest_ex3)</span></code></pre></div>
-<pre><code>## # A tibble: 1 × 8
-##   estimate statistic  p.value parameter conf.low conf.high method       
-##      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;        
-## 1     366.      21.3 4.29e-29        58     331.      400. Design-based…
-## # ℹ 1 more variable: alternative &lt;chr&gt;</code></pre>
-<div class="sourceCode" id="cb188"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb188-1"><a href="c06-statistical-testing.html#cb188-1" tabindex="-1"></a><span class="fu">tidy</span>(ttest_ex3) <span class="sc">%&gt;%</span></span>
-<span id="cb188-2"><a href="c06-statistical-testing.html#cb188-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value =</span> <span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
-<span id="cb188-3"><a href="c06-statistical-testing.html#cb188-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb188-4"><a href="c06-statistical-testing.html#cb188-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb185"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb185-1"><a href="c06-statistical-testing.html#cb185-1" tabindex="-1"></a>ttest_ex3 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb185-2"><a href="c06-statistical-testing.html#cb185-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(<span class="at">formula =</span> DOLLAREL <span class="sc">~</span> ACUsed,</span>
+<span id="cb185-3"><a href="c06-statistical-testing.html#cb185-3" tabindex="-1"></a>           <span class="at">design =</span> .,</span>
+<span id="cb185-4"><a href="c06-statistical-testing.html#cb185-4" tabindex="-1"></a>           <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb186"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb186-1"><a href="c06-statistical-testing.html#cb186-1" tabindex="-1"></a><span class="fu">tidy</span>(ttest_ex3) <span class="sc">%&gt;%</span></span>
+<span id="cb186-2"><a href="c06-statistical-testing.html#cb186-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value =</span> <span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
+<span id="cb186-3"><a href="c06-statistical-testing.html#cb186-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb186-4"><a href="c06-statistical-testing.html#cb186-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="ntgmwgtyym" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ntgmwgtyym table {
+<div id="pklnjnyxdr" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pklnjnyxdr table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ntgmwgtyym thead, #ntgmwgtyym tbody, #ntgmwgtyym tfoot, #ntgmwgtyym tr, #ntgmwgtyym td, #ntgmwgtyym th {
+#pklnjnyxdr thead, #pklnjnyxdr tbody, #pklnjnyxdr tfoot, #pklnjnyxdr tr, #pklnjnyxdr td, #pklnjnyxdr th {
   border-style: none;
 }
 
-#ntgmwgtyym p {
+#pklnjnyxdr p {
   margin: 0;
   padding: 0;
 }
 
-#ntgmwgtyym .gt_table {
+#pklnjnyxdr .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1304,12 +1292,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_caption {
+#pklnjnyxdr .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ntgmwgtyym .gt_title {
+#pklnjnyxdr .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1321,7 +1309,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#ntgmwgtyym .gt_subtitle {
+#pklnjnyxdr .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1333,7 +1321,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#ntgmwgtyym .gt_heading {
+#pklnjnyxdr .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1345,13 +1333,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_bottom_border {
+#pklnjnyxdr .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_col_headings {
+#pklnjnyxdr .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1366,7 +1354,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_col_heading {
+#pklnjnyxdr .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1386,7 +1374,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#ntgmwgtyym .gt_column_spanner_outer {
+#pklnjnyxdr .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1398,15 +1386,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#ntgmwgtyym .gt_column_spanner_outer:first-child {
+#pklnjnyxdr .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ntgmwgtyym .gt_column_spanner_outer:last-child {
+#pklnjnyxdr .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ntgmwgtyym .gt_column_spanner {
+#pklnjnyxdr .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1418,11 +1406,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#ntgmwgtyym .gt_spanner_row {
+#pklnjnyxdr .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ntgmwgtyym .gt_group_heading {
+#pklnjnyxdr .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1448,7 +1436,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#ntgmwgtyym .gt_empty_group_heading {
+#pklnjnyxdr .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1463,15 +1451,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#ntgmwgtyym .gt_from_md > :first-child {
+#pklnjnyxdr .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ntgmwgtyym .gt_from_md > :last-child {
+#pklnjnyxdr .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ntgmwgtyym .gt_row {
+#pklnjnyxdr .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1490,7 +1478,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#ntgmwgtyym .gt_stub {
+#pklnjnyxdr .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1503,7 +1491,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#ntgmwgtyym .gt_stub_row_group {
+#pklnjnyxdr .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1517,15 +1505,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#ntgmwgtyym .gt_row_group_first td {
+#pklnjnyxdr .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ntgmwgtyym .gt_row_group_first th {
+#pklnjnyxdr .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ntgmwgtyym .gt_summary_row {
+#pklnjnyxdr .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1535,16 +1523,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#ntgmwgtyym .gt_first_summary_row {
+#pklnjnyxdr .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_first_summary_row.thick {
+#pklnjnyxdr .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ntgmwgtyym .gt_last_summary_row {
+#pklnjnyxdr .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1554,7 +1542,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_grand_summary_row {
+#pklnjnyxdr .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1564,7 +1552,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#ntgmwgtyym .gt_first_grand_summary_row {
+#pklnjnyxdr .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1574,7 +1562,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_last_grand_summary_row_top {
+#pklnjnyxdr .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1584,11 +1572,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_striped {
+#pklnjnyxdr .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ntgmwgtyym .gt_table_body {
+#pklnjnyxdr .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1597,7 +1585,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_footnotes {
+#pklnjnyxdr .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1611,7 +1599,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_footnote {
+#pklnjnyxdr .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1620,7 +1608,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#ntgmwgtyym .gt_sourcenotes {
+#pklnjnyxdr .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1634,7 +1622,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#ntgmwgtyym .gt_sourcenote {
+#pklnjnyxdr .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1642,63 +1630,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#ntgmwgtyym .gt_left {
+#pklnjnyxdr .gt_left {
   text-align: left;
 }
 
-#ntgmwgtyym .gt_center {
+#pklnjnyxdr .gt_center {
   text-align: center;
 }
 
-#ntgmwgtyym .gt_right {
+#pklnjnyxdr .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ntgmwgtyym .gt_font_normal {
+#pklnjnyxdr .gt_font_normal {
   font-weight: normal;
 }
 
-#ntgmwgtyym .gt_font_bold {
+#pklnjnyxdr .gt_font_bold {
   font-weight: bold;
 }
 
-#ntgmwgtyym .gt_font_italic {
+#pklnjnyxdr .gt_font_italic {
   font-style: italic;
 }
 
-#ntgmwgtyym .gt_super {
+#pklnjnyxdr .gt_super {
   font-size: 65%;
 }
 
-#ntgmwgtyym .gt_footnote_marks {
+#pklnjnyxdr .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ntgmwgtyym .gt_asterisk {
+#pklnjnyxdr .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ntgmwgtyym .gt_indent_1 {
+#pklnjnyxdr .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ntgmwgtyym .gt_indent_2 {
+#pklnjnyxdr .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ntgmwgtyym .gt_indent_3 {
+#pklnjnyxdr .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ntgmwgtyym .gt_indent_4 {
+#pklnjnyxdr .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ntgmwgtyym .gt_indent_5 {
+#pklnjnyxdr .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1741,41 +1729,34 @@ div.csl-indent {
 <li><span class="math inline">\(H_A: \mu_{summer} \neq \mu_{winter}\)</span></li>
 </ul>
 <p>To conduct this in R, we use <code>svyttest()</code> by calculating the temperature difference on the left-hand side as follows:</p>
-<div class="sourceCode" id="cb189"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb189-1"><a href="c06-statistical-testing.html#cb189-1" tabindex="-1"></a>ttest_ex4 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb189-2"><a href="c06-statistical-testing.html#cb189-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
-<span id="cb189-3"><a href="c06-statistical-testing.html#cb189-3" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb189-4"><a href="c06-statistical-testing.html#cb189-4" tabindex="-1"></a>    <span class="at">formula =</span> SummerTempNight <span class="sc">-</span> WinterTempNight <span class="sc">~</span> <span class="dv">0</span>,</span>
-<span id="cb189-5"><a href="c06-statistical-testing.html#cb189-5" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
-<span id="cb189-6"><a href="c06-statistical-testing.html#cb189-6" tabindex="-1"></a>  )</span>
-<span id="cb189-7"><a href="c06-statistical-testing.html#cb189-7" tabindex="-1"></a></span>
-<span id="cb189-8"><a href="c06-statistical-testing.html#cb189-8" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(ttest_ex4)</span></code></pre></div>
-<pre><code>## # A tibble: 1 × 8
-##   estimate statistic  p.value parameter conf.low conf.high method       
-##      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;        
-## 1     2.85      50.8 8.45e-50        58     2.74      2.96 Design-based…
-## # ℹ 1 more variable: alternative &lt;chr&gt;</code></pre>
-<div class="sourceCode" id="cb191"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb191-1"><a href="c06-statistical-testing.html#cb191-1" tabindex="-1"></a><span class="fu">tidy</span>(ttest_ex4) <span class="sc">%&gt;%</span></span>
-<span id="cb191-2"><a href="c06-statistical-testing.html#cb191-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value =</span> <span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
-<span id="cb191-3"><a href="c06-statistical-testing.html#cb191-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb191-4"><a href="c06-statistical-testing.html#cb191-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb187"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb187-1"><a href="c06-statistical-testing.html#cb187-1" tabindex="-1"></a>ttest_ex4 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
+<span id="cb187-2"><a href="c06-statistical-testing.html#cb187-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
+<span id="cb187-3"><a href="c06-statistical-testing.html#cb187-3" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb187-4"><a href="c06-statistical-testing.html#cb187-4" tabindex="-1"></a>    <span class="at">formula =</span> SummerTempNight <span class="sc">-</span> WinterTempNight <span class="sc">~</span> <span class="dv">0</span>,</span>
+<span id="cb187-5"><a href="c06-statistical-testing.html#cb187-5" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb187-6"><a href="c06-statistical-testing.html#cb187-6" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb188"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb188-1"><a href="c06-statistical-testing.html#cb188-1" tabindex="-1"></a><span class="fu">tidy</span>(ttest_ex4) <span class="sc">%&gt;%</span></span>
+<span id="cb188-2"><a href="c06-statistical-testing.html#cb188-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value =</span> <span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
+<span id="cb188-3"><a href="c06-statistical-testing.html#cb188-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb188-4"><a href="c06-statistical-testing.html#cb188-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="cttuqlybnc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#cttuqlybnc table {
+<div id="vwqjwgvzyp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#vwqjwgvzyp table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#cttuqlybnc thead, #cttuqlybnc tbody, #cttuqlybnc tfoot, #cttuqlybnc tr, #cttuqlybnc td, #cttuqlybnc th {
+#vwqjwgvzyp thead, #vwqjwgvzyp tbody, #vwqjwgvzyp tfoot, #vwqjwgvzyp tr, #vwqjwgvzyp td, #vwqjwgvzyp th {
   border-style: none;
 }
 
-#cttuqlybnc p {
+#vwqjwgvzyp p {
   margin: 0;
   padding: 0;
 }
 
-#cttuqlybnc .gt_table {
+#vwqjwgvzyp .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1801,12 +1782,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_caption {
+#vwqjwgvzyp .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#cttuqlybnc .gt_title {
+#vwqjwgvzyp .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1818,7 +1799,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#cttuqlybnc .gt_subtitle {
+#vwqjwgvzyp .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1830,7 +1811,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#cttuqlybnc .gt_heading {
+#vwqjwgvzyp .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1842,13 +1823,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_bottom_border {
+#vwqjwgvzyp .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_col_headings {
+#vwqjwgvzyp .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1863,7 +1844,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_col_heading {
+#vwqjwgvzyp .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1883,7 +1864,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#cttuqlybnc .gt_column_spanner_outer {
+#vwqjwgvzyp .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1895,15 +1876,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#cttuqlybnc .gt_column_spanner_outer:first-child {
+#vwqjwgvzyp .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#cttuqlybnc .gt_column_spanner_outer:last-child {
+#vwqjwgvzyp .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#cttuqlybnc .gt_column_spanner {
+#vwqjwgvzyp .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1915,11 +1896,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#cttuqlybnc .gt_spanner_row {
+#vwqjwgvzyp .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#cttuqlybnc .gt_group_heading {
+#vwqjwgvzyp .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1945,7 +1926,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#cttuqlybnc .gt_empty_group_heading {
+#vwqjwgvzyp .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1960,15 +1941,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#cttuqlybnc .gt_from_md > :first-child {
+#vwqjwgvzyp .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#cttuqlybnc .gt_from_md > :last-child {
+#vwqjwgvzyp .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#cttuqlybnc .gt_row {
+#vwqjwgvzyp .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1987,7 +1968,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#cttuqlybnc .gt_stub {
+#vwqjwgvzyp .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2000,7 +1981,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#cttuqlybnc .gt_stub_row_group {
+#vwqjwgvzyp .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2014,15 +1995,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#cttuqlybnc .gt_row_group_first td {
+#vwqjwgvzyp .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#cttuqlybnc .gt_row_group_first th {
+#vwqjwgvzyp .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#cttuqlybnc .gt_summary_row {
+#vwqjwgvzyp .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2032,16 +2013,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#cttuqlybnc .gt_first_summary_row {
+#vwqjwgvzyp .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_first_summary_row.thick {
+#vwqjwgvzyp .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#cttuqlybnc .gt_last_summary_row {
+#vwqjwgvzyp .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2051,7 +2032,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_grand_summary_row {
+#vwqjwgvzyp .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2061,7 +2042,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#cttuqlybnc .gt_first_grand_summary_row {
+#vwqjwgvzyp .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2071,7 +2052,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_last_grand_summary_row_top {
+#vwqjwgvzyp .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2081,11 +2062,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_striped {
+#vwqjwgvzyp .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#cttuqlybnc .gt_table_body {
+#vwqjwgvzyp .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2094,7 +2075,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_footnotes {
+#vwqjwgvzyp .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2108,7 +2089,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_footnote {
+#vwqjwgvzyp .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2117,7 +2098,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#cttuqlybnc .gt_sourcenotes {
+#vwqjwgvzyp .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2131,7 +2112,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#cttuqlybnc .gt_sourcenote {
+#vwqjwgvzyp .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2139,63 +2120,63 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#cttuqlybnc .gt_left {
+#vwqjwgvzyp .gt_left {
   text-align: left;
 }
 
-#cttuqlybnc .gt_center {
+#vwqjwgvzyp .gt_center {
   text-align: center;
 }
 
-#cttuqlybnc .gt_right {
+#vwqjwgvzyp .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#cttuqlybnc .gt_font_normal {
+#vwqjwgvzyp .gt_font_normal {
   font-weight: normal;
 }
 
-#cttuqlybnc .gt_font_bold {
+#vwqjwgvzyp .gt_font_bold {
   font-weight: bold;
 }
 
-#cttuqlybnc .gt_font_italic {
+#vwqjwgvzyp .gt_font_italic {
   font-style: italic;
 }
 
-#cttuqlybnc .gt_super {
+#vwqjwgvzyp .gt_super {
   font-size: 65%;
 }
 
-#cttuqlybnc .gt_footnote_marks {
+#vwqjwgvzyp .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#cttuqlybnc .gt_asterisk {
+#vwqjwgvzyp .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#cttuqlybnc .gt_indent_1 {
+#vwqjwgvzyp .gt_indent_1 {
   text-indent: 5px;
 }
 
-#cttuqlybnc .gt_indent_2 {
+#vwqjwgvzyp .gt_indent_2 {
   text-indent: 10px;
 }
 
-#cttuqlybnc .gt_indent_3 {
+#vwqjwgvzyp .gt_indent_3 {
   text-indent: 15px;
 }
 
-#cttuqlybnc .gt_indent_4 {
+#vwqjwgvzyp .gt_indent_4 {
   text-indent: 20px;
 }
 
-#cttuqlybnc .gt_indent_5 {
+#vwqjwgvzyp .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2253,18 +2234,18 @@ div.csl-indent {
 <p>As with t-tests, the difference between using <span class="math inline">\(\chi^2\)</span> tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package will account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter <a href="c10-sample-designs-replicate-weights.html#c10-sample-designs-replicate-weights">10</a>.</p>
 <div id="stattest-chi-syntax" class="section level3 hasAnchor" number="6.4.1">
 <h3><span class="header-section-number">6.4.1</span> Syntax<a href="c06-statistical-testing.html#stattest-chi-syntax" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>When we do not have survey data, we may be able to use the <code>chisq.test()</code> function from the {stats} package. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:</p>
+<p>When we do not have survey data, we may be able to use the <code>chisq.test()</code> function from the {stats} package in base R <span class="citation">(<a href="#ref-R-base">R Core Team 2023</a>)</span>. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:</p>
 <ul>
 <li><code>svygofchisq()</code>: For goodness of fit tests</li>
 <li><code>svychisq()</code>: For tests of independence and homogeneity</li>
 </ul>
 <p>The non-survey data function of <code>chisq.test()</code> requires either a single set of counts and given proportions (for goodness of fit tests) or two sets of counts for tests of independence and homogeneity. The functions we use with survey data require respondent-level data and formulas instead of counts. This ensures that the variances are correctly calculated.</p>
 <p>First, the function for the goodness of fit tests is <code>svygofchisq()</code>:</p>
-<div class="sourceCode" id="cb192"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb192-1"><a href="c06-statistical-testing.html#cb192-1" tabindex="-1"></a><span class="fu">svygofchisq</span>(formula,</span>
-<span id="cb192-2"><a href="c06-statistical-testing.html#cb192-2" tabindex="-1"></a>            p,</span>
-<span id="cb192-3"><a href="c06-statistical-testing.html#cb192-3" tabindex="-1"></a>            design,</span>
-<span id="cb192-4"><a href="c06-statistical-testing.html#cb192-4" tabindex="-1"></a>            <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb192-5"><a href="c06-statistical-testing.html#cb192-5" tabindex="-1"></a>            ...)</span></code></pre></div>
+<div class="sourceCode" id="cb189"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb189-1"><a href="c06-statistical-testing.html#cb189-1" tabindex="-1"></a><span class="fu">svygofchisq</span>(formula,</span>
+<span id="cb189-2"><a href="c06-statistical-testing.html#cb189-2" tabindex="-1"></a>            p,</span>
+<span id="cb189-3"><a href="c06-statistical-testing.html#cb189-3" tabindex="-1"></a>            design,</span>
+<span id="cb189-4"><a href="c06-statistical-testing.html#cb189-4" tabindex="-1"></a>            <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb189-5"><a href="c06-statistical-testing.html#cb189-5" tabindex="-1"></a>            ...)</span></code></pre></div>
 <p>The arguments are:</p>
 <ul>
 <li><code>formula</code>: Formula specifying a single factor variable</li>
@@ -2274,13 +2255,13 @@ div.csl-indent {
 </ul>
 <p>Based on the order of the arguments, we again must use the dot <code>(.)</code> notation if we pipe in the survey design object or explicitly name the arguments as described in Section <a href="c06-statistical-testing.html#dot-notation">6.2</a>. For the goodness of fit tests, the formula will be a single variable <code>formula = ~var</code> as we compare the observed data from this variable to the expected data. The expected probabilities are then entered in the <code>p</code> argument and need to be a vector of the same length as the number of categories in the variable. For example, if we want to know if the proportion of males and females matches a distribution of 30/70, then the sex variable (with two categories) would be used <code>formula = ~SEX</code>, and the proportions would be included as <code>p = c(.3, .7)</code>. It is important to note that the variable entered into the formula should be formatted as either a factor or a character. The examples below provide more detail and tips on how to make sure the levels match up correctly.</p>
 <p>For tests of homogeneity and independence, the <code>svychisq()</code> function should be used. The syntax is as follows:</p>
-<div class="sourceCode" id="cb193"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb193-1"><a href="c06-statistical-testing.html#cb193-1" tabindex="-1"></a><span class="fu">svychisq</span>(</span>
-<span id="cb193-2"><a href="c06-statistical-testing.html#cb193-2" tabindex="-1"></a>  formula,</span>
-<span id="cb193-3"><a href="c06-statistical-testing.html#cb193-3" tabindex="-1"></a>  design,</span>
-<span id="cb193-4"><a href="c06-statistical-testing.html#cb193-4" tabindex="-1"></a>  <span class="at">statistic =</span> <span class="fu">c</span>(<span class="st">&quot;F&quot;</span>, <span class="st">&quot;Chisq&quot;</span>, <span class="st">&quot;Wald&quot;</span>, <span class="st">&quot;adjWald&quot;</span>,</span>
-<span id="cb193-5"><a href="c06-statistical-testing.html#cb193-5" tabindex="-1"></a>                <span class="st">&quot;lincom&quot;</span>, <span class="st">&quot;saddlepoint&quot;</span>),</span>
-<span id="cb193-6"><a href="c06-statistical-testing.html#cb193-6" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
-<span id="cb193-7"><a href="c06-statistical-testing.html#cb193-7" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb190"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb190-1"><a href="c06-statistical-testing.html#cb190-1" tabindex="-1"></a><span class="fu">svychisq</span>(</span>
+<span id="cb190-2"><a href="c06-statistical-testing.html#cb190-2" tabindex="-1"></a>  formula,</span>
+<span id="cb190-3"><a href="c06-statistical-testing.html#cb190-3" tabindex="-1"></a>  design,</span>
+<span id="cb190-4"><a href="c06-statistical-testing.html#cb190-4" tabindex="-1"></a>  <span class="at">statistic =</span> <span class="fu">c</span>(<span class="st">&quot;F&quot;</span>, <span class="st">&quot;Chisq&quot;</span>, <span class="st">&quot;Wald&quot;</span>, <span class="st">&quot;adjWald&quot;</span>,</span>
+<span id="cb190-5"><a href="c06-statistical-testing.html#cb190-5" tabindex="-1"></a>                <span class="st">&quot;lincom&quot;</span>, <span class="st">&quot;saddlepoint&quot;</span>),</span>
+<span id="cb190-6"><a href="c06-statistical-testing.html#cb190-6" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb190-7"><a href="c06-statistical-testing.html#cb190-7" tabindex="-1"></a>)</span></code></pre></div>
 <p>The arguments are:</p>
 <ul>
 <li><code>formula</code>: Model formula specifying the table (shown in examples)</li>
@@ -2311,10 +2292,10 @@ div.csl-indent {
 <li><span class="math inline">\(H_A:\)</span> at least one of the education levels does not match between the ANES and the ACS</li>
 </ul>
 <p>To conduct this in R, let’s first look at the education variable (<code>Education</code>) we have on the ANES data. Using the <code>survey_mean()</code> function discussed in Chapter <a href="c05-descriptive-analysis.html#c05-descriptive-analysis">5</a>, we can see the education levels and estimated proportions.</p>
-<div class="sourceCode" id="cb194"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb194-1"><a href="c06-statistical-testing.html#cb194-1" tabindex="-1"></a>anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb194-2"><a href="c06-statistical-testing.html#cb194-2" tabindex="-1"></a>  <span class="fu">drop_na</span>(Education) <span class="sc">%&gt;%</span></span>
-<span id="cb194-3"><a href="c06-statistical-testing.html#cb194-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Education) <span class="sc">%&gt;%</span></span>
-<span id="cb194-4"><a href="c06-statistical-testing.html#cb194-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>())</span></code></pre></div>
+<div class="sourceCode" id="cb191"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb191-1"><a href="c06-statistical-testing.html#cb191-1" tabindex="-1"></a>anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb191-2"><a href="c06-statistical-testing.html#cb191-2" tabindex="-1"></a>  <span class="fu">drop_na</span>(Education) <span class="sc">%&gt;%</span></span>
+<span id="cb191-3"><a href="c06-statistical-testing.html#cb191-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Education) <span class="sc">%&gt;%</span></span>
+<span id="cb191-4"><a href="c06-statistical-testing.html#cb191-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>())</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 3
 ##   Education         p    p_se
 ##   &lt;fct&gt;         &lt;dbl&gt;   &lt;dbl&gt;
@@ -2323,17 +2304,17 @@ div.csl-indent {
 ## 3 Post HS      0.290  0.00713
 ## 4 Bachelor&#39;s   0.226  0.00633
 ## 5 Graduate     0.126  0.00499</code></pre>
-<p>Based on this output, we can see that we have different levels than the ACS data provides. Specifically, the education data from ANES has two levels for Bachelor’s Degree or Higher (Bachelor’s and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse. The package’s <code>fct_collapse()</code> function helps us create a new variable by collapsing categories into a single one. Then, we will use the <code>svygofchisq()</code> function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.</p>
-<div class="sourceCode" id="cb196"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb196-1"><a href="c06-statistical-testing.html#cb196-1" tabindex="-1"></a>anes_des_educ <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb196-2"><a href="c06-statistical-testing.html#cb196-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Education2 =</span></span>
-<span id="cb196-3"><a href="c06-statistical-testing.html#cb196-3" tabindex="-1"></a>           <span class="fu">fct_collapse</span>(Education,</span>
-<span id="cb196-4"><a href="c06-statistical-testing.html#cb196-4" tabindex="-1"></a>                        <span class="st">&quot;Bachelor or Higher&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;Bachelor&#39;s&quot;</span>,</span>
-<span id="cb196-5"><a href="c06-statistical-testing.html#cb196-5" tabindex="-1"></a>                                                 <span class="st">&quot;Graduate&quot;</span>)))</span>
-<span id="cb196-6"><a href="c06-statistical-testing.html#cb196-6" tabindex="-1"></a></span>
-<span id="cb196-7"><a href="c06-statistical-testing.html#cb196-7" tabindex="-1"></a>anes_des_educ <span class="sc">%&gt;%</span></span>
-<span id="cb196-8"><a href="c06-statistical-testing.html#cb196-8" tabindex="-1"></a>  <span class="fu">drop_na</span>(Education2) <span class="sc">%&gt;%</span></span>
-<span id="cb196-9"><a href="c06-statistical-testing.html#cb196-9" tabindex="-1"></a>  <span class="fu">group_by</span>(Education2) <span class="sc">%&gt;%</span></span>
-<span id="cb196-10"><a href="c06-statistical-testing.html#cb196-10" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>())</span></code></pre></div>
+<p>Based on this output, we can see that we have different levels than the ACS data provides. Specifically, the education data from ANES has two levels for Bachelor’s Degree or Higher (Bachelor’s and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse <span class="citation">(<a href="#ref-R-forcats">Wickham 2023a</a>)</span>. The package’s <code>fct_collapse()</code> function helps us create a new variable by collapsing categories into a single one. Then, we will use the <code>svygofchisq()</code> function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.</p>
+<div class="sourceCode" id="cb193"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb193-1"><a href="c06-statistical-testing.html#cb193-1" tabindex="-1"></a>anes_des_educ <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb193-2"><a href="c06-statistical-testing.html#cb193-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Education2 =</span></span>
+<span id="cb193-3"><a href="c06-statistical-testing.html#cb193-3" tabindex="-1"></a>           <span class="fu">fct_collapse</span>(Education,</span>
+<span id="cb193-4"><a href="c06-statistical-testing.html#cb193-4" tabindex="-1"></a>                        <span class="st">&quot;Bachelor or Higher&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;Bachelor&#39;s&quot;</span>,</span>
+<span id="cb193-5"><a href="c06-statistical-testing.html#cb193-5" tabindex="-1"></a>                                                 <span class="st">&quot;Graduate&quot;</span>)))</span>
+<span id="cb193-6"><a href="c06-statistical-testing.html#cb193-6" tabindex="-1"></a></span>
+<span id="cb193-7"><a href="c06-statistical-testing.html#cb193-7" tabindex="-1"></a>anes_des_educ <span class="sc">%&gt;%</span></span>
+<span id="cb193-8"><a href="c06-statistical-testing.html#cb193-8" tabindex="-1"></a>  <span class="fu">drop_na</span>(Education2) <span class="sc">%&gt;%</span></span>
+<span id="cb193-9"><a href="c06-statistical-testing.html#cb193-9" tabindex="-1"></a>  <span class="fu">group_by</span>(Education2) <span class="sc">%&gt;%</span></span>
+<span id="cb193-10"><a href="c06-statistical-testing.html#cb193-10" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>())</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 3
 ##   Education2              p    p_se
 ##   &lt;fct&gt;               &lt;dbl&gt;   &lt;dbl&gt;
@@ -2341,15 +2322,15 @@ div.csl-indent {
 ## 2 High school        0.277  0.0102 
 ## 3 Post HS            0.290  0.00713
 ## 4 Bachelor or Higher 0.352  0.00732</code></pre>
-<div class="sourceCode" id="cb198"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb198-1"><a href="c06-statistical-testing.html#cb198-1" tabindex="-1"></a>chi_ex1 <span class="ot">&lt;-</span> anes_des_educ <span class="sc">%&gt;%</span></span>
-<span id="cb198-2"><a href="c06-statistical-testing.html#cb198-2" tabindex="-1"></a>  <span class="fu">svygofchisq</span>(</span>
-<span id="cb198-3"><a href="c06-statistical-testing.html#cb198-3" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> Education2,</span>
-<span id="cb198-4"><a href="c06-statistical-testing.html#cb198-4" tabindex="-1"></a>    <span class="at">p =</span> <span class="fu">c</span>(<span class="fl">0.11</span>, <span class="fl">0.27</span>, <span class="fl">0.29</span>, <span class="fl">0.33</span>),</span>
-<span id="cb198-5"><a href="c06-statistical-testing.html#cb198-5" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb198-6"><a href="c06-statistical-testing.html#cb198-6" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
-<span id="cb198-7"><a href="c06-statistical-testing.html#cb198-7" tabindex="-1"></a>  )</span>
-<span id="cb198-8"><a href="c06-statistical-testing.html#cb198-8" tabindex="-1"></a></span>
-<span id="cb198-9"><a href="c06-statistical-testing.html#cb198-9" tabindex="-1"></a>chi_ex1</span></code></pre></div>
+<div class="sourceCode" id="cb195"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb195-1"><a href="c06-statistical-testing.html#cb195-1" tabindex="-1"></a>chi_ex1 <span class="ot">&lt;-</span> anes_des_educ <span class="sc">%&gt;%</span></span>
+<span id="cb195-2"><a href="c06-statistical-testing.html#cb195-2" tabindex="-1"></a>  <span class="fu">svygofchisq</span>(</span>
+<span id="cb195-3"><a href="c06-statistical-testing.html#cb195-3" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> Education2,</span>
+<span id="cb195-4"><a href="c06-statistical-testing.html#cb195-4" tabindex="-1"></a>    <span class="at">p =</span> <span class="fu">c</span>(<span class="fl">0.11</span>, <span class="fl">0.27</span>, <span class="fl">0.29</span>, <span class="fl">0.33</span>),</span>
+<span id="cb195-5"><a href="c06-statistical-testing.html#cb195-5" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb195-6"><a href="c06-statistical-testing.html#cb195-6" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb195-7"><a href="c06-statistical-testing.html#cb195-7" tabindex="-1"></a>  )</span>
+<span id="cb195-8"><a href="c06-statistical-testing.html#cb195-8" tabindex="-1"></a></span>
+<span id="cb195-9"><a href="c06-statistical-testing.html#cb195-9" tabindex="-1"></a>chi_ex1</span></code></pre></div>
 <pre><code>## 
 ##  Design-based chi-squared test for given probabilities
 ## 
@@ -2357,15 +2338,15 @@ div.csl-indent {
 ## X-squared = 2172220, scale = 1.1e+05, df = 2.3e+00, p-value =
 ## 9e-05</code></pre>
 <p>The output from the <code>svygofchisq()</code> indicates that at least one proportion from ANES does not match the ACS data (<span class="math inline">\(\chi^2 =\)</span> 2,172,220; p-value &lt;0.0001). To get a better idea of the differences, we can use the <code>expected</code> output along with <code>survey_mean()</code> to create a comparison table:</p>
-<div class="sourceCode" id="cb200"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb200-1"><a href="c06-statistical-testing.html#cb200-1" tabindex="-1"></a>ex1_table <span class="ot">&lt;-</span> anes_des_educ <span class="sc">%&gt;%</span></span>
-<span id="cb200-2"><a href="c06-statistical-testing.html#cb200-2" tabindex="-1"></a>  <span class="fu">drop_na</span>(Education2) <span class="sc">%&gt;%</span></span>
-<span id="cb200-3"><a href="c06-statistical-testing.html#cb200-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Education2) <span class="sc">%&gt;%</span></span>
-<span id="cb200-4"><a href="c06-statistical-testing.html#cb200-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed =</span> <span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb200-5"><a href="c06-statistical-testing.html#cb200-5" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Education =</span> Education2) <span class="sc">%&gt;%</span></span>
-<span id="cb200-6"><a href="c06-statistical-testing.html#cb200-6" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Expected=</span><span class="fu">c</span>(<span class="fl">0.11</span>, <span class="fl">0.27</span>, <span class="fl">0.29</span>, <span class="fl">0.33</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb200-7"><a href="c06-statistical-testing.html#cb200-7" tabindex="-1"></a>  <span class="fu">select</span>(Education, Expected, <span class="fu">everything</span>())</span>
-<span id="cb200-8"><a href="c06-statistical-testing.html#cb200-8" tabindex="-1"></a></span>
-<span id="cb200-9"><a href="c06-statistical-testing.html#cb200-9" tabindex="-1"></a>ex1_table</span></code></pre></div>
+<div class="sourceCode" id="cb197"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb197-1"><a href="c06-statistical-testing.html#cb197-1" tabindex="-1"></a>ex1_table <span class="ot">&lt;-</span> anes_des_educ <span class="sc">%&gt;%</span></span>
+<span id="cb197-2"><a href="c06-statistical-testing.html#cb197-2" tabindex="-1"></a>  <span class="fu">drop_na</span>(Education2) <span class="sc">%&gt;%</span></span>
+<span id="cb197-3"><a href="c06-statistical-testing.html#cb197-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Education2) <span class="sc">%&gt;%</span></span>
+<span id="cb197-4"><a href="c06-statistical-testing.html#cb197-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed =</span> <span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb197-5"><a href="c06-statistical-testing.html#cb197-5" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Education =</span> Education2) <span class="sc">%&gt;%</span></span>
+<span id="cb197-6"><a href="c06-statistical-testing.html#cb197-6" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Expected=</span><span class="fu">c</span>(<span class="fl">0.11</span>, <span class="fl">0.27</span>, <span class="fl">0.29</span>, <span class="fl">0.33</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb197-7"><a href="c06-statistical-testing.html#cb197-7" tabindex="-1"></a>  <span class="fu">select</span>(Education, Expected, <span class="fu">everything</span>())</span>
+<span id="cb197-8"><a href="c06-statistical-testing.html#cb197-8" tabindex="-1"></a></span>
+<span id="cb197-9"><a href="c06-statistical-testing.html#cb197-9" tabindex="-1"></a>ex1_table</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 5
 ##   Education          Expected Observed Observed_low Observed_upp
 ##   &lt;fct&gt;                 &lt;dbl&gt;    &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
@@ -2374,23 +2355,23 @@ div.csl-indent {
 ## 3 Post HS                0.29   0.290        0.276        0.305 
 ## 4 Bachelor or Higher     0.33   0.352        0.337        0.367</code></pre>
 <p>This output includes our expected proportions from the ACS that we provided the <code>svygofchisq()</code> function along with the output of the observed proportions and their confidence intervals. This table shows that the “High school” and “Post HS” categories have nearly identical proportions but that the other two categories are slightly different. Looking at the confidence intervals, we can see that the ANES data skews to include fewer people in the “Less than HS” category and more people in the “Bachelor or Higher” category. This may be easier to see if we plot this. The code below uses the tabular output to create Figure <a href="c06-statistical-testing.html#fig:stattest-chi-ex1-graph">6.1</a>.</p>
-<div class="sourceCode" id="cb202"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb202-1"><a href="c06-statistical-testing.html#cb202-1" tabindex="-1"></a>ex1_table <span class="sc">%&gt;%</span></span>
-<span id="cb202-2"><a href="c06-statistical-testing.html#cb202-2" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb202-3"><a href="c06-statistical-testing.html#cb202-3" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">c</span>(<span class="st">&quot;Expected&quot;</span>, <span class="st">&quot;Observed&quot;</span>),</span>
-<span id="cb202-4"><a href="c06-statistical-testing.html#cb202-4" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;Names&quot;</span>,</span>
-<span id="cb202-5"><a href="c06-statistical-testing.html#cb202-5" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;Proportion&quot;</span></span>
-<span id="cb202-6"><a href="c06-statistical-testing.html#cb202-6" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb202-7"><a href="c06-statistical-testing.html#cb202-7" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb202-8"><a href="c06-statistical-testing.html#cb202-8" tabindex="-1"></a>    <span class="at">Observed_low =</span> <span class="fu">if_else</span>(Names <span class="sc">==</span> <span class="st">&quot;Observed&quot;</span>, Observed_low, <span class="cn">NA_real_</span>),</span>
-<span id="cb202-9"><a href="c06-statistical-testing.html#cb202-9" tabindex="-1"></a>    <span class="at">Observed_upp =</span> <span class="fu">if_else</span>(Names <span class="sc">==</span> <span class="st">&quot;Observed&quot;</span>, Observed_upp, <span class="cn">NA_real_</span>),</span>
-<span id="cb202-10"><a href="c06-statistical-testing.html#cb202-10" tabindex="-1"></a>    <span class="at">Names =</span> <span class="fu">if_else</span>(Names <span class="sc">==</span> <span class="st">&quot;Observed&quot;</span>, <span class="st">&quot;ANES (observed)&quot;</span>, <span class="st">&quot;ACS (expected)&quot;</span>)</span>
-<span id="cb202-11"><a href="c06-statistical-testing.html#cb202-11" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb202-12"><a href="c06-statistical-testing.html#cb202-12" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Education, <span class="at">y =</span> Proportion, <span class="at">color =</span> Names)) <span class="sc">+</span></span>
-<span id="cb202-13"><a href="c06-statistical-testing.html#cb202-13" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.75</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb202-14"><a href="c06-statistical-testing.html#cb202-14" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> Observed_low, <span class="at">ymax =</span> Observed_upp), <span class="at">width =</span> <span class="fl">0.25</span>) <span class="sc">+</span></span>
-<span id="cb202-15"><a href="c06-statistical-testing.html#cb202-15" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb202-16"><a href="c06-statistical-testing.html#cb202-16" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">name =</span> <span class="st">&quot;Type&quot;</span>, <span class="at">values =</span> book_colors[<span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>)]) <span class="sc">+</span></span>
-<span id="cb202-17"><a href="c06-statistical-testing.html#cb202-17" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>, <span class="at">legend.title =</span> <span class="fu">element_blank</span>())</span></code></pre></div>
+<div class="sourceCode" id="cb199"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb199-1"><a href="c06-statistical-testing.html#cb199-1" tabindex="-1"></a>ex1_table <span class="sc">%&gt;%</span></span>
+<span id="cb199-2"><a href="c06-statistical-testing.html#cb199-2" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb199-3"><a href="c06-statistical-testing.html#cb199-3" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">c</span>(<span class="st">&quot;Expected&quot;</span>, <span class="st">&quot;Observed&quot;</span>),</span>
+<span id="cb199-4"><a href="c06-statistical-testing.html#cb199-4" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;Names&quot;</span>,</span>
+<span id="cb199-5"><a href="c06-statistical-testing.html#cb199-5" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;Proportion&quot;</span></span>
+<span id="cb199-6"><a href="c06-statistical-testing.html#cb199-6" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb199-7"><a href="c06-statistical-testing.html#cb199-7" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb199-8"><a href="c06-statistical-testing.html#cb199-8" tabindex="-1"></a>    <span class="at">Observed_low =</span> <span class="fu">if_else</span>(Names <span class="sc">==</span> <span class="st">&quot;Observed&quot;</span>, Observed_low, <span class="cn">NA_real_</span>),</span>
+<span id="cb199-9"><a href="c06-statistical-testing.html#cb199-9" tabindex="-1"></a>    <span class="at">Observed_upp =</span> <span class="fu">if_else</span>(Names <span class="sc">==</span> <span class="st">&quot;Observed&quot;</span>, Observed_upp, <span class="cn">NA_real_</span>),</span>
+<span id="cb199-10"><a href="c06-statistical-testing.html#cb199-10" tabindex="-1"></a>    <span class="at">Names =</span> <span class="fu">if_else</span>(Names <span class="sc">==</span> <span class="st">&quot;Observed&quot;</span>, <span class="st">&quot;ANES (observed)&quot;</span>, <span class="st">&quot;ACS (expected)&quot;</span>)</span>
+<span id="cb199-11"><a href="c06-statistical-testing.html#cb199-11" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb199-12"><a href="c06-statistical-testing.html#cb199-12" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Education, <span class="at">y =</span> Proportion, <span class="at">color =</span> Names)) <span class="sc">+</span></span>
+<span id="cb199-13"><a href="c06-statistical-testing.html#cb199-13" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.75</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb199-14"><a href="c06-statistical-testing.html#cb199-14" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> Observed_low, <span class="at">ymax =</span> Observed_upp), <span class="at">width =</span> <span class="fl">0.25</span>) <span class="sc">+</span></span>
+<span id="cb199-15"><a href="c06-statistical-testing.html#cb199-15" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb199-16"><a href="c06-statistical-testing.html#cb199-16" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">name =</span> <span class="st">&quot;Type&quot;</span>, <span class="at">values =</span> book_colors[<span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>)]) <span class="sc">+</span></span>
+<span id="cb199-17"><a href="c06-statistical-testing.html#cb199-17" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>, <span class="at">legend.title =</span> <span class="fu">element_blank</span>())</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:stattest-chi-ex1-graph"></span>
 <img src="bookdown_files/figure-html/stattest-chi-ex1-graph-1.png" alt="Expected and observed proportions of education, showing the confidence intervals for the expected proportions and whether the observed proportions lie within them. The x-axis has labels 'Less than HS', 'High school', 'Post HS', and 'Bachelor or Higher'. The only ones where expected proportion is outside of the intervals is 'Less than HS' and 'Bachelor or Higher'." width="672" />
 <p class="caption">
@@ -2411,22 +2392,22 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
 <li><span class="math inline">\(H_A:\)</span> People’s trust in the federal government and their trust in other people are <em>not</em> independent (i.e., they are related)</li>
 </ul>
 <p>To conduct this in R, we use the <code>svychisq()</code> function to compare the two variables:</p>
-<div class="sourceCode" id="cb203"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb203-1"><a href="c06-statistical-testing.html#cb203-1" tabindex="-1"></a>chi_ex2 <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb203-2"><a href="c06-statistical-testing.html#cb203-2" tabindex="-1"></a>  <span class="fu">svychisq</span>(</span>
-<span id="cb203-3"><a href="c06-statistical-testing.html#cb203-3" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> TrustGovernment <span class="sc">+</span> TrustPeople,</span>
-<span id="cb203-4"><a href="c06-statistical-testing.html#cb203-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb203-5"><a href="c06-statistical-testing.html#cb203-5" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="st">&quot;Wald&quot;</span>,</span>
-<span id="cb203-6"><a href="c06-statistical-testing.html#cb203-6" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
-<span id="cb203-7"><a href="c06-statistical-testing.html#cb203-7" tabindex="-1"></a>  )</span>
-<span id="cb203-8"><a href="c06-statistical-testing.html#cb203-8" tabindex="-1"></a></span>
-<span id="cb203-9"><a href="c06-statistical-testing.html#cb203-9" tabindex="-1"></a>chi_ex2</span></code></pre></div>
+<div class="sourceCode" id="cb200"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb200-1"><a href="c06-statistical-testing.html#cb200-1" tabindex="-1"></a>chi_ex2 <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb200-2"><a href="c06-statistical-testing.html#cb200-2" tabindex="-1"></a>  <span class="fu">svychisq</span>(</span>
+<span id="cb200-3"><a href="c06-statistical-testing.html#cb200-3" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> TrustGovernment <span class="sc">+</span> TrustPeople,</span>
+<span id="cb200-4"><a href="c06-statistical-testing.html#cb200-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb200-5"><a href="c06-statistical-testing.html#cb200-5" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="st">&quot;Wald&quot;</span>,</span>
+<span id="cb200-6"><a href="c06-statistical-testing.html#cb200-6" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb200-7"><a href="c06-statistical-testing.html#cb200-7" tabindex="-1"></a>  )</span>
+<span id="cb200-8"><a href="c06-statistical-testing.html#cb200-8" tabindex="-1"></a></span>
+<span id="cb200-9"><a href="c06-statistical-testing.html#cb200-9" tabindex="-1"></a>chi_ex2</span></code></pre></div>
 <pre><code>## 
 ##  Design-based Wald test of association
 ## 
 ## data:  NextMethod()
 ## F = 21, ndf = 16, ddf = 51, p-value &lt;2e-16</code></pre>
 <p>The output from <code>svychisq()</code> indicates that the distribution of people’s trust in the federal government and their trust in other people are <em>not</em> independent, meaning that they are related. Let’s output the distributions in a table to see the relationship. The <code>observed</code> output from the test provides a cross-tabulation of the counts for each category:</p>
-<div class="sourceCode" id="cb205"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb205-1"><a href="c06-statistical-testing.html#cb205-1" tabindex="-1"></a>chi_ex2<span class="sc">$</span>observed</span></code></pre></div>
+<div class="sourceCode" id="cb202"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb202-1"><a href="c06-statistical-testing.html#cb202-1" tabindex="-1"></a>chi_ex2<span class="sc">$</span>observed</span></code></pre></div>
 <pre><code>##                      TrustPeople
 ## TrustGovernment         Always Most of the time About half the time
 ##   Always                16.470           25.009              31.848
@@ -2442,38 +2423,38 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
 ##   Some of the time             932.628   89.596
 ##   Never                        217.994  189.307</code></pre>
 <p>However, as researchers, we often want to know about the proportions and not just the respondent counts from the survey. There are a couple of different ways that we can do this. The first is using the counts from <code>chi_ex2$observed</code> to calculate the proportion. We can then pivot the table to create a cross-tabulation similar to the counts table above. Adding <code>group_by()</code> to the code means that we are obtaining the proportions within each level of that variable. In this case, we are looking at the distribution of <code>TrustGovernment</code> for each level of <code>TrustPeople</code>. The resulting table is shown in Table <a href="c06-statistical-testing.html#tab:stattest-chi-ex2-prop1-tab">6.4</a>.</p>
-<div class="sourceCode" id="cb207"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb207-1"><a href="c06-statistical-testing.html#cb207-1" tabindex="-1"></a>chi_ex2_table<span class="ot">&lt;-</span>chi_ex2<span class="sc">$</span>observed <span class="sc">%&gt;%</span> </span>
-<span id="cb207-2"><a href="c06-statistical-testing.html#cb207-2" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb207-3"><a href="c06-statistical-testing.html#cb207-3" tabindex="-1"></a>  <span class="fu">group_by</span>(TrustPeople) <span class="sc">%&gt;%</span></span>
-<span id="cb207-4"><a href="c06-statistical-testing.html#cb207-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">round</span>(n <span class="sc">/</span> <span class="fu">sum</span>(n), <span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb207-5"><a href="c06-statistical-testing.html#cb207-5" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>n) <span class="sc">%&gt;%</span></span>
-<span id="cb207-6"><a href="c06-statistical-testing.html#cb207-6" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> TrustPeople, <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span> </span>
-<span id="cb207-7"><a href="c06-statistical-testing.html#cb207-7" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb207-8"><a href="c06-statistical-testing.html#cb207-8" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb207-9"><a href="c06-statistical-testing.html#cb207-9" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Trust in People&quot;</span>,</span>
-<span id="cb207-10"><a href="c06-statistical-testing.html#cb207-10" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">everything</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb207-11"><a href="c06-statistical-testing.html#cb207-11" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="st">`</span><span class="at">Most of the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;Most of&lt;br /&gt;the time&quot;</span>),</span>
-<span id="cb207-12"><a href="c06-statistical-testing.html#cb207-12" tabindex="-1"></a>             <span class="st">`</span><span class="at">About half the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;About half&lt;br /&gt;the time&quot;</span>),</span>
-<span id="cb207-13"><a href="c06-statistical-testing.html#cb207-13" tabindex="-1"></a>             <span class="st">`</span><span class="at">Some of the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;Some of&lt;br /&gt;the time&quot;</span>))</span></code></pre></div>
-<div class="sourceCode" id="cb208"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb208-1"><a href="c06-statistical-testing.html#cb208-1" tabindex="-1"></a>chi_ex2_table</span></code></pre></div>
+<div class="sourceCode" id="cb204"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb204-1"><a href="c06-statistical-testing.html#cb204-1" tabindex="-1"></a>chi_ex2_table<span class="ot">&lt;-</span>chi_ex2<span class="sc">$</span>observed <span class="sc">%&gt;%</span> </span>
+<span id="cb204-2"><a href="c06-statistical-testing.html#cb204-2" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb204-3"><a href="c06-statistical-testing.html#cb204-3" tabindex="-1"></a>  <span class="fu">group_by</span>(TrustPeople) <span class="sc">%&gt;%</span></span>
+<span id="cb204-4"><a href="c06-statistical-testing.html#cb204-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">round</span>(n <span class="sc">/</span> <span class="fu">sum</span>(n), <span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb204-5"><a href="c06-statistical-testing.html#cb204-5" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>n) <span class="sc">%&gt;%</span></span>
+<span id="cb204-6"><a href="c06-statistical-testing.html#cb204-6" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> TrustPeople, <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span> </span>
+<span id="cb204-7"><a href="c06-statistical-testing.html#cb204-7" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb204-8"><a href="c06-statistical-testing.html#cb204-8" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb204-9"><a href="c06-statistical-testing.html#cb204-9" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Trust in People&quot;</span>,</span>
+<span id="cb204-10"><a href="c06-statistical-testing.html#cb204-10" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">everything</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb204-11"><a href="c06-statistical-testing.html#cb204-11" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="st">`</span><span class="at">Most of the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;Most of&lt;br /&gt;the time&quot;</span>),</span>
+<span id="cb204-12"><a href="c06-statistical-testing.html#cb204-12" tabindex="-1"></a>             <span class="st">`</span><span class="at">About half the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;About half&lt;br /&gt;the time&quot;</span>),</span>
+<span id="cb204-13"><a href="c06-statistical-testing.html#cb204-13" tabindex="-1"></a>             <span class="st">`</span><span class="at">Some of the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;Some of&lt;br /&gt;the time&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb205"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb205-1"><a href="c06-statistical-testing.html#cb205-1" tabindex="-1"></a>chi_ex2_table</span></code></pre></div>
 
-<div id="lmtxwsttea" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#lmtxwsttea table {
+<div id="bgpammtmht" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#bgpammtmht table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#lmtxwsttea thead, #lmtxwsttea tbody, #lmtxwsttea tfoot, #lmtxwsttea tr, #lmtxwsttea td, #lmtxwsttea th {
+#bgpammtmht thead, #bgpammtmht tbody, #bgpammtmht tfoot, #bgpammtmht tr, #bgpammtmht td, #bgpammtmht th {
   border-style: none;
 }
 
-#lmtxwsttea p {
+#bgpammtmht p {
   margin: 0;
   padding: 0;
 }
 
-#lmtxwsttea .gt_table {
+#bgpammtmht .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2499,12 +2480,12 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-left-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_caption {
+#bgpammtmht .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#lmtxwsttea .gt_title {
+#bgpammtmht .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2516,7 +2497,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-width: 0;
 }
 
-#lmtxwsttea .gt_subtitle {
+#bgpammtmht .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2528,7 +2509,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-top-width: 0;
 }
 
-#lmtxwsttea .gt_heading {
+#bgpammtmht .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2540,13 +2521,13 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_bottom_border {
+#bgpammtmht .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_col_headings {
+#bgpammtmht .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2561,7 +2542,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_col_heading {
+#bgpammtmht .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2581,7 +2562,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   overflow-x: hidden;
 }
 
-#lmtxwsttea .gt_column_spanner_outer {
+#bgpammtmht .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2593,15 +2574,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 4px;
 }
 
-#lmtxwsttea .gt_column_spanner_outer:first-child {
+#bgpammtmht .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#lmtxwsttea .gt_column_spanner_outer:last-child {
+#bgpammtmht .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#lmtxwsttea .gt_column_spanner {
+#bgpammtmht .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2613,11 +2594,11 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   width: 100%;
 }
 
-#lmtxwsttea .gt_spanner_row {
+#bgpammtmht .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#lmtxwsttea .gt_group_heading {
+#bgpammtmht .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2643,7 +2624,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   text-align: left;
 }
 
-#lmtxwsttea .gt_empty_group_heading {
+#bgpammtmht .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2658,15 +2639,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   vertical-align: middle;
 }
 
-#lmtxwsttea .gt_from_md > :first-child {
+#bgpammtmht .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#lmtxwsttea .gt_from_md > :last-child {
+#bgpammtmht .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#lmtxwsttea .gt_row {
+#bgpammtmht .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2685,7 +2666,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   overflow-x: hidden;
 }
 
-#lmtxwsttea .gt_stub {
+#bgpammtmht .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2698,7 +2679,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#lmtxwsttea .gt_stub_row_group {
+#bgpammtmht .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2712,15 +2693,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   vertical-align: top;
 }
 
-#lmtxwsttea .gt_row_group_first td {
+#bgpammtmht .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#lmtxwsttea .gt_row_group_first th {
+#bgpammtmht .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#lmtxwsttea .gt_summary_row {
+#bgpammtmht .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2730,16 +2711,16 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#lmtxwsttea .gt_first_summary_row {
+#bgpammtmht .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_first_summary_row.thick {
+#bgpammtmht .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#lmtxwsttea .gt_last_summary_row {
+#bgpammtmht .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2749,7 +2730,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_grand_summary_row {
+#bgpammtmht .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2759,7 +2740,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#lmtxwsttea .gt_first_grand_summary_row {
+#bgpammtmht .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2769,7 +2750,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-top-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_last_grand_summary_row_top {
+#bgpammtmht .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2779,11 +2760,11 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_striped {
+#bgpammtmht .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#lmtxwsttea .gt_table_body {
+#bgpammtmht .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2792,7 +2773,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_footnotes {
+#bgpammtmht .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2806,7 +2787,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_footnote {
+#bgpammtmht .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2815,7 +2796,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#lmtxwsttea .gt_sourcenotes {
+#bgpammtmht .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2829,7 +2810,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#lmtxwsttea .gt_sourcenote {
+#bgpammtmht .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2837,63 +2818,63 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#lmtxwsttea .gt_left {
+#bgpammtmht .gt_left {
   text-align: left;
 }
 
-#lmtxwsttea .gt_center {
+#bgpammtmht .gt_center {
   text-align: center;
 }
 
-#lmtxwsttea .gt_right {
+#bgpammtmht .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#lmtxwsttea .gt_font_normal {
+#bgpammtmht .gt_font_normal {
   font-weight: normal;
 }
 
-#lmtxwsttea .gt_font_bold {
+#bgpammtmht .gt_font_bold {
   font-weight: bold;
 }
 
-#lmtxwsttea .gt_font_italic {
+#bgpammtmht .gt_font_italic {
   font-style: italic;
 }
 
-#lmtxwsttea .gt_super {
+#bgpammtmht .gt_super {
   font-size: 65%;
 }
 
-#lmtxwsttea .gt_footnote_marks {
+#bgpammtmht .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#lmtxwsttea .gt_asterisk {
+#bgpammtmht .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#lmtxwsttea .gt_indent_1 {
+#bgpammtmht .gt_indent_1 {
   text-indent: 5px;
 }
 
-#lmtxwsttea .gt_indent_2 {
+#bgpammtmht .gt_indent_2 {
   text-indent: 10px;
 }
 
-#lmtxwsttea .gt_indent_3 {
+#bgpammtmht .gt_indent_3 {
   text-indent: 15px;
 }
 
-#lmtxwsttea .gt_indent_4 {
+#bgpammtmht .gt_indent_4 {
   text-indent: 20px;
 }
 
-#lmtxwsttea .gt_indent_5 {
+#bgpammtmht .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2953,41 +2934,41 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
 </div>
 <p>In Table <a href="c06-statistical-testing.html#tab:stattest-chi-ex2-prop1-tab">6.4</a>, each column sums to 1. For example, we can say that it is estimated that of people who always trust in people, 27.7% also always trust in government based on the top-left cell but 5.3% never trust in government.</p>
 <p>The second option is to use <code>group_by()</code> and <code>survey_mean()</code> functions to calculate the proportions from the ANES design object. A reminder that with more than one variable listed in the <code>group_by()</code> statement, the proportions are within the first variable listed. As mentioned above, we are looking at the distribution of <code>TrustGovernment</code> for each level of <code>TrustPeople</code>.</p>
-<div class="sourceCode" id="cb209"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb209-1"><a href="c06-statistical-testing.html#cb209-1" tabindex="-1"></a>chi_ex2_obs <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb209-2"><a href="c06-statistical-testing.html#cb209-2" tabindex="-1"></a>  <span class="fu">drop_na</span>(TrustPeople, TrustGovernment) <span class="sc">%&gt;%</span></span>
-<span id="cb209-3"><a href="c06-statistical-testing.html#cb209-3" tabindex="-1"></a>  <span class="fu">group_by</span>(TrustPeople, TrustGovernment) <span class="sc">%&gt;%</span></span>
-<span id="cb209-4"><a href="c06-statistical-testing.html#cb209-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed =</span> <span class="fu">round</span>(<span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>), <span class="dv">3</span>),</span>
-<span id="cb209-5"><a href="c06-statistical-testing.html#cb209-5" tabindex="-1"></a>            <span class="at">.groups=</span><span class="st">&quot;drop&quot;</span>) </span>
-<span id="cb209-6"><a href="c06-statistical-testing.html#cb209-6" tabindex="-1"></a></span>
-<span id="cb209-7"><a href="c06-statistical-testing.html#cb209-7" tabindex="-1"></a>chi_ex2_obs_table<span class="ot">&lt;-</span>chi_ex2_obs <span class="sc">%&gt;%</span></span>
-<span id="cb209-8"><a href="c06-statistical-testing.html#cb209-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">paste0</span>(Observed, <span class="st">&quot; (&quot;</span>, Observed_low, <span class="st">&quot;, &quot;</span>,</span>
-<span id="cb209-9"><a href="c06-statistical-testing.html#cb209-9" tabindex="-1"></a>                       Observed_upp, <span class="st">&quot;)&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb209-10"><a href="c06-statistical-testing.html#cb209-10" tabindex="-1"></a>  <span class="fu">select</span>(TrustGovernment, TrustPeople, prop) <span class="sc">%&gt;%</span></span>
-<span id="cb209-11"><a href="c06-statistical-testing.html#cb209-11" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> TrustPeople, <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span></span>
-<span id="cb209-12"><a href="c06-statistical-testing.html#cb209-12" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb209-13"><a href="c06-statistical-testing.html#cb209-13" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb209-14"><a href="c06-statistical-testing.html#cb209-14" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Trust in People&quot;</span>,</span>
-<span id="cb209-15"><a href="c06-statistical-testing.html#cb209-15" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">everything</span>()) <span class="sc">%&gt;%</span> </span>
-<span id="cb209-16"><a href="c06-statistical-testing.html#cb209-16" tabindex="-1"></a>  <span class="fu">tab_options</span>(<span class="at">page.orientation =</span> <span class="st">&quot;landscape&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb210"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb210-1"><a href="c06-statistical-testing.html#cb210-1" tabindex="-1"></a>chi_ex2_obs_table</span></code></pre></div>
+<div class="sourceCode" id="cb206"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb206-1"><a href="c06-statistical-testing.html#cb206-1" tabindex="-1"></a>chi_ex2_obs <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb206-2"><a href="c06-statistical-testing.html#cb206-2" tabindex="-1"></a>  <span class="fu">drop_na</span>(TrustPeople, TrustGovernment) <span class="sc">%&gt;%</span></span>
+<span id="cb206-3"><a href="c06-statistical-testing.html#cb206-3" tabindex="-1"></a>  <span class="fu">group_by</span>(TrustPeople, TrustGovernment) <span class="sc">%&gt;%</span></span>
+<span id="cb206-4"><a href="c06-statistical-testing.html#cb206-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed =</span> <span class="fu">round</span>(<span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>), <span class="dv">3</span>),</span>
+<span id="cb206-5"><a href="c06-statistical-testing.html#cb206-5" tabindex="-1"></a>            <span class="at">.groups=</span><span class="st">&quot;drop&quot;</span>) </span>
+<span id="cb206-6"><a href="c06-statistical-testing.html#cb206-6" tabindex="-1"></a></span>
+<span id="cb206-7"><a href="c06-statistical-testing.html#cb206-7" tabindex="-1"></a>chi_ex2_obs_table<span class="ot">&lt;-</span>chi_ex2_obs <span class="sc">%&gt;%</span></span>
+<span id="cb206-8"><a href="c06-statistical-testing.html#cb206-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">paste0</span>(Observed, <span class="st">&quot; (&quot;</span>, Observed_low, <span class="st">&quot;, &quot;</span>,</span>
+<span id="cb206-9"><a href="c06-statistical-testing.html#cb206-9" tabindex="-1"></a>                       Observed_upp, <span class="st">&quot;)&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb206-10"><a href="c06-statistical-testing.html#cb206-10" tabindex="-1"></a>  <span class="fu">select</span>(TrustGovernment, TrustPeople, prop) <span class="sc">%&gt;%</span></span>
+<span id="cb206-11"><a href="c06-statistical-testing.html#cb206-11" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> TrustPeople, <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span></span>
+<span id="cb206-12"><a href="c06-statistical-testing.html#cb206-12" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb206-13"><a href="c06-statistical-testing.html#cb206-13" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb206-14"><a href="c06-statistical-testing.html#cb206-14" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Trust in People&quot;</span>,</span>
+<span id="cb206-15"><a href="c06-statistical-testing.html#cb206-15" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">everything</span>()) <span class="sc">%&gt;%</span> </span>
+<span id="cb206-16"><a href="c06-statistical-testing.html#cb206-16" tabindex="-1"></a>  <span class="fu">tab_options</span>(<span class="at">page.orientation =</span> <span class="st">&quot;landscape&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb207"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb207-1"><a href="c06-statistical-testing.html#cb207-1" tabindex="-1"></a>chi_ex2_obs_table</span></code></pre></div>
 
-<div id="agsminwvdc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#agsminwvdc table {
+<div id="hrufhbepvt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hrufhbepvt table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#agsminwvdc thead, #agsminwvdc tbody, #agsminwvdc tfoot, #agsminwvdc tr, #agsminwvdc td, #agsminwvdc th {
+#hrufhbepvt thead, #hrufhbepvt tbody, #hrufhbepvt tfoot, #hrufhbepvt tr, #hrufhbepvt td, #hrufhbepvt th {
   border-style: none;
 }
 
-#agsminwvdc p {
+#hrufhbepvt p {
   margin: 0;
   padding: 0;
 }
 
-#agsminwvdc .gt_table {
+#hrufhbepvt .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3013,12 +2994,12 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-left-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_caption {
+#hrufhbepvt .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#agsminwvdc .gt_title {
+#hrufhbepvt .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3030,7 +3011,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-width: 0;
 }
 
-#agsminwvdc .gt_subtitle {
+#hrufhbepvt .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3042,7 +3023,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-top-width: 0;
 }
 
-#agsminwvdc .gt_heading {
+#hrufhbepvt .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3054,13 +3035,13 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_bottom_border {
+#hrufhbepvt .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_col_headings {
+#hrufhbepvt .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3075,7 +3056,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_col_heading {
+#hrufhbepvt .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3095,7 +3076,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   overflow-x: hidden;
 }
 
-#agsminwvdc .gt_column_spanner_outer {
+#hrufhbepvt .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3107,15 +3088,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 4px;
 }
 
-#agsminwvdc .gt_column_spanner_outer:first-child {
+#hrufhbepvt .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#agsminwvdc .gt_column_spanner_outer:last-child {
+#hrufhbepvt .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#agsminwvdc .gt_column_spanner {
+#hrufhbepvt .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3127,11 +3108,11 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   width: 100%;
 }
 
-#agsminwvdc .gt_spanner_row {
+#hrufhbepvt .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#agsminwvdc .gt_group_heading {
+#hrufhbepvt .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3157,7 +3138,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   text-align: left;
 }
 
-#agsminwvdc .gt_empty_group_heading {
+#hrufhbepvt .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3172,15 +3153,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   vertical-align: middle;
 }
 
-#agsminwvdc .gt_from_md > :first-child {
+#hrufhbepvt .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#agsminwvdc .gt_from_md > :last-child {
+#hrufhbepvt .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#agsminwvdc .gt_row {
+#hrufhbepvt .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3199,7 +3180,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   overflow-x: hidden;
 }
 
-#agsminwvdc .gt_stub {
+#hrufhbepvt .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3212,7 +3193,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#agsminwvdc .gt_stub_row_group {
+#hrufhbepvt .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3226,15 +3207,15 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   vertical-align: top;
 }
 
-#agsminwvdc .gt_row_group_first td {
+#hrufhbepvt .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#agsminwvdc .gt_row_group_first th {
+#hrufhbepvt .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#agsminwvdc .gt_summary_row {
+#hrufhbepvt .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3244,16 +3225,16 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#agsminwvdc .gt_first_summary_row {
+#hrufhbepvt .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_first_summary_row.thick {
+#hrufhbepvt .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#agsminwvdc .gt_last_summary_row {
+#hrufhbepvt .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3263,7 +3244,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_grand_summary_row {
+#hrufhbepvt .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3273,7 +3254,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#agsminwvdc .gt_first_grand_summary_row {
+#hrufhbepvt .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3283,7 +3264,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-top-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_last_grand_summary_row_top {
+#hrufhbepvt .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3293,11 +3274,11 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_striped {
+#hrufhbepvt .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#agsminwvdc .gt_table_body {
+#hrufhbepvt .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3306,7 +3287,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-bottom-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_footnotes {
+#hrufhbepvt .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3320,7 +3301,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_footnote {
+#hrufhbepvt .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3329,7 +3310,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#agsminwvdc .gt_sourcenotes {
+#hrufhbepvt .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3343,7 +3324,7 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   border-right-color: #D3D3D3;
 }
 
-#agsminwvdc .gt_sourcenote {
+#hrufhbepvt .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3351,63 +3332,63 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
   padding-right: 5px;
 }
 
-#agsminwvdc .gt_left {
+#hrufhbepvt .gt_left {
   text-align: left;
 }
 
-#agsminwvdc .gt_center {
+#hrufhbepvt .gt_center {
   text-align: center;
 }
 
-#agsminwvdc .gt_right {
+#hrufhbepvt .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#agsminwvdc .gt_font_normal {
+#hrufhbepvt .gt_font_normal {
   font-weight: normal;
 }
 
-#agsminwvdc .gt_font_bold {
+#hrufhbepvt .gt_font_bold {
   font-weight: bold;
 }
 
-#agsminwvdc .gt_font_italic {
+#hrufhbepvt .gt_font_italic {
   font-style: italic;
 }
 
-#agsminwvdc .gt_super {
+#hrufhbepvt .gt_super {
   font-size: 65%;
 }
 
-#agsminwvdc .gt_footnote_marks {
+#hrufhbepvt .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#agsminwvdc .gt_asterisk {
+#hrufhbepvt .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#agsminwvdc .gt_indent_1 {
+#hrufhbepvt .gt_indent_1 {
   text-indent: 5px;
 }
 
-#agsminwvdc .gt_indent_2 {
+#hrufhbepvt .gt_indent_2 {
   text-indent: 10px;
 }
 
-#agsminwvdc .gt_indent_3 {
+#hrufhbepvt .gt_indent_3 {
   text-indent: 15px;
 }
 
-#agsminwvdc .gt_indent_4 {
+#hrufhbepvt .gt_indent_4 {
   text-indent: 20px;
 }
 
-#agsminwvdc .gt_indent_5 {
+#hrufhbepvt .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -3467,23 +3448,22 @@ FIGURE 6.1: Expected and observed proportions of education, showing the confiden
 </div>
 <p>Both methods produce the same output as the <code>svychisq()</code> function does account for the survey design. However, calculating the proportions directly from the design object means we can also obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those who never trust people, 50.3% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people.</p>
 <p>We may find it easier to look at these proportions graphically. We can use <code>ggplot()</code> and facets to provide an overview as shown below to create Figure <a href="c06-statistical-testing.html#fig:stattest-chi-ex2-graph">6.2</a>:</p>
-<!--Perhaps a mosaic plot instead?-->
-<div class="sourceCode" id="cb211"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb211-1"><a href="c06-statistical-testing.html#cb211-1" tabindex="-1"></a>chi_ex2_obs <span class="sc">%&gt;%</span></span>
-<span id="cb211-2"><a href="c06-statistical-testing.html#cb211-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustPeople=</span></span>
-<span id="cb211-3"><a href="c06-statistical-testing.html#cb211-3" tabindex="-1"></a>           <span class="fu">fct_reorder</span>(<span class="fu">str_c</span>(<span class="st">&quot;Trust in People:</span><span class="sc">\n</span><span class="st">&quot;</span>, TrustPeople), </span>
-<span id="cb211-4"><a href="c06-statistical-testing.html#cb211-4" tabindex="-1"></a>                       <span class="fu">order</span>(TrustPeople))) <span class="sc">%&gt;%</span></span>
-<span id="cb211-5"><a href="c06-statistical-testing.html#cb211-5" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> TrustGovernment, <span class="at">y =</span> Observed, <span class="at">color =</span> TrustGovernment)) <span class="sc">+</span></span>
-<span id="cb211-6"><a href="c06-statistical-testing.html#cb211-6" tabindex="-1"></a>  <span class="fu">facet_wrap</span>( <span class="sc">~</span> TrustPeople, <span class="at">ncol =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb211-7"><a href="c06-statistical-testing.html#cb211-7" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb211-8"><a href="c06-statistical-testing.html#cb211-8" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> Observed_low, <span class="at">ymax =</span> Observed_upp)) <span class="sc">+</span></span>
-<span id="cb211-9"><a href="c06-statistical-testing.html#cb211-9" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Proportion&quot;</span>) <span class="sc">+</span></span>
-<span id="cb211-10"><a href="c06-statistical-testing.html#cb211-10" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;&quot;</span>) <span class="sc">+</span></span>
-<span id="cb211-11"><a href="c06-statistical-testing.html#cb211-11" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb211-12"><a href="c06-statistical-testing.html#cb211-12" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">name=</span><span class="st">&quot;Trust in Government&quot;</span>, <span class="at">values=</span>book_colors) <span class="sc">+</span></span>
-<span id="cb211-13"><a href="c06-statistical-testing.html#cb211-13" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(), </span>
-<span id="cb211-14"><a href="c06-statistical-testing.html#cb211-14" tabindex="-1"></a>        <span class="at">axis.ticks.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb211-15"><a href="c06-statistical-testing.html#cb211-15" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>) <span class="sc">+</span></span>
-<span id="cb211-16"><a href="c06-statistical-testing.html#cb211-16" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">col =</span> <span class="fu">guide_legend</span>(<span class="at">nrow=</span><span class="dv">2</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb208"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb208-1"><a href="c06-statistical-testing.html#cb208-1" tabindex="-1"></a>chi_ex2_obs <span class="sc">%&gt;%</span></span>
+<span id="cb208-2"><a href="c06-statistical-testing.html#cb208-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustPeople=</span></span>
+<span id="cb208-3"><a href="c06-statistical-testing.html#cb208-3" tabindex="-1"></a>           <span class="fu">fct_reorder</span>(<span class="fu">str_c</span>(<span class="st">&quot;Trust in People:</span><span class="sc">\n</span><span class="st">&quot;</span>, TrustPeople), </span>
+<span id="cb208-4"><a href="c06-statistical-testing.html#cb208-4" tabindex="-1"></a>                       <span class="fu">order</span>(TrustPeople))) <span class="sc">%&gt;%</span></span>
+<span id="cb208-5"><a href="c06-statistical-testing.html#cb208-5" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> TrustGovernment, <span class="at">y =</span> Observed, <span class="at">color =</span> TrustGovernment)) <span class="sc">+</span></span>
+<span id="cb208-6"><a href="c06-statistical-testing.html#cb208-6" tabindex="-1"></a>  <span class="fu">facet_wrap</span>( <span class="sc">~</span> TrustPeople, <span class="at">ncol =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb208-7"><a href="c06-statistical-testing.html#cb208-7" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb208-8"><a href="c06-statistical-testing.html#cb208-8" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> Observed_low, <span class="at">ymax =</span> Observed_upp)) <span class="sc">+</span></span>
+<span id="cb208-9"><a href="c06-statistical-testing.html#cb208-9" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Proportion&quot;</span>) <span class="sc">+</span></span>
+<span id="cb208-10"><a href="c06-statistical-testing.html#cb208-10" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;&quot;</span>) <span class="sc">+</span></span>
+<span id="cb208-11"><a href="c06-statistical-testing.html#cb208-11" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb208-12"><a href="c06-statistical-testing.html#cb208-12" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">name=</span><span class="st">&quot;Trust in Government&quot;</span>, <span class="at">values=</span>book_colors) <span class="sc">+</span></span>
+<span id="cb208-13"><a href="c06-statistical-testing.html#cb208-13" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb208-14"><a href="c06-statistical-testing.html#cb208-14" tabindex="-1"></a>        <span class="at">axis.ticks.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb208-15"><a href="c06-statistical-testing.html#cb208-15" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>) <span class="sc">+</span></span>
+<span id="cb208-16"><a href="c06-statistical-testing.html#cb208-16" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">col =</span> <span class="fu">guide_legend</span>(<span class="at">nrow=</span><span class="dv">2</span>))</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:stattest-chi-ex2-graph"></span>
 <img src="bookdown_files/figure-html/stattest-chi-ex2-graph-1.png" alt="Proportion of adults in the U.S. by levels of trust in people and government with confidence intervals, ANES 2020. This presents the same information as the previous table in graphical form." width="672" />
 <p class="caption">
@@ -3508,55 +3488,55 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
 <li><span class="math inline">\(H_A:\)</span> at least one category of <span class="math inline">\(p_{i_{Biden}}\)</span> does not match <span class="math inline">\(p_{i_{Trump}}\)</span> or <span class="math inline">\(p_{i_{Other}}\)</span></li>
 </ul>
 <p>To conduct this in R, we use the <code>svychisq()</code> function to compare the two variables:</p>
-<div class="sourceCode" id="cb212"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb212-1"><a href="c06-statistical-testing.html#cb212-1" tabindex="-1"></a>chi_ex3 <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb212-2"><a href="c06-statistical-testing.html#cb212-2" tabindex="-1"></a>  <span class="fu">drop_na</span>(VotedPres2020_selection, AgeGroup) <span class="sc">%&gt;%</span></span>
-<span id="cb212-3"><a href="c06-statistical-testing.html#cb212-3" tabindex="-1"></a>  <span class="fu">svychisq</span>(</span>
-<span id="cb212-4"><a href="c06-statistical-testing.html#cb212-4" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> AgeGroup <span class="sc">+</span> VotedPres2020_selection,</span>
-<span id="cb212-5"><a href="c06-statistical-testing.html#cb212-5" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb212-6"><a href="c06-statistical-testing.html#cb212-6" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="st">&quot;Chisq&quot;</span>,</span>
-<span id="cb212-7"><a href="c06-statistical-testing.html#cb212-7" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
-<span id="cb212-8"><a href="c06-statistical-testing.html#cb212-8" tabindex="-1"></a>  )</span>
-<span id="cb212-9"><a href="c06-statistical-testing.html#cb212-9" tabindex="-1"></a></span>
-<span id="cb212-10"><a href="c06-statistical-testing.html#cb212-10" tabindex="-1"></a>chi_ex3</span></code></pre></div>
+<div class="sourceCode" id="cb209"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb209-1"><a href="c06-statistical-testing.html#cb209-1" tabindex="-1"></a>chi_ex3 <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb209-2"><a href="c06-statistical-testing.html#cb209-2" tabindex="-1"></a>  <span class="fu">drop_na</span>(VotedPres2020_selection, AgeGroup) <span class="sc">%&gt;%</span></span>
+<span id="cb209-3"><a href="c06-statistical-testing.html#cb209-3" tabindex="-1"></a>  <span class="fu">svychisq</span>(</span>
+<span id="cb209-4"><a href="c06-statistical-testing.html#cb209-4" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> AgeGroup <span class="sc">+</span> VotedPres2020_selection,</span>
+<span id="cb209-5"><a href="c06-statistical-testing.html#cb209-5" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb209-6"><a href="c06-statistical-testing.html#cb209-6" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="st">&quot;Chisq&quot;</span>,</span>
+<span id="cb209-7"><a href="c06-statistical-testing.html#cb209-7" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb209-8"><a href="c06-statistical-testing.html#cb209-8" tabindex="-1"></a>  )</span>
+<span id="cb209-9"><a href="c06-statistical-testing.html#cb209-9" tabindex="-1"></a></span>
+<span id="cb209-10"><a href="c06-statistical-testing.html#cb209-10" tabindex="-1"></a>chi_ex3</span></code></pre></div>
 <pre><code>## 
 ##  Pearson&#39;s X^2: Rao &amp; Scott adjustment
 ## 
 ## data:  NextMethod()
 ## X-squared = 171, df = 10, p-value &lt;2e-16</code></pre>
 <p>The output from <code>svychisq()</code> indicates a difference in how each age group voted in the 2020 election. To get a better idea of the different distributions, let’s output proportions to see the relationship. As we learned in Example 2 above, we can use <code>chi_ex3$observed</code>, or if we want to get the variance information (which is crucial with survey data), we can use <code>survey_mean()</code>. Remember, when we have two variables in <code>group_by()</code>, we obtain the proportions within each level of the variable listed. In this case, we are looking at the distribution of <code>AgeGroup</code> for each level of <code>VotedPres2020_selection</code>.</p>
-<div class="sourceCode" id="cb214"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb214-1"><a href="c06-statistical-testing.html#cb214-1" tabindex="-1"></a>chi_ex3_obs <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb214-2"><a href="c06-statistical-testing.html#cb214-2" tabindex="-1"></a>  <span class="fu">filter</span>(VotedPres2020 <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb214-3"><a href="c06-statistical-testing.html#cb214-3" tabindex="-1"></a>  <span class="fu">drop_na</span>(VotedPres2020_selection, AgeGroup) <span class="sc">%&gt;%</span></span>
-<span id="cb214-4"><a href="c06-statistical-testing.html#cb214-4" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection, AgeGroup) <span class="sc">%&gt;%</span></span>
-<span id="cb214-5"><a href="c06-statistical-testing.html#cb214-5" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed =</span> <span class="fu">round</span>(<span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>), <span class="dv">3</span>)) </span>
-<span id="cb214-6"><a href="c06-statistical-testing.html#cb214-6" tabindex="-1"></a></span>
-<span id="cb214-7"><a href="c06-statistical-testing.html#cb214-7" tabindex="-1"></a>chi_ex3_obs_table<span class="ot">&lt;-</span>chi_ex3_obs <span class="sc">%&gt;%</span></span>
-<span id="cb214-8"><a href="c06-statistical-testing.html#cb214-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">paste0</span>(Observed, <span class="st">&quot; (&quot;</span>, Observed_low, <span class="st">&quot;, &quot;</span>,</span>
-<span id="cb214-9"><a href="c06-statistical-testing.html#cb214-9" tabindex="-1"></a>                       Observed_upp, <span class="st">&quot;)&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb214-10"><a href="c06-statistical-testing.html#cb214-10" tabindex="-1"></a>  <span class="fu">select</span>(AgeGroup, VotedPres2020_selection, prop) <span class="sc">%&gt;%</span></span>
-<span id="cb214-11"><a href="c06-statistical-testing.html#cb214-11" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> VotedPres2020_selection, </span>
-<span id="cb214-12"><a href="c06-statistical-testing.html#cb214-12" tabindex="-1"></a>              <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span></span>
-<span id="cb214-13"><a href="c06-statistical-testing.html#cb214-13" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;AgeGroup&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb214-14"><a href="c06-statistical-testing.html#cb214-14" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Age Group&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb215"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb215-1"><a href="c06-statistical-testing.html#cb215-1" tabindex="-1"></a>chi_ex3_obs_table</span></code></pre></div>
+<div class="sourceCode" id="cb211"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb211-1"><a href="c06-statistical-testing.html#cb211-1" tabindex="-1"></a>chi_ex3_obs <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
+<span id="cb211-2"><a href="c06-statistical-testing.html#cb211-2" tabindex="-1"></a>  <span class="fu">filter</span>(VotedPres2020 <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb211-3"><a href="c06-statistical-testing.html#cb211-3" tabindex="-1"></a>  <span class="fu">drop_na</span>(VotedPres2020_selection, AgeGroup) <span class="sc">%&gt;%</span></span>
+<span id="cb211-4"><a href="c06-statistical-testing.html#cb211-4" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection, AgeGroup) <span class="sc">%&gt;%</span></span>
+<span id="cb211-5"><a href="c06-statistical-testing.html#cb211-5" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed =</span> <span class="fu">round</span>(<span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>), <span class="dv">3</span>)) </span>
+<span id="cb211-6"><a href="c06-statistical-testing.html#cb211-6" tabindex="-1"></a></span>
+<span id="cb211-7"><a href="c06-statistical-testing.html#cb211-7" tabindex="-1"></a>chi_ex3_obs_table<span class="ot">&lt;-</span>chi_ex3_obs <span class="sc">%&gt;%</span></span>
+<span id="cb211-8"><a href="c06-statistical-testing.html#cb211-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">paste0</span>(Observed, <span class="st">&quot; (&quot;</span>, Observed_low, <span class="st">&quot;, &quot;</span>,</span>
+<span id="cb211-9"><a href="c06-statistical-testing.html#cb211-9" tabindex="-1"></a>                       Observed_upp, <span class="st">&quot;)&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb211-10"><a href="c06-statistical-testing.html#cb211-10" tabindex="-1"></a>  <span class="fu">select</span>(AgeGroup, VotedPres2020_selection, prop) <span class="sc">%&gt;%</span></span>
+<span id="cb211-11"><a href="c06-statistical-testing.html#cb211-11" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> VotedPres2020_selection, </span>
+<span id="cb211-12"><a href="c06-statistical-testing.html#cb211-12" tabindex="-1"></a>              <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span></span>
+<span id="cb211-13"><a href="c06-statistical-testing.html#cb211-13" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;AgeGroup&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb211-14"><a href="c06-statistical-testing.html#cb211-14" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Age Group&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb212"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb212-1"><a href="c06-statistical-testing.html#cb212-1" tabindex="-1"></a>chi_ex3_obs_table</span></code></pre></div>
 
-<div id="djxlkyoyqo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#djxlkyoyqo table {
+<div id="hiijutckll" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hiijutckll table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#djxlkyoyqo thead, #djxlkyoyqo tbody, #djxlkyoyqo tfoot, #djxlkyoyqo tr, #djxlkyoyqo td, #djxlkyoyqo th {
+#hiijutckll thead, #hiijutckll tbody, #hiijutckll tfoot, #hiijutckll tr, #hiijutckll td, #hiijutckll th {
   border-style: none;
 }
 
-#djxlkyoyqo p {
+#hiijutckll p {
   margin: 0;
   padding: 0;
 }
 
-#djxlkyoyqo .gt_table {
+#hiijutckll .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3582,12 +3562,12 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-left-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_caption {
+#hiijutckll .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#djxlkyoyqo .gt_title {
+#hiijutckll .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3599,7 +3579,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-width: 0;
 }
 
-#djxlkyoyqo .gt_subtitle {
+#hiijutckll .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3611,7 +3591,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-top-width: 0;
 }
 
-#djxlkyoyqo .gt_heading {
+#hiijutckll .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3623,13 +3603,13 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_bottom_border {
+#hiijutckll .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_col_headings {
+#hiijutckll .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3644,7 +3624,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_col_heading {
+#hiijutckll .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3664,7 +3644,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   overflow-x: hidden;
 }
 
-#djxlkyoyqo .gt_column_spanner_outer {
+#hiijutckll .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3676,15 +3656,15 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 4px;
 }
 
-#djxlkyoyqo .gt_column_spanner_outer:first-child {
+#hiijutckll .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#djxlkyoyqo .gt_column_spanner_outer:last-child {
+#hiijutckll .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#djxlkyoyqo .gt_column_spanner {
+#hiijutckll .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3696,11 +3676,11 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   width: 100%;
 }
 
-#djxlkyoyqo .gt_spanner_row {
+#hiijutckll .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#djxlkyoyqo .gt_group_heading {
+#hiijutckll .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3726,7 +3706,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   text-align: left;
 }
 
-#djxlkyoyqo .gt_empty_group_heading {
+#hiijutckll .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3741,15 +3721,15 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   vertical-align: middle;
 }
 
-#djxlkyoyqo .gt_from_md > :first-child {
+#hiijutckll .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#djxlkyoyqo .gt_from_md > :last-child {
+#hiijutckll .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#djxlkyoyqo .gt_row {
+#hiijutckll .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3768,7 +3748,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   overflow-x: hidden;
 }
 
-#djxlkyoyqo .gt_stub {
+#hiijutckll .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3781,7 +3761,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#djxlkyoyqo .gt_stub_row_group {
+#hiijutckll .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3795,15 +3775,15 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   vertical-align: top;
 }
 
-#djxlkyoyqo .gt_row_group_first td {
+#hiijutckll .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#djxlkyoyqo .gt_row_group_first th {
+#hiijutckll .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#djxlkyoyqo .gt_summary_row {
+#hiijutckll .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3813,16 +3793,16 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#djxlkyoyqo .gt_first_summary_row {
+#hiijutckll .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_first_summary_row.thick {
+#hiijutckll .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#djxlkyoyqo .gt_last_summary_row {
+#hiijutckll .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3832,7 +3812,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_grand_summary_row {
+#hiijutckll .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3842,7 +3822,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#djxlkyoyqo .gt_first_grand_summary_row {
+#hiijutckll .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3852,7 +3832,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-top-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_last_grand_summary_row_top {
+#hiijutckll .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3862,11 +3842,11 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_striped {
+#hiijutckll .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#djxlkyoyqo .gt_table_body {
+#hiijutckll .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3875,7 +3855,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_footnotes {
+#hiijutckll .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3889,7 +3869,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_footnote {
+#hiijutckll .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3898,7 +3878,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#djxlkyoyqo .gt_sourcenotes {
+#hiijutckll .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3912,7 +3892,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#djxlkyoyqo .gt_sourcenote {
+#hiijutckll .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3920,63 +3900,63 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#djxlkyoyqo .gt_left {
+#hiijutckll .gt_left {
   text-align: left;
 }
 
-#djxlkyoyqo .gt_center {
+#hiijutckll .gt_center {
   text-align: center;
 }
 
-#djxlkyoyqo .gt_right {
+#hiijutckll .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#djxlkyoyqo .gt_font_normal {
+#hiijutckll .gt_font_normal {
   font-weight: normal;
 }
 
-#djxlkyoyqo .gt_font_bold {
+#hiijutckll .gt_font_bold {
   font-weight: bold;
 }
 
-#djxlkyoyqo .gt_font_italic {
+#hiijutckll .gt_font_italic {
   font-style: italic;
 }
 
-#djxlkyoyqo .gt_super {
+#hiijutckll .gt_super {
   font-size: 65%;
 }
 
-#djxlkyoyqo .gt_footnote_marks {
+#hiijutckll .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#djxlkyoyqo .gt_asterisk {
+#hiijutckll .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#djxlkyoyqo .gt_indent_1 {
+#hiijutckll .gt_indent_1 {
   text-indent: 5px;
 }
 
-#djxlkyoyqo .gt_indent_2 {
+#hiijutckll .gt_indent_2 {
   text-indent: 10px;
 }
 
-#djxlkyoyqo .gt_indent_3 {
+#hiijutckll .gt_indent_3 {
   text-indent: 15px;
 }
 
-#djxlkyoyqo .gt_indent_4 {
+#hiijutckll .gt_indent_4 {
   text-indent: 20px;
 }
 
-#djxlkyoyqo .gt_indent_5 {
+#hiijutckll .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -4048,18 +4028,30 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
 </div>
 <h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-R-prettyunits" class="csl-entry">
+Csardi, Gabor. 2023. <em><span class="nocase">prettyunits</span>: Pretty, Human Readable Formatting of Quantities</em>. <a href="https://github.com/r-lib/prettyunits">https://github.com/r-lib/prettyunits</a>.
+</div>
 <div id="ref-lumley2010complex" class="csl-entry">
-Lumley, Thomas. 2010. <em>Complex Surveys: A Guide to Analysis Using r: A Guide to Analysis Using r</em>. John Wiley; Sons.
+Lumley, Thomas. 2010. <em>Complex Surveys: A Guide to Analysis Using <span>R</span></em>. John Wiley; Sons.
+</div>
+<div id="ref-R-base" class="csl-entry">
+R Core Team. 2023. <em><span>R</span>: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-R-broom" class="csl-entry">
+Robinson, David, Alex Hayes, and Simon Couch. 2023. <em><span class="nocase">broom</span>: Convert Statistical Objects into Tidy Tibbles</em>.
 </div>
 <div id="ref-Scott2007" class="csl-entry">
-Scott, Alastair. 2007. <em>Rao-Scott Corrections and Their Impact</em>. Section on Survey Research Methods. <a href="http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf" class="uri">http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf</a>; ASA.
+Scott, Alastair. 2007. <span>“Rao-Scott Corrections and Their Impact.”</span> In <em>Section on Survey Research Methods</em>, 3514–18. <a href="http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf" class="uri">http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf</a>.
+</div>
+<div id="ref-R-forcats" class="csl-entry">
+———. 2023a. <em><span class="nocase">forcats</span>: Tools for Working with Categorical Variables (Factors)</em>.
 </div>
 </div>
 <div class="footnotes">
 <hr />
 <ol start="12">
 <li id="fn12"><p>For more information on statistical testing, we recommend reviewing introduction to statistics textbooks.<a href="c06-statistical-testing.html#fnref12" class="footnote-back">↩︎</a></p></li>
-<li id="fn13"><p>This could change in the future if another package is built or {srvyr} is expanded to work with <strong>tidymodels</strong> but no such plans are known at this time.<a href="c06-statistical-testing.html#fnref13" class="footnote-back">↩︎</a></p></li>
+<li id="fn13"><p>This could change in the future if another package is built or {srvyr} is expanded to work with {tidymodels} packages but no such plans are known at this time.<a href="c06-statistical-testing.html#fnref13" class="footnote-back">↩︎</a></p></li>
 <li id="fn14"><p>During the summer, what is your home’s typical indoor temperature inside your home at night?<a href="c06-statistical-testing.html#fnref14" class="footnote-back">↩︎</a></p></li>
 <li id="fn15"><p>This is the temperature that Stephanie prefers at night during the summer, and she wanted to see if she was different from the population.<a href="c06-statistical-testing.html#fnref15" class="footnote-back">↩︎</a></p></li>
 <li id="fn16"><p>Is any air conditioning equipment used in your home?<a href="c06-statistical-testing.html#fnref16" class="footnote-back">↩︎</a></p></li>
