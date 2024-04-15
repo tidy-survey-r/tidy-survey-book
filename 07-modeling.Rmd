@@ -45,7 +45,7 @@ anes_des <- anes_adjwgt %>%
   )
 ```
 
-For RECS, details are included in the RECS documentation and Chapters \@ref(c04-getting-started) and \@ref(c10-specifying-sample-designs).
+For RECS, details are included in the RECS documentation and Chapters \@ref(c04-getting-started) and \@ref(c10-sample-designs-replicate-weights).
 
 ```{r}
 #| label: model-recs-des
@@ -116,7 +116,7 @@ Table: (\#tab:notation-diffs) Differences in formulas for `:` and `*` code synta
 
 When using non-survey data such as experimental or observational data, researchers will use the `glm()` function for linear models.  With survey data, however, we use `svyglm()` from the {survey} package to ensure that we account for the survey design and weights in modeling^[There is some debate about whether weights should be used in regression [@bollen2016weightsreg; @gelman2007weights]. However, for the purposes of providing complete information on how to analyze complex survey data, this chapter will include weights.].  This allows us to generalize a model to the target population and accounts for the fact that the observations in the survey data may not be independent.  As discussed in Chapter \@ref(c06-statistical-testing), modeling survey data cannot be directly done in {srvyr}, but can be done in the {survey} package [@lumley2010complex]. In this chapter, we will provide syntax and examples for linear models, including ANOVA, normal linear regression, and logistic regression. For details on other types of regression, including ordinal regression, log-linear models, and survival analysis, refer to @lumley2010complex. @lumley2010complex also discusses custom models such as a negative binomial or Poisson model in Appendix E of his book.
 
-## Analysis of Variance (ANOVA)
+## Analysis of variance (ANOVA)
 
 In ANOVA, we are testing whether the mean of an outcome is the same across two or more groups. Statistically, we set up this as follows:
 
@@ -223,7 +223,7 @@ tidy(anova_out_relevel) %>%
 
 This output now has the coefficients indicating the difference in temperature relative to the Midwest region. For example, in the Northeast, temperatures are set, on average, `r tidy(anova_out_relevel) %>% filter(term=="RegionNortheast") %>% pull(estimate) %>% signif(3)` (p-value`r tidy(anova_out_relevel) %>% filter(term=="RegionNortheast") %>% pull(p.value) %>% pretty_p_value()`) degrees lower than in the Midwest during summer nights and each region sets their thermostats at significantly lower temperatures than the Midwest.  This is the reverse from what we saw in the prior model as we are still comparing the same two regions, just from different reference points.
 
-## Normal Linear Regression
+## Normal linear regression
 
 Normal linear regression is a more generalized method than ANOVA where we fit a model of a continuous outcome with any number of categorical or continuous predictors whereas ANOVA only has categorical predictors and is similarly specified as:
 
@@ -266,7 +266,7 @@ As discussed in Section \@ref(model-intro), the formula on the right-hand side c
 
 ### Examples
 
-#### Example 1: Linear Regression with Single Variable {.unnumbered}
+#### Example 1: Linear regression with single variable {.unnumbered}
 On RECS, we can obtain information on the square footage of homes and the electric bills. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to determine whether it is reasonable to assume a linear relationship. In Figure \@ref(fig:model-plot-sf-elbill), each hexagon represents the weighted count of households in the bin, and we can see a general positive linear trend (as the square footage increases so does the amount of money spent on electricity).
 
 ```{r}
@@ -333,7 +333,7 @@ In the output above, we can see the estimated coefficients (`estimate`), estimat
 
 This is a very simple model, and there are likely many more factors related to electricity expenditure, including the type of cooling, number of appliances, location, and more. However, starting with one variable models can help researchers understand what potential relationships there are between variables before fitting more complex models.  Often researchers start with known relationships before building models to determine what impact additional variables have on the model.
 
-#### Example 2: Linear Regression with Multiple Variables and Interactions {.unnumbered}
+#### Example 2: Linear regression with multiple variables and interactions {.unnumbered}
 In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning is used (logical/categorical) with all two-way interactions also included.  In this example, we are choosing to fit this model without an intercept (using `-1` in the formula).  This will result in an intercept estimate for each region instead of a single intercept for all data.
 
 ```{r}
@@ -442,7 +442,7 @@ pred_data
 In the above example, it is predicted that the energy expenditure would be \$`r pred_data %>% slice_tail(n=1) %>% pull(.fitted) %>% prettyNum(big.mark=",")`.
 
 
-## Logistic Regression
+## Logistic regression
 
 Logistic regression is used to model binary outcomes such as whether or not someone voted. There are several instances where an outcome may not be originally binary but is collapsed into being binary. For example, given that gender is often asked in surveys with multiple response options and not a binary scale, many researchers now code gender in logistic modeling as cis-male compared to not cis-male. We could also convert a 4-point likert scale that has levels of "Strongly Agree", "Agree", "Disagree", and "Strongly Disagree" to group the agreement levels into one group and disagreement levels into a second group.
 
@@ -500,7 +500,7 @@ Note `svyglm()` is the same function used in both ANOVA and normal linear regres
 
 ### Examples
 
-#### Example 1: Logistic Regression with Single Variable {.unnumbered}
+#### Example 1: Logistic regression with single variable {.unnumbered}
 In the following example, the ANES data is used, and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for president in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. We first create a binary outcome for trusting in the government by collapsing "Always" and "Most of the time" into a single factor level, and the other response options ("About half the time", "Some of the time", and "Never") into a second factor level.  Next, a scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data.
 
 ```{r}
@@ -625,7 +625,7 @@ logistic_trust_vote %>%
 ```
 
 
-#### Example 2: Interaction Effects {.unnumbered}
+#### Example 2: Interaction effects {.unnumbered}
 Let's look at another example with interaction effects.  If we're interested in understanding the demographics of people who voted for Biden among all voters in 2020, we could include `EarlyVote2020` and `Gender` in our model.  
 
 First we need to subset the data to 2020 voters and then create an indicator for voted for Biden. 
