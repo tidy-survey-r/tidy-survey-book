@@ -273,15 +273,15 @@ targetpop <- cps_narrow_resp %>%
 scales::comma(targetpop)
 ```
 
-The target population in 2020 is `r scales::comma(targetpop)`. This result gives us what we need to create the survey design object for estimating population statistics. Using the `anes_2020` data, we adjust the weighting variable (`V200010b`) using the target population we just calculated (`targetpop`). We determine the proportion of the total weight for each individual weight (`V200010b / sum(V200010b)`) and then multiply that proportion by the calculated target population.
+\index{Weighting|(}The population of interest in 2020 is `r scales::comma(targetpop)`. This result gives us what we need to create the survey design object for estimating population statistics. Using the `anes_2020` data, we adjust the weighting variable (`V200010b`) using the target population we just calculated (`targetpop`). We determine the proportion of the total weight for each individual weight (`V200010b / sum(V200010b)`) and then multiply that proportion by the calculated target population.
 
 ```{r}
 #| label: setup-anes-adjust
 anes_adjwgt <- anes_2020 %>%
   mutate(Weight = V200010b / sum(V200010b) * targetpop) 
 ```
-\index{Stratified sampling|(} \index{Functions in srvyr!as\_survey\_design}|( \index{as\_survey\_design| see {Functions in srvyr}}
-Once we have the adjusted weights, we can refer to the rest of the documentation to create the survey design. The documentation indicates that the study uses a stratified cluster sampling design. Therefore, we need to specify variables for `strata` and `ids` (cluster) and fill in the `nest` argument. The documentation provides guidance on which strata and cluster variables to use depending on whether we are analyzing pre- or post-election data. In this book, we analyze post-election data, so we need to use the post-election weight `V200010b`, strata variable `V200010d`, and PSU/cluster variable `V200010c`. Additionally, we set `nest=TRUE` to ensure the clusters are nested within the strata. 
+\index{Stratified sampling|(} \index{Functions in srvyr!as\_survey\_design|(} \index{as\_survey\_design|see {Functions in srvyr}}
+Once we have the adjusted weights, we can refer to the rest of the documentation to create the survey design. The documentation indicates that the study uses a stratified cluster sampling design. Therefore, we need to specify variables for `strata` and `ids` (cluster) and fill in the `nest` argument. The documentation provides guidance on which strata and cluster variables to use depending on whether we are analyzing pre- or post-election data. In this book, we analyze post-election data, so we need to use the post-election weight `V200010b`, strata variable `V200010d`, and PSU/cluster variable `V200010c`. Additionally, we set `nest=TRUE` to ensure the clusters are nested within the strata. \index{Weighting|)}
 
 ```{r}
 #| label: setup-anes-des
