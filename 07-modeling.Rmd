@@ -162,7 +162,7 @@ The function `svyglm()` does not have the design as the first argument so the do
 
 ### Example
 
-Looking at an example helps us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning during the summer. To analyze these data, we filter the respondents to only those using A/C (`ACUsed`). Then if we want to see if there are differences by region, we can use `group_by()`. A descriptive analysis of the temperature at night (`SummerTempNight`) set by region and the sample sizes is displayed below.
+Looking at an example helps us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning (A/C) during the summer. To analyze these data, we filter the respondents to only those using A/C (`ACUsed`). Then if we want to see if there are differences by region, we can use `group_by()`. A descriptive analysis of the temperature at night (`SummerTempNight`) set by region and the sample sizes is displayed below.
 
 ```{r}
 #| label: model-anova-prep
@@ -176,7 +176,7 @@ recs_des %>%
   )
 ```
 
-In the following code, we test whether this temperature varies by region by first using `svyglm()` to run the test and then using `broom::tidy()` to display the output. Note that the temperature setting is set to NA when the household does not use air-conditioning, and since the default handling of NAs is `na.action=na.omit`, records that do not use air-conditioning are not be included in this regression.
+In the following code, we test whether this temperature varies by region by first using `svyglm()` to run the test and then using `broom::tidy()` to display the output. Note that the temperature setting is set to NA when the household does not use A/C, and since the default handling of NAs is `na.action=na.omit`, records that do not use A/C are not be included in this regression.
 
 ```{r}
 #| label: model-anova-ex
@@ -227,7 +227,7 @@ This output now has the coefficients indicating the difference in temperature re
 
 ## Normal Linear Regression
 
-Normal linear regression is a more generalized method than ANOVA where we fit a model of a continuous outcome with any number of categorical or continuous predictors whereas ANOVA only has categorical predictors and is similarly specified as:
+Normal linear regression is a more generalized method than ANOVA where we fit a model of a continuous outcome with any number of categorical or continuous predictors (whereas ANOVA only has categorical predictors) and is similarly specified as:
 
 ```{=tex}
 \begin{equation}
@@ -332,12 +332,12 @@ tidy(m_electric_sqft) %>%
 
 
 
-In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% signif(3))*100` cents and that square footage is significantly associated with electricity expenditure (p-value`r tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(p.value) %>% pretty_p_value()`). 
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% signif(2))*100` cents and that square footage is significantly associated with electricity expenditure (p-value`r tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(p.value) %>% pretty_p_value()`). 
 
 This is a very simple model, and there are likely many more factors related to electricity expenditure, including the type of cooling, number of appliances, location, and more. However, starting with one variable models can help researchers understand what potential relationships there are between variables before fitting more complex models.  Often researchers start with known relationships before building models to determine what impact additional variables have on the model.
 
 #### Example 2: Linear Regression with Multiple Variables and Interactions {.unnumbered}
-In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning is used (logical/categorical) with all two-way interactions also included.  In this example, we are choosing to fit this model without an intercept (using `-1` in the formula).  This results in an intercept estimate for each region instead of a single intercept for all data.
+In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning (A/C) is used (logical/categorical) with all two-way interactions also included.  In this example, we are choosing to fit this model without an intercept (using `-1` in the formula).  This results in an intercept estimate for each region instead of a single intercept for all data.
 
 ```{r}
 #| label: model-lmr-examp
@@ -456,7 +456,6 @@ $$ y_i \sim \text{Bernoulli}(\pi_i)$$
 ```{=tex}
 \begin{equation}
 \log \left(\frac{\pi_i}{1-\pi_i} \right)=\beta_0 +\sum_{i=1}^n \beta_i x_i
-(\#eq:logoddlin)
 \end{equation}
 ```
 which can be re-expressed as
@@ -468,7 +467,7 @@ The Bernoulli distribution is a distribution which has an outcome of 0 or 1 give
 Assumptions in logistic regression using survey data include:
 
   - The outcome variable has two levels
-  - There is a linear relationship between the independent variables and the log odds (Equation \@ref(eq:logoddlin))
+  - There is a linear relationship between the independent variables and the log odds (the equation for the logit function)
   - The residuals are homoscedastic, that is, the error term is the same across all values of independent variables
 
 
@@ -572,9 +571,9 @@ tidy(logistic_trust_vote) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient.  This output indicates that respondents who voted for Trump are `r signif(logistic_trust_vote$coefficients[2],3)` times more likely to usually have trust in the government compared to those who voted for Biden (the reference level). 
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient.  This output indicates that respondents who voted for Trump are more likely to usually have trust in the government compared to those who voted for Biden (the reference level). The coefficient of `r signif(logistic_trust_vote$coefficients[2],3)` represents the increase in the log odds of usually trusting the government.
 
-Sometimes it is easier to talk about the odds instead of the likelihood.  To do this, we need to exponentiate the coefficients. We can use the same `tidy()` function, but include the argument `exponentiate = TRUE` to see the odds.
+In most cases, it is easier to talk about the odds instead of the log odds. To do this, we need to exponentiate the coefficients. We can use the same `tidy()` function, but include the argument `exponentiate = TRUE` to see the odds.
 
 ```{r}
 #| label: model-logisticexamp-model-odds-noeval
