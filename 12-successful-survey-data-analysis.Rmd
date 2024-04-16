@@ -65,7 +65,7 @@ The previous chapters in this book aimed to provide the technical skills and kno
 
 ## Follow survey analysis process {#recs-survey-process}
 
-As we first introduced in Chapter \@ref(c04-getting-started) (Section \@ref(survey-analysis-process)), there are four main steps to successfully analyze survey data:
+As we first introduced in Chapter \@ref(c04-getting-started), there are four main steps to successfully analyze survey data:
 
 1. Create a `tbl_svy` object (a survey object) using: `as_survey_design()` or `as_survey_rep()`
 
@@ -83,7 +83,7 @@ Making sure to use the survey analysis functions from the {srvyr} and {survey} p
 
 ## Begin with descriptive analysis
 
-When receiving a fresh batch of data, it is tempting to jump right into running models to find significant results. However, a successful data analyst begins by exploring the dataset. This involves running descriptive analysis on the dataset as a whole, as well as individual variables and combinations of variables. As described in Chapter \@ref(c05-descriptive-analysis), descriptive analyses should always precede statistical analysis to prevent avoidable (and potentially embarrassing) mistakes.
+When receiving a fresh batch of data, it is tempting to jump right into running models to find significant results. However, a successful data analyst begins by exploring the dataset. Chapter \@ref(c11-missing-data) talks about the importance of reviewing data when examining missing data patterns. In this chapter, we illustrate the value for reviewing all types of data. This involves running descriptive analysis on the dataset as a whole, as well as individual variables and combinations of variables. As described in Chapter \@ref(c05-descriptive-analysis), descriptive analyses should always precede statistical analysis to prevent avoidable (and potentially embarrassing) mistakes.
 
 ### Table review
 
@@ -104,7 +104,7 @@ The data show that males comprise 1 out of 10, or 10%, of the sample. Generally,
 
 Tables provide a quick check of our assumptions, but there is no substitute for graphs and plots to visualize the distribution of data. We might miss outliers or nuances if we scan only summary statistics. 
 
-For example, Anscombe's Quartet demonstrates the importance of visualization in analysis. Let's say we have a dataset with x- and y- variables in an object called `anscombe_tidy`. Let's take a look at how the da    taset is structured:
+For example, Anscombe's Quartet demonstrates the importance of visualization in analysis. Let's say we have a dataset with x- and y- variables in an object called `anscombe_tidy`. Let's take a look at how the dataset is structured:
 
 ```{r}
 #| label: recommendations-anscombe-head
@@ -141,10 +141,15 @@ anscombe_tidy %>%
   )
 ```
 
-The summary results for these four sets are nearly identical! Based on this, we might assume that each distribution is similar. Let's look at a data visualization to see if our assumption is correct.
+The summary results for these four sets are nearly identical! Based on this, we might assume that each distribution is similar. Let's look at a graphical visualization to see if our assumption is correct (see Figure \@ref(fig:recommendations-anscombe-plot)).
 
 ```{r}
 #| label: recommendations-anscombe-plot
+#| warning: false
+#| error: false
+#| fig.cap: "Plot of Anscombe's Quartet data and the importance of reveiwing data graphically"
+#| fig.alt: "This figure shows four plots one for each of Anscombe's sets. The upper left plot is a plot of set I and has a trend line with a slope of 0.5 and an intercept of 3. The data points are distributed evenly around the trend line. The upper right plot is a plot of set II and has the same trend line as set I. The data points are curved around the trend line. The lower left plot is a plot of set III and has the same trend line as set I.  The data points closely followly the trend line with one outlier where the y-value for the point is much larger than the others.  The lower right plot is a plot of set IV and has the same trend line as set I. The data points all share the same x-value but different y-values with the exception of one data point, which has a much larger value for both y and x values."
+
 ggplot(anscombe_tidy, aes(x, y)) +
   geom_point() +
   facet_wrap( ~ set) +
@@ -152,9 +157,7 @@ ggplot(anscombe_tidy, aes(x, y)) +
   theme_minimal()
 ```
 
-Although each of the four sets has the same summary statistics and regression line, when reviewing the plots, it becomes apparent that the distributions of the data are not the same at all. Each set of points results in different shapes and distributions. Imagine sharing each set (I-IV) and the corresponding plot with a different colleague. The interpretations and descriptions of the data would be very different even though the statistics are similar.   Plotting data can also ensure that we are using the correct analysis method on the data, so understanding the underlying distributions is an important first step.
-
-With survey data, we may not always have continuous data that we can plot like Anscombe's Quartet. However, if the dataset does contain continuous data or other types of data that would benefit from a visual representation, we recommend taking the time to graph distributions and correlations.
+Although each of the four sets has the same summary statistics and regression line, when reviewing the plots (see Figure \@ref(fig:recommendations-anscombe-plot)), it becomes apparent that the distributions of the data are not the same at all. Each set of points results in different shapes and distributions. Imagine sharing each set (I-IV) and the corresponding plot with a different colleague. The interpretations and descriptions of the data would be very different even though the statistics are similar.   Plotting data can also ensure that we are using the correct analysis method on the data, so understanding the underlying distributions is an important first step.
 
 ## Check variable types
 
@@ -185,7 +188,7 @@ example_srvy_fct %>%
   count(q_d2_1_fct, q_d2_1)
 ```
 
-This example dataset also includes a column called `region`, which is imported as a number (`<int>`). This is a good hint to use the questionnaire and codebook along with the data to find out if the values actually reflect a number or are perhaps a coded categorical variable (see Chapter \@ref(c03-understanding-survey-data-documentation) for more details). R calculates the mean even if it is not appropriate, leading to the common mistake of applying an average to categorical values instead of a proportion function. For example, for ease of coding, we may use the `across()` function to calculate the mean across all numeric variables: 
+This example dataset also includes a column called `region`, which is imported as a number (`<int>`). This is a good reminder to use the questionnaire and codebook along with the data to find out if the values actually reflect a number or are perhaps a coded categorical variable (see Chapter \@ref(c03-understanding-survey-data-documentation) for more details). R calculates the mean even if it is not appropriate, leading to the common mistake of applying an average to categorical values instead of a proportion function. For example, for ease of coding, we may use the `across()` function to calculate the mean across all numeric variables: 
 
 ```{r}
 #| label: recommendations-example-dat-num-calc
@@ -194,7 +197,7 @@ example_des %>%
   summarize(across(where(is.numeric), ~ survey_mean(.x, na.rm = TRUE)))
 ```
 
-In this example, if we do not adjust `region` to be a factor variable type, we might accidentally report an average region of `r round(example_des %>% summarize(across(where(is.numeric), ~ survey_mean(.x, na.rm = TRUE))) %>% pull(region), 2)` in our findings which is meaningless. Checking that our variables are appropriate avoids this pitfall and ensure the measures and models are suitable for the variable type.
+In this example, if we do not adjust `region` to be a factor variable type, we might accidentally report an average region of `r round(example_des %>% summarize(across(where(is.numeric), ~ survey_mean(.x, na.rm = TRUE))) %>% pull(region), 2)` in our findings, which is meaningless. Checking that our variables are appropriate avoids this pitfall and ensure the measures and models are suitable for the variable type.
 
 ## Improve debugging skills
 
