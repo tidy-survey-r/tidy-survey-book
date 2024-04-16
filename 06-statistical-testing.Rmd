@@ -33,7 +33,6 @@ We will be using data from ANES and RECS described in Chapter \@ref(c04-getting-
 #| label: stattest-anes-des
 #| eval: FALSE
 targetpop <- 231592693
-data(anes_2020)
 
 anes_adjwgt <- anes_2020 %>%
   mutate(Weight = Weight / sum(Weight) * targetpop)
@@ -52,7 +51,6 @@ For RECS, details are included in the RECS documentation and Chapters \@ref(c04-
 ```{r}
 #| label: stattest-recs-des
 #| eval: FALSE
-data(recs_2020)
 
 recs_des <- recs_2020 %>%
   as_survey_rep(
@@ -80,7 +78,7 @@ Let's review an example outside of survey data. If we are flipping a coin, a nul
 
 When we conduct hypothesis testing, the statistical models calculate a p-value, which shows how likely we are to observe the data if the null hypothesis is true. If the p-value (a probability between 0 and 1) is small, we have strong evidence to reject the null hypothesis as it is unlikely to see the data we are observing if the null hypothesis is true. However, if the p-value is large, we say we do not have evidence to reject the null hypothesis. The size of the p-value for this cut off is determined by type 1 error known as $\alpha$.  A common type 1 error value for statistical testing is to use $\alpha = 0.05$.^[For more information on statistical testing, we recommend reviewing introduction to statistics textbooks.] It is common for explanations of statistical testing to refer to confidence level.  The confidence level is the inverse of the type 1 error.  Thus, if $\alpha = 0.05$, the confidence level would be 95%.
 
-The functions in the {survey} package allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and functions:
+The functions in the {survey} package allow for the correct estimation of the variances. This chapter will cover the following statistical tests with survey data and the following functions from the {survey} package[@lumley2010complex]:
 
 * Comparison of proportions `svyttest()`
 * Comparison of means `svyttest()`
@@ -90,7 +88,7 @@ The functions in the {survey} package allow for the correct estimation of the va
 
 ## Dot notation {#dot-notation}
 
-Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we will need to use dot (`.`) notation^[This could change in the future if another package is built or {srvyr} is expanded to work with **tidymodels** but no such plans are known at this time.]
+Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we will need to use dot (`.`) notation^[This could change in the future if another package is built or {srvyr} is expanded to work with {tidymodels} packages but no such plans are known at this time.]
 
 Functions that work with the magrittr pipe (`%>%`) have the data as the first argument. When we run a function with the pipe, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to cars with six cylinders, we can write the code in at least four different ways:
 
@@ -263,14 +261,14 @@ ttest_ex2 <- recs_des %>%
 ttest_ex2
 ```
 
-The output from the `svyttest()` function can be a bit hard to read. Using the {broom} package from tidymodels, a collection of packages for modeling using the tidyverse principles, we can clean up the output into a tibble to more easily understand what the test tells us.
+The output from the `svyttest()` function can be a bit hard to read. Using the `tidy()` function from the {broom} package, we can clean up the output into a tibble to more easily understand what the test tells us [@R-broom].
 
 ```{r}
 #| label: stattest-ttest-ex2-broom
-broom::tidy(ttest_ex2)
+tidy(ttest_ex2)
 ```
 
-The 'tidied' output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter \@ref(c08-communicating-results). The function `pretty_p_value()` comes from the {prettyunits} package and converts numeric p-values to characters and, by default prints four decimal places and displays any p-value less than 0.0001 as `"<0.0001"` though another minimum display p-value can be specified.
+The 'tidied' output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter \@ref(c08-communicating-results). The function `pretty_p_value()` comes from the {prettyunits} package and converts numeric p-values to characters and, by default prints four decimal places and displays any p-value less than 0.0001 as `"<0.0001"` though another minimum display p-value can be specified [@R-prettyunits].
 
 ```{r}
 #| label: stattest-ttest-ex2-gt
@@ -297,8 +295,6 @@ tidy(ttest_ex2) %>%
 
 The estimate differs from Example 1 in that the estimate is not displaying \(\mu - 0.90\) but rather \(\mu\), or the difference between the U.S. households that use AC and the proportion we are comparing to. We can see that there is a difference of `r signif(ttest_ex2$estimate*100,3)` percentage points. Additionally, the t-statistic value in the `statistic` column is `r signif(ttest_ex2$statistic,3)`, and the p-value is `r pretty_p_value(ttest_ex2$p.value)`. These results indicate that the fewer than 90% of U.S. households use AC in their homes.
 
-<!--Add in callout box about how to use the $ notation to help call out the different values? Maybe indicate how this will be covered more in the reporting chapter? IV: I added a bit up top, not sure if it needs a whole call out box but happy to revisit. IV: Update March 2024, we added R prerequisites in Intro chapter so probably not necessary anymore.-->
-
 #### Example 3: Unpaired two-sample t-test {.unnumbered #stattest-ttest-ex3}
 
 Two additional variables in the RECS data are the electric bill cost (`DOLLAREL`) and whether the house used AC or not (`ACUsed`).^[Is any air conditioning equipment used in your home?] If we want to know if the U.S. households that used AC had higher electrical bills compared to those that did not, we could set up the hypothesis as follows:
@@ -323,8 +319,6 @@ ttest_ex3 <- recs_des %>%
   svyttest(formula = DOLLAREL ~ ACUsed,
            design = .,
            na.rm = TRUE)
-
-broom::tidy(ttest_ex3)
 ```
 
 ```{r}
@@ -369,8 +363,6 @@ ttest_ex4 <- recs_des %>%
     formula = SummerTempNight - WinterTempNight ~ 0,
     na.rm = TRUE
   )
-
-broom::tidy(ttest_ex4)
 ```
 
 ```{r}
@@ -421,7 +413,7 @@ As with t-tests, the difference between using $\chi^2$ tests with non-survey dat
 
 ### Syntax {#stattest-chi-syntax}
 
-When we do not have survey data, we may be able to use the `chisq.test()` function from the {stats} package. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:
+When we do not have survey data, we may be able to use the `chisq.test()` function from the {stats} package in base R [@R-base]. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:
 
 - `svygofchisq()`: For goodness of fit tests
 - `svychisq()`: For tests of independence and homogeneity
@@ -502,7 +494,7 @@ anes_des %>%
   summarize(p = survey_mean())
 ```
 
-Based on this output, we can see that we have different levels than the ACS data provides. Specifically, the education data from ANES has two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we will use the `svygofchisq()` function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
+Based on this output, we can see that we have different levels than the ACS data provides. Specifically, the education data from ANES has two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse [@R-forcats]. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we will use the `svygofchisq()` function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
 
 ```{r}
 #| label: stattest-chi-ex1
@@ -684,7 +676,6 @@ Both methods produce the same output as the `svychisq()` function does account f
 
 We may find it easier to look at these proportions graphically. We can use `ggplot()` and facets to provide an overview as shown below to create Figure \@ref(fig:stattest-chi-ex2-graph):
 
-<!--Perhaps a mosaic plot instead?-->
 ```{r}
 #| label: stattest-chi-ex2-graph
 #| fig.cap: Proportion of adults in the U.S. by levels of trust in people and government with confidence intervals, ANES 2020
