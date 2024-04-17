@@ -27,7 +27,7 @@ library(gt)
 library(ggpattern)
 ```
 
-In this vignette, we use a subset of data from the 2021 AmericasBarometer survey. Download the raw files, available on the [LAPOP website.](http://datasets.americasbarometer.org/database/index.php) We work with version 1.2 of the data, and there are separate files for each of the 22 countries. To read all files into R while ignoring the Stata labels, we recommend running the following code:
+In this vignette, we use a subset of data from the 2021 AmericasBarometer survey. Download the raw files, available on the [LAPOP website.](http://datasets.americasbarometer.org/database/index.php) We work with version 1.2 of the data, and there are separate files for each of the 22 countries. To read all files into R while ignoring the Stata labels, we recommend running the following code using `read_stata()` function from the {haven} package to import the data [@R-haven]:
 
 ```r
 stata_files <- list.files(here("RawData", "LAPOP_2021"), "*.dta")
@@ -177,7 +177,7 @@ This survey was administered between March and August of 2021, with the specific
 > - A little worried
 > - Not worried at all
 
-If we are interested in those who are very worried or somewhat worried, we can create a new variable (`CovidWorry_bin`) that groups levels of the original question using the `fct_collapse()` function from the {forcats} package. We then use the `survey_count()` function to understand how responses are distributed across each category of the original variable (`CovidWorry`) and the new variable (`CovidWorry_bin`).
+If we are interested in those who are very worried or somewhat worried, we can create a new variable (`CovidWorry_bin`) that groups levels of the original question using the `fct_collapse()` function from the {forcats} package [@R-forcats]. We then use the `survey_count()` function to understand how responses are distributed across each category of the original variable (`CovidWorry`) and the new variable (`CovidWorry_bin`).
 
 ```{r}
 #| label: ambarom-worry-est1
@@ -204,7 +204,7 @@ covid_worry_country_ests <- covid_worry_collapse %>%
 covid_worry_country_ests
 ```
 
-To view the results for all countries, we can use the {gt} package to create Table \@ref(tab:ambarom-worry-tab).
+To view the results for all countries, we can use the {gt} package to create Table \@ref(tab:ambarom-worry-tab) [@R-gt].
 
 ```{r}
 #| label: ambarom-worry-gt
@@ -315,7 +315,7 @@ covid_educ_ests
 Finally, to view the results for all countries, we can use the {gt} package to construct Table \@ref(tab:ambarom-covid-ed-der-tab).
 
 ```{r}
-#| label ambarom-covid-ed-gt
+#| label: ambarom-covid-ed-gt
 covid_educ_ests_gt <- covid_educ_ests %>%
   gt(rowname_col = "Country") %>%
   cols_label(
@@ -357,7 +357,7 @@ In the countries that were asked this question, many households experienced a ch
 
 ## Mapping survey data {#ambarom-maps}
 
-While the table effectively presents the data, a map could also be insightful. To generate maps of the countries, we can use the package {rnaturalearth} and subset North and South America with the `ne_countries()` function. The function returns an sf (simple features) object with many columns, but most importantly, `soverignt` (sovereignty), `geounit` (country or territory), and `geometry` (the shape). For an example of the difference between sovereignty and country/territory, the United States, Puerto Rico, and the US Virgin Islands are all separate units with the same sovereignty. A map without data is plotted in Figure \@ref(fig:ambarom-americas-map).
+While the table effectively presents the data, a map could also be insightful. To generate maps of the countries, we can use the package {rnaturalearth} and subset North and South America with the `ne_countries()` function [@R-rnaturalearth]. The function returns an sf (simple features) object with many columns [@sf2023], but most importantly, `soverignt` (sovereignty), `geounit` (country or territory), and `geometry` (the shape). For an example of the difference between sovereignty and country/territory, the United States, Puerto Rico, and the US Virgin Islands are all separate units with the same sovereignty. A map without data is plotted in Figure \@ref(fig:ambarom-americas-map) using `geom_sf()` from the {ggplot2} package which plots sf objects [@ggplot22016].
 
 ```{r}
 #| label: ambarom-americas-map
@@ -375,7 +375,7 @@ country_shape %>%
   geom_sf()
 ```
 
-The map in Figure \@ref(fig:ambarom-americas-map) appears very wide due to the Aleutian islands in Alaska extending into the Eastern Hemisphere. We can crop the shapefile to include only the Western Hemisphere, which removes some of the trailing islands of Alaska.
+The map in Figure \@ref(fig:ambarom-americas-map) appears very wide due to the Aleutian islands in Alaska extending into the Eastern Hemisphere. We can crop the shapefile to include only the Western Hemisphere, which removes some of the trailing islands of Alaska using `st_crop()` from the {sf} package.
 
 ```{r}
 #| label: ambarom-update-map
@@ -450,7 +450,7 @@ country_shape_upd <- country_shape_crop %>%
                            "United States", geounit))
 ```
 
-Now that the country names match, we can merge the survey and map data and then plot the data. We begin with the map file and merge it with the survey estimates generated in Section \@ref(ambarom-estimates) (`covid_worry_country_ests` and `covid_educ_ests`). We use the tidyverse function of `full_join()`, which joins the rows in the map data and the survey estimates based on the columns `geounit` and `Country`. A full join keeps all the rows from both datasets, matching rows when possible. For any rows without matches, the function fills in an `NA` for the missing value.
+Now that the country names match, we can merge the survey and map data and then plot the data. We begin with the map file and merge it with the survey estimates generated in Section \@ref(ambarom-estimates) (`covid_worry_country_ests` and `covid_educ_ests`). We use the {sf} function of `full_join()`, which joins the rows in the map data and the survey estimates based on the columns `geounit` and `Country`. A full join keeps all the rows from both datasets, matching rows when possible. For any rows without matches, the function fills in an `NA` for the missing value [@sf2023].
 
 ```{r}
 #| label: ambarom-join-maps-ests
@@ -461,7 +461,7 @@ covid_sf <- country_shape_upd %>%
             by = c("geounit" = "Country"))
 ```
 
-After the merge, we create two figures that display the population estimates for the percentage of people worried about COVID (Figure \@ref(fig:ambarom-make-maps-covid)) and the percentage of households with at least one child participating in virtual or hybrid learning (Figure \@ref(fig:ambarom-make-maps-covid-ed)).
+After the merge, we create two figures that display the population estimates for the percentage of people worried about COVID (Figure \@ref(fig:ambarom-make-maps-covid)) and the percentage of households with at least one child participating in virtual or hybrid learning (Figure \@ref(fig:ambarom-make-maps-covid-ed)). We also add a cross-hatching pattern to the countries without any data using the `geom_sf_pattern()` function from the {ggpattern} package [@R-ggpattern].
 
 ```{r}
 #| label: ambarom-make-maps-covid
@@ -556,6 +556,6 @@ In Figure \@ref(fig:ambarom-make-maps-covid-ed-c-s), we can see that most countr
 
 ## Exercises
 
-1. Calculate the percentage of households with broadband internet and those with any internet at home, including from a phone or tablet. Hint: if there are countries with 0% internet usage, try filtering by something first.
+1. Calculate the percentage of households with broadband internet and those with any internet at home, including from a phone or tablet in Latin America and the Caribbean. Hint: if there are countries with 0% internet usage, try filtering by something first.
 
 2. Create a faceted map showing both broadband internet and any internet usage.

@@ -31,7 +31,6 @@ We are using data from ANES and RECS described in Chapter \@ref(c04-getting-star
 #| label: desc-anes-des
 #| eval: FALSE
 targetpop <- 231592693
-data(anes_2020)
 
 anes_adjwgt <- anes_2020 %>%
   mutate(Weight = Weight / sum(Weight) * targetpop)
@@ -45,12 +44,11 @@ anes_des <- anes_adjwgt %>%
   )
 ```
 
-For RECS, details are included in the RECS documentation and Chapters \@ref(c04-getting-started) and \@ref(c10-specifying-sample-designs).
+For RECS, details are included in the RECS documentation and Chapters \@ref(c04-getting-started) and \@ref(c10-sample-designs-replicate-weights).
 
 ```{r}
 #| label: desc-recs-des
 #| eval: FALSE
-data(recs_2020)
 
 recs_des <- recs_2020 %>%
   as_survey_rep(
@@ -74,24 +72,24 @@ We discuss many different types of descriptive analyses in this chapter. However
   * Discrete data: variables that are counted or measured, such as number of children
   * Continuous data, variables that are measured and whose values can lie anywhere on an interval, such as income
 
-This chapter discusses how to analyze *measures of distribution* (e.g., cross-tabulations), *central tendency* (e.g., means), *relationship* (e.g., ratios), and *dispersion* (e.g., standard deviation).
+This chapter discusses how to analyze *measures of distribution* (e.g., cross-tabulations), *central tendency* (e.g., means), *relationship* (e.g., ratios), and *dispersion* (e.g., standard deviation) using functions from the {srvyr} package [@R-srvyr].
 
-**Measures of distribution** describe how often an event or response occurs. These measures include counts and totals. We cover the following functions from the {srvyr} package:
+**Measures of distribution** describe how often an event or response occurs. These measures include counts and totals. We cover the following functions:
 
   * Count of observations (`survey_count()` and `survey_tally()`)
   * Summation of variables (`survey_total()`)
 
-**Measures of central tendency** find the central (or average) responses. These measures include means and medians. We cover the following functions from the {srvyr} package:
+**Measures of central tendency** find the central (or average) responses. These measures include means and medians. We cover the following functions:
 
   * Means and proportions (`survey_mean()` and `survey_prop()`) 
   * Quantiles and medians (`survey_quantile()` and `survey_median()`)
   
-**Measures of relationship** describe how variables relate to each other. These measures include correlations and ratios. We cover the following functions from the {srvyr} package:
+**Measures of relationship** describe how variables relate to each other. These measures include correlations and ratios. We cover the following functions:
 
   * Correlations (`survey_corr()`)
   * Ratios (`survey_ratio()`)
   
-**Measures of dispersion** describe how data spread around the central tendency for continuous variables. These measures include standard deviations and variances. We cover the following functions from the {srvyr} package:
+**Measures of dispersion** describe how data spread around the central tendency for continuous variables. These measures include standard deviations and variances. We cover the following functions:
 
   * Variances and standard deviations (`survey_var()` and `survey_sd()`)
 
@@ -289,7 +287,7 @@ The estimated number of households in the U.S. is `r scales::comma(recs_des %>% 
 
 #### Example 2: Overall summation of continuous variables {.unnumbered}
 
-The distinction between `survey_total()` and `survey_count()` becomes more evident when working with continuous variables. Let's compute the total cost of electricity in whole dollars from variable `DOLLAREL`^[RECS has two components: a household survey and an energy supplier survey. For each household that responds, their energy provider(s) are contacted to obtain their energy consumption and expenditure. This value reflects the dollars spent on electricity in 2020, according to the energy supplier. See https://www.eia.gov/consumption/residential/data/2020/pdf/2020%20RECS%20CE%20Methodology_Final.pdf for more details.].
+The distinction between `survey_total()` and `survey_count()` becomes more evident when working with continuous variables. Let's compute the total cost of electricity in whole dollars from variable `DOLLAREL`^[RECS has two components: a household survey and an energy supplier survey. For each household that responds, their energy provider(s) are contacted to obtain their energy consumption and expenditure. This value reflects the dollars spent on electricity in 2020, according to the energy supplier. See @recs-2020-meth for more details.].
 
 ```{r}
 #| label: desc-tot-dollarel
@@ -554,7 +552,7 @@ In Section \@ref(desc-count-syntax), we provide an overview of the different var
   * `score`: the Francisco and Fuller confidence interval based on inverting a score test (only available for design-based survey objects and not replicate-based objects)
   * `quantile`: based on the replicates of the quantile. This is not valid for jackknife-type replicates but is available for bootstrap and BRR replicates.
 
-One note with the `score` method is that when there are numerous ties in the data, this method may produce confidence intervals that do not contain the estimate. When dealing with a high propensity for ties (e.g., many respondents have the same age), it is recommended to use another method. SUDAAN, for example, uses the `score` method but adds noise to the values to prevent issues. The documentation in the {survey} package indicates in general, the `score` method may have poorer performance compared to the beta and logit intervals.
+One note with the `score` method is that when there are numerous ties in the data, this method may produce confidence intervals that do not contain the estimate. When dealing with a high propensity for ties (e.g., many respondents have the same age), it is recommended to use another method. SUDAAN, for example, uses the `score` method but adds noise to the values to prevent issues. The documentation in the {survey} package indicates in general, the `score` method may have poorer performance compared to the beta and logit intervals [@lumley2010complex].
 
 ### Examples
 
@@ -982,7 +980,7 @@ It is estimated that American residential households spent an average of `r .elb
 
 ### Subpopulation analysis
 
-We mentioned using `filter()` to subset a survey object for analysis. This operation should be done after creating the survey design object. Subsetting data before creating the object can lead to incorrect variability estimates, if subsetting removes an entire Primary Sampling Unit (PSU; see Chapter \@ref(c10-specifying-sample-designs) for more information on PSUs and sample designs).
+We mentioned using `filter()` to subset a survey object for analysis. This operation should be done after creating the survey design object. Subsetting data before creating the object can lead to incorrect variability estimates, if subsetting removes an entire Primary Sampling Unit (PSU; see Chapter \@ref(c10-sample-designs-replicate-weights) for more information on PSUs and sample designs).
 
 Suppose we want estimates of the average amount spent on natural gas among housing units using natural gas (based on the variable `BTUNG`).^[`BTUNG` is derived from the supplier side component of the survey where `BTUNG` represents the natural gas consumption in British thermal units (Btus) in a year.] We first filter records to only include records where `BTUNG > 0` and then find the average amount of money spent.
 
@@ -1213,7 +1211,7 @@ cool_heat_tab %>%
 
 #### Example 3: `purrr::map()` {.unnumbered}
 
-Loops are a common tool when dealing with repetitive calculations. The {purrr} package provides the `map()` functions which, like a loop, allow us to perform the same task across different elements. In our case, we may want to calculate proportions from the same design multiple times. A straightforward approach is to design the calculation for one variable, build a function based on that, and then apply it iteratively for the rest of the variables.
+Loops are a common tool when dealing with repetitive calculations. The {purrr} package provides the `map()` functions which, like a loop, allow us to perform the same task across different elements [@R-purrr]. In our case, we may want to calculate proportions from the same design multiple times. A straightforward approach is to design the calculation for one variable, build a function based on that, and then apply it iteratively for the rest of the variables.
 
 Suppose we want to create a table that shows the proportion of people who express trust in their government (`TrustGovernment`)^[Question: How often can you trust the federal government in Washington to do what is right? (Always, most of the time, about half the time, some of the time, or never / Never, some of the time, about half the time, most of the time, or always)?] as well as those that trust in people (`TrustPeople`)^[Question: Generally speaking, how often can you trust other people? (Always, most of the time, about half the time, some of the time, or never / Never, some of the time, about half the time, most of the time, or always)? ].
 
@@ -1286,4 +1284,4 @@ The exercises use the design objects `anes_des` and `recs_des` provided in the P
 
 8. What is the correlation between the temperature that people set their temperature at during the night and during the day in the summer?
 
-9. What is the 1st, 2nd, and 3rd quartile of the amount of money spent on energy by Building America (BA) climate zone? Hint: `TOTALDOL` indicates the total amount spent on electricity, and `ClimateRegion_BA` indicates the BA climate zones.
+9. What is the 1st, 2nd, and 3rd quartile of the amount of money spent on energy by Building America (BA) climate zone? Hint: `TOTALDOL` indicates the total amount spent on all fuel, and `ClimateRegion_BA` indicates the BA climate zones.

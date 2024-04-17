@@ -8,7 +8,7 @@ Surveys are valuable tools for gathering information about a population, and are
 
 Surveys are often conducted with a sample of the population. Therefore, in order to use the survey data to understand the population, we use weights to adjust the survey results for unequal probabilities of selection, non-response, and post-stratification. These adjustments ensure the sample accurately represents the population of interest [@gard2023weightsdef]. To account for the intricate nature of the survey design, analysts rely on statistical software such as SAS, Stata, SUDAAN, and R. 
 
-In this book, we focus on R to introduce survey analysis. Our goal is to provide a comprehensive guide for individuals new to survey analysis but with some familiarity with statistics and R programming. We use a combination of the {survey} and {srvyr} packages and present the code following best practices from the tidyverse and assume weights have already been calculated and are available for the survey. 
+In this book, we focus on R to introduce survey analysis. Our goal is to provide a comprehensive guide for individuals new to survey analysis but with some familiarity with statistics and R programming. We use a combination of the {survey} and {srvyr} packages and present the code following best practices from the tidyverse and assume weights have already been calculated and are available for the survey [@R-srvyr; @lumley2010complex; @tidyverse2019]. 
 
 ## Survey analysis in R
 
@@ -21,7 +21,7 @@ The {survey} package was released on the [Comprehensive R Archive Network (CRAN)
 
 The {srvyr} package builds on the {survey} package by providing wrappers for functions that align with the tidyverse philosophy. This is our motivation for using and recommending this package. We find that the {srvyr} package is user-friendly for those familiar with the tidyverse packages in R.
 
-For example, while many functions in the {survey} package use variables as formulas, the {srvyr} package uses [tidy selection](https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html) to pass variable names, a common feature in the tidyverse. Users of the tidyverse are also likely familiar with the magrittr pipe operator (`%>%`), which seamlessly works with functions from the {srvyr} package. Moreover, several common functions from {dplyr}, such as `filter()`, `mutate()`, and `summarize()`, can be applied to survey objects. This enables users to streamline their analysis workflow and leverage the benefits of both the {srvyr} and tidyverse packages.
+For example, while many functions in the {survey} package use variables as formulas, the {srvyr} package uses tidy selection to pass variable names, a common feature in the tidyverse [@R-tidyselect]. Users of the tidyverse are also likely familiar with the magrittr pipe operator (`%>%`), which seamlessly works with functions from the {srvyr} package. Moreover, several common functions from {dplyr}, such as `filter()`, `mutate()`, and `summarize()`, can be applied to survey objects [@R-dplyr]. This enables users to streamline their analysis workflow and leverage the benefits of both the {srvyr} and {tidyverse} packages.
 
 While the {srvyr} package offers many advantages, there is one notable limitation: it doesn't fully incorporate the modeling capabilities of the {survey} package into tidy wrappers. When discussing modeling and hypothesis testing, we primarily rely on the {survey} package. However, we provide information on how to apply the pipe operator to these functions to maintain clarity and consistency in analyses.
 
@@ -34,7 +34,7 @@ Below is a summary of each chapter:
 - **Chapter \@ref(c02-overview-surveys) - Overview of Surveys**:
   - Overview of survey design processes
   - References for more in-depth knowledge
-- **Chapter \@ref(c03-understanding-survey-data-documentation) - Understanding Survey Data Documentation**:
+- **Chapter \@ref(c03-survey-data-documentation) - Survey data documentation**:
   - Guide to survey documentation types
   - How to read survey documentation
 - **Chapter \@ref(c04-getting-started) - Getting started**:
@@ -53,13 +53,13 @@ Below is a summary of each chapter:
 - **Chapter \@ref(c07-modeling) - Modeling**:
   - Overview of model forumal specifications
   - Linear regression, ANOVA, and logistic regression modeling
-- **Chapter \@ref(c08-communicating-results) - Communicating results**:
+- **Chapter \@ref(c08-communicating-results) - Communication of results**:
   - Strategies for communicating survey results
   - Tools and guidance for creating publishable tables and graphs
 - **Chapter \@ref(c09-reprex-data) - Reproducible research**: 
   - Tools and methods for achieving reproducibility
   - Resources for reproducible research
-- **Chapter \@ref(c10-specifying-sample-designs) - Sample designs and replicate weights**: 
+- **Chapter \@ref(c10-sample-designs-replicate-weights) - Sample designs and replicate weights**: 
   - Overview of common sampling designs
   - Replicate weight methods 
   - How to specify survey designs in R
@@ -121,6 +121,10 @@ There are several community forums for asking questions, including:
 
 Please report any bugs and issues while going through the book to the book's [GitHub repository.](https://github.com/tidy-survey-r/tidy-survey-book)
 
+## Acknowledgements
+
+We would like to thank Holly Cast, Greg Freedman Ellis, Joe Murphy, and Sheila Saia for their reviews of the initial draft. Their detailed and honest feedback helped to make this book considerably better, and we are grateful for their input. Additionally, this book started from two short courses. The first at the Annual Conference for the American Association for Public Opinion Research (AAPOR) and the second as a series of webinars for the Midwest Association of Public Opinion Research (MAPOR). We would like to also thank those that assisted us by moderating breakout rooms and answering questions from attendees: Greg Freedman Ellis, Raphael Nishimura, and Benjamin Schneider.
+
 ## Colophon
 
 This book was written in [bookdown](http://bookdown.org/) using [RStudio.](http://www.rstudio.com/ide/) The complete source is available on GitHub: <https://github.com/tidy-survey-r/tidy-survey-book>. 
@@ -155,6 +159,7 @@ library(knitr)
 library(labelled)
 library(bookdown)
 library(rmarkdown)
+library(tidyselect)
 
 ```
 
@@ -164,22 +169,27 @@ library(rmarkdown)
 #| label: intro-packages-tab
 #| echo: FALSE
 #| warning: FALSE
+renv_in <- renv::lockfile_read()
+renv_pack <- renv_in$Packages %>%
+  map(as_tibble) %>%list_rbind() %>%
+  distinct(Package, Version, Source, Repository, RemoteSha, RemoteUsername, RemoteRepo)
+
 packinfo <- sessioninfo::package_info()
-packinfo_tib <- 
-  tibble(
-  Package=packinfo$package,
-  Version=packinfo$loadedversion,
-  SourceLong=packinfo$source, 
-  attached=packinfo$attached) %>%
+packinfo_attach <- packinfo %>%
+  filter(attached|package %in% c("renv"))
+
+packinfo_tib <-
+  renv_pack %>%
+  filter(Package %in% c(pull(packinfo_attach, package), "remotes")) %>%
+  rename(SourceInit=Source) %>%
   mutate(
+    ShortSha=str_sub(RemoteSha, 1, 7),
     Source=case_when(
-      str_detect(SourceLong, "CRAN")~SourceLong,
-      str_detect(SourceLong, "Github")~str_c(str_extract(SourceLong, "^[^@]+@.{7}"), ")")
+      Repository=="CRAN"~"CRAN",
+      TRUE ~ glue::glue("{SourceInit} ({RemoteUsername}/{RemoteRepo}@{ShortSha})")
     )
   ) %>%
-  filter(attached|Package %in% c("remotes")) %>%
   select(Package, Version, Source)
-  
 
 packinfo_tib %>%
   gt() %>%

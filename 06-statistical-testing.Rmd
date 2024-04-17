@@ -33,7 +33,6 @@ We are using data from ANES and RECS described in Chapter \@ref(c04-getting-star
 #| label: stattest-anes-des
 #| eval: FALSE
 targetpop <- 231592693
-data(anes_2020)
 
 anes_adjwgt <- anes_2020 %>%
   mutate(Weight = Weight / sum(Weight) * targetpop)
@@ -47,12 +46,11 @@ anes_des <- anes_adjwgt %>%
   )
 ```
 
-For RECS, details are included in the RECS documentation and Chapters \@ref(c04-getting-started) and \@ref(c10-specifying-sample-designs).
+For RECS, details are included in the RECS documentation and Chapters \@ref(c04-getting-started) and \@ref(c10-sample-designs-replicate-weights).
 
 ```{r}
 #| label: stattest-recs-des
 #| eval: FALSE
-data(recs_2020)
 
 recs_des <- recs_2020 %>%
   as_survey_rep(
@@ -80,7 +78,7 @@ Let's review an example outside of survey data. If we are flipping a coin, a nul
 
 When we conduct hypothesis testing, the statistical models calculate a p-value, which shows how likely we are to observe the data if the null hypothesis is true. If the p-value (a probability between 0 and 1) is small, we have strong evidence to reject the null hypothesis as it is unlikely to see the data we observe if the null hypothesis is true. However, if the p-value is large, we say we do not have evidence to reject the null hypothesis. The size of the p-value for this cut off is determined by type 1 error known as $\alpha$.  A common type 1 error value for statistical testing is to use $\alpha = 0.05$.^[For more information on statistical testing, we recommend reviewing introduction to statistics textbooks.] It is common for explanations of statistical testing to refer to confidence level.  The confidence level is the inverse of the type 1 error.  Thus, if $\alpha = 0.05$, the confidence level would be 95%.
 
-The functions in the {survey} package allow for the correct estimation of the variances. This chapter covers the following statistical tests with survey data and functions:
+The functions in the {survey} package allow for the correct estimation of the variances. This chapter covers the following statistical tests with survey data and the following functions from the {survey} package[@lumley2010complex]:
 
 * Comparison of proportions (`svyttest()`)
 * Comparison of means (`svyttest()`)
@@ -88,9 +86,9 @@ The functions in the {survey} package allow for the correct estimation of the va
 * Tests of independence (`svychisq()`)
 * Tests of homogeneity (`svychisq()`)
 
-## Dot Notation {#dot-notation}
+## Dot notation {#dot-notation}
 
-Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we need to use dot (`.`) notation.^[This could change in the future if another package is built or {srvyr} is expanded to work with **tidymodels** but no such plans are known at this time.]
+Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we need to use dot (`.`) notation.^[This could change in the future if another package is built or {srvyr} is expanded to work with {tidymodels} packages but no such plans are known at this time.]
 
 Functions that work with the magrittr pipe (`%>%`) have the dataset as the first argument. When we run a function with the pipe, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `mtcars` data and filter to cars with six cylinders, we can write the code in at least four different ways:
 
@@ -124,7 +122,7 @@ svydata_des %>%
  svyttest(., x ~ y)
 ```
 
-## Comparison of Proportions and Means {#stattest-ttest}
+## Comparison of proportions and means {#stattest-ttest}
 
 We use t-tests to compare two proportions or means. T-tests allow us to determine if one proportion or mean is statistically different from another. They are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., North versus South). Comparing a single estimate to a known value is called a *one sample t-test*, and we can set up the hypothesis test as follows:  
 
@@ -138,7 +136,7 @@ For comparing two estimates, this is called a *two-sample t-test* and we can set
 
 Two sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., North versus South), the t-test run is an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention).
 
-The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c10-specifying-sample-designs) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package account for these nuances, provided the design object is correctly defined.
+The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c10-sample-designs-replicate-weights) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package account for these nuances, provided the design object is correctly defined.
 
 ### Syntax {#stattest-ttest-syntax}
 
@@ -181,7 +179,7 @@ Let's walk through a few examples using the ANES and RECS data.
 
 ### Examples {#stattest-ttest-examples}
 
-#### Example 1: One-sample t-test for Mean {.unnumbered #stattest-ttest-ex1}  
+#### Example 1: One-sample t-test for mean {.unnumbered #stattest-ttest-ex1}  
 
 RECS asks respondents to indicate what temperature they set their house to during the summer at night.^[During the summer, what is your home’s typical indoor temperature inside your home at night?] In our data, we have called this variable `SummerTempNight`. If we want to see if the average U.S. household sets its temperature at a value different from 68$^\circ$F^[This is the temperature that Stephanie prefers at night during the summer, and she wanted to see if she was different from the population.], we could set up the hypothesis as follows: 
 
@@ -231,7 +229,7 @@ confint(ttest_ex1, level = 0.8)
 
 In this case, neither confidence interval contains 0, and we draw the same conclusion from either that the average temperature households set their thermostat in the summer at night is significantly higher than 68$^\circ$F.
 
-#### Example 2: One-sample t-test for Proportion {.unnumbered #stattest-ttest-ex2}
+#### Example 2: One-sample t-test for proportion {.unnumbered #stattest-ttest-ex2}
 
 RECS asked respondents if they use any air conditioning (A/C) in their home.^[Is any air conditioning equipment used in your home?] In our data, we call this variable `ACUsed`. Let's look at the proportion of U.S. households that use A/C in their homes using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis).
 
@@ -263,14 +261,14 @@ ttest_ex2 <- recs_des %>%
 ttest_ex2
 ```
 
-The output from the `svyttest()` function can be a bit hard to read. Using the {broom} package from tidymodels, a collection of packages for modeling using the tidyverse principles, we can clean up the output into a tibble to more easily understand what the test tells us.
+The output from the `svyttest()` function can be a bit hard to read. Using the `tidy()` function from the {broom} package, we can clean up the output into a tibble to more easily understand what the test tells us [@R-broom].
 
 ```{r}
 #| label: stattest-ttest-ex2-broom
-broom::tidy(ttest_ex2)
+tidy(ttest_ex2)
 ```
 
-The 'tidied' output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter \@ref(c08-communicating-results). The function `pretty_p_value()` comes from the {prettyunits} package and converts numeric p-values to characters and, by default prints four decimal places and displays any p-value less than 0.0001 as `"<0.0001"` though another minimum display p-value can be specified.
+The 'tidied' output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter \@ref(c08-communicating-results). The function `pretty_p_value()` comes from the {prettyunits} package and converts numeric p-values to characters and, by default prints four decimal places and displays any p-value less than 0.0001 as `"<0.0001"` though another minimum display p-value can be specified [@R-prettyunits].
 
 ```{r}
 #| label: stattest-ttest-ex2-gt
@@ -321,8 +319,6 @@ ttest_ex3 <- recs_des %>%
   svyttest(formula = DOLLAREL ~ ACUsed,
            design = .,
            na.rm = TRUE)
-
-broom::tidy(ttest_ex3)
 ```
 
 ```{r}
@@ -367,8 +363,6 @@ ttest_ex4 <- recs_des %>%
     formula = SummerTempNight - WinterTempNight ~ 0,
     na.rm = TRUE
   )
-
-broom::tidy(ttest_ex4)
 ```
 
 ```{r}
@@ -396,7 +390,7 @@ tidy(ttest_ex4) %>%
 
 U.S. households set their thermostat on average `r signif(ttest_ex4$estimate,2)`$^\circ$F warmer in summer nights than winter nights, which is statistically significant (t = `r signif(ttest_ex4$statistic, 3)`, p-value = $`r pretty_p_value(ttest_ex4[["p.value"]])`$).  
 
-## Chi-Square Tests {#stattest-chi}
+## Chi-square tests {#stattest-chi}
 
 Chi-square tests ($\chi^2$) allow us to examine multiple proportions using a goodness-of-fit test, a test of independence, or a test of homogeneity. These three tests have the same $\chi^2$ distributions but with slightly different underlying assumptions.
 
@@ -415,11 +409,11 @@ Third, **tests of homogeneity** are used to compare two distributions to see if 
   - $H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}$ where $p_{ia}$ is the observed proportion of category $i$ for subgroup $a$, $p_{ib}$ is the observed proportion of category $i$ for subgroup $a$ and $k$ is the number of categories
   - $H_A:$ at least one category of $p_{ia}$ does not match $p_{ib}$
 
-As with t-tests, the difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c10-specifying-sample-designs).
+As with t-tests, the difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c10-sample-designs-replicate-weights).
 
 ### Syntax {#stattest-chi-syntax}
 
-When we do not have survey data, we may be able to use the `chisq.test()` function from the {stats} package. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:
+When we do not have survey data, we may be able to use the `chisq.test()` function from the {stats} package in base R [@R-base]. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:
 
 - `svygofchisq()`: For goodness of fit tests
 - `svychisq()`: For tests of independence and homogeneity
@@ -476,7 +470,7 @@ Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()`
 
 Let's walk through a few examples using the ANES data.
 
-#### Example 1: Goodness of Fit Test {.unnumbered #stattest-chi-ex1}
+#### Example 1: Goodness of fit test {.unnumbered #stattest-chi-ex1}
 
 ANES asked respondents about their highest education level.^[What is the highest level of school you have completed or the highest degree you have received?] Based on the data from the 2020 American Community Survey (ACS) 5-year estimates^[Data was pulled from data.census.gov using the S1501 Education Attainment 2020: ACS 5-Year Estimates Subject Tables.], the education distribution of those aged 18+ in the United States (among the 50 states and District of Columbia) is as follows:
 
@@ -500,7 +494,7 @@ anes_des %>%
   summarize(p = survey_mean())
 ```
 
-Based on this output, we can see that we have different levels than the ACS data provide. Specifically, the education data from ANES include two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we use the `svygofchisq()` function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
+Based on this output, we can see that we have different levels than the ACS data provide. Specifically, the education data from ANES include two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse [@R-forcats]. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we use the `svygofchisq()` function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
 
 ```{r}
 #| label: stattest-chi-ex1
@@ -567,7 +561,7 @@ ex1_table %>%
   theme(legend.position = "bottom", legend.title = element_blank())
 ```
 
-#### Example 2: Test of Independence {.unnumbered #stattest-chi-ex2}
+#### Example 2: Test of independence {.unnumbered #stattest-chi-ex2}
 
 ANES asked respondents two questions about trust:
 
@@ -705,7 +699,7 @@ chi_ex2_obs %>%
   guides(col = guide_legend(nrow=2))
 ```
 
-#### Example 3: Test of Homogeneity {.unnumbered #stattest-chi-ex3}
+#### Example 3: Test of homogeneity {.unnumbered #stattest-chi-ex3}
 
 Researchers and politicians often look at specific demographics each election cycle to understand how each group is leaning or voting toward candidates. The ANES data are collected post-election, but we can still see if there are differences in how specific demographic groups voted.
 

@@ -33,7 +33,6 @@ We are using data from ANES and RECS described in Chapter \@ref(c04-getting-star
 #| label: missing-anes-des
 #| eval: FALSE
 targetpop <- 231592693
-data(anes_2020)
 
 anes_adjwgt <- anes_2020 %>%
   mutate(Weight = Weight / sum(Weight) * targetpop)
@@ -47,13 +46,11 @@ anes_des <- anes_adjwgt %>%
   )
 ```
 
-For RECS, details are included in the RECS documentation and Chapter \@ref(c10-specifying-sample-designs).
+For RECS, details are included in the RECS documentation and Chapter \@ref(c10-sample-designs-replicate-weights).
 
 ```{r}
 #| label: missing-recs-des
 #| eval: FALSE
-data(recs_2020)
-
 recs_des <- recs_2020 %>%
   as_survey_rep(
     weights = NWEIGHT,
@@ -113,7 +110,7 @@ Here we can see that there are three types of missing data, and that the majorit
 
 ### Visualization of missing data
 
-It can be challenging to look at tables for every variable, and instead may be more efficient to view missing data in a graphical format to help narrow in on patterns or unique variables. The {naniar} package is very useful in exploring missing data visually. We can use the `vis_miss()` function available in both {visdat} and {naniar} packages to view the amount of missing data by variable (see Figure \@ref(fig:missing-anes-vismiss)).
+It can be challenging to look at tables for every variable, and instead may be more efficient to view missing data in a graphical format to help narrow in on patterns or unique variables. The {naniar} package is very useful in exploring missing data visually. We can use the `vis_miss()` function available in both {visdat} and {naniar} packages to view the amount of missing data by variable (see Figure \@ref(fig:missing-anes-vismiss)) [@visdat2017; @naniar2023].
 
 ```{r}
 #| label: missing-anes-vismiss
@@ -193,7 +190,7 @@ recs_2020_shadow %>%
 
 Figure \@ref(fig:missing-recs-hist) indicates that respondents who did not provide a response for the heating behavior question may have a different distribution of total energy cost compared to respondents who did provide a response. This view of the raw data and missingness could indicate some bias in the data. Researchers take these different bias aspects into account when calculating weights and we need to make sure that the weights are incorporated when analyzing the data.
 
-There are many other visualizations that can be helpful in reviewing the data, and we recommend reviewing the {naniar} documentation for more information [@naniar].
+There are many other visualizations that can be helpful in reviewing the data, and we recommend reviewing the {naniar} documentation for more information [@naniar2023].
 
 
 ## Analysis with missing data
@@ -216,7 +213,7 @@ Even within a variable, there can be different reasons for missing data. In publ
   * -2: Other missing reason (question specific)
   * -1: Inapplicable
 
-When we created the derived variables for use in this book, we coded all negative values as `NA` and proceeded to analyze the data.  For most cases this is an appropriate approach as long as we filter the data appropriately to account for skip patterns (see next section). However, the {nanair} package does have the option to code special missing values. For example, if we wanted to have two `NA` values, one that indicated the question was missing by design (e.g., due to skip patterns) and one for the other missing categories we can use the `nabular` format to incorporate these with the `recode_shadow()` function. 
+When we created the derived variables for use in this book, we coded all negative values as `NA` and proceeded to analyze the data.  For most cases this is an appropriate approach as long as we filter the data appropriately to account for skip patterns (see next section). However, the {naniar} package does have the option to code special missing values. For example, if we wanted to have two `NA` values, one that indicated the question was missing by design (e.g., due to skip patterns) and one for the other missing categories we can use the `nabular` format to incorporate these with the `recode_shadow()` function. 
 
 
 ```{r}
