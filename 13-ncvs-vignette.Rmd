@@ -26,7 +26,7 @@ library(srvyrexploR)
 library(gt)
 ```
 
-We use data from the United States National Crime Victimization Survey (NCVS). These data are available in the {srvyrexploR} package as `ncvs_2021_incident`, `ncvs_2021_household`, and `ncvs_2021_person`.
+We use data from the United States National Crime Victimization Survey (NCVS.) These data are available in the {srvyrexploR} package as `ncvs_2021_incident`, `ncvs_2021_household`, and `ncvs_2021_person`.
 :::
 
 ## Introduction
@@ -57,7 +57,7 @@ The NCVS User Guide [@ncvs_user_guide] uses the following notation:
 * $j$ represents NCVS individual respondents within household $i$, identified on the person-level file with the person identification number `IDPER`.
 * $k$ represents reporting periods (i.e., `YEARQ`) for household $i$ and individual respondent $j$.
 * $l$ represents victimization records for respondent $j$ in household $i$ and reporting period $k$. Each record on the NCVS incident-level file is associated with a victimization record $l$.
-* $D$ represents one or more domain characteristics of interest in the calculation of NCVS estimates. For victimization totals and proportions, domains can be defined on the basis of crime types (e.g., violent crimes, property crimes), characteristics of victims (e.g., age, sex, household income), or characteristics of the victimizations (e.g., victimizations reported to police, victimizations committed with a weapon present). Domains could also be a combination of all of these types of characteristics. For example, in the calculation of victimization rates, domains are defined on the basis of the characteristics of the victims.
+* $D$ represents one or more domain characteristics of interest in the calculation of NCVS estimates. For victimization totals and proportions, domains can be defined on the basis of crime types (e.g., violent crimes, property crimes), characteristics of victims (e.g., age, sex, household income), or characteristics of the victimizations (e.g., victimizations reported to police, victimizations committed with a weapon present.) Domains could also be a combination of all of these types of characteristics. For example, in the calculation of victimization rates, domains are defined on the basis of the characteristics of the victims.
 * $A_a$ represents the level $a$ of covariate $A$. Covariate $A$ is defined in the calculation of victimization proportions and represents the characteristic we want to obtain the distribution of victimizations in domain $D$.
 * $C$ represents the personal or property crime we want to obtain a victimization rate.
 
@@ -114,7 +114,7 @@ Table: (\#tab:cb-incident) Codebook for incident variables - related to series w
 |  |  | 8 | Residue (invalid data) |
 | WGTVICCY | Adjusted victimization weight |  | Numeric |
 
-We want to create four variables to indicate if an incident is a series crime.  First, we create a variable called `series` using `V4017`, `V4018`, and `V4019` where an incident is considered a series crime if there are 6 or more incidents (`V4107`), the incidents are similar in detail (`V4018`), or there is not enough detail to distinguish the incidents (`V4019`).  Second, we top-code the number of incidents (`V4016`) by creating a variable `n10v4016` which is set to 10 if `V4016 > 10`.  Third, we create the `serieswgt` using the two new variables `series` and `n10v4019` to classify the max series based on missing data and number of incidents. Finally, we create the new weight using our new `serieswgt` variable and the existing weight (`WGTVICCY`).
+We want to create four variables to indicate if an incident is a series crime.  First, we create a variable called `series` using `V4017`, `V4018`, and `V4019` where an incident is considered a series crime if there are 6 or more incidents (`V4107`), the incidents are similar in detail (`V4018`), or there is not enough detail to distinguish the incidents (`V4019`.)  Second, we top-code the number of incidents (`V4016`) by creating a variable `n10v4016` which is set to 10 if `V4016 > 10`.  Third, we create the `serieswgt` using the two new variables `series` and `n10v4019` to classify the max series based on missing data and number of incidents. Finally, we create the new weight using our new `serieswgt` variable and the existing weight (`WGTVICCY`.)
 
 ```{r}
 #| label: ncvs-vign-incfile
@@ -274,7 +274,7 @@ inc_ind %>%
         AAST_Other)
 ```
 
-After creating indicators of victimization types and characteristics, the file is summarized, and crimes are summed across persons or households by `YEARQ.` Property crimes (i.e., crimes committed against households, such as household burglary or motor vehicle theft) are summed across households, and personal crimes (i.e., crimes committed against an individual, such as assault, robbery, and personal theft) are summed across persons. The indicators are summed using our created series weight variable (`serieswgt`). Additionally the existing weight variable (`WGTVICCY`) needs to be retained for later analysis.
+After creating indicators of victimization types and characteristics, the file is summarized, and crimes are summed across persons or households by `YEARQ.` Property crimes (i.e., crimes committed against households, such as household burglary or motor vehicle theft) are summed across households, and personal crimes (i.e., crimes committed against an individual, such as assault, robbery, and personal theft) are summed across persons. The indicators are summed using our created series weight variable (`serieswgt`.) Additionally the existing weight variable (`WGTVICCY`) needs to be retained for later analysis.
 
 ```{r}
 #| label: ncvs-vign-inc-sum
@@ -299,7 +299,7 @@ inc_pers_sums <-
             .groups = "drop")
 ```
 
-Now, we merge the victimization summary files into the appropriate files. For any record on the household or person file that is not on the victimization file, the victimization counts are set to 0 after merging. In this step, we also create the victimization adjustment factor. See Section 2.2.4 in the User's Guide for details of why this adjustment is created (@ncvs_user_guide). It is calculated as follows:
+Now, we merge the victimization summary files into the appropriate files. For any record on the household or person file that is not on the victimization file, the victimization counts are set to 0 after merging. In this step, we also create the victimization adjustment factor. See Section 2.2.4 in the User's Guide for details of why this adjustment is created [@ncvs_user_guide]. It is calculated as follows:
 
 $$ A_{ijk}=\frac{v_{ijk}}{w_{ijk}}$$
 
@@ -309,7 +309,6 @@ where $w_{ijk}$ is the person weight (`WGTPERCY`) for personal crimes or the hou
 #| label: ncvs-vign-merge-inc-sum
 #| cache: TRUE
 
-# Set up a list of 0s for each crime type/characteristic to replace NA's
 hh_z_list <- rep(0, ncol(inc_hh_sums) - 3) %>% as.list() %>%
   setNames(names(inc_hh_sums)[-(1:3)])
 pers_z_list <- rep(0, ncol(inc_pers_sums) - 4) %>% as.list() %>%
@@ -426,7 +425,7 @@ hh_vsum_der %>% count(Region, V2127B)
 
 #### Person variables
 
-For the person file, we create categories for sex, race/Hispanic origin, age categories, and marital status. A codebook of the household variables is located in Table \@ref(tab:cb-pers). We also merge the household demographics to the person file as well as the design variables (`V2117` and `V2118`).
+For the person file, we create categories for sex, race/Hispanic origin, age categories, and marital status. A codebook of the household variables is located in Table \@ref(tab:cb-pers). We also merge the household demographics to the person file as well as the design variables (`V2117` and `V2118`.)
 
 Table: (\#tab:cb-pers) Codebook for person variables
 
@@ -465,7 +464,6 @@ Table: (\#tab:cb-pers) Codebook for person variables
 
 ```{r}
 #| label: ncvs-vign-pers-der
-# Set label for usage later
 NHOPI <- "Native Hawaiian or Other Pacific Islander"
 
 pers_vsum_der <- pers_vsum %>%
@@ -564,7 +562,7 @@ The tibbles `hh_vsum_slim`, `pers_vsum_slim`, and `inc_analysis` can now be used
 
 ## Survey design objects
 
-All the data prep above is necessary to prepare the data for survey analysis. At this point, we can create the design objects and finally begin analysis. We create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person-level data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster/PSU variable for analysis. All this information can be found in the User's Guide (@ncvs_user_guide).
+All the data prep above is necessary to prepare the data for survey analysis. At this point, we can create the design objects and finally begin analysis. We create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person-level data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster/PSU variable for analysis. All this information can be found in the User's Guide [@ncvs_user_guide].
 
 ```{r}
 #| label: ncvs-vign-desobj
@@ -608,32 +606,121 @@ Now that we have prepared our data and created the design objects, we can calcul
 
 ### Estimation 1: Victimization totals {#vic-tot}
 
-There are two ways to calculate victimization totals. Using the incident design object (`inc_des`) is the most straightforward method, but the person (`pers_des`) and household (`hh_des`) design objects can be used as well if the adjustment factor (`ADJINC_WT`) is incorporated. In the example below, the total number of property and violent victimizations is first calculated using the incident file and then using the household and person design objects. The incident file is smaller, and thus, estimation is faster using that file, but the estimates are the same as illustrated below:
+There are two ways to calculate victimization totals. Using the incident design object (`inc_des`) is the most straightforward method, but the person (`pers_des`) and household (`hh_des`) design objects can be used as well if the adjustment factor (`ADJINC_WT`) is incorporated. In the example below, the total number of property and violent victimizations is first calculated using the incident file and then using the household and person design objects. The incident file is smaller, and thus, estimation is faster using that file, but the estimates are the same as illustrated in Table \@ref(tab:ncvs-vign-vt1), Table \@ref(tab:ncvs-vign-vt2a), and Table \@ref(tab:ncvs-vign-vt2b).
+
+```{r}
+#| label: ncvs-vign-victot-examp-calc
+#| echo: false
+#| warning: false
+vt1df <- inc_des %>%
+  summarize(
+    Property_Vzn = survey_total(Property, na.rm = TRUE),
+    Violent_Vzn = survey_total(Violent, na.rm = TRUE)
+  )
+
+vt2adf <- hh_des %>%
+  summarize(Property_Vzn = survey_total(Property * ADJINC_WT,
+    na.rm = TRUE
+  ))
+
+vt2bdf <- pers_des %>%
+  summarize(Violent_Vzn = survey_total(Violent * ADJINC_WT,
+    na.rm = TRUE
+  ))
+```
+
+
 
 ```{r}
 #| label: ncvs-vign-victot-examp
-vt1 <- inc_des %>%
+vt1 <-
+  inc_des %>%
   summarize(Property_Vzn = survey_total(Property, na.rm = TRUE),
-            Violent_Vzn = survey_total(Violent, na.rm = TRUE))
-
+            Violent_Vzn = survey_total(Violent, na.rm = TRUE)) %>%
+  gt() %>%
+  tab_spanner(
+    label="Property crime",
+    columns=starts_with("Property")
+  ) %>%
+  tab_spanner(
+    label="Violent crime",
+    columns=starts_with("Violent")
+  ) %>%
+  cols_label(
+    ends_with("Vzn")~"Total",
+    ends_with("se")~"S.E."
+  ) %>%
+  fmt_number(decimals=0)
+  
 vt2a <- hh_des %>%
   summarize(Property_Vzn = survey_total(Property * ADJINC_WT, 
-                                        na.rm = TRUE))
+                                        na.rm = TRUE)) %>%
+  gt() %>%
+    tab_spanner(
+    label="Property crime",
+    columns=starts_with("Property")
+  ) %>%
+  cols_label(
+    ends_with("Vzn")~"Total",
+    ends_with("se")~"S.E."
+  ) %>%
+  fmt_number(decimals=0)
 
 vt2b <- pers_des %>%
   summarize(Violent_Vzn = survey_total(Violent * ADJINC_WT, 
-                                       na.rm = TRUE))
-
-vt1
-vt2a
-vt2b
+                                       na.rm = TRUE)) %>%
+  gt() %>%
+  tab_spanner(
+    label="Violent crime",
+    columns=starts_with("Violent")
+  ) %>%
+  cols_label(
+    ends_with("Vzn")~"Total",
+    ends_with("se")~"S.E."
+  ) %>%
+  fmt_number(decimals=0)
 ```
 
-The number of victimizations estimated using the incident file is equivalent to the person and household file method.  There are `r prettyNum(vt1$Property_Vzn, big.mark=",")` property incidents and `r prettyNum(vt1$Violent_Vzn, big.mark=",")` violent incidents in a six-month period.
+(ref:ncvs-vign-vt1) Estimates of total property and violent victimizations with standard errors calculated using the incident design object, 2021 (vt1)
+
+```{r}
+#| label: ncvs-vign-vt1
+#| echo: FALSE
+#| warning: FALSE
+
+vt1 %>%
+    print_gt_book(knitr::opts_current$get()[["label"]])
+```
+
+
+(ref:ncvs-vign-vt2a) Estimates of total property victimizations with standard errors calculated using the household design object, 2021 (vt2a)
+
+```{r}
+#| label: ncvs-vign-vt2a
+#| echo: FALSE
+#| warning: FALSE
+
+vt2a %>%
+    print_gt_book(knitr::opts_current$get()[["label"]])
+```
+
+
+(ref:ncvs-vign-vt2b) Estimates of total violent victimizations with standard errors calculated using the person design object, 2021 (vt2b)
+
+```{r}
+#| label: ncvs-vign-vt2b
+#| echo: FALSE
+#| warning: FALSE
+
+vt2b %>%
+    print_gt_book(knitr::opts_current$get()[["label"]])
+```
+
+The number of victimizations estimated using the incident file is equivalent to the person and household file method.  There are an estimated `r prettyNum(vt1df$Property_Vzn, big.mark=",")` property victimizations and `r prettyNum(vt1df$Violent_Vzn, big.mark=",")` violent victimizations in 2021.
 
 ### Estimation 2: Victimization proportions {#vic-prop}
 
-Victimization proportions are proportions describing features of a victimization. The key here is that these are estimates among victimizations, not among the population. These types of estimates can only be calculated using the incident design object (`inc_des`). 
+Victimization proportions are proportions describing features of a victimization. The key here is that these are estimates among victimizations, not among the population. These types of estimates can only be calculated using the incident design object (`inc_des`.) 
 
 For example, we could be interested in the percentage of property victimizations reported to the police as shown in the following code with an estimate, the standard error, and 95% confidence interval:
 
@@ -665,7 +752,7 @@ In 2021, we estimate that `r formatC(prop1$Pct, digits=1, format="f")`% of prope
 
 ### Estimation 3: Victimization rates {#vic-rate}
 
-Victimization rates measure the number of victimizations per population. They are not an estimate of the proportion of households or persons who are victimized, which is a prevalence rate described in section \@ref(prev-rate). Victimization rates are estimated using the household (`hh_des`) or person (`pers_des`) design objects depending on the type of crime, and the adjustment factor (`ADJINC_WT`) must be incorporated. We return to the example of property and violent victimizations used in the example for victimization totals (section \@ref(vic-tot)). In the following example, the property victimization totals are calculated as above, as well as the property victimization rate (using `survey_mean()`) and the population size using `survey_total()`. 
+Victimization rates measure the number of victimizations per population. They are not an estimate of the proportion of households or persons who are victimized, which is a prevalence rate described in Section \@ref(prev-rate). Victimization rates are estimated using the household (`hh_des`) or person (`pers_des`) design objects depending on the type of crime, and the adjustment factor (`ADJINC_WT`) must be incorporated. We return to the example of property and violent victimizations used in the example for victimization totals (Section \@ref(vic-tot).) In the following example, the property victimization totals are calculated as above, as well as the property victimization rate (using `survey_mean()`) and the population size using `survey_total()`. 
 
 Victimization rates use the incident weight in the numerator and the person or household weight in the denominator. This is accomplished by calculating the rates with the weight adjustment (`ADJINC_WT`) multiplied by the estimate of interest. Let's look at an example of property victimization.
 
@@ -731,7 +818,7 @@ pers_est_df <-
   bind_rows()
 ```
 
-The output from all the estimates is cleaned to create better labels such as going from "RaceHispOrigin" to "Race/Hispanic Origin". Finally, the {gt} package is used to make a publishable table (Table \@ref(tab:ncvs-vign-rates-demo-tab)). Using the functions from the {gt} package, column labels and footnotes are added and estimates are presented to the first decimal place [@R-gt].
+The output from all the estimates is cleaned to create better labels such as going from "RaceHispOrigin" to "Race/Hispanic Origin". Finally, the {gt} package is used to make a publishable table (Table \@ref(tab:ncvs-vign-rates-demo-tab).) Using the functions from the {gt} package, column labels and footnotes are added and estimates are presented to the first decimal place [@R-gt].
 
 ```{r}
 #| label: ncvs-vgn-rates-demo-gt-create
@@ -858,10 +945,10 @@ prop_tenure <- hh_des %>%
 prop_tenure  
 ```
 
-The property victimization rate for rented households is `r prop_tenure %>% filter(Tenure=="Rented") %>% pull(Property_Rate) %>% round(1)` per 1,000 households while the property victimization rate for owned households is `r prop_tenure %>% filter(Tenure=="Owned") %>% pull(Property_Rate) %>% round(1)`, which seem very different especially given the non-overlapping confidence intervals. However, survey data are inheriently non-independent so statistical testing cannot be done by comparing confidence intervals. To conduct the statistical test, we first need to create a variable that incorporates the adjusted incident weight (`ADJINC_WT`) and then the test can be conducted on this adjusted variable as discussed in Chapter \@ref(c06-statistical-testing).
+The property victimization rate for rented households is `r prop_tenure %>% filter(Tenure=="Rented") %>% pull(Property_Rate) %>% round(1)` per 1,000 households while the property victimization rate for owned households is `r prop_tenure %>% filter(Tenure=="Owned") %>% pull(Property_Rate) %>% round(1)`, which seem very different especially given the non-overlapping confidence intervals. However, survey data are inherently non-independent so statistical testing cannot be done by comparing confidence intervals. To conduct the statistical test, we first need to create a variable that incorporates the adjusted incident weight (`ADJINC_WT`) and then the test can be conducted on this adjusted variable as discussed in Chapter \@ref(c06-statistical-testing).
 
 ```{r}
-#| label: ncvs-vgn-prop-stat-test
+#| label: ncvs-vign-prop-stat-test
 prop_tenure_test <- hh_des %>%
   mutate(
     Prop_Adj=Property * ADJINC_WT * 1000
@@ -875,7 +962,7 @@ prop_tenure_test <- hh_des %>%
 ```
 
 ```{r}
-#| label: ncvs-vgn-prop-stat-test-gt
+#| label: ncvs-vign-prop-stat-test-gt
 #| eval: FALSE
 prop_tenure_test %>%
   mutate(p.value = pretty_p_value(p.value)) %>%
@@ -883,10 +970,10 @@ prop_tenure_test %>%
   fmt_number()
 ```
 
-(ref:ncvs-vgn-prop-stat-test-gt-tab)  T-test output for estimates of property victimization rates between properties that are owned versus rented, NCVS 2021
+(ref:ncvs-vign-prop-stat-test-gt-tab)  T-test output for estimates of property victimization rates between properties that are owned versus rented, NCVS 2021
 
 ```{r}
-#| label: ncvs-vgn-prop-stat-test-gt-tab
+#| label: ncvs-vign-prop-stat-test-gt-tab
 #| echo: FALSE
 #| warning: FALSE
 
@@ -897,11 +984,11 @@ prop_tenure_test %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-The output of the statistical test shown in Table \@ref(tab:ncvs-vgn-prop-stat-test-gt-tab) indicates a difference of `r prop_tenure_test$estimate %>% round(1)` between the property victimization rates of renters and owners and the test is highly significant with the p-value of `r prettyunits::pretty_p_value(prop_tenure_test$p.value)`.
+The output of the statistical test shown in Table \@ref(tab:ncvs-vign-prop-stat-test-gt-tab) indicates a difference of `r prop_tenure_test$estimate %>% round(1)` between the property victimization rates of renters and owners and the test is highly significant with the p-value of `r prettyunits::pretty_p_value(prop_tenure_test$p.value)`.
 
 ## Exercises
 
-1. What proportion of completed motor vehicle thefts are **not** reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).
+1. What proportion of completed motor vehicle thefts are **not** reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529.)
 
 2. How many violent crimes occur in each region?
 

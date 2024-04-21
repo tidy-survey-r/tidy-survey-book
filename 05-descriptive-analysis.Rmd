@@ -25,7 +25,7 @@ library(srvyrexploR)
 library(broom)
 ```
 
-We are using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
+We are using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information.)
 
 ```{r}
 #| label: desc-anes-des
@@ -167,13 +167,13 @@ Both functions include the `vartype` argument with four different values:
 The confidence intervals are always calculated using a symmetric t-distribution based method, given by the formula:
 
 $$ \text{estimate} \pm t^*_{df}\times SE$$
-where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of primary sampling units (PSUs or clusters) minus the number of strata (see Chapter \@ref(c10-sample-designs-replicate-weights) for more information on PSUs, strata, and sample designs). For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we provide examples using different variability types throughout this chapter.
+where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of primary sampling units (PSUs or clusters) minus the number of strata (see Chapter \@ref(c10-sample-designs-replicate-weights) for more information on PSUs, strata, and sample designs.) For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we provide examples using different variability types throughout this chapter.
 
 ### Examples
 
 #### Example 1: Estimated population count {.unnumbered}
 
-If we want to obtain the estimated number of households in the U.S. (the population of interest) using the Residential Energy Consumption Survey (RECS) data, we can use `survey_count()`. If we do not specify any variables in the `survey_count()` function, it outputs the estimated population count (`n`) and its corresponding standard error (`n_se`).
+If we want to obtain the estimated number of households in the U.S. (the population of interest) using the Residential Energy Consumption Survey (RECS) data, we can use `survey_count()`. If we do not specify any variables in the `survey_count()` function, it outputs the estimated population count (`n`) and its corresponding standard error (`n_se`.)
 
 ```{r}
 #| label: desc-count-overall
@@ -336,7 +336,7 @@ recs_des %>%
   )))
 ```
 
-The survey results estimate that households in the Northeast spent `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_upp)`) on electricity in 2020 while households in the South spent an estimated `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill_upp)`).
+The survey results estimate that households in the Northeast spent `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_upp)`) on electricity in 2020 while households in the South spent an estimated `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill_upp)`.)
 
 ## Means and proportions {#desc-meanprop}
 
@@ -363,7 +363,8 @@ survey_prop(
   vartype = c("se", "ci", "var", "cv"),
   level = 0.95,
   proportion = TRUE,
-  prop_method = c("logit", "likelihood", "asin", "beta", "mean", "xlogit"),
+  prop_method = 
+    c("logit", "likelihood", "asin", "beta", "mean", "xlogit"),
   deff = FALSE,
   df = NULL
 )
@@ -382,7 +383,7 @@ There are two main differences in the syntax. The `survey_mean()` function inclu
 
 The other main difference is with the `proportion` argument. The `survey_mean()` function can be used to calculate both means and proportions. Its `proportion` argument defaults to `FALSE`, indicating it is used for calculating means. If we wish to calculate a proportion using `survey_mean()`, we need to set the `proportion` argument to `TRUE`. In the `survey_prop()` function, the `proportion` argument defaults to `TRUE` because the function is specifically designed for calculating proportions.
 
-In section \@ref(desc-count-syntax), we provide an overview of different variability types. The confidence interval used for most measures, such as means and counts, is referred to as a Wald-type interval. However, for proportions, a Wald-type interval with a symmetric t-based confidence interval may not provide accurate coverage, especially when dealing with small sample sizes or proportions "near" 0 or 1. We can use other methods to calculate confidence intervals, which we specify using the `prop_method` option in `survey_prop()`. The options include:
+In Section \@ref(desc-count-syntax), we provide an overview of different variability types. The confidence interval used for most measures, such as means and counts, is referred to as a Wald-type interval. However, for proportions, a Wald-type interval with a symmetric t-based confidence interval may not provide accurate coverage, especially when dealing with small sample sizes or proportions "near" 0 or 1. We can use other methods to calculate confidence intervals, which we specify using the `prop_method` option in `survey_prop()`. The options include:
 
   * `logit`: fits a logistic regression model and computes a Wald-type interval on the log-odds scale, which is then transformed to the probability scale. This is the default method.
   * `likelihood`: uses the (Rao-Scott) scaled chi-squared distribution for the log-likelihood from a binomial distribution.
@@ -401,6 +402,7 @@ If we are interested in obtaining the proportion of people in each region in the
 
 ```{r}
 #| label: desc-p-ex1
+#| message: false
 recs_des %>%
   group_by(Region) %>%
   summarize(p = survey_prop()) 
@@ -428,7 +430,7 @@ recs_des %>%
 
 #### Example 2: Conditional proportions {.unnumbered}
 
-We can also obtain proportions by more than one variable. In the following example, we look at the proportion of housing units by Region and whether air conditioning (A/C) is used (`ACUsed`).^[Question text: Is any air conditioning equipment used in your home?] 
+We can also obtain proportions by more than one variable. In the following example, we look at the proportion of housing units by Region and whether air conditioning (A/C) is used (`ACUsed`.)^[Question text: Is any air conditioning equipment used in your home?] 
 
 ```{r}
 #| label: desc-pmulti-ex1
@@ -517,7 +519,8 @@ survey_quantile(
   na.rm = FALSE,
   vartype = c("se", "ci", "var", "cv"),
   level = 0.95,
-  interval_type = c("mean", "beta", "xlogit", "asin", "score", "quantile"),
+  interval_type = 
+    c("mean", "beta", "xlogit", "asin", "score", "quantile"),
   qrule = c("math", "school", "shahvaish", "hf1", "hf2", "hf3", 
             "hf4", "hf5", "hf6", "hf7", "hf8", "hf9"),
   df = NULL
@@ -528,7 +531,8 @@ survey_median(
   na.rm = FALSE,
   vartype = c("se", "ci", "var", "cv"),
   level = 0.95,
-  interval_type = c("mean", "beta", "xlogit", "asin", "score", "quantile"),
+  interval_type = 
+    c("mean", "beta", "xlogit", "asin", "score", "quantile"),
   qrule = c("math", "school", "shahvaish", "hf1", "hf2", "hf3", 
             "hf4", "hf5", "hf6", "hf7", "hf8", "hf9"),
   df = NULL
@@ -542,12 +546,12 @@ The arguments available in both functions are:
   * `vartype`: type(s) of variation estimate to calculate, defaults to `se` (standard error)
   * `level`: a number or a vector indicating the confidence level, defaults to 0.95
   * `interval_type`: method for calculating a confidence interval
-  * `qrule`: rule for defining quantiles. The default is the lower end of the quantile interval ("math"). The midpoint of the quantile interval is the "school" rule. "hf1" to "hf9" are weighted analogs to type=1 to 9 in `quantile()`. "shahvaish" corresponds to a rule proposed by @shahvaish. See `vignette("qrule", package="survey")` for more information.
+  * `qrule`: rule for defining quantiles. The default is the lower end of the quantile interval ("math".) The midpoint of the quantile interval is the "school" rule. "hf1" to "hf9" are weighted analogs to type=1 to 9 in `quantile()`. "shahvaish" corresponds to a rule proposed by @shahvaish. See `vignette("qrule", package="survey")` for more information.
   * `df`: (for `vartype = 'ci'`), a numeric value indicating degrees of freedom for the t-distribution
 
 The only difference between `survey_quantile()` and `survey_median()` is the inclusion of the `quantiles` argument in the `survey_quantile()` function. This argument takes a vector with values between 0 and 1 to indicate which quantiles to calculate. For example, if we wanted the quartiles of a variable, we would provide `quantiles = c(0.25, 0.5, 0.75)`. While we can specify quantiles of 0 and 1, which represent the minimum and maximum, this is not recommended. It only returns the minimum and maximum of the respondents and cannot be extrapolated to the population as there is no valid definition of standard error.
 
-In Section \@ref(desc-count-syntax), we provide an overview of the different variability types. The interval used in confidence intervals for most measures, such as means and counts, is referred to as a Wald-type interval. However, this is not always the most accurate interval for quantiles. Similar to confidence intervals for proportions, quantiles have various interval types including asin, beta, mean, and xlogit (see Section \@ref(desc-meanprop-syntax)). Quantiles also have two more methods available:
+In Section \@ref(desc-count-syntax), we provide an overview of the different variability types. The interval used in confidence intervals for most measures, such as means and counts, is referred to as a Wald-type interval. However, this is not always the most accurate interval for quantiles. Similar to confidence intervals for proportions, quantiles have various interval types including asin, beta, mean, and xlogit (see Section \@ref(desc-meanprop-syntax).) Quantiles also have two more methods available:
 
   * `score`: the Francisco and Fuller confidence interval based on inverting a score test (only available for design-based survey objects and not replicate-based objects)
   * `quantile`: based on the replicates of the quantile. This is not valid for jackknife-type replicates but is available for bootstrap and BRR replicates.
@@ -680,7 +684,7 @@ recs_des %>%
   )))
 ```
 
-Nationally, the median household spent `r pull(.elbill_med, elec_bill)` in 2020. This is the same result as we obtained using the `survey_quantile()` function. Interestingly, the average electric bill for households that we calculated in section \@ref(desc-meanprop) is `r pull(.elbill_mn, elec_bill)`, but the estimated median electric bill is `r pull(.elbill_med, elec_bill)` indicating the distribution is likely right-skewed.
+Nationally, the median household spent `r pull(.elbill_med, elec_bill)` in 2020. This is the same result as we obtained using the `survey_quantile()` function. Interestingly, the average electric bill for households that we calculated in Section \@ref(desc-meanprop) is `r pull(.elbill_mn, elec_bill)`, but the estimated median electric bill is `r pull(.elbill_med, elec_bill)` indicating the distribution is likely right-skewed.
 
 #### Example 5: Medians by subgroup {.unnumbered}
 
@@ -815,11 +819,11 @@ recs_des %>%
   arrange(DOL_BTU_Rat)
 ```
 
-Although not a formal statistical test, it appears that the cost ratios for liquid propane are the lowest in the Midwest (`r round(recs_des %>% group_by(Region) %>% summarize(DOL_BTU_Rat = survey_ratio(DOLLARLP, BTULP)) %>% filter(Region == "Midwest") %>% pull(DOL_BTU_Rat), 4)`).
+Although not a formal statistical test, it appears that the cost ratios for liquid propane are the lowest in the Midwest (`r round(recs_des %>% group_by(Region) %>% summarize(DOL_BTU_Rat = survey_ratio(DOLLARLP, BTULP)) %>% filter(Region == "Midwest") %>% pull(DOL_BTU_Rat), 4)`.)
 
 ## Correlations
 
-The correlation is a measure of the linear relationship between two continuous variables, which ranges between -1 and 1. The most commonly used method is Pearson's correlation (referred to as correlation henceforth). A sample correlation for a simple random sample is calculated as follows:
+The correlation is a measure of the linear relationship between two continuous variables, which ranges between -1 and 1. The most commonly used method is Pearson's correlation (referred to as correlation henceforth.) A sample correlation for a simple random sample is calculated as follows:
 
 $$\frac{\sum (x_i-\bar{x})(y_i-\bar{y})}{\sqrt{\sum (x_i-\bar{x})^2} \sqrt{\sum(y_i-\bar{y})^2}} $$
 
@@ -853,7 +857,7 @@ The arguments are:
 
 #### Example 1: Overall correlation {.unnumbered}
 
-We can calculate the correlation between total square footage of homes (`TOTSQFT_EN`)^[Question text: What is the square footage of your home?] and electricity consumption (`BTUEL`).^[BTUEL is derived from the supplier side component of the survey where `BTUEL` represents the electricity consumption in British thermal units (Btus) converted from kilowatt hours (kWh) in a year.]
+We can calculate the correlation between total square footage of homes (`TOTSQFT_EN`)^[Question text: What is the square footage of your home?] and electricity consumption (`BTUEL`.)^[BTUEL is derived from the supplier side component of the survey where `BTUEL` represents the electricity consumption in British thermal units (Btus) converted from kilowatt hours (kWh) in a year.]
 
 ```{r}
 #| label: desc-corr-1
@@ -866,7 +870,7 @@ The correlation between total square footage of homes and electricity consumptio
 
 #### Example 2: Correlations by subgroup {.unnumbered}
 
-Like with other statistics, we can explore the correlation between total square footage and electricity consumption based on subgroups, such as whether air conditioning (A/C) is used (`ACUsed`).
+Like with other statistics, we can explore the correlation between total square footage and electricity consumption based on subgroups, such as whether air conditioning (A/C) is used (`ACUsed`.)
 
 ```{r}
 #| label: desc-corr-2
@@ -876,7 +880,7 @@ recs_des %>%
   summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL))
 ```
 
-For homes without A/C, there is a small positive correlation between total square footage with electricity consumption (`r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == FALSE) %>% pull(SQFT_Elec_Corr) %>% round(3)`). For homes with A/C, the correlation of `r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == TRUE) %>% pull(SQFT_Elec_Corr) %>% round(3)` indicates a stronger positive correlation between total square footage and electricity consumption.
+For homes without A/C, there is a small positive correlation between total square footage with electricity consumption (`r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == FALSE) %>% pull(SQFT_Elec_Corr) %>% round(3)`.) For homes with A/C, the correlation of `r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == TRUE) %>% pull(SQFT_Elec_Corr) %>% round(3)` indicates a stronger positive correlation between total square footage and electricity consumption.
 
 ## Standard deviation and variance
 
@@ -923,7 +927,7 @@ recs_des %>%
             sd_elbill = survey_sd(DOLLAREL))
 ```
 
-We may encounter a warning related to a deprecation in the underlying calculations performed by the `survey_var()` function. This warning is a result of changes in the way R handles recycling in vectorized operations. The results are still valid. They give an estimate of the population variance of electricity bills (`var_elbill`), the standard error of that variance (`var_elbill_se`), and the estimated population standard deviation of electricity bills (`sd_elbill`). Note that no standard error is associated with the standard deviation - this is the only estimate that does not include a standard error. 
+We may encounter a warning related to a deprecation in the underlying calculations performed by the `survey_var()` function. This warning is a result of changes in the way R handles recycling in vectorized operations. The results are still valid. They give an estimate of the population variance of electricity bills (`var_elbill`), the standard error of that variance (`var_elbill_se`), and the estimated population standard deviation of electricity bills (`sd_elbill`.) Note that no standard error is associated with the standard deviation - this is the only estimate that does not include a standard error. 
 
 #### Example 2: Variability by subgroup {.unnumbered}
 
@@ -980,9 +984,9 @@ It is estimated that American residential households spent an average of `r .elb
 
 ### Subpopulation analysis
 
-We mentioned using `filter()` to subset a survey object for analysis. This operation should be done after creating the survey design object. Subsetting data before creating the object can lead to incorrect variability estimates, if subsetting removes an entire Primary Sampling Unit (PSU; see Chapter \@ref(c10-sample-designs-replicate-weights) for more information on PSUs and sample designs).
+We mentioned using `filter()` to subset a survey object for analysis. This operation should be done after creating the survey design object. Subsetting data before creating the object can lead to incorrect variability estimates, if subsetting removes an entire Primary Sampling Unit (PSU; see Chapter \@ref(c10-sample-designs-replicate-weights) for more information on PSUs and sample designs.)
 
-Suppose we want estimates of the average amount spent on natural gas among housing units using natural gas (based on the variable `BTUNG`).^[`BTUNG` is derived from the supplier side component of the survey where `BTUNG` represents the natural gas consumption in British thermal units (Btus) in a year.] We first filter records to only include records where `BTUNG > 0` and then find the average amount of money spent.
+Suppose we want estimates of the average amount spent on natural gas among housing units using natural gas (based on the variable `BTUNG`.)^[`BTUNG` is derived from the supplier side component of the survey where `BTUNG` represents the natural gas consumption in British thermal units (Btus) in a year.] We first filter records to only include records where `BTUNG > 0` and then find the average amount of money spent.
 
 ```{r}
 #| label: desc-subpop
@@ -1005,7 +1009,7 @@ Based on this calculation, the estimated average amount spent on natural gas is 
 
 ### Design effects {#desc-deff}
 
-The design effect measures how the precision of an estimate is influenced by the sampling design. In other words, it measures how much more or less statistically efficient the survey design is compared to a simple random sample (SRS). It is computed by taking the ratio of the estimate's variance under the design at hand to the estimate's variance under a simple random sample without replacement. A design effect less than 1 indicates that the design is *more* statistically efficient than an SRS design, which is rare but possible in a stratified sampling design where the outcome correlates with the stratification variable(s). A design effect greater than 1 indicates that the design is *less* statistically efficient than a SRS design. From a design effect, we can calculate the effective sample size as follows:
+The design effect measures how the precision of an estimate is influenced by the sampling design. In other words, it measures how much more or less statistically efficient the survey design is compared to a simple random sample (SRS.) It is computed by taking the ratio of the estimate's variance under the design at hand to the estimate's variance under a simple random sample without replacement. A design effect less than 1 indicates that the design is *more* statistically efficient than an SRS design, which is rare but possible in a stratified sampling design where the outcome correlates with the stratification variable(s). A design effect greater than 1 indicates that the design is *less* statistically efficient than a SRS design. From a design effect, we can calculate the effective sample size as follows:
 
 $$n_{eff}=\frac{n}{D_{eff}} $$
 
@@ -1048,7 +1052,7 @@ where the arguments are:
 * `.data`: A `tbl_svy` object
 * `...`: Name-value pairs of summary functions (same as the `summarize()` function)
 * `.fill`: Value to fill in for group summaries (defaults to `NA`)
-* `.fill_level_top`: When filling factor variables, whether to put the value '.fill' in the first position (defaults to FALSE, placing it in the bottom).
+* `.fill_level_top`: When filling factor variables, whether to put the value '.fill' in the first position (defaults to FALSE, placing it in the bottom.)
 
 #### Example {.unnumbered}
 
@@ -1119,7 +1123,7 @@ The `across()` function applies the same function to multiple columns within `su
 
 #### Example 1: `across()` {.unnumbered}
 
-Suppose we want to calculate the total and average consumption, along with coefficients of variation (CV), for each fuel type. These include the reported consumption of electricity (`BTUEL`), natural gas (`BTUNG`), liquid propane (`BTULP`), fuel oil (`BTUFO`), and wood (`BTUWOOD`), as mentioned in the section on design effects. We can take advantage of the fact that these are the only variables that start with "BTU" by selecting them with `starts_with("BTU")` in the `across()` function. For each selected column (`.x`), `across()` creates a list of two functions to be applied: `survey_total()` to calculate the total and `survey_mean()` to calculate the mean, along with their CV (`vartype = "cv"`). Finally, `.unpack = "{outer}.{inner}"` specifies that the resulting column names are a concatenation of the variable name, followed by Total or Mean, and then "coef" or "cv".
+Suppose we want to calculate the total and average consumption, along with coefficients of variation (CV), for each fuel type. These include the reported consumption of electricity (`BTUEL`), natural gas (`BTUNG`), liquid propane (`BTULP`), fuel oil (`BTUFO`), and wood (`BTUWOOD`), as mentioned in the section on design effects. We can take advantage of the fact that these are the only variables that start with "BTU" by selecting them with `starts_with("BTU")` in the `across()` function. For each selected column (`.x`), `across()` creates a list of two functions to be applied: `survey_total()` to calculate the total and `survey_mean()` to calculate the mean, along with their CV (`vartype = "cv"`.) Finally, `.unpack = "{outer}.{inner}"` specifies that the resulting column names are a concatenation of the variable name, followed by Total or Mean, and then "coef" or "cv".
 
 ```{r}
 #| label: desc-multi-1
