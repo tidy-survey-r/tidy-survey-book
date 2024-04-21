@@ -626,8 +626,8 @@ logistic_trust_vote %>%
 ```
 
 
-#### Example 2: Interaction effects {.unnumbered}
-Let's look at another example with interaction effects.  If we're interested in understanding the demographics of people who voted for Biden among all voters in 2020, we could include `EarlyVote2020` and `Gender` in our model.  
+#### Example 2: Interaction Effects {.unnumbered}
+Let's look at another example with interaction effects.  If we're interested in understanding the demographics of people who voted for Biden among all voters in 2020, we could include the indicator of if respondents voted early (`EarlyVote2020`) and their income group (`Income7`) in our model.  
 
 First we need to subset the data to 2020 voters and then create an indicator for voted for Biden. 
 ```{r}
@@ -638,14 +638,13 @@ anes_des_ind <- anes_des %>%
                                TRUE ~ 0))
 ```
 
-Let's first look at the main effects of gender and early voting behavior.
+Let's first look at the main effects of income grouping and early voting behavior.
 ```{r}
 #| label: model-logisticexamp-biden-main
 log_biden_main <- anes_des_ind %>%
-  mutate(EarlyVote2020 = 
-           fct_relevel(EarlyVote2020, "No", after = 0)) %>% 
+  mutate(EarlyVote2020 = fct_relevel(EarlyVote2020, "No", after = 0)) %>% 
   svyglm(design = .,
-         formula = VoteBiden ~ EarlyVote2020 + Gender,
+         formula = VoteBiden ~ EarlyVote2020 + Income7,
          family = quasibinomial) 
 ```
 
@@ -658,7 +657,7 @@ tidy(log_biden_main) %>%
   fmt_number()
 ```
 
-(ref:model-logisticexamp-biden-main-tab) Logistic regression output for predicting voting for Biden given early voting behavior and gender - main effects only, RECS 2020
+(ref:model-logisticexamp-biden-main-tab) Logistic regression output for predicting voting for Biden given early voting behavior and income - main effects only, ANES 2020
 
 ```{r}
 #| label: model-logisticexamp-biden-main-tab
@@ -672,17 +671,15 @@ tidy(log_biden_main) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
+This main effect model (see Table \@ref(tab:model-logisticexamp-biden-main-tab)) indicates that people with income \$125k or more have a negative coefficient `r signif(log_biden_main$coefficients[8],3)` that is significant (p-value=`r tidy(log_biden_main) %>% slice(8) %>% pull(p.value) %>% pretty_p_value()`).  This indicates that people with income \$125k or more were less likely to vote for Biden in the 2020 election compared to people with income \$20k or less (reference level).
 
-This main effect model indicates that respondents with who early voted in 2020 are `r signif(log_biden_main$coefficients[2],3)` (p-value=`r tidy(log_biden_main) %>% slice(2) %>% pull(p.value) %>% pretty_p_value()`) times more likely to vote for Biden compared to respondents who did not early vote in the 2020 election (the reference level.) We see that gender is also significant with females more likely to vote for Biden compared to males (p-value=`r tidy(log_biden_main) %>% slice(3) %>% pull(p.value) %>% pretty_p_value()`.) 
-
-It is possible that there is an interaction between gender and early voting behavior. To determine this we can create a model that includes the interaction effects:
+Although early voting behavior was not significant, it is possible that there is an interaction between income and early voting behavior. To determine this we can create a model that includes the interaction effects:
 ```{r}
 #| label: model-logisticexamp-biden-int
 log_biden_int <- anes_des_ind %>%
-  mutate(
-    EarlyVote2020 = fct_relevel(EarlyVote2020, "No", after = 0)) %>% 
+  mutate(EarlyVote2020 = fct_relevel(EarlyVote2020, "No", after = 0)) %>% 
   svyglm(design = .,
-         formula = VoteBiden ~ (EarlyVote2020 + Gender)^2,
+         formula = VoteBiden ~ (EarlyVote2020 + Income7)^2,
          family = quasibinomial) 
 ```
 
@@ -695,7 +692,7 @@ tidy(log_biden_int) %>%
   fmt_number()
 ```
 
-(ref:model-logisticexamp-biden-int-tab) Logistic regression output for predicting voting for Biden given early voting behavior and gender - with interaction, RECS 2020
+(ref:model-logisticexamp-biden-int-tab) Logistic regression output for predicting voting for Biden given early voting behavior and income - with interaction, ANES 2020
 
 ```{r}
 #| label: model-logisticexamp-biden-int-tab
@@ -709,7 +706,7 @@ tidy(log_biden_int) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-The results from the interaction model show that the interaction between early voting behavior and gender is significant.  To better understand what this interaction means, we can plot the predicted probabilities with an interaction plot.  Let's first obtain the predicted probabilities for each possible combination of variables using the `augment()` function.
+The results from the interaction model (see Table \@ref(tab:model-logisticexamp-biden-int-tab)) show that one interaction between early voting behavior and income is significant. To better understand what this interaction means, we can plot the predicted probabilities with an interaction plot.  Let's first obtain the predicted probabilities for each possible combination of variables using the `augment()` function.
 
 ```{r}
 #| label: model-logisticexamp-biden-aug
@@ -718,37 +715,34 @@ log_biden_pred <- log_biden_int %>%
   augment(type.predict = "response") %>%
   mutate(.se.fit = sqrt(attr(.fitted, "var")), 
          .fitted = as.numeric(.fitted)) %>%
-  select(VoteBiden, EarlyVote2020, Gender, .fitted, .se.fit) 
+  select(VoteBiden, EarlyVote2020, Income7, .fitted, .se.fit) 
 ```
 
-To create an interaction plot, the y-axis is the predicted probabilities, and one of our x-variables is on the x-axis and the other is represented by multiple lines. Figure \@ref(fig:model-logisticexamp-biden-plot) shows the interaction plot with gender on the x-axis and early voting behavior represented by the lines.
+To create an interaction plot, the y-axis is the predicted probabilities, and one of our x-variables is on the x-axis and the other is represented by multiple lines. Figure \@ref(fig:model-logisticexamp-biden-plot) shows the interaction plot with early voting behavior on the x-axis and income represented by the lines.
 
 ```{r}
 #| label: model-logisticexamp-biden-plot
-#| fig.cap: Interaction Plot of Gender and Early Voting Predicting the Probability of Voting for Biden
-#| fig.alt: "Line plot with x-axis as Male and Female (left to right) and y-axis as 'Predicted Probability of Voting for Biden'. There are two lines for early voting indicators with lines being from top to bottom: Did Not Early Vote and Did Early Vote. The line representing did not early vote is roughly parallel with similar predicted probabilities between males and females. For those who did early vote, females have higher predicted probability of voting for Biden than males."
+#| fig.cap: Interaction Plot of Early Voting and Income Predicting the Probability of Voting for Biden
+#| fig.alt: "Line plot with x-axis as indicator for voted early, with did not early vote on the left and did early vote on the right, and y-axis as 'Predicted Probability of Voting for Biden'. There are seven lines for income groups with lines being from top to bottom: Under $20k, $80k to less than $100k, $40k to less than $60k, $100k to less than $125k, $20k to less than 40k, $125k or more, and $60k to less than $80k. The lines for $40k to less than $60k, $60k to less than $80k, and $125k or more are all relatively flat with the probabilities for did not early vote and did early vote being equivalent. The lines for $20k to less than $40k and $100k to less than $125k have a slight positive slope. The line for less than $20k has a slight negative slope and has overall the highest probability for both levels of early voting. The line for $80k to less than $100k has a large positive slope. This line shows the lowest probability for those who did not early vote, and the second highest probability for those who did early vote."
 
 log_biden_pred %>% 
   filter(VoteBiden==1) %>% 
   distinct() %>% 
-  arrange(Gender, EarlyVote2020) %>% 
-  mutate(
-    EarlyVote2020 = fct_reorder2(EarlyVote2020, Gender, .fitted)) %>%
-  ggplot(aes(x = Gender, y = .fitted, group = EarlyVote2020,
-             color = EarlyVote2020, linetype = EarlyVote2020)) +
+  arrange(EarlyVote2020,Income7) %>% 
+  ggplot(aes(x = EarlyVote2020, y = .fitted, group = Income7,
+             color = Income7, linetype = Income7)) +
   geom_line(linewidth = 1.1) +
-  scale_color_manual(values = book_colors[c(2,4)]) +
+  scale_color_manual(values = colorRampPalette(book_colors)(7)) +
   ylab("Predicted Probability of Voting for Biden") +
-  labs(color="Voted Early",
-       linetype="Voted Early") +
+  labs(x="Voted Early",color="Income",linetype="Income") +
   coord_cartesian(ylim=c(0,1)) +
   guides(fill = "none") +
   theme_minimal()
 ```
 
-From this plot we can see that respondents who indicated a male gender had roughly the same probability of voting for Biden regardless of if they voted early or not.  However, females who voted early were more likely to vote for Biden if they voted early than if they did not vote early. 
+From Figure \@ref(fig:model-logisticexamp-biden-plot) we can see that people who have incomes in most groups (e.g., \$40k to <60k) have roughly the same probability of voting for Biden regardless of if they voted early or not. However, those with income in the \$100k to < 125k group were more likely to vote for Biden if they voted early than if they did not vote early. 
 
-Interactions in models can be difficult to understand from the coefficients alone. Using these interaction plots can help others understand the nuances of the results, and often can become even more helpful with more than two levels in a given factor (e.g., education or race/ethnicity.)
+Interactions in models can be difficult to understand from the coefficients alone. Using these interaction plots can help others understand the nuances of the results.
 
 ## Exercises
 
@@ -758,6 +752,6 @@ Interactions in models can be difficult to understand from the coefficients alon
 
 3.  Continuing with our results from question 2, create a plot between the actual and predicted expenditures and a residual plot for the predicted expenditures.
 
-4.  Early voting expanded in 2020 [@npr-voting-trend]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`.) Include two-way interactions.
+4.  Early voting expanded in 2020 [@npr-voting-trend]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`). Include two-way interactions.
 
 5.  Continuing from Exercise 4, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.
