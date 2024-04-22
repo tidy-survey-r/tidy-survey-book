@@ -26,7 +26,7 @@ library(gt)
 library(prettyunits)
 ```
 
-We are using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
+We are using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information.)
 
 ```{r}
 #| label: model-anes-des
@@ -64,7 +64,7 @@ recs_des <- recs_2020 %>%
 
 ## Introduction {#model-intro}
 
-Modeling data is a way for researchers to investigate the relationship between a single dependent variable and one or more independent variables. This builds upon the analyses conducted in Chapter \@ref(c06-statistical-testing), which looked at the relationships between just two variables.  For example, in Example 3 in Section \@ref(stattest-ttest-examples), we investigated if there is a relationship between the electrical bill cost and whether or not the household used air-conditioning.  However, there are potentially other elements that could go into what the cost of electrical bills are in a household (e.g., outside temperature, desired internal temperature, types and number of appliances, etc.). 
+Modeling data is a way for researchers to investigate the relationship between a single dependent variable and one or more independent variables. This builds upon the analyses conducted in Chapter \@ref(c06-statistical-testing), which looked at the relationships between just two variables.  For example, in Example 3 in Section \@ref(stattest-ttest-examples), we investigated if there is a relationship between the electrical bill cost and whether or not the household used air-conditioning.  However, there are potentially other elements that could go into what the cost of electrical bills are in a household (e.g., outside temperature, desired internal temperature, types and number of appliances, etc.)
 
 \index{Analysis of variance (ANOVA)|(}
 T-tests only allow us to investigate the relationship of one independent variable at a time, but using models we can look into multiple variables and even explore interactions between these variables.  There are several types of models, but in this chapter we cover Analysis of Variance (ANOVA) and linear regression models following common normal (Gaussian) and logit models. Jonas Kristoffer Lindeløv has an interesting [discussion](https://lindeloev.github.io/tests-as-linear/) of many statistical tests and models being equivalent to a linear model. For example, a one-way ANOVA is a linear model with one categorical independent variable, and a two-sample t-test is an ANOVA where the independent variable has exactly two levels. \index{Analysis of variance (ANOVA)|)}
@@ -73,7 +73,7 @@ When modeling data, it is helpful to first create an equation that provides an o
 
 $$y_i=\beta_0 +\sum_{i=1}^p \beta_i x_i + \epsilon_i$$
 
-where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_p$ are the predictors with $\beta_1, \cdots, \beta_p$ as the associated coefficients, and $\epsilon_i$ is the error.  Not all models have all components.  For example, some models may not include an intercept ($\beta_0$), may have interactions between different independent variables ($x_i$), or may have different underlying structures for the dependent variable ($y_i$).  However, all linear models have the independent variables related to the dependent variable in a linear form.
+where $y_i$ is the outcome, $\beta_0$ is an intercept, $x_1, \cdots, x_p$ are the predictors with $\beta_1, \cdots, \beta_p$ as the associated coefficients, and $\epsilon_i$ is the error.  Not all models have all components.  For example, some models may not include an intercept ($\beta_0$), may have interactions between different independent variables ($x_i$), or may have different underlying structures for the dependent variable ($y_i$.)  However, all linear models have the independent variables related to the dependent variable in a linear form.
 
 To specify these models in R, the formulas are the same with both survey data and other data. The left side of the formula is the response/dependent variable, and the right side of the formula has the predictor/independent variable(s). There are many symbols used in R to specify the formula.
 
@@ -93,7 +93,7 @@ Table: (\#tab:notation-common) Common symbols in formula notation
 |   :    |    `x:z`    | include the interaction between these variables                          |
 |   \*   |    `x*z`    | include these variables and the interactions between them                |
 |  `^n`  | `(x+y+z)^3` | include these variables and all interactions up to n-way                 |
-|   I    |  `I(x-z)`   | as-is: include a new variable which is calculated inside the parentheses (e.g., x-z, x*z, x/z are possible claculations that could be done) |
+|   I    |  `I(x-z)`   | as-is: include a new variable which is calculated inside the parentheses (e.g., x-z, x*z, x/z are possible calculations that could be done) |
 
 There are often multiple ways to specify the same formula. For example, consider the following equation using the `mtcars` dataset that is built into R:
 
@@ -158,11 +158,11 @@ The arguments are:
 * `na.action`: handling of missing data
 * \index{Degrees of freedom|(}`df.resid`: degrees of freedom for Wald tests (optional) - defaults to using `degf(design)-(g-1)` where $g$ is the number of groups\index{Degrees of freedom|)}
 
-The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details). The default for missing data is `na.omit`, this means that we are removing all records with any missing data in either predictors or outcomes from analyses.  There are other options for handling missing data and we recommend looking at the help documentation for `na.omit` (run `help(na.omit)` or `?na.omit`) for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c11-missing-data). 
+The function `svyglm()` does not have the design as the first argument so the dot (`.`) notation is used to pass it with a pipe (see Chapter \@ref(c06-statistical-testing) for more details.) The default for missing data is `na.omit`, this means that we are removing all records with any missing data in either predictors or outcomes from analyses.  There are other options for handling missing data and we recommend looking at the help documentation for `na.omit` (run `help(na.omit)` or `?na.omit`) for more information on options to use for `na.action`.  For a discussion of how to handle missing data see Chapter \@ref(c11-missing-data). 
 
 ### Example
 
-Looking at an example helps us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning (A/C) during the summer. To analyze these data, we filter the respondents to only those using A/C (`ACUsed`). Then if we want to see if there are differences by region, we can use `group_by()`. A descriptive analysis of the temperature at night (`SummerTempNight`) set by region and the sample sizes is displayed below. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!unweighted|(} \index{Functions in srvyr!filter|(} \index{Functions in srvyr!summarize|(}
+Looking at an example helps us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning (A/C) during the summer. To analyze these data, we filter the respondents to only those using A/C (`ACUsed`.) Then if we want to see if there are differences by region, we can use `group_by()`. A descriptive analysis of the temperature at night (`SummerTempNight`) set by region and the sample sizes is displayed below. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!unweighted|(} \index{Functions in srvyr!filter|(} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: model-anova-prep
@@ -190,7 +190,7 @@ tidy(anova_out)
 
 In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In this output, the intercept represents the reference value of the Northeast region. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, `r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(estimate) %>% signif(3)` (p-value`r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(p.value) %>% pretty_p_value()`) degrees higher than in the Northeast during summer nights and each region sets their thermostats at significantly higher temperatures than the Northeast.
 
-If we wanted to change the reference value we would reorder the factor before modeling using the function `relevel()` from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`.  For example, if we wanted the reference level to be the Midwest region, we could use the following code. Note the usage of the `gt()` function on top of `tidy()` to print a nice looking output table [@R-gt; @R-broom] (see Chapter \@ref(c08-communicating-results) for more information on the {gt} package).
+If we wanted to change the reference value we would reorder the factor before modeling using the function `relevel()` from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`.  For example, if we wanted the reference level to be the Midwest region, we could use the following code. Note the usage of the `gt()` function on top of `tidy()` to print a nice looking output table [@R-gt; @R-broom] (see Chapter \@ref(c08-communicating-results) for more information on the {gt} package.)
 
 ```{r}
 #| label: model-anova-ex-relevel
@@ -270,12 +270,12 @@ As discussed in Section \@ref(model-intro), the formula on the right-hand side c
 ### Examples
 
 #### Example 1: Linear regression with single variable {.unnumbered}
-On RECS, we can obtain information on the square footage of homes and the electric bills. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to determine whether it is reasonable to assume a linear relationship. In Figure \@ref(fig:model-plot-sf-elbill), each hexagon represents the weighted count of households in the bin, and we can see a general positive linear trend (as the square footage increases so does the amount of money spent on electricity).
+On RECS, we can obtain information on the square footage of homes and the electric bills. We assume that square footage is related to the amount of money spent on electricity and examine a model for this. Before any modeling, we first plot the data to determine whether it is reasonable to assume a linear relationship. In Figure \@ref(fig:model-plot-sf-elbill), each hexagon represents the weighted count of households in the bin, and we can see a general positive linear trend (as the square footage increases so does the amount of money spent on electricity.)
 
 ```{r}
 #| label: model-plot-sf-elbill
 #| fig.cap: Relationship between square footage and dollars spent on electricity, RECS 2020
-#| fig.alt: Hex chart where each hexagon represents a number of housing units at a point. x-axis is 'Total square footage' ranging from 0 to 7,500 and y-axis is 'Amount spent on electricity' ranging from $0 to 8,000. The trend is relatively linear and positve. A high concentration of points have square footage between 0 and 2,500 square feet as well as between electricity expenditure between $0 and 2,000
+#| fig.alt: Hex chart where each hexagon represents a number of housing units at a point. x-axis is 'Total square footage' ranging from 0 to 7,500 and y-axis is 'Amount spent on electricity' ranging from $0 to 8,000. The trend is relatively linear and positive. A high concentration of points have square footage between 0 and 2,500 square feet as well as between electricity expenditure between $0 and 2,000
 #| echo: TRUE
 #| warning: FALSE
 recs_2020 %>%
@@ -332,19 +332,20 @@ tidy(m_electric_sqft) %>%
 
 
 
-In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% signif(2))*100` cents and that square footage is significantly associated with electricity expenditure (p-value`r tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(p.value) %>% pretty_p_value()`). 
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% signif(2))*100` cents and that square footage is significantly associated with electricity expenditure (p-value`r tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(p.value) %>% pretty_p_value()`.) 
 
 This is a very simple model, and there are likely many more factors related to electricity expenditure, including the type of cooling, number of appliances, location, and more. However, starting with one variable models can help researchers understand what potential relationships there are between variables before fitting more complex models.  Often researchers start with known relationships before building models to determine what impact additional variables have on the model.
 
 #### Example 2: Linear regression with multiple variables and interactions {.unnumbered}
-In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning (A/C) is used (logical/categorical) with all two-way interactions also included.  In this example, we are choosing to fit this model without an intercept (using `-1` in the formula).  This results in an intercept estimate for each region instead of a single intercept for all data.
+In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning (A/C) is used (logical/categorical) with all two-way interactions also included.  In this example, we are choosing to fit this model without an intercept (using `-1` in the formula.)  This results in an intercept estimate for each region instead of a single intercept for all data.
 
 ```{r}
 #| label: model-lmr-examp
 m_electric_multi <- recs_des %>%
   svyglm(
     design = .,
-    formula = DOLLAREL ~ (Region + Urbanicity + TOTSQFT_EN + ACUsed)^2 - 1, 
+    formula = 
+      DOLLAREL ~ (Region + Urbanicity + TOTSQFT_EN + ACUsed)^2 - 1, 
     na.action = na.omit
   )
 ```
@@ -382,7 +383,7 @@ urb_reg_test <- regTermTest(m_electric_multi, ~Urbanicity:Region)
 urb_reg_test
 ```
 
-This output indicates there is a significant interaction between urbanicity and region (p-value=`r pretty_p_value(urb_reg_test[["p"]])`).
+This output indicates there is a significant interaction between urbanicity and region (p-value=`r pretty_p_value(urb_reg_test[["p"]])`.)
 
 To examine the predictions, residuals, and more from the model, the function `augment()` from {broom} can be used. The `augment()` function returns a tibble with the independent and dependent variables and other fit statistics. The `augment()` function has not been specifically written for objects of class `svyglm`, and as such, a warning is displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using `augment()`. To obtain the standard error of the predicted values (`.se.fit`) we need to use the `attr()` function on the predicted values (`.fitted`) created by `augment()`. Additionally, the predicted values created are outputted as a `svrep` type of data.  If we want to plot the predicted values, we need to use `as.numeric()` to get the predicted values into a numeric format to work with.  However, it is important to note that this adjustment must be completed **after** the standard error adjustment. 
 
@@ -402,10 +403,10 @@ These results can then be used in a variety of ways, including examining residua
 ```{r}
 #| label: model-aug-examp-plot
 #| fig.cap: Residual plot of electric cost model with covariates Region, Urbanicity, TOTSQFT\_EN, and ACUsed
-#| fig.alt: Residual scatter plot with a x-axis of 'Fitted value of electricity cost' ranging between approximately $0 and $4,000 and a y-axis with the 'Residual of model' ranging from approximatley -$3,000 to $5,000. The points create a slight megaphone shape with largest residuals in the middle of the x-range. A red line is drawn horizontally at y=0.
+#| fig.alt: Residual scatter plot with a x-axis of 'Fitted value of electricity cost' ranging between approximately $0 and $4,000 and a y-axis with the 'Residual of model' ranging from approximately -$3,000 to $5,000. The points create a slight megaphone shape with largest residuals in the middle of the x-range. A red line is drawn horizontally at y=0.
 fitstats %>%
   ggplot(aes(x = .fitted, .resid)) +
-  geom_point() + 
+  geom_point(alpha=.1) + 
   geom_hline(yintercept = 0, color = "red") +
   theme_minimal() +
   xlab("Fitted value of electricity cost") +
@@ -449,7 +450,7 @@ In the above example, it is predicted that the energy expenditure would be \$`r 
 
 Logistic regression is used to model binary outcomes such as whether or not someone voted. There are several instances where an outcome may not be originally binary but is collapsed into being binary. For example, given that gender is often asked in surveys with multiple response options and not a binary scale, many researchers now code gender in logistic modeling as cis-male compared to not cis-male. We could also convert a 4-point likert scale that has levels of "Strongly Agree", "Agree", "Disagree", and "Strongly Disagree" to group the agreement levels into one group and disagreement levels into a second group.
 
-Logistic regression is a specific case of the generalized linear model (GLM). A GLM uses a link function to link the response variable to the linear model. If we tried to use a normal linear regression with a binary outcome, many assumptions are not held - namely the response is not continuous. Logistic regression allows us to link a linear model between the covariates and a propensity of an outcome. In logistic regression, the link model is the logit function. Specifically, the model is specified as follows:
+Logistic regression is a specific case of the generalized linear model (GLM.) A GLM uses a link function to link the response variable to the linear model. If we tried to use a normal linear regression with a binary outcome, many assumptions are not held - namely the response is not continuous. Logistic regression allows us to link a linear model between the covariates and a propensity of an outcome. In logistic regression, the link model is the logit function. Specifically, the model is specified as follows:
 
 $$ y_i \sim \text{Bernoulli}(\pi_i)$$
 
@@ -572,7 +573,7 @@ tidy(logistic_trust_vote) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient.  This output indicates that respondents who voted for Trump are more likely to usually have trust in the government compared to those who voted for Biden (the reference level). The coefficient of `r signif(logistic_trust_vote$coefficients[2],3)` represents the increase in the log odds of usually trusting the government.
+In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient.  This output indicates that respondents who voted for Trump are more likely to usually have trust in the government compared to those who voted for Biden (the reference level.) The coefficient of `r signif(logistic_trust_vote$coefficients[2],3)` represents the increase in the log odds of usually trusting the government.
 
 In most cases, it is easier to talk about the odds instead of the log odds. To do this, we need to exponentiate the coefficients. We can use the same `tidy()` function, but include the argument `exponentiate = TRUE` to see the odds.
 
@@ -611,7 +612,7 @@ or_other <-
   pull(estimate)
 ```
 
-We can interpret this as saying that the odds of usually trusting the government for someone who voted for Trump is `r signif(or_trump*100, 3)`% as likely to trust the government compared to a person who voted for Biden (the reference level). In comparison, a person who voted for neither Biden nor Trump is `r signif(or_other*100, 3)`% as likely to trust the government as someone who voted for Biden.
+We can interpret this as saying that the odds of usually trusting the government for someone who voted for Trump is `r signif(or_trump*100, 3)`% as likely to trust the government compared to a person who voted for Biden (the reference level.) In comparison, a person who voted for neither Biden nor Trump is `r signif(or_other*100, 3)`% as likely to trust the government as someone who voted for Biden.
 
 As with linear regression, the `augment()` can be used to predict values. By default, the prediction is the link function and not the probability model. To predict the probability, add an argument of `type.predict="response"` as demonstrated below:
 
@@ -629,8 +630,8 @@ logistic_trust_vote %>%
 ```
 
 
-#### Example 2: Interaction effects {.unnumbered}
-Let's look at another example with interaction effects.  If we're interested in understanding the demographics of people who voted for Biden among all voters in 2020, we could include `EarlyVote2020` and `Gender` in our model.  
+#### Example 2: Interaction Effects {.unnumbered}
+Let's look at another example with interaction effects.  If we're interested in understanding the demographics of people who voted for Biden among all voters in 2020, we could include the indicator of if respondents voted early (`EarlyVote2020`) and their income group (`Income7`) in our model.  
 
 First we need to subset the data to 2020 voters and then create an indicator for voted for Biden. \index{Functions in srvyr!filter|(}
 ```{r}
@@ -642,13 +643,13 @@ anes_des_ind <- anes_des %>%
 ```
 \index{Functions in srvyr!filter|)}
 
-Let's first look at the main effects of gender and early voting behavior. 
+Let's first look at the main effects of income grouping and early voting behavior. 
 ```{r}
 #| label: model-logisticexamp-biden-main
 log_biden_main <- anes_des_ind %>%
   mutate(EarlyVote2020 = fct_relevel(EarlyVote2020, "No", after = 0)) %>% 
   svyglm(design = .,
-         formula = VoteBiden ~ EarlyVote2020 + Gender,
+         formula = VoteBiden ~ EarlyVote2020 + Income7,
          family = quasibinomial) 
 ```
 
@@ -661,7 +662,7 @@ tidy(log_biden_main) %>%
   fmt_number()
 ```
 
-(ref:model-logisticexamp-biden-main-tab) Logistic regression output for predicting voting for Biden given early voting behavior and gender - main effects only, RECS 2020
+(ref:model-logisticexamp-biden-main-tab) Logistic regression output for predicting voting for Biden given early voting behavior and income - main effects only, ANES 2020
 
 ```{r}
 #| label: model-logisticexamp-biden-main-tab
@@ -675,16 +676,15 @@ tidy(log_biden_main) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
+This main effect model (see Table \@ref(tab:model-logisticexamp-biden-main-tab)) indicates that people with income \$125k or more have a negative coefficient `r signif(log_biden_main$coefficients[8],3)` that is significant (p-value=`r tidy(log_biden_main) %>% slice(8) %>% pull(p.value) %>% pretty_p_value()`).  This indicates that people with income \$125k or more were less likely to vote for Biden in the 2020 election compared to people with income \$20k or less (reference level).
 
-This main effect model indicates that respondents with who early voted in 2020 are `r signif(log_biden_main$coefficients[2],3)` (p-value=`r tidy(log_biden_main) %>% slice(2) %>% pull(p.value) %>% pretty_p_value()`) times more likely to vote for Biden compared to respondents who did not early vote in the 2020 election (the reference level). We see that gender is also significant with females more likely to vote for Biden compared to males (p-value=`r tidy(log_biden_main) %>% slice(3) %>% pull(p.value) %>% pretty_p_value()`). 
-
-It is possible that there is an interaction between gender and early voting behavior. To determine this we can create a model that includes the interaction effects: 
+Although early voting behavior was not significant, it is possible that there is an interaction between income and early voting behavior. To determine this we can create a model that includes the interaction effects: 
 ```{r}
 #| label: model-logisticexamp-biden-int
 log_biden_int <- anes_des_ind %>%
   mutate(EarlyVote2020 = fct_relevel(EarlyVote2020, "No", after = 0)) %>% 
   svyglm(design = .,
-         formula = VoteBiden ~ (EarlyVote2020 + Gender)^2,
+         formula = VoteBiden ~ (EarlyVote2020 + Income7)^2,
          family = quasibinomial) 
 ```
 
@@ -697,7 +697,7 @@ tidy(log_biden_int) %>%
   fmt_number()
 ```
 
-(ref:model-logisticexamp-biden-int-tab) Logistic regression output for predicting voting for Biden given early voting behavior and gender - with interaction, RECS 2020
+(ref:model-logisticexamp-biden-int-tab) Logistic regression output for predicting voting for Biden given early voting behavior and income - with interaction, ANES 2020
 
 ```{r}
 #| label: model-logisticexamp-biden-int-tab
@@ -711,7 +711,7 @@ tidy(log_biden_int) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-The results from the interaction model show that the interaction between early voting behavior and gender is significant.  To better understand what this interaction means, we can plot the predicted probabilities with an interaction plot.  Let's first obtain the predicted probabilities for each possible combination of variables using the `augment()` function.
+The results from the interaction model (see Table \@ref(tab:model-logisticexamp-biden-int-tab)) show that one interaction between early voting behavior and income is significant. To better understand what this interaction means, we can plot the predicted probabilities with an interaction plot.  Let's first obtain the predicted probabilities for each possible combination of variables using the `augment()` function.
 
 ```{r}
 #| label: model-logisticexamp-biden-aug
@@ -720,36 +720,34 @@ log_biden_pred <- log_biden_int %>%
   augment(type.predict = "response") %>%
   mutate(.se.fit = sqrt(attr(.fitted, "var")), 
          .fitted = as.numeric(.fitted)) %>%
-  select(VoteBiden, EarlyVote2020, Gender, .fitted, .se.fit) 
+  select(VoteBiden, EarlyVote2020, Income7, .fitted, .se.fit) 
 ```
 
-To create an interaction plot, the y-axis is the predicted probabilities, and one of our x-variables is on the x-axis and the other is represented by multiple lines. Figure \@ref(fig:model-logisticexamp-biden-plot) shows the interaction plot with gender on the x-axis and early voting behavior represented by the lines.
+To create an interaction plot, the y-axis is the predicted probabilities, and one of our x-variables is on the x-axis and the other is represented by multiple lines. Figure \@ref(fig:model-logisticexamp-biden-plot) shows the interaction plot with early voting behavior on the x-axis and income represented by the lines.
 
 ```{r}
 #| label: model-logisticexamp-biden-plot
-#| fig.cap: Interaction Plot of Gender and Early Voting Predicting the Probability of Voting for Biden
-#| fig.alt: "Line plot with x-axis as Male and Female (left to right) and y-axis as 'Predicted Probability of Voting for Biden'. There are two lines for early voting indicators with lines being from top to bottom: Did Not Early Vote and Did Early Vote. The line representing did not early vote is roughly parallel with similar predicted probabilities between males and females. For those who did early vote, females have higher predicted probability of voting for Biden than males."
+#| fig.cap: Interaction Plot of Early Voting and Income Predicting the Probability of Voting for Biden
+#| fig.alt: "Line plot with x-axis as indicator for voted early, with did not early vote on the left and did early vote on the right, and y-axis as 'Predicted Probability of Voting for Biden'. There are seven lines for income groups with lines being from top to bottom: Under $20k, $80k to less than $100k, $40k to less than $60k, $100k to less than $125k, $20k to less than 40k, $125k or more, and $60k to less than $80k. The lines for $40k to less than $60k, $60k to less than $80k, and $125k or more are all relatively flat with the probabilities for did not early vote and did early vote being equivalent. The lines for $20k to less than $40k and $100k to less than $125k have a slight positive slope. The line for less than $20k has a slight negative slope and has overall the highest probability for both levels of early voting. The line for $80k to less than $100k has a large positive slope. This line shows the lowest probability for those who did not early vote, and the second highest probability for those who did early vote."
 
 log_biden_pred %>% 
   filter(VoteBiden==1) %>% 
   distinct() %>% 
-  arrange(Gender, EarlyVote2020) %>% 
-  mutate(EarlyVote2020 = fct_reorder2(EarlyVote2020, Gender, .fitted)) %>%
-  ggplot(aes(x = Gender, y = .fitted, group = EarlyVote2020,
-             color = EarlyVote2020, linetype = EarlyVote2020)) +
+  arrange(EarlyVote2020,Income7) %>% 
+  ggplot(aes(x = EarlyVote2020, y = .fitted, group = Income7,
+             color = Income7, linetype = Income7)) +
   geom_line(linewidth = 1.1) +
-  scale_color_manual(values = book_colors[c(2,4)]) +
+  scale_color_manual(values = colorRampPalette(book_colors)(7)) +
   ylab("Predicted Probability of Voting for Biden") +
-  labs(color="Voted Early",
-       linetype="Voted Early") +
+  labs(x="Voted Early",color="Income",linetype="Income") +
   coord_cartesian(ylim=c(0,1)) +
   guides(fill = "none") +
   theme_minimal()
 ```
 
-From this plot we can see that respondents who indicated a male gender had roughly the same probability of voting for Biden regardless of if they voted early or not.  However, females who voted early were more likely to vote for Biden if they voted early than if they did not vote early. 
+From Figure \@ref(fig:model-logisticexamp-biden-plot) we can see that people who have incomes in most groups (e.g., \$40k to <60k) have roughly the same probability of voting for Biden regardless of if they voted early or not. However, those with income in the \$100k to < 125k group were more likely to vote for Biden if they voted early than if they did not vote early. 
 
-Interactions in models can be difficult to understand from the coefficients alone. Using these interaction plots can help others understand the nuances of the results, and often can become even more helpful with more than two levels in a given factor (e.g., education or race/ethnicity). \index{Functions in survey!svyglm|)}
+Interactions in models can be difficult to understand from the coefficients alone. Using these interaction plots can help others understand the nuances of the results.\index{Functions in survey!svyglm|)}
 
 ## Exercises
 
