@@ -13,7 +13,7 @@ library(tidyselect)
 
 ## Introduction
 
-This chapter provides an overview of the packages, data, and design objects we use frequently throughout this book. As mentioned in Chapter \@ref(c02-overview-surveys), understanding how a survey was conducted helps us make sense of the results and interpret findings. Therefore, we provide background on the datasets used in examples and exercises. Next, we walk through how to create the survey design objects necessary to begin analysis. Finally, we provide an overview of the {srvyr} package and the steps needed for analysis. Please report any bugs and issues while going through the book to the book's [GitHub repository](https://github.com/tidy-survey-r/tidy-survey-book).
+This chapter provides an overview of the packages, data, and design objects we use frequently throughout this book. As mentioned in Chapter \@ref(c02-overview-surveys), understanding how a survey was conducted helps us make sense of the results and interpret findings. Therefore, we provide background on the datasets used in examples and exercises. Next, we walk through how to create the survey design objects necessary to begin an analysis. Finally, we provide an overview of the {srvyr} package and the steps needed for analysis. Please report any bugs and issues while going through the book to the book's [GitHub repository](https://github.com/tidy-survey-r/tidy-survey-book).
 
 ## Setup
 
@@ -52,7 +52,7 @@ library(srvyr)
 library(srvyrexploR)
 ```
 
-The packages {broom}, {gt}, and {gtsummary} play a role in displaying output and creating formatted tables [@R-gt, @R-broom; @gtsummarysjo]. Install them with the provided code^[Note: {broom} is already included in the tidyverse, so no separate installation is required]:
+The packages {broom}, {gt}, and {gtsummary} play a role in displaying output and creating formatted tables [@R-gt, @R-broom; @gtsummarysjo]. Install them with the provided code^[Note: {broom} is already included in the tidyverse, so no separate installation is required.]:
 
 ```{r}
 #| label: setup-install-extra
@@ -112,11 +112,11 @@ The {srvyrexploR} package contains the datasets used in the book. Once installed
 help(package = "srvyrexploR")
 ```
 
-This book uses two main datasets: the American National Election Studies [ANES -- @debell] and the Residential Energy Consumption Survey [RECS -- @recs-2020-tech] which are included as `anes_2020` and `recs_2020`, respectively, in the {srvyrexploR} package.
+This book uses two main datasets: the American National Election Studies [ANES -- @debell] and the Residential Energy Consumption Survey [RECS -- @recs-2020-tech], which are included as `anes_2020` and `recs_2020` in the {srvyrexploR} package, respectively.
 
 #### American National Election Studies (ANES) Data {-}
 
-ANES is a study that collects data from election surveys dating back to 1948. These surveys contain information on public opinion and voting behavior in U.S. presidential elections and some midterm elections^[In the United States, presidential elections are held in years divisible by four. In other even years, there are elections at the federal level for congress which are referred to as midterm elections as they occur at the middle of the term of a president.]. They cover topics such as party affiliation, voting choice, and level of trust in the government. The 2020 survey (data used in this book), was fielded online, through live video interviews, or via computer-assisted telephone interviews (CATI). 
+ANES is a study that collects data from election surveys dating back to 1948. These surveys contain information on public opinion and voting behavior in U.S. presidential elections and some midterm elections^[In the United States, presidential elections are held in years divisible by four. In other even years, there are elections at the federal level for congress which are referred to as midterm elections as they occur at the middle of the term of a president.]. They cover topics such as party affiliation, voting choice, and level of trust in the government. The 2020 survey (data used in this book) was fielded online, through live video interviews, or via computer-assisted telephone interviews (CATI). 
 
 When working with new survey data, we should review the survey documentation (see Chapter \@ref(c03-survey-data-documentation)) to understand the data collection methods. The original ANES data contains variables starting with `V20` [@debell], so to assist with our analysis throughout the book, we created descriptive variable names. For example, the respondent's age is now in a variable called `Age`, and gender is in a variable called `Gender`. These descriptive variables are included in the {srvyrexploR} package, and Table \@ref(tab:anes-view-tab) displays the list of these renamed variables. A complete overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(anes-cb)`r if (!knitr:::is_html_output()) ')'`.
 
@@ -156,7 +156,7 @@ From the output, we can see there are `r nrow(anes_2020 %>% select(-matches("^V\
 
 #### Residential Energy Consumption Survey (RECS) Data {-}
 
-RECS is a study that measures energy consumption and expenditure in American households. Funded by the Energy Information Administration, RECS data are collected through interviews with household members and energy suppliers. These interviews take place in person, over the phone, via mail, and on the web with modes changing over time. The survey has been fielded 14 times between 1950 and 2020. It includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance. 
+RECS is a study that measures energy consumption and expenditure in American households. Funded by the Energy Information Administration, RECS data are collected through interviews with household members and energy suppliers. These interviews take place in person, over the phone, via mail, and on the web, with modes changing over time. The survey has been fielded 14 times between 1950 and 2020. It includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance. 
 
 We should read the survey documentation (see Chapter \@ref(c03-survey-data-documentation)) to understand how the data were collected and implemented. Table \@ref(tab:recs-view-tab) displays the list of variables in the RECS data (not including the weights, which start with `NWEIGHT` and are described in more detail in Chapter \@ref(c10-sample-designs-replicate-weights)). An overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(recs-cb)`r if (!knitr:::is_html_output()) ')'`. 
 
@@ -193,7 +193,7 @@ recs_2020 %>%
   glimpse()
 ```
 
-From the output, we can see that there are `r nrow(recs_2020 %>% select(-matches("^NWEIGHT"))) %>% formatC(big.mark = ",")` rows and `r ncol(recs_2020 %>% select(-matches("^NWEIGHT"))) %>% formatC(big.mark = ",")` non-weight variables in the RECS data. This output also indicates that most of the variables are in double (numeric) format (e.g., `TOTSQFT_EN`), with some factor (e.g., `Region`), Boolean (e.g., `ACUsed`), character (e.g., `REGIONC`), and ordinal (e.g., `YearMade`) variables.
+From the output, we can see that the RECS data has `r nrow(recs_2020 %>% select(-matches("^NWEIGHT"))) %>% formatC(big.mark = ",")` rows and `r ncol(recs_2020 %>% select(-matches("^NWEIGHT"))) %>% formatC(big.mark = ",")` non-weight variables. This output also indicates that most of the variables are in double (numeric) format (e.g., `TOTSQFT_EN`), with some factor (e.g., `Region`), Boolean (e.g., `ACUsed`), character (e.g., `REGIONC`), and ordinal (e.g., `YearMade`) variables.
 
 ### Design objects {#setup-des-obj}
 
@@ -201,11 +201,11 @@ The design object is the backbone for survey analysis. It is where we specify th
 
 In this section, we provide details on how to code the design object for the ANES and RECS data used in the book. However, we only provide a high-level overview to get readers started. For a deeper understanding of creating design objects for a variety of sampling designs, see Chapter \@ref(c10-sample-designs-replicate-weights).
 
-While we recommend conducting exploratory data analysis on the original data before diving into complex survey analysis (see Chapter \@ref(c12-recommendations)), the actual survey analysis and inference should be performed with the survey design objects instead of the original survey data. For example, the ANES data is called `anes_2020`. If we create a survey design object called `anes_des`, our survey analyses should begin with `anes_des` and not `anes_2020`.  Using the survey design object ensures that our calculations are appropriately accounting for the details of the survey design.
+While we recommend conducting exploratory data analysis on the original data before diving into complex survey analysis (see Chapter \@ref(c12-recommendations)), the actual survey analysis and inference should be performed with the survey design objects instead of the original survey data. For example, the ANES data is called `anes_2020`. If we create a survey design object called `anes_des`, our survey analyses should begin with `anes_des` and not `anes_2020`.  Using the survey design object ensures that our calculations appropriately account for the details of the survey design.
 
 #### American National Election Studies (ANES) Design Object {-}
 
-The ANES documentation [@debell] details the sampling and weighting implications for analyzing the survey data. From this documentation and as noted in Chapter \@ref(c03-survey-data-documentation), the 2020 ANES data are weighted to the sample, not the population. To make generalizations about the population, we need to weigh the data against the full population count. The ANES methodology recommends using the Current Population Survey (CPS) to determine the number of non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. in March of 2020.
+The ANES documentation [@debell] details the sampling and weighting implications for analyzing the survey data. From this documentation and as noted in Chapter \@ref(c03-survey-data-documentation), the 2020 ANES data are weighted to the sample, not the population. To make generalizations about the population, we need to weigh the data against the full population count. The ANES methodology recommends using the Current Population Survey (CPS) to determine the number of non-institutional U.S. citizens aged 18 or older living in the 50 U.S. states or D.C. in March 2020.
 
 We can use the {censusapi} package to obtain the information needed for the survey design object. The `getCensus()` function allows us to retrieve the CPS data for March (`cps/basic/mar`) in 2020 (`vintage = 2020`). Additionally, we extract several variables from the CPS:
 
@@ -344,11 +344,11 @@ Let's examine the `towny` object's class. We verify that it is a tibble, as indi
 class(towny)
 ```
 
-All tibbles are data.frames but not all data.frames are tibbles. Compared to data.frames, tibbles have some advantages with the printing behavior being a noticeable advantage. When working with tidyverse style code, we recommend making all your datasets tibbles for ease of analysis.
+All tibbles are data.frames, but not all data.frames are tibbles. Compared to data.frames, tibbles have some advantages, with the printing behavior being a noticeable advantage. When working with tidyverse style code, we recommend making all your datasets tibbles for ease of analysis.
 
 The {survey} package contains datasets related to the California Academic Performance Index, which measures student performance in schools with at least 100 students in California. We can access these datasets by loading the {survey} package and running `data(api)`.
 
-Let's work with the `apistrat` dataset, which is a stratified random sample, stratified by school type (`stype`) with three levels: `E` for elementary school, `M` for middle school, and `H` for high school. We first create the survey design object (see Chapter \@ref(c10-sample-designs-replicate-weights) for more information). The sample is stratified by the `stype` variable and the sampling weights are found in the `pw` variable. We can use this information to construct the design object, `apistrat_des`.
+Let's work with the `apistrat` dataset, which is a stratified random sample, stratified by school type (`stype`) with three levels: `E` for elementary school, `M` for middle school, and `H` for high school. We first create the survey design object (see Chapter \@ref(c10-sample-designs-replicate-weights) for more information). The sample is stratified by the `stype` variable, and the sampling weights are found in the `pw` variable. We can use this information to construct the design object, `apistrat_des`.
 
 ```{r}
 #| label: setup-api-surveydata
@@ -384,7 +384,7 @@ apistrat_des %>%
             api00_med = survey_median(api00))
 ```
 
-The functions in {srvyr} also play nicely with other tidyverse functions. For example, if we wanted to select columns with shared characteristics, we can use {tidyselect} functions such as `starts_with()`, `num_range()`, etc [@R-tidyselect]. In the examples below, we use a combination of `across()` and `starts_with()` to calculate the mean of variables starting with "population" in the `towny` data frame and those beginning with `api` in the `apistrat_des` survey object.
+The functions in {srvyr} also play nicely with other tidyverse functions. For example, if we wanted to select columns with shared characteristics, we can use {tidyselect} functions such as `starts_with()`, `num_range()`, etc. [@R-tidyselect]. In the examples below, we use a combination of `across()` and `starts_with()` to calculate the mean of variables starting with "population" in the `towny` data frame and those beginning with `api` in the `apistrat_des` survey object.
 
 ```{r}
 #| label: setup-dplyr-select
@@ -455,7 +455,7 @@ apistrat_des %>%
             .by=stype)
 ```
 
-As mentioned above, {srvyr} functions are meant for `tbl_svy` objects. Attempting to perform data manipulation on non-`tbl_svy` objects, like the `towny` example shown below, result in an error. Running the code lets us know what the issue is: `Survey context not set`.
+As mentioned above, {srvyr} functions are meant for `tbl_svy` objects. Attempting to manipulate data on non-`tbl_svy` objects, like the `towny` example shown below, results in an error. Running the code lets us know what the issue is: `Survey context not set`.
 
 ```{r}
 #| label: setup-nsobj-error

@@ -65,18 +65,18 @@ recs_des <- recs_2020 %>%
 
 ## Introduction
 
-When analyzing results from a survey, the point estimates described in Chapter \@ref(c05-descriptive-analysis) help us understand the data at a high level. Still, we often want to make comparisons between different groups. These comparisons are calculated through statistical testing. 
+When analyzing survey results, the point estimates described in Chapter \@ref(c05-descriptive-analysis) help us understand the data at a high level. Still, we often want to make comparisons between different groups. These comparisons are calculated through statistical testing. 
 
 The general idea of statistical testing is the same for data obtained through surveys and data obtained through other methods, where we compare the point estimates and variance estimates of each statistic to see if statistically significant differences exist. However, statistical testing for complex surveys involves additional considerations due to the need to account for the sampling design in order to obtain accurate variance estimates.
 
-Statistical testing, also called hypothesis testing, involves declaring a null and alternative hypothesis. A null hypothesis is denoted as $H_0$ and the alternative hypothesis is denoted as $H_A$. The null hypothesis is the default assumption in that there are no differences in the data, or that the data are operating under "standard" behaviors.  On the other hand, the alternative hypothesis is the break from the "standard" and what we are trying to determine if the data support. 
+Statistical testing, also called hypothesis testing, involves declaring a null and alternative hypothesis. A null hypothesis is denoted as $H_0$ and the alternative hypothesis is denoted as $H_A$. The null hypothesis is the default assumption in that there are no differences in the data, or that the data are operating under "standard" behaviors. On the other hand, the alternative hypothesis is the break from the "standard" and what we are trying to determine if the data support this alternative hypothesis.
 
-Let's review an example outside of survey data. If we are flipping a coin, a null hypothesis would be that the coin is fair and that each side has an equal chance of being flipped.  In other words, the probability of the coin landing on each side is 1/2.  Whereas an alternative hypothesis could be that the coin is unfair and that one side has a higher probability of being flipped (e.g., a probability of 1/4 to get heads, but a probability of 3/4 to get tails.) We write this set of hypotheses as:
+Let's review an example outside of survey data. If we are flipping a coin, a null hypothesis would be that the coin is fair and that each side has an equal chance of being flipped.  In other words, the probability of the coin landing on each side is 1/2.  Whereas an alternative hypothesis could be that the coin is unfair and that one side has a higher probability of being flipped (e.g., a probability of 1/4 to get heads but a probability of 3/4 to get tails.) We write this set of hypotheses as:
 
 - $H_0: \rho_{heads} = \rho_{tails}$, where $\rho_{x}$ is the probability of flipping the coin and having it land on heads ($\rho_{heads}$) or tails ($\rho_{tails}$)
 - $H_A: \rho_{heads} \neq \rho_{tails}$
 
-When we conduct hypothesis testing, the statistical models calculate a p-value, which shows how likely we are to observe the data if the null hypothesis is true. If the p-value (a probability between 0 and 1) is small, we have strong evidence to reject the null hypothesis as it is unlikely to see the data we observe if the null hypothesis is true. However, if the p-value is large, we say we do not have evidence to reject the null hypothesis. The size of the p-value for this cut off is determined by type 1 error known as $\alpha$.  A common type 1 error value for statistical testing is to use $\alpha = 0.05$.^[For more information on statistical testing, we recommend reviewing introduction to statistics textbooks.] It is common for explanations of statistical testing to refer to confidence level.  The confidence level is the inverse of the type 1 error.  Thus, if $\alpha = 0.05$, the confidence level would be 95%.
+When we conduct hypothesis testing, the statistical models calculate a p-value, which shows how likely we are to observe the data if the null hypothesis is true. If the p-value (a probability between 0 and 1) is small, we have strong evidence to reject the null hypothesis as it is unlikely to see the data we observe if the null hypothesis is true. However, if the p-value is large, we say we do not have evidence to reject the null hypothesis. The size of the p-value for this cut-off is determined by Type 1 error known as $\alpha$.  A common Type 1 error value for statistical testing is to use $\alpha = 0.05$.^[For more information on statistical testing, we recommend reviewing introduction to statistics textbooks.] It is common for explanations of statistical testing to refer to confidence level.  The confidence level is the inverse of the Type 1 error.  Thus, if $\alpha = 0.05$, the confidence level would be 95%.
 
 The functions in the {survey} package allow for the correct estimation of the variances. This chapter covers the following statistical tests with survey data and the following functions from the {survey} package[@lumley2010complex]:
 
@@ -97,7 +97,7 @@ Functions that work with the magrittr pipe (`%>%`) have the dataset as the first
 3. `towny %>% filter(., csd_type == "city")`
 4. `towny %>% filter(.data = ., csd_type == "city")`
 
-Each of these lines of code produces the same output since the argument that takes the dataset is in the first spot in `filter()`. The first two are probably familiar to those who have worked with the tidyverse. The third option functions the same way as the second one but is explicit that `towny` goes into the first argument, and the fourth option indicates that `towny` is going into the named argument of `.data`. Here, we are telling R to take what's on the left side of the pipe (`towny`) and pipe it into the spot with the dot (`.`)---the first argument.
+Each of these lines of code produces the same output since the argument that takes the dataset is in the first spot in `filter()`. The first two are probably familiar to those who have worked with the tidyverse. The third option functions the same way as the second one but is explicit that `towny` goes into the first argument, and the fourth option indicates that `towny` is going into the named argument of `.data`. Here, we are telling R to take what is on the left side of the pipe (`towny`) and pipe it into the spot with the dot (`.`)---the first argument.
 
 In functions that are not part of the tidyverse, the data argument may not be in the first spot. For example, in `svyttest()`, the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example:
 
@@ -129,7 +129,7 @@ We use t-tests to compare two proportions or means. T-tests allow us to determin
   - $H_0: \mu = 0$ where $\mu$ is the mean outcome and $0$ is the value we are comparing it to
   - $H_A: \mu \neq 0$
 
-For comparing two estimates, this is called a *two-sample t-test* and we can set up the hypothesis test as follows:
+For comparing two estimates, this is called a *two-sample t-test*. We can set up the hypothesis test as follows:
 
   - $H_0: \mu_1 = \mu_2$ where $\mu_i$ is the mean outcome for group $i$
   - $H_A: \mu_1 \neq \mu_2$
@@ -171,7 +171,7 @@ The `formula` argument can take several different forms depending on what we are
     a. **Unpaired:**
         - **2 level grouping variable:** `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories. For example, we could test if the average age of the population who voted for president in 2020 differed from the age of people who did not vote. In this case, age would be used for `var`, and a binary variable indicating voting activity would be the `groupVar`.
         - **3+ level grouping variable:** `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms where `groupVar` would be the variable holding the values for classroom IDs and `level` is the classroom ID we want to compare to the others.
-    b. **Paired:** `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course so `var_1` would be the test score at the beginning of the course and `var_2` would be the score at the end of the course.
+    b. **Paired:** `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course, so `var_1` would be the test score at the beginning of the course, and `var_2` would be the score at the end of the course.
     
 The `na.rm` argument defaults to `FALSE`, which means if any data values are missing, the t-test does not compute. Throughout this chapter, we always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data.
 
@@ -219,7 +219,7 @@ recs_des %>%
 
 The result is the same in both methods, so we see that the average temperature U.S. households set their thermostat to in the summer at night is `r signif(ttest_ex1$estimate + 68,3)`$^\circ$F. Looking at the output from `svyttest()`, the t-statistic is `r signif(ttest_ex1$statistic, 3)`, and the p-value is $`r pretty_p_value(ttest_ex1[["p.value"]])`$, indicating that the average is statistically different from 68$^\circ$F at an $\alpha$ level of $0.05$.
 
-If we want an 80% confidence interval for the test statistic, we can use the function `confint()` to change the confidence level. Below, we print the default confidence interval (95%), the confidence interval explicitly specifying the level as 95%, and the 80% confidence interval. The default confidence level is 95% and when we specify this level, R returns a vector with both row and column names. However, when we specify any other confidence level, an unnamed vector is returned with the first element being the lower bound and the second element being the upper bound of the confidence interval.
+If we want an 80% confidence interval for the test statistic, we can use the function `confint()` to change the confidence level. Below, we print the default confidence interval (95%), the confidence interval explicitly specifying the level as 95%, and the 80% confidence interval. The default confidence level is 95%, and when we specify this level, R returns a vector with both row and column names. However, when we specify any other confidence level, an unnamed vector is returned, with the first element being the lower bound and the second element being the upper bound of the confidence interval.
 
 ```{r}
 #| label: stattest-ttest-ex1-ci80
@@ -233,7 +233,7 @@ In this case, neither confidence interval contains 0, and we draw the same concl
 
 #### Example 2: One-sample t-test for proportion {.unnumbered #stattest-ttest-ex2}
 
-RECS asked respondents if they use any air conditioning (A/C) in their home.^[Is any air conditioning equipment used in your home?] In our data, we call this variable `ACUsed`. Let's look at the proportion of U.S. households that use A/C in their homes using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis).
+RECS asked respondents if they use air conditioning (A/C) in their home.^[Is any air conditioning equipment used in your home?] In our data, we call this variable `ACUsed`. Let's look at the proportion of U.S. households that use A/C in their homes using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis).
 
 ```{r}
 #| label: stattest-ttest-acused
@@ -246,7 +246,7 @@ acprop
 
 Based on this, `r signif((acprop %>% filter(ACUsed==TRUE) %>% pull(p))*100,3)`% of U.S. households use A/C in their homes. If we wanted to know if this differs from 90%, we could set up our hypothesis as follows:
 
-- $H_0: p = 0.90$ where $p$ is the proportion of the U.S. households that use A/C in their homes
+- $H_0: p = 0.90$ where $p$ is the proportion of U.S. households that use A/C in their homes
 - $H_A: p \neq 0.90$
 
 To conduct this in R, we use the `svyttest()` function as follows:
@@ -270,7 +270,7 @@ The output from the `svyttest()` function can be a bit hard to read. Using the `
 tidy(ttest_ex2)
 ```
 
-The 'tidied' output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter \@ref(c08-communicating-results). The function `pretty_p_value()` comes from the {prettyunits} package and converts numeric p-values to characters and, by default prints four decimal places and displays any p-value less than 0.0001 as `"<0.0001"` though another minimum display p-value can be specified [@R-prettyunits].
+The 'tidied' output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter \@ref(c08-communicating-results). The function `pretty_p_value()` comes from the {prettyunits} package and converts numeric p-values to characters and, by default, prints four decimal places and displays any p-value less than 0.0001 as `"<0.0001"` though another minimum display p-value can be specified [@R-prettyunits].
 
 ```{r}
 #| label: stattest-ttest-ex2-gt
@@ -295,7 +295,7 @@ tidy(ttest_ex2) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-The estimate differs from Example 1 in that the estimate is not displaying \(p - 0.90\) but rather \(p\), or the difference between the U.S. households that use A/C and the proportion we are comparing to. We can see that there is a difference of `r signif(ttest_ex2$estimate*100,3)` percentage points. Additionally, the t-statistic value in the `statistic` column is `r signif(ttest_ex2$statistic,3)`, and the p-value is `r pretty_p_value(ttest_ex2$p.value)`. These results indicate that the fewer than 90% of U.S. households use A/C in their homes.
+The estimate differs from Example 1 in that the estimate does not display \(p - 0.90\) but rather \(p\), or the difference between the U.S. households that use A/C and the proportion we are comparing to. We can see that there is a difference of `r signif(ttest_ex2$estimate*100,3)` percentage points. Additionally, the t-statistic value in the `statistic` column is `r signif(ttest_ex2$statistic,3)`, and the p-value is `r pretty_p_value(ttest_ex2$p.value)`. These results indicate that fewer than 90% of U.S. households use A/C in their homes.
 
 #### Example 3: Unpaired two-sample t-test {.unnumbered #stattest-ttest-ex3}
 
@@ -346,11 +346,11 @@ tidy(ttest_ex3) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-The results indicate that the difference in electrical bills for those that used A/C and those that did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r signif(ttest_ex3$statistic, 3)` and the p-value is $`r pretty_p_value(ttest_ex3[["p.value"]])`$. Households that used A/C spent, on average, $`r round(ttest_ex3[["estimate"]], 2) %>% unname()` more in 2020 on electricity than households without A/C.
+The results indicate that the difference in electrical bills for those who used A/C and those who did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r signif(ttest_ex3$statistic, 3)` and the p-value is $`r pretty_p_value(ttest_ex3[["p.value"]])`$. Households that used A/C spent, on average, $`r round(ttest_ex3[["estimate"]], 2) %>% unname()` more in 2020 on electricity than households without A/C.
 
 #### Example 4: Paired two-sample t-test {.unnumbered #stattest-ttest-ex4}
 
-Let's say we want to test whether the temperature that U.S. households set their thermostat at night differs depending on the season (comparing summer^[During the summer, what is your home’s typical indoor temperature inside your home at night?] and winter^[During the winter, what is your home’s typical indoor temperature inside your home at night?] temperatures.) We could set up the hypothesis as follows:
+Let's say we want to test whether the temperature at which U.S. households set their thermostat at night differs depending on the season (comparing summer^[During the summer, what is your home’s typical indoor temperature inside your home at night?] and winter^[During the winter, what is your home’s typical indoor temperature inside your home at night?] temperatures.) We could set up the hypothesis as follows:
 
 - $H_0: \mu_{summer} = \mu_{winter}$ where $\mu_{summer}$ is the temperature that U.S. households set their thermostat to during summer nights, and $\mu_{winter}$ is the temperature that U.S. households set their thermostat to during winter nights
 - $H_A: \mu_{summer} \neq \mu_{winter}$
@@ -435,7 +435,7 @@ svygofchisq(formula,
 The arguments are:
 
 * `formula`: Formula specifying a single factor variable
-* `p`: Vector of probabilities for the categories of the factor in the correct order. If they probabilities do not sum to 1, they are rescaled to sum to 1.
+* `p`: Vector of probabilities for the categories of the factor in the correct order. If the probabilities do not sum to 1, they are rescaled to sum to 1.
 * `design`: Survey design object
 * ...: Other arguments to pass on, such as `na.rm`
 
@@ -476,7 +476,7 @@ Let's walk through a few examples using the ANES data.
 
 ANES asked respondents about their highest education level.^[What is the highest level of school you have completed or the highest degree you have received?] Based on the data from the 2020 American Community Survey (ACS) 5-year estimates^[Data was pulled from data.census.gov using the S1501 Education Attainment 2020: ACS 5-Year Estimates Subject Tables.], the education distribution of those aged 18+ in the United States (among the 50 states and District of Columbia) is as follows:
 
-  - 11% had less than High School degree
+  - 11% had less than a High School degree
   - 27% had a High School degree
   - 29% had some college or associate's degree
   - 33% had a bachelor's degree or higher
@@ -496,7 +496,7 @@ anes_des %>%
   summarize(p = survey_mean())
 ```
 
-Based on this output, we can see that we have different levels than the ACS data provide. Specifically, the education data from ANES include two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse [@R-forcats]. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we use the `svygofchisq()` function to compare the ANES data to the ACS data where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
+Based on this output, we can see that we have different levels from the ACS data. Specifically, the education data from ANES include two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse [@R-forcats]. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we use the `svygofchisq()` function to compare the ANES data to the ACS data, where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
 
 ```{r}
 #| label: stattest-chi-ex1
@@ -599,7 +599,7 @@ The output from `svychisq()` indicates that the distribution of people's trust i
 chi_ex2$observed
 ```
 
-However, we often want to know about the proportions and not just the respondent counts from the survey. There are a couple of different ways that we can do this. The first is using the counts from `chi_ex2$observed` to calculate the proportion. We can then pivot the table to create a cross-tabulation similar to the counts table above. Adding `group_by()` to the code means that we are obtaining the proportions within each level of that variable. In this case, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. The resulting table is shown in Table \@ref(tab:stattest-chi-ex2-prop1-tab).
+However, we often want to know about the proportions, not just the respondent counts from the survey. There are a couple of different ways that we can do this. The first is using the counts from `chi_ex2$observed` to calculate the proportion. We can then pivot the table to create a cross-tabulation similar to the counts table above. Adding `group_by()` to the code means that we obtain the proportions within each variable level. In this case, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. The resulting table is shown in Table \@ref(tab:stattest-chi-ex2-prop1-tab).
 
 ```{r}
 #| label: stattest-chi-ex2-prop1
@@ -636,9 +636,9 @@ chi_ex2_table %>%
     print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-In Table \@ref(tab:stattest-chi-ex2-prop1-tab), each column sums to 1. For example, we can say that it is estimated that of people who always trust in people, `r round(chi_ex2$observed[1,1]/sum(chi_ex2$observed[,1])*100, 1)`% also always trust in government based on the top-left cell but `r round(chi_ex2$observed[5,1]/sum(chi_ex2$observed[,1])*100, 1)`% never trust in government.
+In Table \@ref(tab:stattest-chi-ex2-prop1-tab), each column sums to 1. For example, we can say that it is estimated that of people who always trust in people, `r round(chi_ex2$observed[1,1]/sum(chi_ex2$observed[,1])*100, 1)`% also always trust in the government based on the top-left cell, but `r round(chi_ex2$observed[5,1]/sum(chi_ex2$observed[,1])*100, 1)`% never trust in the government.
 
-The second option is to use `group_by()` and `survey_mean()` functions to calculate the proportions from the ANES design object. A reminder that with more than one variable listed in the `group_by()` statement, the proportions are within the first variable listed. As mentioned above, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. 
+The second option is to use the `group_by()` and `survey_mean()` functions to calculate the proportions from the ANES design object. Remember that with more than one variable listed in the `group_by()` statement, the proportions are within the first variable listed. As mentioned above, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. 
 ```{r}
 #| label: stattest-chi-ex2-prop2
 chi_ex2_obs <- anes_des %>%
@@ -676,9 +676,9 @@ chi_ex2_obs_table %>%
     print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-Both methods produce the same output as the `svychisq()` function. However, calculating the proportions directly from the design object means we can also obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those who never trust people, `r round(chi_ex2$observed[5,5]/sum(chi_ex2$observed[,5])*100, 1)`% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people. 
+Both methods produce the same output as the `svychisq()` function. However, calculating the proportions directly from the design object allows us to obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those who never trust people, `r round(chi_ex2$observed[5,5]/sum(chi_ex2$observed[,5])*100, 1)`% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people. 
 
-We may find it easier to look at these proportions graphically. We can use `ggplot()` and facets to provide an overview as shown below to create Figure \@ref(fig:stattest-chi-ex2-graph):
+We may find it easier to look at these proportions graphically. We can use `ggplot()` and facets to provide an overview to create Figure \@ref(fig:stattest-chi-ex2-graph) below:
 
 ```{r}
 #| label: stattest-chi-ex2-graph
@@ -776,15 +776,15 @@ chi_ex3_obs_table %>%
     print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-We can see that the age group distribution that voted for Biden and other candidates was younger than those that voted for Trump. For example, of those who voted for Biden, 20.4% were in the 18-29 age group, compared to only 11.4% of those who voted for Trump were in that age group. On the other side, 23.4% of those who voted for Trump were in the 50-59 age group compared to only 15.4% of those who voted for Biden.
+We can see that the age group distribution that voted for Biden and other candidates was younger than those that voted for Trump. For example, of those who voted for Biden, 20.4% were in the 18-29 age group, compared to only 11.4% of those who voted for Trump were in that age group. Conversely, 23.4% of those who voted for Trump were in the 50-59 age group compared to only 15.4% of those who voted for Biden.
 
 ## Exercises {#stattest-exercises}
 
-The exercises use the design objects `anes_des` and `recs_des` as provided in the Prerequisites box in the [beginning of the chapter](#c06-statistical-testing). Here are some exercises for practicing conducting t-tests using `svyttest()`:
+The exercises use the design objects `anes_des` and `recs_des` as provided in the Prerequisites box at the [beginning of the chapter](#c06-statistical-testing). Here are some exercises for practicing conducting t-tests using `svyttest()`:
 
 1. Using the RECS data, do more than 50% of U.S. households use A/C (`ACUsed`)?
 
-2. Using the RECS data, does the average temperature that U.S. households set their thermostats to differ between the day and night in the winter (`WinterTempDay` and `WinterTempNight`)?
+2. Using the RECS data, does the average temperature at which U.S. households set their thermostats differ between the day and night in the winter (`WinterTempDay` and `WinterTempNight`)?
 
 3. Using the ANES data, does the average age (`Age`) of those who voted for Joseph Biden in 2020 (`VotedPres2020_selection`) differ from those who voted for another candidate?
 
