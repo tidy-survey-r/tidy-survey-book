@@ -85,6 +85,7 @@ The estimate of the standard error of the mean is:
 $$se(\bar{y})=\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}$$ where
 
 $$s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.$$
+
 \index{Finite population correction|(} \index{fpc|see {Finite population correction}}
 and $N$ is the population size. This standard error estimate might look very similar to equations in other statistical statistical applications except for the part on the right side of the equation: $1-\frac{n}{N}$. This is called the finite population correction (FPC) factor. If the size of the frame, $N$, is very large in comparison to the sample, the FPC is negligible, so it is often ignored. A common guideline is if the sample is less than 10% of the population, the FPC is negligible.
 
@@ -96,6 +97,7 @@ and the estimated standard error of the proportion is:
 $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} $$
 
 #### The syntax {-} 
+
 \index{Functions in srvyr!as\_survey\_design|(}
 If a sample was drawn through SRS and had no nonresponse or other weighting adjustments, in R, we we specify this design as:
 
@@ -169,6 +171,7 @@ In the printed design object, the design is described as an "Independent Samplin
 summary(apisrs_des)
 ```
 \index{Finite population correction|)}
+
 ### Simple random sample with replacement
 
 Similar to the SRS design, the simple random sample with replacement (SRSWR) design randomly selects the sample from the entire sampling frame.  However, while SRS removes sampled units before selecting again, the SRSWR instead replaces each sampled unit before drawing again, so units can be selected more than once.
@@ -303,6 +306,7 @@ The standard error of the proportion is:
 $$se(\hat{p}) = \frac{1}{N} \sqrt{ \sum_{h=1}^H N_h^2 \frac{\hat{p}_h(1-\hat{p}_h)}{n_h-1} \left(1-\frac{n_h}{N_h}\right)}$$
 
 #### The syntax {-} 
+
 \index{Finite population correction|(}
 In addition to the `fpc` and `weights` arguments discussed in the types above, stratified designs require the addition of the `strata` argument. For example, to specify a stratified SRS design in {srvyr} when using the FPC, that is, where the population sizes of the strata are not too large and are known, we specify the design as:
 
@@ -353,7 +357,7 @@ When printing the object, it is specified as an "Stratified Independent Sampling
 
 ### Clustered sampling {#samp-cluster}
 
-Clustered sampling occurs when a population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs.) A random selection of PSUs is sampled, and then another level of sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available, or data collection involves interviewers needing direct contact with respondents.
+Clustered sampling occurs when a population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs.) A random selection of PSUs is sampled, and then another level of sampling is done within these clusters. There can be multiple levels of this selection. Clustered sampling is often used when a list of the entire population is not available or data collection involves interviewers needing direct contact with respondents.
 
   - **Requirements**: There must be a way to divide the population into clusters. Clusters are commonly structural, such as institutions (e.g., schools, prisons) or geography (e.g., states, counties.) 
   - **Advantages**: 
@@ -400,6 +404,7 @@ where `PSU` and `SSU` are the variables indicating the PSU and SSU identifiers, 
 
 If clusters were sampled with replacement or from a very large population, the FPC is unnecessary. Additionally, only the first stage of selection is necessary regardless of whether the units were selected with replacement at any stage. The subsequent stages of selection are ignored in computation as their contribution to the variance is overpowered by the first stage (see @sarndal2003model or @wolter2007introduction for a more in-depth discussion.) Therefore, the two design objects specified below yield the same estimates in the end:
 \index{Finite population correction|)}
+
 ```r
 clus2ex1_des <- dat %>%
  as_survey_design(weights = wtvar, 
@@ -414,6 +419,7 @@ clus2ex2_des <- dat %>%
 Note that there is one additional argument that is sometimes necessary, which is `nest = TRUE`. This option relabels cluster IDs to enforce nesting within strata. Sometimes, as an example, there may be a cluster `1` within each stratum, but cluster `1` in stratum `1` is a different cluster than cluster `1` in stratum `2`. These are actually different clusters. This option indicates that repeated numbering does not mean it is the same cluster. If this option is not used and there are repeated cluster IDs across different strata, an error is generated.
 
 #### Example {-} 
+
 \index{Finite population correction|(}
 The `survey` package includes a two-stage cluster sample data, `apiclus2`, in which school districts were sampled, and then a random sample of five schools was selected within each district. For districts with fewer than five schools, all schools were sampled. School districts are identified by `dnum`, and schools are identified by `snum`. The variable `fpc1` indicates how many districts there are in California (the total number of PSUs or `A`), and `fpc2` indicates how many schools were in a given district with at least 100 students (the total number of SSUs or `B`.) The data include a row for each school. In the data printed below, there are 757 school districts, as indicated by `fpc1`, and there are nine schools in District 731, one school in District 742, two schools in District 768, and so on as indicated by `fpc2`. For illustration purposes, the object `apiclus2_slim` has been created from `apiclus2`, which subsets the data to only the necessary columns and sorts the data.
 
@@ -455,6 +461,7 @@ A common method of sampling is to stratify PSUs, select PSUs within the stratum 
 \index{Finite population correction|)} \index{Stratified sampling|)}
 
 ### Example {-}
+
 \index{Functions in srvyr!as\_survey\_design|(} \index{Finite population correction|)} \index{Stratified sampling|(}
 For example, the [2017-2019 National Survey of Family Growth](https://www.cdc.gov/nchs/data/nsfg/NSFG-2017-2019-Sample-Design-Documentation-508.pdf) had a stratified multi-stage area probability sample: 
 
@@ -511,9 +518,8 @@ $$se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\bar{\th
 The default option for `mse` is to use the global option of "survey.replicates.mse" which is set to `FALSE` initially unless a user changes it. To determine if `mse` should be set to `TRUE` or `FALSE`, read the survey documentation.  If there is no indication in the survey documentation for BRR, we recommend setting `mse` to `TRUE` as this is the default in other software (e.g., SAS, SUDAAN.)
 
 #### The syntax {-} 
-\index{Functions in srvyr!as\_survey\_rep|(}
-Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 for the person weights in the American Community Survey (ACS) [@acs-pums-2021] or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS) [@recs-2015-micro]. This makes it easy to use some of the [tidy selection](https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html) functions in R. 
 
+\index{Functions in srvyr!as\_survey\_rep|(}
 Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 for the person weights in the American Community Survey (ACS) [@acs-pums-2021] or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS) [@recs-2015-micro]. This makes it easy to use some of the [tidy selection](https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html) functions in R. 
 
 To specify a BRR design, we need to specify the weight variable (`weights`), the replicate weight variables (`repweights`), the type of replicate weights as BRR (`type = BRR`), and whether the mean squared error should be used (`mse = TRUE`) or not (`mse = FALSE`.)  For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, we can use the following syntax (both are equivalent):
@@ -758,6 +764,7 @@ bs_des <- dat %>%
 
 ```
 \index{Functions in srvyr!as\_survey\_rep|)}
+
 #### Example {-}
 
 Returning to the api example, we are going to create a dataset with bootstrap weights to use as an example. In this example, we construct a one-cluster design with fifty replicate weights.^[We provide the code here to replicate this example, but are not focusing on the creation of the weights as that is outside the scope of this book.  We recommend referencing @wolter2007introduction for more information on creating bootstrap weights.]
