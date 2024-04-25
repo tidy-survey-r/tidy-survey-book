@@ -150,7 +150,7 @@ ambarom %>%
 
 ## Survey design objects
 
-The technical report is the best reference for understanding how to specify the sampling design in R [@lapop-tech]. The data include two weights: `wt` and `weight1500`. The first weight variable is specific to each country and sums to the sample size, but it is calibrated to reflect each country's demographics. The second weight variable sums to 1500 for each country and is recommended for multi-country analyses. \index{Functions in srvyr!as\_survey\_design|(} Although not explicitly stated in the documentation, the Stata syntax example (`svyset upm [pw=weight1500], strata(strata)`) indicates the variable `upm` is a clustering variable and `strata` is the strata variable. Therefore, the design object for multi-country analysis is created in R as follows: 
+The technical report is the best reference for understanding how to specify the sampling design in R [@lapop-tech]. The data include two weights: `wt` and `weight1500`. The first weight variable is specific to each country and sums to the sample size, but it is calibrated to reflect each country's demographics. The second weight variable sums to 1500 for each country and is recommended for multi-country analyses. \index{Functions in srvyr!as\_survey\_design|(} Although not explicitly stated in the documentation, the Stata syntax example (`svyset upm [pw=weight1500], strata(strata)`) indicates the variable `upm` is a clustering variable, and `strata` is the strata variable. Therefore, the design object for multi-country analysis is created in R as follows: 
 
 ```{r}
 #| label: ambarom-design
@@ -161,7 +161,7 @@ ambarom_des <- ambarom %>%
 ```
 \index{Functions in srvyr!as\_survey\_design|)}
 
-One interesting thing to note is that these weight variables can provide estimates for comparing countries but not for multi-country estimates. The reason is that the weights do not account for the different sizes of countries. For example, Canada has about 10% of the population of the United States, but an estimate that uses records from both countries would weigh them equally.
+One interesting thing to note is that these weight variables can provide estimates for comparing countries rather than for multi-country estimates. The reason is that the weights do not account for the different sizes of countries. For example, Canada has about 10% of the population of the United States, but an estimate that uses records from both countries would weigh them equally.
 
 ## Calculating estimates {#ambarom-estimates}
 
@@ -362,11 +362,12 @@ In the countries that were asked this question, many households experienced a ch
 
 ## Mapping survey data {#ambarom-maps}
 
-While the table effectively presents the data, a map could also be insightful. To generate maps of the countries, we can use the package {rnaturalearth} and subset North and South America with the `ne_countries()` function [@R-rnaturalearth]. The function returns an sf (simple features) object with many columns [@sf2023], but most importantly, `soverignt` (sovereignty), `geounit` (country or territory), and `geometry` (the shape.) For an example of the difference between sovereignty and country/territory, the United States, Puerto Rico, and the US Virgin Islands are all separate units with the same sovereignty. A map without data is plotted in Figure \@ref(fig:ambarom-americas-map) using `geom_sf()` from the {ggplot2} package which plots sf objects [@ggplot2wickham].
+While the table effectively presents the data, a map could also be insightful. To generate maps of the countries, we can use the package {rnaturalearth} and subset North and South America with the `ne_countries()` function [@R-rnaturalearth]. The function returns an sf (simple features) object with many columns [@sf2023], but most importantly, `soverignt` (sovereignty), `geounit` (country or territory), and `geometry` (the shape.) For an example of the difference between sovereignty and country/territory, the United States, Puerto Rico, and the U.S. Virgin Islands are all separate units with the same sovereignty. A map without data is plotted in Figure \@ref(fig:ambarom-americas-map) using `geom_sf()` from the {ggplot2} package, which plots sf objects [@ggplot2wickham].
 
 ```{r}
 #| label: ambarom-americas-map
 #| fig.cap: "Map of North and South America"
+#| fig.alt: "A blank map of the world, showing only the outlines of the countries in Western Hemisphere."
 
 country_shape <-
   ne_countries(
@@ -392,7 +393,7 @@ country_shape_crop <- country_shape %>%
             ymax = 90)) 
 ```
 
-Now that we have the necessary shape files, our next step is to match our survey data to the map. Countries can be named differently (e.g., "U.S", "U.S.A", "United States".) To make sure we can visualize our survey data on the map, we need to match the country names in both the survey data and the map data. To do this, we can use the `anti_join()` function to identify the countries in the survey data that aren't in the map data. For example, as shown below, the United States is referred to as "United States" in the survey data but "United States of America" in the map data. Table \@ref(tab:ambarom-map-merge-check-1-tab) shows the countries in the survey data but not the map data and Table \@ref(tab:ambarom-map-merge-check-2-tab) shows the countries in the map data but not the survey data.
+Now that we have the necessary shape files, our next step is to match our survey data to the map. Countries can be named differently (e.g., "U.S", "U.S.A", "United States".) To make sure we can visualize our survey data on the map, we need to match the country names in both the survey data and the map data. To do this, we can use the `anti_join()` function to identify the countries in the survey data that aren't in the map data. For example, as shown below, the United States is referred to as "United States" in the survey data but "United States of America" in the map data. Table \@ref(tab:ambarom-map-merge-check-1-tab) shows the countries in the survey data but not the map data, and Table \@ref(tab:ambarom-map-merge-check-2-tab) shows the countries in the map data but not the survey data.
 
 ```{r}
 #| label: ambarom-map-merge-check-1-gt
@@ -471,6 +472,7 @@ After the merge, we create two figures that display the population estimates for
 ```{r}
 #| label: ambarom-make-maps-covid
 #| fig.cap: "Percent of households worried someone in their household will get COVID-19 in the next 3 months by country"
+#| fig.alt: "A choropleth map of the Western Hemisphere where the color scale filling in each country corresponds to the percent of households worried someone in their household will get COVID-19 in the next 3 months. The bottom of the range is 30% and the top of the range is 80%. Brazil and Chile look like the countries with the highest percentage of worry, with North America showing a lower percentage of worry. Countries without data, such as Venezuela, are displayed with a hash pattern."
 
 
 ggplot() +
@@ -498,6 +500,7 @@ ggplot() +
 ```{r}
 #| label: ambarom-make-maps-covid-ed
 #| fig.cap: "Percent of households who had at least one child participate in virtual or hybrid learning"
+#| fig.alt: "A choropleth map of the Western Hemisphere where the color scale filling in each country corresponds to the percent of households who had at least one child participate in virtual or hybrid learning. The bottom of the range is 20% and the top of the range is 100%. Most of North America is missing data and are filled in with a hash pattern. The countries with data show a high percentage of households who had at least one child participate in virtual or hybrid learning."
 
 ggplot() +
   geom_sf(
@@ -528,6 +531,7 @@ In Figure \@ref(fig:ambarom-make-maps-covid-ed), we observe missing data (repres
 ```{r}
 #| label: ambarom-make-maps-covid-ed-c-s
 #| fig.cap: "Percent of  households who had at least one child participate in virtual or hybrid learning, Central and South America"
+#| fig.alt: "A choropleth map of Central and South America where the color scale filling in each country corresponds to the percent of households who had at least one child participate in virtual or hybrid learning. The bottom of the range is 20% and the top of the range is 100%. Most of North America is missing data and are filled in with a hash pattern. The countries with data show a high percentage of households who had at least one child participate in virtual or hybrid learning."
 
 
 covid_c_s <- covid_sf %>%
