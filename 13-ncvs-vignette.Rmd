@@ -93,7 +93,7 @@ For victimization rates, we need to know the victimization status for both victi
 
 ### Preparing files for estimation of victimization rates
 
-Each record on the incident file represents one victimization, which is not the same as one incident. Some victimizations have several instances that make it difficult for the victim to differentiate the details of these incidents, labeled as "series crimes". Appendix A of the User's Guide indicates how to calculate the series weight in other statistical languages.
+Each record on the incident file represents one victimization, which is not the same as one incident. Some victimizations have several instances that make it difficult for the victim to differentiate the details of these incidents, labeled as "series crimes." Appendix A of the User's Guide indicates how to calculate the series weight in other statistical languages.
 
 Here, we adapt that code for R. Essentially, if a victimization is a series crime, its series weight is top-coded at 10 based on the number of actual victimizations, that is, even if the crime occurred more than 10 times, it is counted as 10 times to reduce the influence of extreme outliers. If an incident is a series crime, but the number of occurrences is unknown, the series weight is set to 6. A description of the variables used to create indicators of series and the associated weights is included in Table \@ref(tab:cb-incident).
 
@@ -137,7 +137,7 @@ inc_series <- ncvs_2021_incident %>%
   )
 ```
 
-The next step in preparing the files for estimation is to create indicators on the victimization file for characteristics of interest. Almost all BJS publications limit the analysis to records where the victimization occurred in the United States (where `V4022` is not equal to 1). We do this for all estimates as well.  A brief codebook of variables for this task is located in Table \@ref(tab:cb-crimetype)
+The next step in preparing the files for estimation is to create indicators on the victimization file for characteristics of interest. Almost all BJS publications limit the analysis to records where the victimization occurred in the United States (where `V4022` is not equal to 1). We do this for all estimates as well.  A brief codebook of variables for this task is located in Table \@ref(tab:cb-crimetype).
 
 Table: (\#tab:cb-crimetype) Codebook for incident variables - crime type indicators and characteristics
 
@@ -517,7 +517,7 @@ pers_vsum_der %>% group_by(AgeGroup) %>%
 pers_vsum_der %>% count(MaritalStatus, V3015)
 ```
 
-We then create tibbles that contain only the variables we need, which makes it easier for analyses.
+We then create tibbles that contain only the variables we need, which makes it easier to use them for analyses.
 
 ```{r}
 #| label: ncvs-vign-hh-pers-slim
@@ -562,7 +562,7 @@ The tibbles `hh_vsum_slim`, `pers_vsum_slim`, and `inc_analysis` can now be used
 
 ## Survey design objects
 
-All the data prep above is necessary to prepare the data for survey analysis. At this point, we can create the design objects and finally begin analysis. We create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person-level data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster/PSU variable for analysis. All this information can be found in the User's Guide [@ncvs_user_guide].
+All the data preparation above is necessary to create the design objects and finally begin analysis. We create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person-level data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster/PSU variable for analysis. This information can be found in the User's Guide [@ncvs_user_guide].
 
 ```{r}
 #| label: ncvs-vign-desobj
@@ -752,7 +752,7 @@ In 2021, we estimate that `r formatC(prop1$Pct, digits=1, format="f")`% of prope
 
 ### Estimation 3: Victimization rates {#vic-rate}
 
-Victimization rates measure the number of victimizations per population. They are not an estimate of the proportion of households or persons who are victimized, which is a prevalence rate described in Section \@ref(prev-rate). Victimization rates are estimated using the household (`hh_des`) or person (`pers_des`) design objects depending on the type of crime, and the adjustment factor (`ADJINC_WT`) must be incorporated. We return to the example of property and violent victimizations used in the example for victimization totals (Section \@ref(vic-tot).) In the following example, the property victimization totals are calculated as above, as well as the property victimization rate (using `survey_mean()`) and the population size using `survey_total()`. 
+Victimization rates measure the number of victimizations per population. They are not an estimate of the proportion of households or persons who are victimized, which is the prevalence rate described in Section \@ref(prev-rate). Victimization rates are estimated using the household (`hh_des`) or person (`pers_des`) design objects depending on the type of crime, and the adjustment factor (`ADJINC_WT`) must be incorporated. We return to the example of property and violent victimizations used in the example for victimization totals (Section \@ref(vic-tot).) In the following example, the property victimization totals are calculated as above, as well as the property victimization rate (using `survey_mean()`) and the population size using `survey_total()`. 
 
 Victimization rates use the incident weight in the numerator and the person or household weight in the denominator. This is accomplished by calculating the rates with the weight adjustment (`ADJINC_WT`) multiplied by the estimate of interest. Let's look at an example of property victimization.
 
@@ -791,7 +791,7 @@ pers_des %>%
   ))
 ```
 
-A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate the violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by()` statement for each categorization separately. Thus, we make a function to do this and then use `map_df()` from the {purrr} package (part of the tidyverse) to loop through the variables [@R-purrr]. This function takes a demographic variable as its input (`byarvar`) and calculates the violent and aggravated assault victimization rate for each level. It then creates some columns with the variable, the level of each variable, and a numeric version of the variable (`LevelNum`) for sorting later. The function is run across multiple variables using `map()` and then stacks the results into a single output using `bind_rows()`.
+A common desire is to calculate victimization rates by several characteristics. For example, we may want to calculate the violent victimization rate and aggravated assault rate by sex, race/Hispanic origin, age group, marital status, and household income. This requires a `group_by()` statement for each categorization separately. Thus, we make a function to do this and then use the `map_df()` function from the {purrr} package to loop through the variables [@R-purrr]. This function takes a demographic variable as its input (`byarvar`) and calculates the violent and aggravated assault victimization rate for each level. It then creates some columns with the variable, the level of each variable, and a numeric version of the variable (`LevelNum`) for sorting later. The function is run across multiple variables using `map()` and then stacks the results into a single output using `bind_rows()`.
 
 ```{r}
 #| label: ncvs-vign-rates-demo
