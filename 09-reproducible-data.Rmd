@@ -26,6 +26,7 @@ This chapter covers some of our suggestions for tools and techniques we can use 
 
 ## Project-based workflows
 
+\index{R projects|(}
 We recommend a project-based workflow for analysis projects as described by @wickham2023r4ds. A project-based workflow maintains a "source of truth" for our analyses. It helps with file system discipline by putting everything related to a project in a designated folder. Since all associated files are in a single location, they are easy to find and organize. When we reopen the project, we can recreate the environment in which we originally ran the code to reproduce our results.
 
 The RStudio IDE has built-in support for projects. When we create a project in RStudio, it creates an `.Rproj` file that stores settings specific to that project. Once we have created a project, we can create folders that help us organize our workflow. For example, a project directory could look like this:
@@ -51,6 +52,7 @@ The RStudio IDE has built-in support for projects. When we create a project in R
     | anes_report.pdf
 ```
 
+\index{here package|(}
 In a project-based workflow, all paths are relative and, by default, relative to the folder the `.Rproj` file is located in. By using relative paths, others can open and run our files even if their directory configuration differs from ours (e.g., Mac and Windows users have different directory path structures.) The {here} package enables easy file referencing, and we can start by using the `here::here()` function to build the path for loading or saving data [@R-here]. Below, we ask R to read the CSV file `anes_2020.csv` in the project directory's `data` folder: 
 
 ```{r}
@@ -61,6 +63,7 @@ anes <-
 ```
 
 The combination of projects and the {here} package keep all associated files in an organized manner. This workflow makes it more likely that our analyses can be reproduced by us or our colleagues.
+\index{here package|)} \index{R projects|)}
 
 ## Functions and packages
 
@@ -70,6 +73,7 @@ A package is made up of a collection of functions. If we find ourselves sharing 
 
 ## Version control with Git
 
+\index{Version control|(} \index{git| see {Version control}}
 Often, a survey analysis project produces a lot of code. Keeping track of the latest version can become challenging as files evolve throughout a project. If a team of analysts is working on the same script, someone may use an outdated version, resulting in incorrect results or redundant work.
 
 Version control systems like Git can help alleviate these pains. Git is a system that tracks changes in files. We can use Git to follow code evaluation and manage asynchronous work. With Git, it is easy to see any changes made in a script, revert changes, and resolve differences between code versions (called conflicts.)
@@ -80,15 +84,22 @@ In addition to code scripts, platforms like GitHub can store data and documentat
 
 Using version control in analysis projects makes collaboration and maintenance more manageable. To connect Git with R, we recommend referencing the book [Happy Git and GitHub for the useR](https://happygitwithr.com/) [@git-w-R].
 
+\index{Version control|)}
+
 ## Package management with {renv}
 
+\index{renv package|(} \index{Package management|see {renv package}} 
 Ensuring reproducibility involves not only using version control of code but also managing the versions of packages. If two people run the same code but use different package versions, the results might differ because of changes to those packages. For example, this book currently uses a version of the {srvyr} package from GitHub and not from CRAN. This is because the version of {srvyr} on CRAN has some bugs (errors) that result in incorrect calculations. The version on GitHub has corrected these errors, so we have asked readers to install the GitHub version to obtain the same results.
 
 One way to handle different package versions is with the {renv} package. This package allows researchers to set the versions for each package used and manage package dependencies. Specifically, {renv} creates isolated, project-specific environments that record the packages and their versions used in the code. When initiated by a new user, {renv} checks whether the installed packages are consistent with the recorded version for the project. If not, it installs the appropriate versions so that others can replicate the project's environment to rerun the code and obtain consistent results [@R-renv].
 
+\index{renv package|)}
+
 ## R environments with Docker
 
+\index{Environment management|(} \index{Docker|see {Environment management}}
 Just as different versions of packages can introduce discrepancies or compatibility issues, the version of R can also prevent reproducibility. Tools such as Docker can help with this potential issue by creating isolated environments that define the version of R being used, along with other dependencies and configurations. The entire environment is bundled in a container. The container, defined by a Dockerfile, can be shared so anybody, regardless of their local setup, can run the R code in the same environment.
+\index{Environment management|)}
 
 ## Workflow management with {targets}
 
@@ -98,6 +109,7 @@ The {targets} package is growing as a popular workflow manager that documents, a
 
 ## Documentation with Quarto and R Markdown
 
+\index{R Markdown|(} \index{Quarto|(}
 Tools like Quarto and R Markdown aid in reproducibility by creating documents that weave together code, text, and results. We can present analysis results alongside the report's narrative, so there's no need to copy and paste code output into the final documentation. By eliminating manual steps, we can reduce the chances of errors in the final output.
 
 Quarto and R Markdown documents also allow users to re-execute the underlying code when needed. Another analyst can see the steps we took, follow the scripts, and recreate the report. We can include details about our work in one place thanks to the combination of text and code, making our work transparent and easier to verify [@R-quarto; @rmarkdown2020].
@@ -107,6 +119,8 @@ Quarto and R Markdown documents also allow users to re-execute the underlying co
 Another useful feature of Quarto and R Markdown is the ability to reduce repetitive code by parameterizing the files. Parameters can control various aspects of the analysis, such as dates, geography, or other analysis variables. We can define and modify these parameters to explore different scenarios or inputs. For example, suppose we start by creating a document that provides survey analysis results for North Carolina but then later decide we want to look at another state. In that case, we can define a `state` parameter and rerun the same analysis for a state like Washington without having to edit the code throughout the document.
 
 Parameters can be defined in the header or code chunks of our Quarto or R Markdown documents and easily modified and documented. By manually editing code throughout the script, we reduce errors that may occur and offer a flexible way for others to replicate the analysis and explore variations.
+
+\index{R Markdown|)} \index{Quarto|)}
 
 ## Other tips for reproducibility
 
@@ -135,7 +149,8 @@ The choice of the seed number is up to the analyst. For example, this could be t
 
 ### Descriptive names and labels
 
-Using descriptive variable names or labeling data can also assist with reproducible research. For example, in the ANES data, the variable names in the raw data all start with `V20` and are a string of numbers. To make things easier to reproduce in this book, we opted to change the variable names to be more descriptive of what they contained (e.g., `Age`.) This can also be done with the data values themselves. One way to accomplish this is by creating factors for categorical data, which can ensure that we know that a value of `1` really means `Female`, for example. There are other ways of handling this, such as attaching labels to the data instead of recoding variables to be descriptive (see Chapter \@ref(c11-missing-data).) As with random number seeds, the exact method is up to the analyst, but providing this information can help ensure our research is reproducible.
+\index{American National Election Studies (ANES)|(}
+Using descriptive variable names or labeling data can also assist with reproducible research. For example, in the ANES data, the variable names in the raw data all start with `V20` and are a string of numbers. To make things easier to reproduce in this book, we opted to change the variable names to be more descriptive of what they contained (e.g., `Age`.)\index{American National Election Studies (ANES)|)} This can also be done with the data values themselves. \index{Categorical data|(}\index{Factor|(}One way to accomplish this is by creating factors for categorical data, which can ensure that we know that a value of `1` really means `Female`, for example.\index{Factor|)} There are other ways of handling this, such as attaching labels to the data instead of recoding variables to be descriptive (see Chapter \@ref(c11-missing-data).) \index{Categorical data|)} As with random number seeds, the exact method is up to the analyst, but providing this information can help ensure our research is reproducible.
 
 ## Additional resources
 

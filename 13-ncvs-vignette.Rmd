@@ -1,6 +1,7 @@
 # (PART) Vignettes {-}
 
 # National Crime Victimization Survey Vignette {#c13-ncvs-vignette}
+\index{National Crime Victimization Survey (NCVS)|(}
 
 ```{r}
 #| label: ncvs-styler
@@ -87,7 +88,9 @@ where $I_{ij}$ is an indicator that a person or household in domain $D$ was a vi
 
 ## Data file preparation
 
+\index{Strata|(} \index{Primary sampling unit|(}
 Some work is necessary to prepare the files before analysis. The design variables indicating pseudostratum (`V2117`) and half-sample code (`V2118`) are only included on the household file, so they must be added to the person and incident files for any analysis.
+\index{Strata|)} \index{Primary sampling unit|)}
 
 For victimization rates, we need to know the victimization status for both victims and non-victims. Therefore, the incident file must be summarized and merged onto the household or person files for household-level and person-level crimes, respectively. We begin this vignette by discussing how to create these incident summary files. This is following Section 2.2 of the NCVS User's Guide [@ncvs_user_guide].
 
@@ -562,6 +565,7 @@ The tibbles `hh_vsum_slim`, `pers_vsum_slim`, and `inc_analysis` can now be used
 
 ## Survey design objects
 
+\index{Clustered sampling|(} \index{Stratified sampling|(} \index{Strata|(} \index{Primary sampling unit|(}
 All the data prep above is necessary to prepare the data for survey analysis. At this point, \index{Functions in srvyr!as\_survey\_design|(}we can create the design objects and finally begin analysis. We create three design objects for different types of analysis as they depend on which type of estimate we are creating. For the incident data, the weight of analysis is `NEWWGT`, which we constructed previously. The household and person-level data use `WGTHHCY` and `WGTPERCY`, respectively. For all analyses, `V2117` is the strata variable, and `V2118` is the cluster/PSU variable for analysis. All this information can be found in the User's Guide [@ncvs_user_guide].
 
 ```{r}
@@ -591,7 +595,7 @@ pers_des <- pers_vsum_slim %>%
     nest = TRUE
   )
 ```
-\index{Functions in srvyr!as\_survey\_design|)}
+\index{Functions in srvyr!as\_survey\_design|)} \index{Clustered sampling|)} \index{Stratified sampling|)} \index{Strata|)} \index{Primary sampling unit|)}
 
 ## Calculating estimates
 
@@ -824,6 +828,7 @@ pers_est_df <-
 ```
 \index{Functions in srvyr!filter|)} \index{Functions in srvyr!survey\_mean|)}
 
+\index{gt package|(} 
 The output from all the estimates is cleaned to create better labels, such as going from "RaceHispOrigin" to "Race/Hispanic Origin". Finally, the {gt} package is used to make a publishable table (Table \@ref(tab:ncvs-vign-rates-demo-tab).) Using the functions from the {gt} package, we add column labels and footnotes and present estimates rounded to the first decimal place [@R-gt].
 
 ```{r}
@@ -906,6 +911,8 @@ vr_gt %>%
     print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
+\index{gt package|)} 
+
 ### Estimation 4: Prevalence rates {#prev-rate}
 
 Prevalence rates differ from victimization rates as the numerator is the number of people or households victimized rather than the number of victimizations. To calculate the prevalence rates, we must run another summary of the data by calculating an indicator for whether a person or household is a victim of a particular crime at any point in the year. Below is an example of calculating the indicator and then the prevalence rate of violent crime and aggravated assault. \index{Functions in srvyr!survey\_mean|(} 
@@ -938,6 +945,7 @@ In the example above, the indicator is multiplied by 100 to return a percentage 
 
 ## Statistical testing
 
+\index{Statistical testing|(} \index{t-test|(}
 For any of the types of estimates discussed, we can also perform statistical testing. For example, we could test whether property victimization rates are different between properties that are owned versus rented. First, we calculate the point estimates. \index{Functions in srvyr!survey\_mean|(} 
 
 ```{r}
@@ -951,7 +959,7 @@ prop_tenure <- hh_des %>%
 
 prop_tenure  
 ```
-\index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)} 
+\index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)} \index{t-test!two-sample t-test|(} \index{t-test!unpaired two-sample t-test|(}
 
 The property victimization rate for rented households is `r prop_tenure %>% filter(Tenure=="Rented") %>% pull(Property_Rate) %>% round(1)` per 1,000 households, while the property victimization rate for owned households is `r prop_tenure %>% filter(Tenure=="Owned") %>% pull(Property_Rate) %>% round(1)`, which seem very different, especially given the non-overlapping confidence intervals. However, survey data are inherently non-independent, so statistical testing cannot be done by comparing confidence intervals. \index{Functions in survey!svyttest|(}To conduct the statistical test, we first need to create a variable that incorporates the adjusted incident weight (`ADJINC_WT`), and then the test can be conducted on this adjusted variable as discussed in Chapter \@ref(c06-statistical-testing). 
 
@@ -992,7 +1000,8 @@ prop_tenure_test %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-The output of the statistical test shown in Table \@ref(tab:ncvs-vign-prop-stat-test-gt-tab) indicates a difference of `r prop_tenure_test$estimate %>% round(1)` between the property victimization rates of renters and owners, and the test is highly significant with the p-value of `r prettyunits::pretty_p_value(prop_tenure_test$p.value)`. \index{Functions in survey!svyttest|)}
+\index{p-value|(} 
+The output of the statistical test shown in Table \@ref(tab:ncvs-vign-prop-stat-test-gt-tab) indicates a difference of `r prop_tenure_test$estimate %>% round(1)` between the property victimization rates of renters and owners, and the test is highly significant with the p-value of `r prettyunits::pretty_p_value(prop_tenure_test$p.value)`. \index{Functions in survey!svyttest|)} \index{Statistical testing|)} \index{p-value|)} \index{t-test|)} \index{t-test!two-sample t-test|)} \index{t-test!unpaired two-sample t-test|)}
 
 ## Exercises
 
@@ -1003,3 +1012,5 @@ The output of the statistical test shown in Table \@ref(tab:ncvs-vign-prop-stat-
 3. What is the property victimization rate among each income level?
 
 4. What is the difference between the violent victimization rate between males and females? Is it statistically different?
+
+\index{National Crime Victimization Survey (NCVS)|)}

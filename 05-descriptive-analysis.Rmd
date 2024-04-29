@@ -67,38 +67,58 @@ Descriptive analyses, such as basic counts, cross-tabulations, or means, are amo
 
 We discuss many different types of descriptive analyses in this chapter. However, it is important to know what type of data we are working with and which statistics are appropriate. In survey data, we typically consider data as one of four main types:
 
-  * Categorical/nominal data: variables with levels or descriptions that cannot be ordered, such as the region of the country (North, South, East, and West)
-  * Ordinal data: variables that can be ordered, such as those from a Likert scale (strongly disagree, disagree, agree, and strongly agree)
-  * Discrete data: variables that are counted or measured, such as number of children
-  * Continuous data, variables that are measured and whose values can lie anywhere on an interval, such as income
+  * \index{Categorical data|(}\index{Nominal data|see {Categorical data}}Categorical/nominal data: variables with levels or descriptions that cannot be ordered, such as the region of the country (North, South, East, and West)\index{Categorical data|)}
+  * \index{Oridnal data|(}Ordinal data: variables that can be ordered, such as those from a Likert scale (strongly disagree, disagree, agree, and strongly agree)\index{Oridnal data|(}
+  * \index{Discrete data|(}Discrete data: variables that are counted or measured, such as number of children\index{Discrete data|)}
+  * \index{Continuous data|(}Continuous data, variables that are measured and whose values can lie anywhere on an interval, such as income\index{Continuous data|)}
 
 This chapter discusses how to analyze *measures of distribution* (e.g., cross-tabulations), *central tendency* (e.g., means), *relationship* (e.g., ratios), and *dispersion* (e.g., standard deviation) using functions from the {srvyr} package [@R-srvyr].
+
+\index{Measures of distribution|(}
 
 **Measures of distribution** describe how often an event or response occurs. These measures include counts and totals. We cover the following functions:
 
   * Count of observations (`survey_count()` and `survey_tally()`)
   * Summation of variables (`survey_total()`)
 
+\index{Measures of distribution|)}
+
+\index{Central tendency|(}
+
 **Measures of central tendency** find the central (or average) responses. These measures include means and medians. We cover the following functions:
 
   * Means and proportions (`survey_mean()` and `survey_prop()`) 
   * Quantiles and medians (`survey_quantile()` and `survey_median()`)
-  
+
+\index{Central tendency|)}
+
+\index{Relationship|(}
+
 **Measures of relationship** describe how variables relate to each other. These measures include correlations and ratios. We cover the following functions:
 
   * Correlations (`survey_corr()`)
   * Ratios (`survey_ratio()`)
-  
+
+\index{Relationship|)}
+
+\index{Measures of dispersion|(}
+
 **Measures of dispersion** describe how data spread around the central tendency for continuous variables. These measures include standard deviations and variances. We cover the following functions:
 
   * Variances and standard deviations (`survey_var()` and `survey_sd()`)
 
+\index{Measures of dispersion|(}
+
 To incorporate each of these survey functions, recall the general process for survey estimation from Chapter \@ref(c04-getting-started):  
+
+\index{Survey analysis process|(}
 
 1. Create a `tbl_svy` object using `srvyr::as_survey_design()` or `srvyr::as_survey_rep()`.
 2. Subset the data for subpopulations using `srvyr::filter()`, if needed.
 3. Specify domains of analysis using `srvyr::group_by()`, if needed.
 4. Analyze the data with survey-specific functions.
+
+\index{Survey analysis process|)}
 
 This chapter walks through how to apply the survey functions in Step 4. Note that unless otherwise specified, our estimates are weighted as a result of setting up the survey design object. 
 
@@ -108,8 +128,9 @@ For the sake of simplicity, we've removed cases with missing values in the examp
 
 ## Counts and cross-tabulations
 
-\index{Functions in srvyr!survey\_tally|(} \index{Functions in srvyr!survey\_count}|(} \index{survey\_tally|see {Functions in srvyr}}
-Using `survey_count()` and `survey_tally()`, we can calculate the estimated population counts for a given variable or combination of variables. These summaries, often referred to as cross-tabulations or cross--tabs, are applied to categorical data. They help in estimating counts of the population size for different groups based on the survey data.  
+\index{Functions in srvyr!survey\_tally|(} \index{Functions in srvyr!survey\_count}|(} \index{survey\_tally|see {Functions in srvyr}} \index{Categorical data|(} \index{Cross-tabulation|(} \index{Measures of distribution|(}
+Using `survey_count()` and `survey_tally()`, we can calculate the estimated population counts for a given variable or combination of variables. These summaries, often referred to as cross-tabulations or cross--tabs, are applied to categorical data. They help in estimating counts of the population size for different groups based on the survey data. 
+\index{Categorical data|)}
 
 ### Syntax {#desc-count-syntax} 
 
@@ -170,14 +191,14 @@ The confidence intervals are always calculated using a symmetric t-distribution 
 
 $$ \text{estimate} \pm t^*_{df}\times SE$$
 
-\index{Degrees of freedom|(}
-where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of \index{Replicate weights}replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of primary sampling units (PSUs or clusters) minus the number of strata (see Chapter \@ref(c10-sample-designs-replicate-weights) for more information on PSUs, strata, and sample designs.) For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we provide examples using different variability types throughout this chapter. \index{Degrees of freedom|)}
+\index{Degrees of freedom|(} \index{Primary sampling unit|(} \index{Strata|(}
+where $t^*_{df}$ is the critical value from a t-distribution based on the confidence level and the degrees of freedom. By default, the degrees of freedom are based on the design or number of \index{Replicate weights}replicates, but they can be specified using the `df` argument. For survey design objects, the degrees of freedom are calculated as the number of primary sampling units (PSUs or clusters) minus the number of strata (see Chapter \@ref(c10-sample-designs-replicate-weights) for more information on PSUs, strata, and sample designs.) For replicate-based objects, the degrees of freedom are calculated as one less than the rank of the matrix of replicate weight, where the number of replicates is typically the rank. Note that specifying `df = Inf` is equivalent to using a normal (z-based) confidence interval -- this is the default in {survey}. These variability types are the same for most of the survey functions, and we provide examples using different variability types throughout this chapter. \index{Degrees of freedom|)} \index{Primary sampling unit|)} \index{Strata|)}
 
 ### Examples
 
 #### Example 1: Estimated population count {.unnumbered}
 
-If we want to obtain the estimated number of households in the U.S. (the population of interest) using the Residential Energy Consumption Survey (RECS) data, we can use `survey_count()`. If we do not specify any variables in the `survey_count()` function, it outputs the estimated population count (`n`) and its corresponding standard error (`n_se`.)
+If we want to obtain the estimated number of households in the U.S. (the population of interest) using the Residential Energy Consumption Survey (RECS) data, we can use `survey_count()`. If we do not specify any variables in the `survey_count()` function, it outputs the estimated population count (`n`) and its corresponding standard error (`n_se`.) \index{Residential Energy Consumption Survey (RECS)|(}
 
 ```{r}
 #| label: desc-count-overall
@@ -246,11 +267,12 @@ recs_des %>%
   group_by(Region, Division) %>%
   survey_tally(name = "N") 
 ```
-\index{Functions in srvyr!survey\_count}|)} 
+\index{Functions in srvyr!survey\_count}|)} \index{Cross-tabulation|)}
 
 ## Totals and sums \index{Functions in srvyr!survey\_total|(} \index{survey\_total|see {Functions in srvyr}}
 
-The `survey_total()` function is analogous to `sum`. It can be applied to continuous variables to obtain the estimated total quantity in a population. Starting from this point in the chapter, all the introduced functions must be called within `summarize()`.  \index{Functions in srvyr!summarize|(}
+\index{Continuous data|(}
+The `survey_total()` function is analogous to `sum`. It can be applied to continuous variables to obtain the estimated total quantity in a population. Starting from this point in the chapter, all the introduced functions must be called within `summarize()`.  \index{Functions in srvyr!summarize|(} \index{Continuous data|)}
 
 ### Syntax
 
@@ -292,7 +314,9 @@ The estimated number of households in the U.S. is `r scales::comma(recs_des %>% 
 
 #### Example 2: Overall summation of continuous variables {.unnumbered}
 
+\index{Continuous data|(}
 The distinction between `survey_total()` and `survey_count()` becomes more evident when working with continuous variables. Let's compute the total cost of electricity in whole dollars from variable `DOLLAREL`^[RECS has two components: a household survey and an energy supplier survey. For each household that responds, their energy provider(s) are contacted to obtain their energy consumption and expenditure. This value reflects the dollars spent on electricity in 2020, according to the energy supplier. See @recs-2020-meth for more details.].
+\index{Continuous data|)}
 
 ```{r}
 #| label: desc-tot-dollarel
@@ -343,12 +367,13 @@ recs_des %>%
 
 The survey results estimate that households in the Northeast spent `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="Northeast") %>% pull(elec_bill_upp)`) on electricity in 2020, while households in the South spent an estimated `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill)` with a confidence interval of (`r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill_low)`, `r .elbil_reg %>% filter(Region=="South") %>% pull(elec_bill_upp)`.)
 
-As we calculate these numbers, we may notice that the confidence interval of the South is larger than those of other regions. This implies that we have less certainty about the true value of electricity spending in the South. A larger confidence interval could be due to a variety of factors, such as a wider range of electricity spending in the South. We could try to analyze smaller regions within the South to identify areas that are contributing to more variability. Descriptive analyses serve as a valuable starting point for more in-depth exploration and analysis. \index{Functions in srvyr!survey\_total|)}
+As we calculate these numbers, we may notice that the confidence interval of the South is larger than those of other regions. This implies that we have less certainty about the true value of electricity spending in the South. A larger confidence interval could be due to a variety of factors, such as a wider range of electricity spending in the South. We could try to analyze smaller regions within the South to identify areas that are contributing to more variability. Descriptive analyses serve as a valuable starting point for more in-depth exploration and analysis. \index{Functions in srvyr!survey\_total|)} \index{Measures of distribution|)}
 
 ## Means and proportions {#desc-meanprop} 
 
-\index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!survey\_prop|(} \index{survey\_prop|see {Functions in srvyr}}
+\index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!survey\_prop|(} \index{survey\_prop|see {Functions in srvyr}} \index{Categorical data|(} \index{Continuous data|(} \index{Central tendency|(}
 Means and proportions form the foundation of many research studies. These estimates are often the first things we look for when reviewing research on a given topic. The `survey_mean()` and `survey_prop()` functions calculate means and proportions while taking into account the survey design elements. The `survey_mean()` function should be used on continuous variables of survey data, while the `survey_prop()` function should be used on categorical variables.  
+\index{Categorical data|)} \index{Continuous data|)}
 
 ### Syntax {#desc-meanprop-syntax}
 
@@ -394,7 +419,7 @@ The other main difference is with the `proportion` argument. The `survey_mean()`
 In Section \@ref(desc-count-syntax), we provide an overview of different variability types. The confidence interval used for most measures, such as means and counts, is referred to as a Wald-type interval. However, for proportions, a Wald-type interval with a symmetric t-based confidence interval may not provide accurate coverage, especially when dealing with small sample sizes or proportions "near" 0 or 1. We can use other methods to calculate confidence intervals, which we specify using the `prop_method` option in `survey_prop()`. The options include:
 
   * `logit`: fits a logistic regression model and computes a Wald-type interval on the log-odds scale, which is then transformed to the probability scale. This is the default method.
-  * `likelihood`: uses the (Rao-Scott) scaled chi-squared distribution for the log-likelihood from a binomial distribution.
+  * `likelihood`: uses the (Rao-Scott) scaled chi-squaredd distribution for the log-likelihood from a binomial distribution.
   * `asin`: uses the variance-stabilizing transformation for the binomial distribution, the arcsine square root, and then back-transforms the interval to the probability scale
   * `beta`: uses the incomplete beta function with an effective sample size based on the estimated variance of the proportion.
   * `mean`: the Wald-type interval ($\pm t_{df}^*\times SE$)
@@ -427,7 +452,9 @@ recs_des %>%
 
 `r .preg %>% filter(Region=="Northeast") %>% pull(p) %>% signif(3)`% of the households are in the Northeast, `r .preg %>% filter(Region=="Midwest") %>% pull(p) %>% signif(3)`% in the Midwest, and so on. Note that the proportions in column `p` add up to one.
 
+\index{Categorical data|(}
 The `survey_prop()` function is essentially the same as using `survey_mean()` with a categorical variable and without specifying a numeric variable in the `x` argument. The following code gives us the same results as above:
+\index{Categorical data|)}
 
 ```{r}
 #| label: desc-p-ex2
@@ -512,10 +539,10 @@ Households from the West spent approximately `r .elbill_mn_reg %>% filter(Region
 
 ## Quantiles and medians 
 
-\index{Functions in srvyr!survey\_median} \index{Functions in srvyr!survey\_quantile|(} \index{survey\_quantile|see {Functions in srvyr}}
+\index{Functions in srvyr!survey\_median} \index{Functions in srvyr!survey\_quantile|(} \index{survey\_quantile|see {Functions in srvyr}} \index{Continuous data|(}
 To better understand the distribution of a continuous variable like income, we can calculate quantiles at specific points. For example, computing estimates of the quartiles (25%, 50%, 75%) helps us understand how income is spread across the population. We use the `survey_quantile()` function to calculate quantiles in survey data. 
 
-Medians are useful for finding the midpoint of a continuous distribution when the data are skewed, as medians are less affected by outliers compared to means. The median is the same as the 50th percentile, meaning the value where 50% of the data are higher and 50% are lower. Because medians are a special, common case of quantiles, we have a dedicated function called `survey_median()` for calculating the median in survey data. Alternatively, we can use the `survey_quantile()` function with the `quantiles` argument set to `0.5` to achieve the same result.
+Medians are useful for finding the midpoint of a continuous distribution when the data are skewed, as medians are less affected by outliers compared to means. The median is the same as the 50th percentile, meaning the value where 50% of the data are higher and 50% are lower. Because medians are a special, common case of quantiles, we have a dedicated function called `survey_median()` for calculating the median in survey data. Alternatively, we can use the `survey_quantile()` function with the `quantiles` argument set to `0.5` to achieve the same result. \index{Continuous data|)}
 
 ### Syntax
 
@@ -717,9 +744,9 @@ recs_des %>%
   )))
 ```
 
-We estimate that households in the Northeast spent a median of `r .elbill_med_reg %>% filter(Region=="Northeast") %>% pull(elec_bill)` on electricity, and in the South, they spent a median of `r .elbill_med_reg %>% filter(Region=="South") %>% pull(elec_bill)`. \index{Functions in srvyr!survey\_median|)}
+We estimate that households in the Northeast spent a median of `r .elbill_med_reg %>% filter(Region=="Northeast") %>% pull(elec_bill)` on electricity, and in the South, they spent a median of `r .elbill_med_reg %>% filter(Region=="South") %>% pull(elec_bill)`. \index{Functions in srvyr!survey\_median|)} \index{Central tendency|)}
 
-## Ratios \index{Functions in srvyr!survey\_ratio|(} \index{survey\_ratio|see {Functions in srvyr}}
+## Ratios \index{Functions in srvyr!survey\_ratio|(} \index{survey\_ratio|see {Functions in srvyr}} \index{Relationship|(}
 
 A ratio is a measure of the ratio of the sum of two variables, specifically in the form of:
 
@@ -833,11 +860,13 @@ Although not a formal statistical test, it appears that the cost ratios for liqu
 
 ## Correlations \index{Functions in srvyr!survey\_corr|(} \index{survey\_corr|see {Functions in srvyr}}
 
+\index{Continuous data|(}
 The correlation is a measure of the linear relationship between two continuous variables, which ranges between -1 and 1. The most commonly used method is Pearson's correlation (referred to as correlation henceforth.) A sample correlation for a simple random sample is calculated as follows:
 
 $$\frac{\sum (x_i-\bar{x})(y_i-\bar{y})}{\sqrt{\sum (x_i-\bar{x})^2} \sqrt{\sum(y_i-\bar{y})^2}} $$
 
 When using `survey_corr()` for designs other than a simple random sample, the weights are applied when estimating the correlation. 
+\index{Continuous data|)}
 
 ### Syntax
 
@@ -890,10 +919,11 @@ recs_des %>%
   summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL))
 ```
 
-For homes without A/C, there is a small positive correlation between total square footage with electricity consumption (`r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == FALSE) %>% pull(SQFT_Elec_Corr) %>% round(3)`.) For homes with A/C, the correlation of `r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == TRUE) %>% pull(SQFT_Elec_Corr) %>% round(3)` indicates a stronger positive correlation between total square footage and electricity consumption. \index{Functions in srvyr!survey\_corr|)}
+For homes without A/C, there is a small positive correlation between total square footage with electricity consumption (`r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == FALSE) %>% pull(SQFT_Elec_Corr) %>% round(3)`.) For homes with A/C, the correlation of `r recs_des %>% group_by(ACUsed) %>% summarize(SQFT_Elec_Corr = survey_corr(TOTSQFT_EN, DOLLAREL)) %>% filter(ACUsed == TRUE) %>% pull(SQFT_Elec_Corr) %>% round(3)` indicates a stronger positive correlation between total square footage and electricity consumption. \index{Functions in srvyr!survey\_corr|)} \index{Relationship|)}
 
 ## Standard deviation and variance \index{Functions in srvyr!survey\_sd|(} \index{Functions in srvyr!survey\_var|(} \index{survey\_sd|see {Functions in srvyr}} \index{survey\_var|see {Functions in srvyr}}
 
+\index{Measures of dispersion|(}
 All survey functions produce an estimate of the variability of a given estimate.  No additional function is needed when dealing with variable estimates. However, if we are specifically interested in population variance and standard deviation, we can use the `survey_var()` and `survey_sd()` functions. In our experience, it is not common practice to use these functions. They can be used when designing a future study to gauge population variability and inform sampling precision. 
 
 ### Syntax
@@ -951,7 +981,7 @@ recs_des %>%
   summarize(var_elbill = survey_var(DOLLAREL),
             sd_elbill = survey_sd(DOLLAREL))
 ```
-\index{Functions in srvyr!survey\_sd|)} \index{Functions in srvyr!survey\_var|)}
+\index{Functions in srvyr!survey\_sd|)} \index{Functions in srvyr!survey\_var|)} \index{Measures of dispersion|)}
 
 ## Additional topics
 
@@ -997,7 +1027,7 @@ It is estimated that American residential households spent an average of `r .elb
 ### Subpopulation analysis \index{Functions in srvyr!filter|(} \index{filter|see {Functions in srvyr}}
 
 \index{Subpopulation|(}\index{Domain|see {Subpopulation}}
-We mentioned using `filter()` to subset a survey object for analysis. This operation should be done after creating the survey design object. Subsetting data before creating the object can lead to incorrect variability estimates, if subsetting removes an entire Primary Sampling Unit (PSU; see Chapter \@ref(c10-sample-designs-replicate-weights) for more information on PSUs and sample designs.) 
+We mentioned using `filter()` to subset a survey object for analysis. This operation should be done after creating the survey design object. \index{Primary sampling unit|(}Subsetting data before creating the object can lead to incorrect variability estimates, if subsetting removes an entire Primary Sampling Unit (PSU; see Chapter \@ref(c10-sample-designs-replicate-weights) for more information on PSUs and sample designs.) \index{Primary sampling unit|)}
 
 Suppose we want estimates of the average amount spent on natural gas among housing units using natural gas (based on the variable `BTUNG`.)^[`BTUNG` is derived from the supplier side component of the survey where `BTUNG` represents the natural gas consumption in British thermal units (Btus) in a year.] We first filter records to only include records where `BTUNG > 0` and then find the average amount spent.
 
@@ -1229,12 +1259,14 @@ cool_heat_tab %>%
   rename(p = coef,
          se = `_se`)
 ```
+\index{Residential Energy Consumption Survey (RECS)|)}
 
 #### Example 3: `purrr::map()` {.unnumbered}
 
 Loops are a common tool when dealing with repetitive calculations. The {purrr} package provides the `map()` functions, which, like a loop, allow us to perform the same task across different elements [@R-purrr]. In our case, we may want to calculate proportions from the same design multiple times. A straightforward approach is to design the calculation for one variable, build a function based on that, and then apply it iteratively for the rest of the variables.
 
-Suppose we want to create a table that shows the proportion of people who express trust in their government (`TrustGovernment`)^[Question: How often can you trust the federal government in Washington to do what is right? (Always, most of the time, about half the time, some of the time, or never / Never, some of the time, about half the time, most of the time, or always)?] as well as those that trust in people (`TrustPeople`)^[Question: Generally speaking, how often can you trust other people? (Always, most of the time, about half the time, some of the time, or never / Never, some of the time, about half the time, most of the time, or always)? ].
+\index{American National Election Studies (ANES)|(}
+Suppose we want to create a table that shows the proportion of people who express trust in their government (`TrustGovernment`)^[Question: How often can you trust the federal government in Washington to do what is right? (Always, most of the time, about half the time, some of the time, or never / Never, some of the time, about half the time, most of the time, or always)?] as well as those that trust in people (`TrustPeople`)^[Question: Generally speaking, how often can you trust other people? (Always, most of the time, about half the time, some of the time, or never / Never, some of the time, about half the time, most of the time, or always)? ] using data from the 2020 ANES.
 
 First, we create a table for a single variable. The table includes the variable name as a column, the response, and the corresponding percentage with its standard error.  \index{Functions in srvyr!drop\_na|(} \index{drop\_na|see {Functions in srvyr}}
 
@@ -1285,6 +1317,7 @@ c("TrustGovernment", "TrustPeople") %>%
 ```
 
 In addition to our results above, we can also see the output for `TrustPeople`. While we estimate that `r scales::percent(anes_des %>% drop_na(TrustGovernment) %>%  group_by(TrustGovernment) %>% summarize(p = survey_prop()) %>% mutate(Variable = "TrustGovernment") %>% rename(Answer = TrustGovernment) %>% select(Variable, everything()) %>% filter(Answer == "Always") %>% pull(p), accuracy = 0.01)` of people always trust the government,  `r scales::percent(anes_des %>% drop_na(TrustPeople) %>%  group_by(TrustPeople) %>% summarize(p = survey_prop()) %>% mutate(Variable = "TrustPeople") %>% rename(Answer = TrustPeople) %>% select(Variable, everything()) %>% filter(Answer == "Always") %>% pull(p), accuracy = 0.01)` always trust people.
+\index{American National Election Studies (ANES)|)}
 
 ## Exercises
 

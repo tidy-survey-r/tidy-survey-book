@@ -1,5 +1,6 @@
 # Missing data {#c11-missing-data}
 
+\index{Missing data|(}
 ```{r}
 #| label: missing-styler
 #| include: false
@@ -87,6 +88,7 @@ Before beginning an analysis, we should explore the data to determine if there i
 
 ### Summarize data
 
+\index{American National Election Studies (ANES)|(}
 A very rudimentary first exploration is to use the `summary()` function to summarize the data, which illuminates `NA` values in the data. Let's look at a few analytic variables on the ANES 2020 data using `summary()`:
 
 ```{r}
@@ -152,7 +154,9 @@ anes_2020_derived %>%
 ```
 
 In Figure \@ref(fig:missing-anes-ggmissfct), we can see that if respondents did not vote for president in 2016 or did not answer that question, then they were not asked about who they voted for in 2016 (the percentage of missing data is 100%.)  Additionally, we can see with Figure \@ref(fig:missing-anes-ggmissfct), that there is more missing data across all questions if they did not provide an answer to `VotedPres2016`.
+\index{American National Election Studies (ANES)|)}
 
+\index{Residential Energy Consumption Survey (RECS)|(}
 There are other visualizations that work well with numeric data.  For example, in the RECS 2020 data, we can plot two continuous variables and the missing data associated with them to see if there are any patterns in the missingness.  To do this, we can use the `bind_shadow()` function from the {naniar} package. This creates a **nabular** (combination of "na" with "tabular"), which features the original columns followed by the same number of columns with a specific `NA` format.  These `NA` columns are indicators of whether the value in the original data is missing or not.  The example printed below shows how most levels of `HeatingBehavior` are not missing (`!NA`) in the NA variable of `HeatingBehavior_NA`, but those missing in `HeatingBehavior` are also missing in `HeatingBehavior_NA`.
 
 ```{r}
@@ -189,7 +193,7 @@ recs_2020_shadow %>%
   ggtitle("Histogram of Energy Cost by Heating Behavior Missing Data")
 ```
 
-Figure \@ref(fig:missing-recs-hist) indicates that respondents who did not provide a response for the heating behavior question may have a different distribution of total energy cost compared to respondents who did provide a response. This view of the raw data and missingness could indicate some bias in the data. Researchers take these different bias aspects into account when calculating weights, and we need to make sure that we incorporate the weights when analyzing the data.
+Figure \@ref(fig:missing-recs-hist) indicates that respondents who did not provide a response for the heating behavior question may have a different distribution of total energy cost compared to respondents who did provide a response. This view of the raw data and missingness could indicate some bias in the data. Researchers take these different bias aspects into account when calculating weights, and we need to make sure that we incorporate the weights when analyzing the data. \index{Residential Energy Consumption Survey (RECS)|)}
 
 There are many other visualizations that can be helpful in reviewing the data, and we recommend reviewing the {naniar} documentation for more information [@naniar2023].
 
@@ -202,6 +206,7 @@ Even with weights and imputation\index{Imputation}, missing data are most likely
 
 ### Recoding missing data
 
+\index{American National Election Studies (ANES)|(}
 Even within a variable, there can be different reasons for missing data. In publicly released data,, negative values are often present to provide different meanings for values.  For example, in the ANES 2020 data, they have the following negative values to represent different types of missing data:
 
 
@@ -232,12 +237,13 @@ anes_2020_shadow %>%
   count(V201103,V201103_NA)
 ```
 
-However, it is important to note that at the time of publication, there is no easy way to implement `recode_shadow()` to multiple variables at once (e.g., we cannot use the tidyverse feature of `across()`.) The example code above only implements this for a single variable, so this would have to be done manually or in a loop for all variables of interest.
+However, it is important to note that at the time of publication, there is no easy way to implement `recode_shadow()` to multiple variables at once (e.g., we cannot use the tidyverse feature of `across()`.) The example code above only implements this for a single variable, so this would have to be done manually or in a loop for all variables of interest. \index{American National Election Studies (ANES)|)}
 
 ### Accounting for skip patterns {#missing-skip-patt}
 
 When questions are skipped by design in a survey, it is meaningful that the data are later missing. For example,the RECS survey asks people how they control the heat in their home in the winter (`HeatingBehavior`.) This is only among those who have heat in their home (`SpaceHeatingUsed`.) If no there is no heating equipment used, the value of `HeatingBehavior` is missing. One has several choices when analyzing these data which include 1) only including those with a valid value of `HeatingBehavior` and specifying the universe as those with heat or 2) including those who do not have heat. It is important to specify what population an analysis generalizes to.
 
+\index{Residential Energy Consumption Survey (RECS)|(}
 Here is an example where we only include those with a valid value of `HeatingBehavior` (choice 1.) Note that we use the design object (`recs_des`) and then \index{Functions in srvyr!filter|(}filter to those that are not missing on `HeatingBehavior`.\index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!summarize|(}
 
 ```{r}
@@ -285,8 +291,9 @@ pct_2 <- heat_cntl_2 %>%
 
 ```
 
-If we ran the first analysis, we would say that `r pct_1`% **of households with heat** use a programmable or smart thermostat for heating of their home. If we used the results from the second analysis, we would say that `r pct_2`% **of households** use a programmable or smart thermostat for heating of their home. The distinction between the two statements is made bold for emphasis. Skip patterns often change the universe we are talking about and need to be carefully examined.
+If we ran the first analysis, we would say that `r pct_1`% **of households with heat** use a programmable or smart thermostat for heating of their home. If we used the results from the second analysis, we would say that `r pct_2`% **of households** use a programmable or smart thermostat for heating of their home. The distinction between the two statements is made bold for emphasis. Skip patterns often change the universe we are talking about and need to be carefully examined. \index{Residential Energy Consumption Survey (RECS)|)}
 
+\index{American National Election Studies (ANES)|(}
 Filtering to the correct universe is important when handling these types of missing data.  The `nabular` we created above can also help with this.  If we have `NA_skip` values in the shadow, we can make sure that we filter out all of these values and only include relevant missing values.  To do this with survey data, we could first create the `nabular`, then create the \index{Functions in srvyr!as\_survey\_design|(} design object on that data, and then use the shadow variables to assist with filtering the data.  Let's use the `nabular` we created above for ANES 2020 (`anes_2020_shadow`) to create the design object. 
 
 ```{r}
@@ -422,4 +429,6 @@ pres16_select2_out<-round(pres16_select2_1*100-pres16_select2_2*100,1)
 
 
 As Table \@ref(tab:missing-anes-shadow-tab) shows, the results can vary greatly depending on which type of missing data are removed. If we remove only the skip patterns the margin between Clinton and Trump is `r pres16_select2_out` percentage points, but if we include all data, even including those that did not vote in 2016, the margin is `r pres16_select1_out` percentage points. How we handle the different types of missing values is important for interpreting the data.
-\index{Item nonresponse|)}
+\index{Item nonresponse|)} \index{American National Election Studies (ANES)|)}
+
+\index{Missing data|)}

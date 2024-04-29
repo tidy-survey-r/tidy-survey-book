@@ -1,5 +1,7 @@
 # AmericasBarometer Vignette {#c14-ambarom-vignette}
 
+\index{AmericasBarometer|(} \index{LAPOP|see {AmericasBarometer}}
+
 ```{r}
 #| label: ambarom-styler
 #| include: false
@@ -65,7 +67,7 @@ Each country and year has its own file available in Stata format (`.dta`.) In th
 
 ## Preparing files
 
-Many of the variables are coded as numeric and do not have intuitive variable names, so the next step is to create derived variables and wrangle the data for analysis. Using the core questionnaire as a codebook, we reference the factor descriptions to create derived variables with informative names:
+Many of the variables are coded as numeric and do not have intuitive variable names, so the next step is to create derived variables and wrangle the data for analysis. \index{Codebook|(} Using the core questionnaire as a codebook, we reference the factor descriptions to create derived variables with informative names:\index{Codebook|)} 
 
 ```{r}
 #| label: ambarom-read-secret
@@ -136,7 +138,7 @@ ambarom <- ambarom_in %>%
          Internet = r18)
 ```
 
-At this point, it is a good time to check the cross-tabs between the original and newly derived variables. These tables help us confirm that we have correctly matched the numeric data from the original dataset to the renamed factor data in the new dataset. For instance, let's check the original variable `pais` and the derived variable `Country`. We can consult the questionnaire or codebook to confirm that Argentina is coded as `17`, Bolivia as `10`, etc. Similarly, for `CovidWorry` and `covid2at`, we can verify that `Very worried` is coded as `1`, and so on for the other variables.
+At this point, it is a good time to check the cross-tabs between the original and newly derived variables. These tables help us confirm that we have correctly matched the numeric data from the original dataset to the renamed factor data in the new dataset. For instance, let's check the original variable `pais` and the derived variable `Country`. \index{Codebook|(} We can consult the questionnaire or codebook to confirm that Argentina is coded as `17`, Bolivia as `10`, etc. Similarly, for `CovidWorry` and `covid2at`, we can verify that `Very worried` is coded as `1`, and so on for the other variables.\index{Codebook|)} 
 
 ```{r}
 #| label: ambarom-derive-check
@@ -150,6 +152,7 @@ ambarom %>%
 
 ## Survey design objects
 
+\index{Clustered sampling|(} \index{Stratified sampling|(} \index{Strata|(} \index{Primary sampling unit|(}
 The technical report is the best reference for understanding how to specify the sampling design in R [@lapop-tech]. The data include two weights: `wt` and `weight1500`. The first weight variable is specific to each country and sums to the sample size, but it is calibrated to reflect each country's demographics. The second weight variable sums to 1500 for each country and is recommended for multi-country analyses. \index{Functions in srvyr!as\_survey\_design|(} Although not explicitly stated in the documentation, the Stata syntax example (`svyset upm [pw=weight1500], strata(strata)`) indicates the variable `upm` is a clustering variable, and `strata` is the strata variable. Therefore, the design object for multi-country analysis is created in R as follows: 
 
 ```{r}
@@ -159,7 +162,7 @@ ambarom_des <- ambarom %>%
                    strata = strata,
                    weight = weight1500)
 ```
-\index{Functions in srvyr!as\_survey\_design|)}
+\index{Functions in srvyr!as\_survey\_design|)} \index{Clustered sampling|)} \index{Stratified sampling|)} \index{Strata|)} \index{Primary sampling unit|)}
 
 One interesting thing to note is that these weight variables can provide estimates for comparing countries rather than for multi-country estimates. The reason is that the weights do not account for the different sizes of countries. For example, Canada has about 10% of the population of the United States, but an estimate that uses records from both countries would weigh them equally.
 
@@ -194,7 +197,7 @@ covid_worry_collapse %>%
 ```
 \index{Functions in srvyr!survey\_count|)}
 
-With this new variable, we can now use `survey_mean()` to calculate the percentage of people in each country who are either very or somewhat worried about COVID. There are missing data, as indicated in the `survey_count()` output above, so we need to use `na.rm = TRUE` in the `survey_mean()` function to handle the missing values. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(}
+With this new variable, we can now use `survey_mean()` to calculate the percentage of people in each country who are either very or somewhat worried about COVID. \index{Missing data|(}There are missing data, as indicated in the `survey_count()` output above, so we need to use `na.rm = TRUE` in the `survey_mean()` function to handle the missing values. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(} \index{Missing data|)}
 
 ```{r}
 #| label: ambarom-worry-est2
@@ -526,7 +529,8 @@ ggplot() +
   theme_minimal()
 ```
 
-In Figure \@ref(fig:ambarom-make-maps-covid-ed), we observe missing data (represented by the crosshatch pattern) for Canada, Mexico, and the United States. The questionnaires indicate that these three countries did not include the education question in the survey. To focus on countries with available data, we can remove North America from the map and show only Central and South America. We do this below by restricting the shape files to Latin America and the Caribbean, as depicted in Figure \@ref(fig:ambarom-make-maps-covid-ed-c-s).
+\index{Missing data|(}
+In Figure \@ref(fig:ambarom-make-maps-covid-ed), we observe missing data (represented by the crosshatch pattern) for Canada, Mexico, and the United States. The questionnaires indicate that these three countries did not include the education question in the survey. To focus on countries with available data, we can remove North America from the map and show only Central and South America. We do this below by restricting the shape files to Latin America and the Caribbean, as depicted in Figure \@ref(fig:ambarom-make-maps-covid-ed-c-s). \index{Missing data|)}
 
 ```{r}
 #| label: ambarom-make-maps-covid-ed-c-s
@@ -568,3 +572,5 @@ In Figure \@ref(fig:ambarom-make-maps-covid-ed-c-s), we can see that most countr
 1. Calculate the percentage of households with broadband internet and those with any internet at home, including from a phone or tablet in Latin America and the Caribbean. Hint: if there are countries with 0% internet usage, try filtering by something first.
 
 2. Create a faceted map showing both broadband internet and any internet usage.
+
+\index{AmericasBarometer|)}
