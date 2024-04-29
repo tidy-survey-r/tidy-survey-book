@@ -67,18 +67,18 @@ recs_des <- recs_2020 %>%
 
 When analyzing survey results, the point estimates described in Chapter \@ref(c05-descriptive-analysis) help us understand the data at a high level. Still, we often want to make comparisons between different groups. These comparisons are calculated through statistical testing. 
 
-The general idea of statistical testing is the same for data obtained through surveys and data obtained through other methods, where we compare the point estimates and variance estimates of each statistic to see if statistically significant differences exist. However, statistical testing for complex surveys involves additional considerations due to the need to account for the sampling design in order to obtain accurate variance estimates.
+The general idea of statistical testing is the same for data obtained through surveys and data obtained through other methods, where we compare the point estimates and uncertainty estimates of each statistic to see if statistically significant differences exist. However, statistical testing for complex surveys involves additional considerations due to the need to account for the sampling design in order to obtain accurate uncertainty estimates.
 
-Statistical testing, also called hypothesis testing, involves declaring a null and alternative hypothesis. A null hypothesis is denoted as $H_0$ and the alternative hypothesis is denoted as $H_A$. The null hypothesis is the default assumption in that there are no differences in the data, or that the data are operating under "standard" behaviors. On the other hand, the alternative hypothesis is the break from the "standard" and what we are trying to determine if the data support this alternative hypothesis.
+Statistical testing, also called hypothesis testing, involves declaring a null and alternative hypothesis. A null hypothesis is denoted as $H_0$ and the alternative hypothesis is denoted as $H_A$. The null hypothesis is the default assumption in that there are no differences in the data, or that the data are operating under "standard" behaviors. On the other hand, the alternative hypothesis is the break from the "standard" and we are trying to determine if the data support this alternative hypothesis.
 
-Let's review an example outside of survey data. If we are flipping a coin, a null hypothesis would be that the coin is fair and that each side has an equal chance of being flipped.  In other words, the probability of the coin landing on each side is 1/2.  Whereas an alternative hypothesis could be that the coin is unfair and that one side has a higher probability of being flipped (e.g., a probability of 1/4 to get heads but a probability of 3/4 to get tails.) We write this set of hypotheses as:
+Let's review an example outside of survey data. If we are flipping a coin, a null hypothesis would be that the coin is fair and that each side has an equal chance of being flipped.  In other words, the probability of the coin landing on each side is 1/2, whereas an alternative hypothesis could be that the coin is unfair and that one side has a higher probability of being flipped (e.g., a probability of 1/4 to get heads but a probability of 3/4 to get tails.) We write this set of hypotheses as:
 
 - $H_0: \rho_{heads} = \rho_{tails}$, where $\rho_{x}$ is the probability of flipping the coin and having it land on heads ($\rho_{heads}$) or tails ($\rho_{tails}$)
 - $H_A: \rho_{heads} \neq \rho_{tails}$
 
 When we conduct hypothesis testing, the statistical models calculate a p-value, which shows how likely we are to observe the data if the null hypothesis is true. If the p-value (a probability between 0 and 1) is small, we have strong evidence to reject the null hypothesis as it is unlikely to see the data we observe if the null hypothesis is true. However, if the p-value is large, we say we do not have evidence to reject the null hypothesis. The size of the p-value for this cut-off is determined by Type 1 error known as $\alpha$.  A common Type 1 error value for statistical testing is to use $\alpha = 0.05$.^[For more information on statistical testing, we recommend reviewing introduction to statistics textbooks.] It is common for explanations of statistical testing to refer to confidence level.  The confidence level is the inverse of the Type 1 error.  Thus, if $\alpha = 0.05$, the confidence level would be 95%.
 
-The functions in the {survey} package allow for the correct estimation of the variances. This chapter covers the following statistical tests with survey data and the following functions from the {survey} package[@lumley2010complex]:
+The functions in the {survey} package allow for the correct estimation of the uncertainty estimates (e.g., standard deviations and confidence intervals). This chapter covers the following statistical tests with survey data and the following functions from the {survey} package[@lumley2010complex]:
 
 * Comparison of proportions (`svyttest()`)
 * Comparison of means (`svyttest()`)
@@ -124,7 +124,7 @@ svydata_des %>%
 
 ## Comparison of proportions and means {#stattest-ttest}
 
-We use t-tests to compare two proportions or means. T-tests allow us to determine if one proportion or mean is statistically different from another. They are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., North versus South.) Comparing a single estimate to a known value is called a *one sample t-test*, and we can set up the hypothesis test as follows:  
+We use t-tests to compare two proportions or means. T-tests allow us to determine if one proportion or mean is statistically different from another. They are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., North versus South.) Comparing a single estimate to a known value is called a *one-sample t-test*, and we can set up the hypothesis test as follows:  
 
   - $H_0: \mu = 0$ where $\mu$ is the mean outcome and $0$ is the value we are comparing it to
   - $H_A: \mu \neq 0$
@@ -134,13 +134,13 @@ For comparing two estimates, this is called a *two-sample t-test*. We can set up
   - $H_0: \mu_1 = \mu_2$ where $\mu_i$ is the mean outcome for group $i$
   - $H_A: \mu_1 \neq \mu_2$
 
-Two sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., North versus South), the t-test run is an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention.)
+Two-sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., North versus South), the t-test run is an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention.)
 
 The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c10-sample-designs-replicate-weights) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package account for these nuances, provided the design object is correctly defined.
 
 ### Syntax {#stattest-ttest-syntax}
 
-When we do not have survey data, we can use the `t.test()` function from the {stats} package. This function does not allow for weights or the variance structure that need to be accounted for with survey data. Therefore, we need to use the `svyttest()` function from {survey} when using survey data. Many of the arguments are the same between the two functions, but there are a few key differences:
+When we do not have survey data, we can use the `t.test()` function from the {stats} package to run t-tests. This function does not allow for weights or the variance structure that need to be accounted for with survey data. Therefore, we need to use the `svyttest()` function from {survey} when using survey data. Many of the arguments are the same between the two functions, but there are a few key differences:
 
   - We need to use the survey design object instead of the original data frame
   - We can only use a formula and not separate x and y data
@@ -219,7 +219,7 @@ recs_des %>%
 
 The result is the same in both methods, so we see that the average temperature U.S. households set their thermostat to in the summer at night is `r signif(ttest_ex1$estimate + 68,3)`$^\circ$F. Looking at the output from `svyttest()`, the t-statistic is `r signif(ttest_ex1$statistic, 3)`, and the p-value is $`r pretty_p_value(ttest_ex1[["p.value"]])`$, indicating that the average is statistically different from 68$^\circ$F at an $\alpha$ level of $0.05$.
 
-If we want an 80% confidence interval for the test statistic, we can use the function `confint()` to change the confidence level. Below, we print the default confidence interval (95%), the confidence interval explicitly specifying the level as 95%, and the 80% confidence interval. The default confidence level is 95%, and when we specify this level, R returns a vector with both row and column names. However, when we specify any other confidence level, an unnamed vector is returned, with the first element being the lower bound and the second element being the upper bound of the confidence interval.
+If we want an 80% confidence interval for the test statistic, we can use the function `confint()` to change the confidence level. Below, we print the default confidence interval (95%), the confidence interval explicitly specifying the level as 95%, and the 80% confidence interval. When the confidence level is 95% either by default or explicitly, R returns a vector with both row and column names. However, when we specify any other confidence level, an unnamed vector is returned, with the first element being the lower bound and the second element being the upper bound of the confidence interval.
 
 ```{r}
 #| label: stattest-ttest-ex1-ci80
@@ -227,7 +227,6 @@ confint(ttest_ex1)
 confint(ttest_ex1, level = 0.95) 
 confint(ttest_ex1, level = 0.8) 
 ```
-
 
 In this case, neither confidence interval contains 0, and we draw the same conclusion from either that the average temperature households set their thermostat in the summer at night is significantly higher than 68$^\circ$F.
 
@@ -270,7 +269,7 @@ The output from the `svyttest()` function can be a bit hard to read. Using the `
 tidy(ttest_ex2)
 ```
 
-The 'tidied' output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter \@ref(c08-communicating-results). The function `pretty_p_value()` comes from the {prettyunits} package and converts numeric p-values to characters and, by default, prints four decimal places and displays any p-value less than 0.0001 as `"<0.0001"` though another minimum display p-value can be specified [@R-prettyunits].
+The 'tidied' output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter \@ref(c08-communicating-results). The function `pretty_p_value()` comes from the {prettyunits} package and converts numeric p-values to characters and, by default, prints four decimal places and displays any p-value less than 0.0001 as `"<0.0001"`, though another minimum display p-value can be specified [@R-prettyunits].
 
 ```{r}
 #| label: stattest-ttest-ex2-gt
@@ -295,7 +294,7 @@ tidy(ttest_ex2) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-The estimate differs from Example 1 in that the estimate does not display \(p - 0.90\) but rather \(p\), or the difference between the U.S. households that use A/C and the proportion we are comparing to. We can see that there is a difference of `r signif(ttest_ex2$estimate*100,3)` percentage points. Additionally, the t-statistic value in the `statistic` column is `r signif(ttest_ex2$statistic,3)`, and the p-value is `r pretty_p_value(ttest_ex2$p.value)`. These results indicate that fewer than 90% of U.S. households use A/C in their homes.
+The estimate differs from Example 1 in that the estimate does not display \(p - 0.90\) but rather \(p\), or the difference between the U.S. households that use A/C and our comparison proportion. We can see that there is a difference of `r signif(ttest_ex2$estimate*100,3)` percentage points. Additionally, the t-statistic value in the `statistic` column is `r signif(ttest_ex2$statistic,3)`, and the p-value is `r pretty_p_value(ttest_ex2$p.value)`. These results indicate that fewer than 90% of U.S. households use A/C in their homes.
 
 #### Example 3: Unpaired two-sample t-test {.unnumbered #stattest-ttest-ex3}
 
@@ -304,7 +303,7 @@ Two additional variables in the RECS data are the electric bill cost (`DOLLAREL`
 - $H_0: \mu_{AC} = \mu_{noAC}$ where $\mu_{AC}$ is the electrical bill cost for U.S. households that used A/C and $\mu_{noAC}$ is the electrical bill cost for U.S. households that did not use A/C
 - $H_A: \mu_{AC} \neq \mu_{noAC}$
  
-Let's take a quick look at the data to see the format the data are in: 
+Let's take a quick look at the data to see how they are formatted: 
 
 ```{r}
 #| label: stattest-ttest-ex3-desc
@@ -392,9 +391,9 @@ tidy(ttest_ex4) %>%
 
 U.S. households set their thermostat on average `r signif(ttest_ex4$estimate,2)`$^\circ$F warmer in summer nights than winter nights, which is statistically significant (t = `r signif(ttest_ex4$statistic, 3)`, p-value = $`r pretty_p_value(ttest_ex4[["p.value"]])`$.)  
 
-## Chi-square tests {#stattest-chi}
+## Chi-squared tests {#stattest-chi}
 
-Chi-square tests ($\chi^2$) allow us to examine multiple proportions using a goodness-of-fit test, a test of independence, or a test of homogeneity. These three tests have the same $\chi^2$ distributions but with slightly different underlying assumptions.
+Chi-squared tests ($\chi^2$) allow us to examine multiple proportions using a goodness-of-fit test, a test of independence, or a test of homogeneity. These three tests have the same $\chi^2$ distributions but with slightly different underlying assumptions.
 
 First, **goodness-of-fit** tests are used when comparing *observed* data to *expected* data. For example, this could be used to determine if respondent demographics (the observed data in the sample) match known population information (the expected data.) In this case, we can set up the hypothesis test as follows:
 
@@ -415,7 +414,7 @@ As with t-tests, the difference between using $\chi^2$ tests with non-survey dat
 
 ### Syntax {#stattest-chi-syntax}
 
-When we do not have survey data, we may be able to use the `chisq.test()` function from the {stats} package in base R [@R-base]. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:
+When we do not have survey data, we may be able to use the `chisq.test()` function from the {stats} package in base R to run chi-squared tests [@R-base]. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:
 
 - `svygofchisq()`: For goodness of fit tests
 - `svychisq()`: For tests of independence and homogeneity
@@ -496,7 +495,7 @@ anes_des %>%
   summarize(p = survey_mean())
 ```
 
-Based on this output, we can see that we have different levels from the ACS data. Specifically, the education data from ANES include two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse [@R-forcats]. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we use the `svygofchisq()` function to compare the ANES data to the ACS data, where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing NA values.
+Based on this output, we can see that we have different levels from the ACS data. Specifically, the education data from ANES include two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse [@R-forcats]. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we use the `svygofchisq()` function to compare the ANES data to the ACS data, where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing `NA` values.
 
 ```{r}
 #| label: stattest-chi-ex1
