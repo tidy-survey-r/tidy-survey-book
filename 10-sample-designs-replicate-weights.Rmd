@@ -37,11 +37,11 @@ This chapter uses data from the Residential Energy Consumption Survey (RECS) - b
 
 ## Introduction
 
-The primary reason for using packages like {survey} and {srvyr} is to account for the sampling design or replicate weights into estimates [@R-srvyr; @lumley2010complex]. By incorporating the sampling design or replicate weights, precision estimates (e.g., standard errors and confidence intervals) are appropriately calculated.
+The primary reason for using packages like {survey} and {srvyr} is to account for the sampling design or replicate weights into point and uncertainty estimates [@R-srvyr; @lumley2010complex]. By incorporating the sampling design or replicate weights, these estimates are appropriately calculated.
 
 In this chapter, we introduce common sampling designs and common types of replicate weights, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design or replicate weights. While we show the math behind the estimates, the functions in these packages handle the calculation. To deeply understand the math and the derivation, refer to @pennstate506, @sarndal2003model, @wolter2007introduction, or @fuller2011sampling (these are listed in order of increasing statistical rigorousness.) 
 
-The general process for estimation in the {srvyr} package is to:
+\index{Survey analysis process|(}The general process for estimation in the {srvyr} package is to:
 
 1. Create a `tbl_svy` object (a survey object) using: `as_survey_design()` or `as_survey_rep()`
 
@@ -51,7 +51,7 @@ The general process for estimation in the {srvyr} package is to:
 
 4. Within `summarize()`, specify variables to calculate, including means, totals, proportions, quantiles, and more
 
-This chapter includes details on the first step - creating the survey object. Once this survey object is created, it can be used in the other steps (detailed in chapters \@ref(c05-descriptive-analysis) through \@ref(c07-modeling)) to account for the complex survey design.
+This chapter includes details on the first step - creating the survey object. Once this survey object is created, it can be used in the other steps (detailed in chapters \@ref(c05-descriptive-analysis) through \@ref(c07-modeling)) to account for the complex survey design.\index{Survey analysis process|)}
 
 ## Common sampling designs
 
@@ -103,22 +103,22 @@ If a sample was drawn through SRS and had no nonresponse or other weighting adju
 
 ```r
 srs1_des <- dat %>%
- as_survey_design(fpc = fpcvar)
+  as_survey_design(fpc = fpcvar)
 ```
 
 where `dat` is a tibble or data.frame with the survey data, and `fpcvar` is a variable in the data indicating the sampling frame's size (this variable has the same value for all cases in an SRS design.) If the frame is very large, sometimes the frame size is not provided. In that case, the FPC is not needed, and we specify the design as:
 
 ```r
 srs2_des <- dat %>%
- as_survey_design()
+  as_survey_design()
 ```
 
 If some post-survey adjustments were implemented and the weights are not all equal, we specify the design as:
 
 ```r
 srs3_des <- dat %>%
- as_survey_design(weights = wtvar, 
-                  fpc = fpcvar)
+  as_survey_design(weights = wtvar,
+                   fpc = fpcvar)
 ```
 
 where `wtvar` is a variable in the data indicating the weight for each case. Again, the FPC can be omitted if it is unnecessary because the frame is large compared to the sample size.
@@ -131,10 +131,10 @@ The {survey} package in R provides some example datasets that we use throughout 
 #| label: samp-des-apisrs-display
 #| message: false
 apisrs_slim <-
- apisrs %>%
- as_tibble() %>%
- arrange(dnum, snum) %>%
- select(cds, dnum, snum, dname, sname, fpc, pw)
+  apisrs %>%
+  as_tibble() %>%
+  arrange(dnum, snum) %>%
+  select(cds, dnum, snum, dname, sname, fpc, pw)
 
 apisrs_slim
 ```
@@ -158,8 +158,8 @@ To create the `tbl_survey` object for the SRS data, we specify the design as:
 ```{r}
 #| label: samp-des-apisrs-des
 apisrs_des <- apisrs_slim %>%
- as_survey_design(weights = pw, 
-                  fpc = fpc)
+  as_survey_design(weights = pw,
+                   fpc = fpc)
 
 apisrs_des
 ```
@@ -234,15 +234,12 @@ The {survey} package does not include an example of SRSWR, so to illustrate this
 set.seed(409963)
 
 apisrswr <- apipop %>%
- as_tibble() %>%
- slice_sample(n = 200, replace = TRUE) %>%
- select(cds, dnum, snum, dname, sname) %>%
- mutate(
-  weight = nrow(apipop)/200
- )
+  as_tibble() %>%
+  slice_sample(n = 200, replace = TRUE) %>%
+  select(cds, dnum, snum, dname, sname) %>%
+  mutate(weight = nrow(apipop) / 200)
 
 head(apisrswr)
-
 ```
 
 Because this is a SRS design *with replacement*, there may be duplicates in the data. It is important to keep the duplicates in the data for proper estimation, but for reference, we can view the duplicates in the example data we just created.
@@ -251,9 +248,9 @@ Because this is a SRS design *with replacement*, there may be duplicates in the 
 #| label: samp-des-apisrs-wr-duplicates
 
 apisrswr %>%
- group_by(cds) %>%
- filter(n()>1) %>%
- arrange(cds)
+  group_by(cds) %>%
+  filter(n() > 1) %>%
+  arrange(cds)
 ```
 
 
@@ -690,22 +687,26 @@ To specify the jackknife method, we use the survey documentation to understand t
 
 ```r
 jk1_des <- dat %>%
- as_survey_rep(weights = WT0, 
-               repweights= num_range("WT", 1:20),
-               type="JK1", 
-               mse=TRUE, 
-               scale=0.95)
+  as_survey_rep(
+    weights = WT0,
+    repweights = num_range("WT", 1:20),
+    type = "JK1",
+    mse = TRUE,
+    scale = 0.95
+  )
 ```
 
 For a jackknife n method, we need to specify the multiplier for all replicates. In this case, we use the `rscales` argument to specify each one.  The documentation provides details on what the multipliers ($\alpha_r$) are, and they may be the same for all replicates.  For example, consider a case where $\alpha_r=0.1$ for all replicates, and the dataset had WT0 for the main weight and had 20 replicate weights indicated as WT1, WT2, ..., WT20. We specify the type as `type = "JKN"`, and the multiplier as `rscales=rep(0.1,20)`: 
 
 ```r
 jkn_des <- dat %>%
- as_survey_rep(weights = WT0, 
-               repweights= num_range("WT", 1:20),
-               type="JKN", 
-               mse=TRUE, 
-               rscales=rep(0.1, 20))
+  as_survey_rep(
+    weights = WT0,
+    repweights = num_range("WT", 1:20),
+    type = "JKN",
+    mse = TRUE,
+    rscales = rep(0.1, 20)
+  )
 ```
 
 #### Example {-}
@@ -771,12 +772,13 @@ To specify a bootstrap method, we need to specify the weight variable (`weights`
 
 ```r
 bs_des <- dat %>%
- as_survey_rep(weights = WT0, 
-               repweights= num_range("WT", 1:20),
-               type="bootstrap", 
-               mse=TRUE, 
-               scale=.02)
-
+  as_survey_rep(
+    weights = WT0,
+    repweights = num_range("WT", 1:20),
+    type = "bootstrap",
+    mse = TRUE,
+    scale = .02
+  )
 ```
 \index{Functions in srvyr!as\_survey\_rep|)}
 
