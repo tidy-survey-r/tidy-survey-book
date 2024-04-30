@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 5 Descriptive analyses | Exploring Complex Survey Data Analysis in R</title>
   <meta name="description" content="Bookdown for upcoming book on survey analysis the tidy way." />
-  <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 5 Descriptive analyses | Exploring Complex Survey Data Analysis in R" />
   <meta property="og:type" content="book" />
@@ -52,6 +52,7 @@
 <link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections/anchor-sections.js"></script>
+<link href="libs/htmltools-fill/fill.css" rel="stylesheet" />
 <script src="libs/htmlwidgets/htmlwidgets.js"></script>
 <script src="libs/d3/d3.min.js"></script>
 <script src="libs/dagre/dagre-d3.min.js"></script>
@@ -546,7 +547,7 @@ div.csl-indent {
 <span id="cb58-3"><a href="c05-descriptive-analysis.html#cb58-3" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
 <span id="cb58-4"><a href="c05-descriptive-analysis.html#cb58-4" tabindex="-1"></a>    <span class="at">repweights =</span> NWEIGHT1<span class="sc">:</span>NWEIGHT60,</span>
 <span id="cb58-5"><a href="c05-descriptive-analysis.html#cb58-5" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;JK1&quot;</span>,</span>
-<span id="cb58-6"><a href="c05-descriptive-analysis.html#cb58-6" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">59</span><span class="sc">/</span><span class="dv">60</span>,</span>
+<span id="cb58-6"><a href="c05-descriptive-analysis.html#cb58-6" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">59</span> <span class="sc">/</span> <span class="dv">60</span>,</span>
 <span id="cb58-7"><a href="c05-descriptive-analysis.html#cb58-7" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
 <span id="cb58-8"><a href="c05-descriptive-analysis.html#cb58-8" tabindex="-1"></a>  )</span></code></pre></div>
 </div>
@@ -671,7 +672,7 @@ where <span class="math inline">\(t^*_{df}\)</span> is the critical value from a
 <h4>Example 1: Estimated population count<a href="c05-descriptive-analysis.html#example-1-estimated-population-count" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>If we want to obtain the estimated number of households in the U.S. (the population of interest) using the Residential Energy Consumption Survey (RECS) data, we can use <code>survey_count()</code>. If we do not specify any variables in the <code>survey_count()</code> function, it outputs the estimated population count (<code>n</code>) and its corresponding standard error (<code>n_se</code>.) </p>
 <div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="c05-descriptive-analysis.html#cb61-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb61-2"><a href="c05-descriptive-analysis.html#cb61-2" tabindex="-1"></a>  <span class="fu">survey_count</span>() </span></code></pre></div>
+<span id="cb61-2"><a href="c05-descriptive-analysis.html#cb61-2" tabindex="-1"></a>  <span class="fu">survey_count</span>()</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 2
 ##            n  n_se
 ##        &lt;dbl&gt; &lt;dbl&gt;
@@ -679,7 +680,7 @@ where <span class="math inline">\(t^*_{df}\)</span> is the critical value from a
 <p>Based on this calculation, the estimated number of households in the U.S. is 123,529,025.</p>
 <p>Alternatively, we could also use the <code>survey_tally()</code> function. The example below yields the same results as <code>survey_count()</code>.</p>
 <div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="c05-descriptive-analysis.html#cb63-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb63-2"><a href="c05-descriptive-analysis.html#cb63-2" tabindex="-1"></a>  <span class="fu">survey_tally</span>() </span></code></pre></div>
+<span id="cb63-2"><a href="c05-descriptive-analysis.html#cb63-2" tabindex="-1"></a>  <span class="fu">survey_tally</span>()</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 2
 ##            n  n_se
 ##        &lt;dbl&gt; &lt;dbl&gt;
@@ -689,7 +690,7 @@ where <span class="math inline">\(t^*_{df}\)</span> is the critical value from a
 <h4>Example 2: Estimated counts by subgroups (cross-tabs)<a href="c05-descriptive-analysis.html#example-2-estimated-counts-by-subgroups-cross-tabs" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>To calculate the estimated number of observations for specific subgroups, such as Region and Division, we can include the variables of interest in the <code>survey_count()</code> function. In the example below, we calculate the estimated number of housing units by region and division. The argument <code>name =</code> in <code>survey_count()</code> allows us to change the name of the count variable in the output from the default <code>n</code> to <code>N</code>.</p>
 <div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="c05-descriptive-analysis.html#cb65-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb65-2"><a href="c05-descriptive-analysis.html#cb65-2" tabindex="-1"></a>  <span class="fu">survey_count</span>(Region, Division, <span class="at">name =</span> <span class="st">&quot;N&quot;</span>) </span></code></pre></div>
+<span id="cb65-2"><a href="c05-descriptive-analysis.html#cb65-2" tabindex="-1"></a>  <span class="fu">survey_count</span>(Region, Division, <span class="at">name =</span> <span class="st">&quot;N&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 10 × 4
 ##    Region    Division                   N         N_se
 ##    &lt;fct&gt;     &lt;fct&gt;                  &lt;dbl&gt;        &lt;dbl&gt;
@@ -706,7 +707,7 @@ where <span class="math inline">\(t^*_{df}\)</span> is the critical value from a
 <p>When we run the cross-tab, we see there are an estimated 5,876,166 housing units in the New England Division.</p>
 <p>The code results in an error if we try to use the <code>survey_count()</code> syntax with <code>survey_tally()</code>:</p>
 <div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="c05-descriptive-analysis.html#cb67-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb67-2"><a href="c05-descriptive-analysis.html#cb67-2" tabindex="-1"></a>  <span class="fu">survey_tally</span>(Region, Division, <span class="at">name =</span> <span class="st">&quot;N&quot;</span>) </span></code></pre></div>
+<span id="cb67-2"><a href="c05-descriptive-analysis.html#cb67-2" tabindex="-1"></a>  <span class="fu">survey_tally</span>(Region, Division, <span class="at">name =</span> <span class="st">&quot;N&quot;</span>)</span></code></pre></div>
 <pre><code>## Error in `dplyr::summarise()` at gergness-srvyr-1917f75/R/summarise.r:10:3:
 ## ℹ In argument: `N = survey_total(Region, vartype = vartype,
 ##   na.rm = TRUE)`.
@@ -715,7 +716,7 @@ where <span class="math inline">\(t^*_{df}\)</span> is the critical value from a
 <p>Use a <code>group_by()</code> function prior to using <code>survey_tally()</code> to successfully run the cross-tab:</p>
 <div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="c05-descriptive-analysis.html#cb69-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb69-2"><a href="c05-descriptive-analysis.html#cb69-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Region, Division) <span class="sc">%&gt;%</span></span>
-<span id="cb69-3"><a href="c05-descriptive-analysis.html#cb69-3" tabindex="-1"></a>  <span class="fu">survey_tally</span>(<span class="at">name =</span> <span class="st">&quot;N&quot;</span>) </span></code></pre></div>
+<span id="cb69-3"><a href="c05-descriptive-analysis.html#cb69-3" tabindex="-1"></a>  <span class="fu">survey_tally</span>(<span class="at">name =</span> <span class="st">&quot;N&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 10 × 4
 ## # Groups:   Region [4]
 ##    Region    Division                   N         N_se
@@ -765,7 +766,7 @@ The <code>survey_total()</code> function is analogous to <code>sum</code>. It ca
 <h4>Example 1: Estimated population count<a href="c05-descriptive-analysis.html#example-1-estimated-population-count-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>To calculate a population count estimate with <code>survey_total()</code>, we leave the argument <code>x</code> empty, as shown in the example below:</p>
 <div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="c05-descriptive-analysis.html#cb72-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb72-2"><a href="c05-descriptive-analysis.html#cb72-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Tot =</span> <span class="fu">survey_total</span>())  </span></code></pre></div>
+<span id="cb72-2"><a href="c05-descriptive-analysis.html#cb72-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Tot =</span> <span class="fu">survey_total</span>())</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 2
 ##          Tot Tot_se
 ##        &lt;dbl&gt;  &lt;dbl&gt;
@@ -791,7 +792,8 @@ The distinction between <code>survey_total()</code> and <code>survey_count()</co
 <div class="sourceCode" id="cb76"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb76-1"><a href="c05-descriptive-analysis.html#cb76-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb76-2"><a href="c05-descriptive-analysis.html#cb76-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
 <span id="cb76-3"><a href="c05-descriptive-analysis.html#cb76-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">elec_bill =</span> <span class="fu">survey_total</span>(DOLLAREL,</span>
-<span id="cb76-4"><a href="c05-descriptive-analysis.html#cb76-4" tabindex="-1"></a>                                     <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>))</span></code></pre></div>
+<span id="cb76-4"><a href="c05-descriptive-analysis.html#cb76-4" tabindex="-1"></a>    <span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span></span>
+<span id="cb76-5"><a href="c05-descriptive-analysis.html#cb76-5" tabindex="-1"></a>  ))</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 4
 ##   Region       elec_bill elec_bill_low elec_bill_upp
 ##   &lt;fct&gt;            &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;
@@ -862,7 +864,7 @@ Means and proportions form the foundation of many research studies. These estima
 <p>If we are interested in obtaining the proportion of people in each region in the RECS data, we can use <code>group_by()</code> and <code>survey_prop()</code> as shown below:</p>
 <div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="c05-descriptive-analysis.html#cb79-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb79-2"><a href="c05-descriptive-analysis.html#cb79-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
-<span id="cb79-3"><a href="c05-descriptive-analysis.html#cb79-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_prop</span>()) </span></code></pre></div>
+<span id="cb79-3"><a href="c05-descriptive-analysis.html#cb79-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_prop</span>())</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 3
 ##   Region        p           p_se
 ##   &lt;fct&gt;     &lt;dbl&gt;          &lt;dbl&gt;
@@ -929,7 +931,8 @@ The <code>survey_prop()</code> function is essentially the same as using <code>s
 <p>Below, we calculate the estimated average cost of electricity in the U.S. using <code>survey_mean()</code>. To include both the standard error and the confidence interval, we can include them in the <code>vartype</code> argument:</p>
 <div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="c05-descriptive-analysis.html#cb87-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb87-2"><a href="c05-descriptive-analysis.html#cb87-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">elec_bill =</span> <span class="fu">survey_mean</span>(DOLLAREL,</span>
-<span id="cb87-3"><a href="c05-descriptive-analysis.html#cb87-3" tabindex="-1"></a>                                    <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>)))</span></code></pre></div>
+<span id="cb87-3"><a href="c05-descriptive-analysis.html#cb87-3" tabindex="-1"></a>    <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>)</span>
+<span id="cb87-4"><a href="c05-descriptive-analysis.html#cb87-4" tabindex="-1"></a>  ))</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 4
 ##   elec_bill elec_bill_se elec_bill_low elec_bill_upp
 ##       &lt;dbl&gt;        &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;
@@ -1010,7 +1013,8 @@ To better understand the distribution of a continuous variable like income, we c
 <p>Quantiles provide insights into the distribution of a variable. Let’s look into the quartiles, specifically, the first quartile (p=0.25), the median (p=0.5), and the third quartile (p=0.75) of electric bills.</p>
 <div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="c05-descriptive-analysis.html#cb92-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb92-2"><a href="c05-descriptive-analysis.html#cb92-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">elec_bill =</span> <span class="fu">survey_quantile</span>(DOLLAREL,</span>
-<span id="cb92-3"><a href="c05-descriptive-analysis.html#cb92-3" tabindex="-1"></a>                                        <span class="at">quantiles =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, .<span class="dv">5</span>, <span class="fl">0.75</span>)))</span></code></pre></div>
+<span id="cb92-3"><a href="c05-descriptive-analysis.html#cb92-3" tabindex="-1"></a>    <span class="at">quantiles =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, .<span class="dv">5</span>, <span class="fl">0.75</span>)</span>
+<span id="cb92-4"><a href="c05-descriptive-analysis.html#cb92-4" tabindex="-1"></a>  ))</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
 ##   elec_bill_q25 elec_bill_q50 elec_bill_q75 elec_bill_q25_se
 ##           &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;            &lt;dbl&gt;
@@ -1026,7 +1030,8 @@ To better understand the distribution of a continuous variable like income, we c
 <div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb94-1"><a href="c05-descriptive-analysis.html#cb94-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb94-2"><a href="c05-descriptive-analysis.html#cb94-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
 <span id="cb94-3"><a href="c05-descriptive-analysis.html#cb94-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">elec_bill =</span> <span class="fu">survey_quantile</span>(DOLLAREL,</span>
-<span id="cb94-4"><a href="c05-descriptive-analysis.html#cb94-4" tabindex="-1"></a>                                        <span class="at">quantiles =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, .<span class="dv">5</span>, <span class="fl">0.75</span>))) </span></code></pre></div>
+<span id="cb94-4"><a href="c05-descriptive-analysis.html#cb94-4" tabindex="-1"></a>    <span class="at">quantiles =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, .<span class="dv">5</span>, <span class="fl">0.75</span>)</span>
+<span id="cb94-5"><a href="c05-descriptive-analysis.html#cb94-5" tabindex="-1"></a>  ))</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 7
 ##   Region    elec_bill_q25 elec_bill_q50 elec_bill_q75 elec_bill_q25_se
 ##   &lt;fct&gt;             &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;            &lt;dbl&gt;
@@ -1047,12 +1052,13 @@ To better understand the distribution of a continuous variable like income, we c
 <p>As mentioned in the syntax section, we can specify quantiles of <code>0</code> (minimum) and <code>1</code> (maximum), and R calculates these values. However, these are only the minimum and maximum values in the data, and there is not enough information to determine their standard errors:</p>
 <div class="sourceCode" id="cb96"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb96-1"><a href="c05-descriptive-analysis.html#cb96-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb96-2"><a href="c05-descriptive-analysis.html#cb96-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">elec_bill =</span> <span class="fu">survey_quantile</span>(DOLLAREL,</span>
-<span id="cb96-3"><a href="c05-descriptive-analysis.html#cb96-3" tabindex="-1"></a>                                        <span class="at">quantiles =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))) </span></code></pre></div>
+<span id="cb96-3"><a href="c05-descriptive-analysis.html#cb96-3" tabindex="-1"></a>    <span class="at">quantiles =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb96-4"><a href="c05-descriptive-analysis.html#cb96-4" tabindex="-1"></a>  ))</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 4
 ##   elec_bill_q00 elec_bill_q100 elec_bill_q00_se elec_bill_q100_se
 ##           &lt;dbl&gt;          &lt;dbl&gt;            &lt;dbl&gt;             &lt;dbl&gt;
-## 1         -151.         15680.              NaN                 0</code></pre>
-<p>The minimum cost of electricity in the dataset is -$151 while the maximum is $15,680, but the standard error is shown as <code>NaN</code> and 0, respectively. Notice that the minimum cost is a negative number. This may be surprising, but some housing units with solar power sell their energy back to the grid and earn money, which is recorded as a negative expenditure.</p>
+## 1         -889.         15680.              NaN                 0</code></pre>
+<p>The minimum cost of electricity in the dataset is -$889 while the maximum is $15,680, but the standard error is shown as <code>NaN</code> and 0, respectively. Notice that the minimum cost is a negative number. This may be surprising, but some housing units with solar power sell their energy back to the grid and earn money, which is recorded as a negative expenditure.</p>
 </div>
 <div id="example-4-overall-median" class="section level4 unnumbered hasAnchor">
 <h4>Example 4: Overall median<a href="c05-descriptive-analysis.html#example-4-overall-median" class="anchor-section" aria-label="Anchor link to header"></a></h4>
@@ -1243,8 +1249,10 @@ All survey functions produce an estimate of the variability of a given estimate.
 <h4>Example 1: Overall variability<a href="c05-descriptive-analysis.html#example-1-overall-variability" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>Let’s return to electricity bills and explore the variability in electricity expenditure.</p>
 <div class="sourceCode" id="cb113"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb113-1"><a href="c05-descriptive-analysis.html#cb113-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb113-2"><a href="c05-descriptive-analysis.html#cb113-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">var_elbill =</span> <span class="fu">survey_var</span>(DOLLAREL),</span>
-<span id="cb113-3"><a href="c05-descriptive-analysis.html#cb113-3" tabindex="-1"></a>            <span class="at">sd_elbill =</span> <span class="fu">survey_sd</span>(DOLLAREL))</span></code></pre></div>
+<span id="cb113-2"><a href="c05-descriptive-analysis.html#cb113-2" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb113-3"><a href="c05-descriptive-analysis.html#cb113-3" tabindex="-1"></a>    <span class="at">var_elbill =</span> <span class="fu">survey_var</span>(DOLLAREL),</span>
+<span id="cb113-4"><a href="c05-descriptive-analysis.html#cb113-4" tabindex="-1"></a>    <span class="at">sd_elbill =</span> <span class="fu">survey_sd</span>(DOLLAREL)</span>
+<span id="cb113-5"><a href="c05-descriptive-analysis.html#cb113-5" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 3
 ##   var_elbill var_elbill_se sd_elbill
 ##        &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;
@@ -1256,8 +1264,10 @@ All survey functions produce an estimate of the variability of a given estimate.
 <p>To find out if the variability in electricity expenditure is similar across regions, we can calculate the variance by region using <code>group_by()</code>:</p>
 <div class="sourceCode" id="cb115"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb115-1"><a href="c05-descriptive-analysis.html#cb115-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb115-2"><a href="c05-descriptive-analysis.html#cb115-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
-<span id="cb115-3"><a href="c05-descriptive-analysis.html#cb115-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">var_elbill =</span> <span class="fu">survey_var</span>(DOLLAREL),</span>
-<span id="cb115-4"><a href="c05-descriptive-analysis.html#cb115-4" tabindex="-1"></a>            <span class="at">sd_elbill =</span> <span class="fu">survey_sd</span>(DOLLAREL))</span></code></pre></div>
+<span id="cb115-3"><a href="c05-descriptive-analysis.html#cb115-3" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb115-4"><a href="c05-descriptive-analysis.html#cb115-4" tabindex="-1"></a>    <span class="at">var_elbill =</span> <span class="fu">survey_var</span>(DOLLAREL),</span>
+<span id="cb115-5"><a href="c05-descriptive-analysis.html#cb115-5" tabindex="-1"></a>    <span class="at">sd_elbill =</span> <span class="fu">survey_sd</span>(DOLLAREL)</span>
+<span id="cb115-6"><a href="c05-descriptive-analysis.html#cb115-6" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 4
 ##   Region    var_elbill var_elbill_se sd_elbill
 ##   &lt;fct&gt;          &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;
@@ -1275,8 +1285,10 @@ All survey functions produce an estimate of the variability of a given estimate.
 <h3><span class="header-section-number">5.9.1</span> Unweighted analysis <a href="c05-descriptive-analysis.html#unweighted-analysis" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Sometimes, it is helpful to calculate an unweighted estimate of a given variable. For this, we use the <code>unweighted()</code> function in the <code>summarize()</code> function. The <code>unweighted()</code> function calculates unweighted summaries from a <code>tbl_svy</code> object, providing the summary among the <em>respondents</em> without extrapolating to a population estimate. The <code>unweighted()</code> function can be used in conjunction with any {dplyr} functions. Here is an example looking at the average household electricity cost: </p>
 <div class="sourceCode" id="cb117"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb117-1"><a href="c05-descriptive-analysis.html#cb117-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb117-2"><a href="c05-descriptive-analysis.html#cb117-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">elec_bill =</span> <span class="fu">survey_mean</span>(DOLLAREL),</span>
-<span id="cb117-3"><a href="c05-descriptive-analysis.html#cb117-3" tabindex="-1"></a>            <span class="at">elec_unweight =</span> <span class="fu">unweighted</span>(<span class="fu">mean</span>(DOLLAREL)))</span></code></pre></div>
+<span id="cb117-2"><a href="c05-descriptive-analysis.html#cb117-2" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb117-3"><a href="c05-descriptive-analysis.html#cb117-3" tabindex="-1"></a>    <span class="at">elec_bill =</span> <span class="fu">survey_mean</span>(DOLLAREL),</span>
+<span id="cb117-4"><a href="c05-descriptive-analysis.html#cb117-4" tabindex="-1"></a>    <span class="at">elec_unweight =</span> <span class="fu">unweighted</span>(<span class="fu">mean</span>(DOLLAREL))</span>
+<span id="cb117-5"><a href="c05-descriptive-analysis.html#cb117-5" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 3
 ##   elec_bill elec_bill_se elec_unweight
 ##       &lt;dbl&gt;        &lt;dbl&gt;         &lt;dbl&gt;
@@ -1292,7 +1304,8 @@ We mentioned using <code>filter()</code> to subset a survey object for analysis.
 <div class="sourceCode" id="cb119"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb119-1"><a href="c05-descriptive-analysis.html#cb119-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb119-2"><a href="c05-descriptive-analysis.html#cb119-2" tabindex="-1"></a>  <span class="fu">filter</span>(BTUNG <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb119-3"><a href="c05-descriptive-analysis.html#cb119-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">NG_mean =</span> <span class="fu">survey_mean</span>(DOLLARNG,</span>
-<span id="cb119-4"><a href="c05-descriptive-analysis.html#cb119-4" tabindex="-1"></a>                                  <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>)))</span></code></pre></div>
+<span id="cb119-4"><a href="c05-descriptive-analysis.html#cb119-4" tabindex="-1"></a>    <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>)</span>
+<span id="cb119-5"><a href="c05-descriptive-analysis.html#cb119-5" tabindex="-1"></a>  ))</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 4
 ##   NG_mean NG_mean_se NG_mean_low NG_mean_upp
 ##     &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
@@ -1300,7 +1313,8 @@ We mentioned using <code>filter()</code> to subset a survey object for analysis.
 <p>The estimated average amount spent on natural gas among households that use natural gas is $631. Let’s compare this to the mean when we do not filter.</p>
 <div class="sourceCode" id="cb121"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb121-1"><a href="c05-descriptive-analysis.html#cb121-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb121-2"><a href="c05-descriptive-analysis.html#cb121-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">NG_mean =</span> <span class="fu">survey_mean</span>(DOLLARNG,</span>
-<span id="cb121-3"><a href="c05-descriptive-analysis.html#cb121-3" tabindex="-1"></a>                                  <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>)))</span></code></pre></div>
+<span id="cb121-3"><a href="c05-descriptive-analysis.html#cb121-3" tabindex="-1"></a>    <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">&quot;se&quot;</span>, <span class="st">&quot;ci&quot;</span>)</span>
+<span id="cb121-4"><a href="c05-descriptive-analysis.html#cb121-4" tabindex="-1"></a>  ))</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 4
 ##   NG_mean NG_mean_se NG_mean_low NG_mean_upp
 ##     &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
@@ -1370,8 +1384,10 @@ We mentioned using <code>filter()</code> to subset a survey object for analysis.
 <p>We can see the estimated average electricity bills by region: $1,343 for the Northeast, $1,548 for the South, and so on. The last row, where <code>Region = NA</code>, is the national average electricity bill, $1,380. However, naming the national “region” as <code>NA</code> is not very informative. We can give it a better name using the <code>.fill</code> argument.</p>
 <div class="sourceCode" id="cb130"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb130-1"><a href="c05-descriptive-analysis.html#cb130-1" tabindex="-1"></a>recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb130-2"><a href="c05-descriptive-analysis.html#cb130-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
-<span id="cb130-3"><a href="c05-descriptive-analysis.html#cb130-3" tabindex="-1"></a>  <span class="fu">cascade</span>(<span class="at">DOLLAREL_mn =</span> <span class="fu">survey_mean</span>(DOLLAREL),</span>
-<span id="cb130-4"><a href="c05-descriptive-analysis.html#cb130-4" tabindex="-1"></a>          <span class="at">.fill =</span> <span class="st">&quot;National&quot;</span>)</span></code></pre></div>
+<span id="cb130-3"><a href="c05-descriptive-analysis.html#cb130-3" tabindex="-1"></a>  <span class="fu">cascade</span>(</span>
+<span id="cb130-4"><a href="c05-descriptive-analysis.html#cb130-4" tabindex="-1"></a>    <span class="at">DOLLAREL_mn =</span> <span class="fu">survey_mean</span>(DOLLAREL),</span>
+<span id="cb130-5"><a href="c05-descriptive-analysis.html#cb130-5" tabindex="-1"></a>    <span class="at">.fill =</span> <span class="st">&quot;National&quot;</span></span>
+<span id="cb130-6"><a href="c05-descriptive-analysis.html#cb130-6" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 3
 ##   Region    DOLLAREL_mn DOLLAREL_mn_se
 ##   &lt;fct&gt;           &lt;dbl&gt;          &lt;dbl&gt;
@@ -1410,13 +1426,13 @@ We mentioned using <code>filter()</code> to subset a survey object for analysis.
 <span id="cb134-2"><a href="c05-descriptive-analysis.html#cb134-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(</span>
 <span id="cb134-3"><a href="c05-descriptive-analysis.html#cb134-3" tabindex="-1"></a>    <span class="fu">starts_with</span>(<span class="st">&quot;BTU&quot;</span>),</span>
 <span id="cb134-4"><a href="c05-descriptive-analysis.html#cb134-4" tabindex="-1"></a>    <span class="fu">list</span>(</span>
-<span id="cb134-5"><a href="c05-descriptive-analysis.html#cb134-5" tabindex="-1"></a>      <span class="at">Total =</span>  <span class="sc">~</span> <span class="fu">survey_total</span>(.x, <span class="at">vartype =</span> <span class="st">&quot;cv&quot;</span>),</span>
-<span id="cb134-6"><a href="c05-descriptive-analysis.html#cb134-6" tabindex="-1"></a>      <span class="at">Mean =</span>  <span class="sc">~</span> <span class="fu">survey_mean</span>(.x, <span class="at">vartype =</span> <span class="st">&quot;cv&quot;</span>)</span>
+<span id="cb134-5"><a href="c05-descriptive-analysis.html#cb134-5" tabindex="-1"></a>      <span class="at">Total =</span> <span class="sc">~</span> <span class="fu">survey_total</span>(.x, <span class="at">vartype =</span> <span class="st">&quot;cv&quot;</span>),</span>
+<span id="cb134-6"><a href="c05-descriptive-analysis.html#cb134-6" tabindex="-1"></a>      <span class="at">Mean =</span> <span class="sc">~</span> <span class="fu">survey_mean</span>(.x, <span class="at">vartype =</span> <span class="st">&quot;cv&quot;</span>)</span>
 <span id="cb134-7"><a href="c05-descriptive-analysis.html#cb134-7" tabindex="-1"></a>    ),</span>
 <span id="cb134-8"><a href="c05-descriptive-analysis.html#cb134-8" tabindex="-1"></a>    <span class="at">.unpack =</span> <span class="st">&quot;{outer}.{inner}&quot;</span></span>
 <span id="cb134-9"><a href="c05-descriptive-analysis.html#cb134-9" tabindex="-1"></a>  ))</span>
 <span id="cb134-10"><a href="c05-descriptive-analysis.html#cb134-10" tabindex="-1"></a></span>
-<span id="cb134-11"><a href="c05-descriptive-analysis.html#cb134-11" tabindex="-1"></a>consumption_ests </span></code></pre></div>
+<span id="cb134-11"><a href="c05-descriptive-analysis.html#cb134-11" tabindex="-1"></a>consumption_ests</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 20
 ##   BTUEL_Total.coef BTUEL_Total._cv BTUEL_Mean.coef BTUEL_Mean._cv
 ##              &lt;dbl&gt;           &lt;dbl&gt;           &lt;dbl&gt;          &lt;dbl&gt;
@@ -1464,14 +1480,16 @@ We mentioned using <code>filter()</code> to subset a survey object for analysis.
 ## 20 WOOD     Mean  _cv               0.0454</code></pre>
 <p>Then, we use <code>pivot_wider()</code> to create a table that is nearly ready for publication. Within the function, we can make the names for each element more descriptive and informative by gluing the <code>Stat</code> and <code>Type</code> together with <code>names_glue</code>. Further details on creating publication-ready tables are covered in Chapter <a href="c08-communicating-results.html#c08-communicating-results">8</a>.</p>
 <div class="sourceCode" id="cb138"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb138-1"><a href="c05-descriptive-analysis.html#cb138-1" tabindex="-1"></a>consumption_ests_long <span class="sc">%&gt;%</span></span>
-<span id="cb138-2"><a href="c05-descriptive-analysis.html#cb138-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Type =</span> <span class="fu">case_when</span>(Type <span class="sc">==</span> <span class="st">&quot;coef&quot;</span> <span class="sc">~</span> <span class="st">&quot;&quot;</span>,</span>
-<span id="cb138-3"><a href="c05-descriptive-analysis.html#cb138-3" tabindex="-1"></a>                          Type <span class="sc">==</span> <span class="st">&quot;_cv&quot;</span> <span class="sc">~</span> <span class="st">&quot; (CV)&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb138-4"><a href="c05-descriptive-analysis.html#cb138-4" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(</span>
-<span id="cb138-5"><a href="c05-descriptive-analysis.html#cb138-5" tabindex="-1"></a>    <span class="at">id_cols =</span> FuelType,</span>
-<span id="cb138-6"><a href="c05-descriptive-analysis.html#cb138-6" tabindex="-1"></a>    <span class="at">names_from =</span> <span class="fu">c</span>(Stat, Type),</span>
-<span id="cb138-7"><a href="c05-descriptive-analysis.html#cb138-7" tabindex="-1"></a>    <span class="at">names_glue =</span> <span class="st">&quot;{Stat}{Type}&quot;</span>,</span>
-<span id="cb138-8"><a href="c05-descriptive-analysis.html#cb138-8" tabindex="-1"></a>    <span class="at">values_from =</span> value</span>
-<span id="cb138-9"><a href="c05-descriptive-analysis.html#cb138-9" tabindex="-1"></a>  )</span></code></pre></div>
+<span id="cb138-2"><a href="c05-descriptive-analysis.html#cb138-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Type =</span> <span class="fu">case_when</span>(</span>
+<span id="cb138-3"><a href="c05-descriptive-analysis.html#cb138-3" tabindex="-1"></a>    Type <span class="sc">==</span> <span class="st">&quot;coef&quot;</span> <span class="sc">~</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb138-4"><a href="c05-descriptive-analysis.html#cb138-4" tabindex="-1"></a>    Type <span class="sc">==</span> <span class="st">&quot;_cv&quot;</span> <span class="sc">~</span> <span class="st">&quot; (CV)&quot;</span></span>
+<span id="cb138-5"><a href="c05-descriptive-analysis.html#cb138-5" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb138-6"><a href="c05-descriptive-analysis.html#cb138-6" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(</span>
+<span id="cb138-7"><a href="c05-descriptive-analysis.html#cb138-7" tabindex="-1"></a>    <span class="at">id_cols =</span> FuelType,</span>
+<span id="cb138-8"><a href="c05-descriptive-analysis.html#cb138-8" tabindex="-1"></a>    <span class="at">names_from =</span> <span class="fu">c</span>(Stat, Type),</span>
+<span id="cb138-9"><a href="c05-descriptive-analysis.html#cb138-9" tabindex="-1"></a>    <span class="at">names_glue =</span> <span class="st">&quot;{Stat}{Type}&quot;</span>,</span>
+<span id="cb138-10"><a href="c05-descriptive-analysis.html#cb138-10" tabindex="-1"></a>    <span class="at">values_from =</span> value</span>
+<span id="cb138-11"><a href="c05-descriptive-analysis.html#cb138-11" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 5
 ##   FuelType          Total `Total (CV)`   Mean `Mean (CV)`
 ##   &lt;chr&gt;             &lt;dbl&gt;        &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;
@@ -1504,9 +1522,10 @@ We mentioned using <code>filter()</code> to subset a survey object for analysis.
 <p>If we are <em>only</em> interested in the <code>TRUE</code> outcomes, that is, the proportion of households that have A/C and the proportion that have heating, we can simplify the code. Applying <code>survey_mean()</code> to a logical variable is the same as using <code>survey_prop()</code>, as shown below:</p>
 <div class="sourceCode" id="cb144"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb144-1"><a href="c05-descriptive-analysis.html#cb144-1" tabindex="-1"></a>cool_heat_tab <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb144-2"><a href="c05-descriptive-analysis.html#cb144-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">c</span>(ACUsed, SpaceHeatingUsed), <span class="sc">~</span> <span class="fu">survey_mean</span>(.x),</span>
-<span id="cb144-3"><a href="c05-descriptive-analysis.html#cb144-3" tabindex="-1"></a>                   <span class="at">.unpack =</span> <span class="st">&quot;{outer}.{inner}&quot;</span>))</span>
-<span id="cb144-4"><a href="c05-descriptive-analysis.html#cb144-4" tabindex="-1"></a></span>
-<span id="cb144-5"><a href="c05-descriptive-analysis.html#cb144-5" tabindex="-1"></a>cool_heat_tab</span></code></pre></div>
+<span id="cb144-3"><a href="c05-descriptive-analysis.html#cb144-3" tabindex="-1"></a>    <span class="at">.unpack =</span> <span class="st">&quot;{outer}.{inner}&quot;</span></span>
+<span id="cb144-4"><a href="c05-descriptive-analysis.html#cb144-4" tabindex="-1"></a>  ))</span>
+<span id="cb144-5"><a href="c05-descriptive-analysis.html#cb144-5" tabindex="-1"></a></span>
+<span id="cb144-6"><a href="c05-descriptive-analysis.html#cb144-6" tabindex="-1"></a>cool_heat_tab</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 4
 ##   ACUsed.coef ACUsed._se SpaceHeatingUsed.coef SpaceHeatingUsed._se
 ##         &lt;dbl&gt;      &lt;dbl&gt;                 &lt;dbl&gt;                &lt;dbl&gt;
@@ -1515,10 +1534,13 @@ We mentioned using <code>filter()</code> to subset a survey object for analysis.
 <p>Note that the estimates are the same as those obtained using the separate <code>group_by()</code> statements. As before, we can use <code>pivot_longer()</code> to structure the table in a more suitable format for distribution.</p>
 <div class="sourceCode" id="cb146"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb146-1"><a href="c05-descriptive-analysis.html#cb146-1" tabindex="-1"></a>cool_heat_tab <span class="sc">%&gt;%</span></span>
 <span id="cb146-2"><a href="c05-descriptive-analysis.html#cb146-2" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(),</span>
-<span id="cb146-3"><a href="c05-descriptive-analysis.html#cb146-3" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;Comfort&quot;</span>, <span class="st">&quot;.value&quot;</span>),</span>
-<span id="cb146-4"><a href="c05-descriptive-analysis.html#cb146-4" tabindex="-1"></a>               <span class="at">names_pattern =</span> <span class="st">&quot;(.*)</span><span class="sc">\\</span><span class="st">.(.*)&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb146-5"><a href="c05-descriptive-analysis.html#cb146-5" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">p =</span> coef,</span>
-<span id="cb146-6"><a href="c05-descriptive-analysis.html#cb146-6" tabindex="-1"></a>         <span class="at">se =</span> <span class="st">`</span><span class="at">_se</span><span class="st">`</span>)</span></code></pre></div>
+<span id="cb146-3"><a href="c05-descriptive-analysis.html#cb146-3" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;Comfort&quot;</span>, <span class="st">&quot;.value&quot;</span>),</span>
+<span id="cb146-4"><a href="c05-descriptive-analysis.html#cb146-4" tabindex="-1"></a>    <span class="at">names_pattern =</span> <span class="st">&quot;(.*)</span><span class="sc">\\</span><span class="st">.(.*)&quot;</span></span>
+<span id="cb146-5"><a href="c05-descriptive-analysis.html#cb146-5" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb146-6"><a href="c05-descriptive-analysis.html#cb146-6" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
+<span id="cb146-7"><a href="c05-descriptive-analysis.html#cb146-7" tabindex="-1"></a>    <span class="at">p =</span> coef,</span>
+<span id="cb146-8"><a href="c05-descriptive-analysis.html#cb146-8" tabindex="-1"></a>    <span class="at">se =</span> <span class="st">`</span><span class="at">_se</span><span class="st">`</span></span>
+<span id="cb146-9"><a href="c05-descriptive-analysis.html#cb146-9" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 2 × 3
 ##   Comfort              p      se
 ##   &lt;chr&gt;            &lt;dbl&gt;   &lt;dbl&gt;
@@ -1620,7 +1642,7 @@ Suppose we want to create a table that shows the proportion of people who expres
 <h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-R-srvyr" class="csl-entry">
-Freedman Ellis, Greg, and Ben Schneider. 2023. <em><span class="nocase">srvyr</span>: ’<span class="nocase">dplyr</span>’-Like Syntax for Summary Statistics of Survey Data</em>.
+Freedman Ellis, Greg, and Ben Schneider. 2023. <em><span class="nocase">srvyr</span>: ’<span class="nocase">dplyr</span>’-Like Syntax for Summary Statistics of Survey Data</em>. <a href="https://github.com/gergness/srvyr">https://github.com/gergness/srvyr</a>.
 </div>
 <div id="ref-lumley2010complex" class="csl-entry">
 Lumley, Thomas. 2010. <em>Complex Surveys: A Guide to Analysis Using <span>R</span></em>. John Wiley; Sons.
@@ -1635,7 +1657,7 @@ Shah, Babubhai V, and Akhil K Vaish. 2006. <span>“Confidence Intervals for Qua
 ———. 2019. <em>Advanced <span>R</span></em>. <a href="https://adv-r.hadley.nz/" class="uri">https://adv-r.hadley.nz/</a>; CRC press.
 </div>
 <div id="ref-R-purrr" class="csl-entry">
-Wickham, Hadley, and Lionel Henry. 2023. <em><span class="nocase">purrr</span>: Functional Programming Tools</em>.
+Wickham, Hadley, and Lionel Henry. 2023. <em><span class="nocase">purrr</span>: Functional Programming Tools</em>. <a href="https://purrr.tidyverse.org/">https://purrr.tidyverse.org/</a>.
 </div>
 </div>
 <div class="footnotes">

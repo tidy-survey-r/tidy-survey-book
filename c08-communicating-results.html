@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 8 Communication of results | Exploring Complex Survey Data Analysis in R</title>
   <meta name="description" content="Bookdown for upcoming book on survey analysis the tidy way." />
-  <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 8 Communication of results | Exploring Complex Survey Data Analysis in R" />
   <meta property="og:type" content="book" />
@@ -52,6 +52,7 @@
 <link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections/anchor-sections.js"></script>
+<link href="libs/htmltools-fill/fill.css" rel="stylesheet" />
 <script src="libs/htmlwidgets/htmlwidgets.js"></script>
 <script src="libs/d3/d3.min.js"></script>
 <script src="libs/dagre/dagre-d3.min.js"></script>
@@ -524,8 +525,8 @@ div.csl-indent {
 <div class="prereqbox">
 <p>For this chapter, load the following packages:</p>
 <div class="sourceCode" id="cb250"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb250-1"><a href="c08-communicating-results.html#cb250-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb250-2"><a href="c08-communicating-results.html#cb250-2" tabindex="-1"></a><span class="fu">library</span>(survey) </span>
-<span id="cb250-3"><a href="c08-communicating-results.html#cb250-3" tabindex="-1"></a><span class="fu">library</span>(srvyr) </span>
+<span id="cb250-2"><a href="c08-communicating-results.html#cb250-2" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
+<span id="cb250-3"><a href="c08-communicating-results.html#cb250-3" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
 <span id="cb250-4"><a href="c08-communicating-results.html#cb250-4" tabindex="-1"></a><span class="fu">library</span>(srvyrexploR)</span>
 <span id="cb250-5"><a href="c08-communicating-results.html#cb250-5" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
 <span id="cb250-6"><a href="c08-communicating-results.html#cb250-6" tabindex="-1"></a><span class="fu">library</span>(gtsummary)</span></code></pre></div>
@@ -594,7 +595,7 @@ Missing data is another instance where we want to be unambiguous and upfront wit
 </div>
 <div id="visualizing-data" class="section level2 hasAnchor" number="8.3">
 <h2><span class="header-section-number">8.3</span> Visualizing data<a href="c08-communicating-results.html#visualizing-data" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Although discussing key findings in the text is important, presenting large amounts of data in tables or visualizations is often more digestible for the audience. Effectively combining text, tables, and graphs can be powerful in communicating results. This section provides examples of using the {gt}, {gtsummary}, and {ggplot2} packages to enhance the dissemination of results <span class="citation">(<a href="#ref-R-gt">Iannone et al. 2023</a>; <a href="#ref-gtsummarysjo">Sjoberg et al. 2021</a>; <a href="#ref-ggplot2wickham">Wickham 2016</a>)</span>.</p>
+<p>Although discussing key findings in the text is important, presenting large amounts of data in tables or visualizations is often more digestible for the audience. Effectively combining text, tables, and graphs can be powerful in communicating results. This section provides examples of using the {gt}, {gtsummary}, and {ggplot2} packages to enhance the dissemination of results <span class="citation">(<a href="#ref-R-gt">Iannone et al. 2024</a>; <a href="#ref-gtsummarysjo">Sjoberg et al. 2021</a>; <a href="#ref-ggplot2wickham">Wickham 2016</a>)</span>.</p>
 <div id="tables" class="section level3 hasAnchor" number="8.3.1">
 <h3><span class="header-section-number">8.3.1</span> Tables<a href="c08-communicating-results.html#tables" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p> </p>
@@ -623,31 +624,35 @@ Let’s start by using some of the data we calculated earlier in this book. In C
 <p>First, we initiate the formatted table with the <code>gt()</code> function on the <code>trust_gov</code> tibble previously created. Next, we use the argument <code>rowname_col()</code> to designate the <code>TrustGovernment</code> column as the label for each row (called the table “stub”.) We apply the <code>cols_label()</code> function to create informative column labels instead of variable names and then the <code>tab_spanner()</code> function to add a label across multiple columns. In this case, we label all columns except the stub with “Trust in Government, 2020”. We then format the proportions into percentages with the <code>fmt_percent()</code> function and reduce the number of decimals shown to one with <code>decimals = 1</code>. Finally, the <code>tab_caption()</code> function adds a table title for the HTML version of the book. We can use the caption for cross-referencing in R Markdown, Quarto, and bookdown, as well as adding it to the list of tables in the book. These changes are all seen in Table <a href="c08-communicating-results.html#tab:results-table-gt1-tab">8.1</a>.</p>
 <div class="sourceCode" id="cb254"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb254-1"><a href="c08-communicating-results.html#cb254-1" tabindex="-1"></a>trust_gov_gt <span class="ot">&lt;-</span> trust_gov <span class="sc">%&gt;%</span></span>
 <span id="cb254-2"><a href="c08-communicating-results.html#cb254-2" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb254-3"><a href="c08-communicating-results.html#cb254-3" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="at">trust_gov_p =</span> <span class="st">&quot;%&quot;</span>,</span>
-<span id="cb254-4"><a href="c08-communicating-results.html#cb254-4" tabindex="-1"></a>             <span class="at">trust_gov_p_se =</span> <span class="st">&quot;s.e. (%)&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb254-5"><a href="c08-communicating-results.html#cb254-5" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>,</span>
-<span id="cb254-6"><a href="c08-communicating-results.html#cb254-6" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(trust_gov_p, trust_gov_p_se)) <span class="sc">%&gt;%</span></span>
-<span id="cb254-7"><a href="c08-communicating-results.html#cb254-7" tabindex="-1"></a>  <span class="fu">fmt_percent</span>(<span class="at">decimals =</span> <span class="dv">1</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb255"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb255-1"><a href="c08-communicating-results.html#cb255-1" tabindex="-1"></a>trust_gov_gt <span class="sc">%&gt;%</span> </span>
+<span id="cb254-3"><a href="c08-communicating-results.html#cb254-3" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
+<span id="cb254-4"><a href="c08-communicating-results.html#cb254-4" tabindex="-1"></a>    <span class="at">trust_gov_p =</span> <span class="st">&quot;%&quot;</span>,</span>
+<span id="cb254-5"><a href="c08-communicating-results.html#cb254-5" tabindex="-1"></a>    <span class="at">trust_gov_p_se =</span> <span class="st">&quot;s.e. (%)&quot;</span></span>
+<span id="cb254-6"><a href="c08-communicating-results.html#cb254-6" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb254-7"><a href="c08-communicating-results.html#cb254-7" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb254-8"><a href="c08-communicating-results.html#cb254-8" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>,</span>
+<span id="cb254-9"><a href="c08-communicating-results.html#cb254-9" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">c</span>(trust_gov_p, trust_gov_p_se)</span>
+<span id="cb254-10"><a href="c08-communicating-results.html#cb254-10" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb254-11"><a href="c08-communicating-results.html#cb254-11" tabindex="-1"></a>  <span class="fu">fmt_percent</span>(<span class="at">decimals =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb255"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb255-1"><a href="c08-communicating-results.html#cb255-1" tabindex="-1"></a>trust_gov_gt <span class="sc">%&gt;%</span></span>
 <span id="cb255-2"><a href="c08-communicating-results.html#cb255-2" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">&quot;Example of {gt} table with trust in government estimate&quot;</span>)</span></code></pre></div>
 
-<div id="bfvuvttggo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#bfvuvttggo table {
+<div id="zpwarqostn" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#zpwarqostn table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#bfvuvttggo thead, #bfvuvttggo tbody, #bfvuvttggo tfoot, #bfvuvttggo tr, #bfvuvttggo td, #bfvuvttggo th {
+#zpwarqostn thead, #zpwarqostn tbody, #zpwarqostn tfoot, #zpwarqostn tr, #zpwarqostn td, #zpwarqostn th {
   border-style: none;
 }
 
-#bfvuvttggo p {
+#zpwarqostn p {
   margin: 0;
   padding: 0;
 }
 
-#bfvuvttggo .gt_table {
+#zpwarqostn .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -673,12 +678,12 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-left-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_caption {
+#zpwarqostn .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#bfvuvttggo .gt_title {
+#zpwarqostn .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -690,7 +695,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-bottom-width: 0;
 }
 
-#bfvuvttggo .gt_subtitle {
+#zpwarqostn .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -702,7 +707,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-top-width: 0;
 }
 
-#bfvuvttggo .gt_heading {
+#zpwarqostn .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -714,13 +719,13 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-right-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_bottom_border {
+#zpwarqostn .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_col_headings {
+#zpwarqostn .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -735,7 +740,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-right-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_col_heading {
+#zpwarqostn .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -755,7 +760,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   overflow-x: hidden;
 }
 
-#bfvuvttggo .gt_column_spanner_outer {
+#zpwarqostn .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -767,15 +772,15 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 4px;
 }
 
-#bfvuvttggo .gt_column_spanner_outer:first-child {
+#zpwarqostn .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#bfvuvttggo .gt_column_spanner_outer:last-child {
+#zpwarqostn .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#bfvuvttggo .gt_column_spanner {
+#zpwarqostn .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -787,11 +792,11 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   width: 100%;
 }
 
-#bfvuvttggo .gt_spanner_row {
+#zpwarqostn .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#bfvuvttggo .gt_group_heading {
+#zpwarqostn .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -817,7 +822,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   text-align: left;
 }
 
-#bfvuvttggo .gt_empty_group_heading {
+#zpwarqostn .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -832,15 +837,15 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   vertical-align: middle;
 }
 
-#bfvuvttggo .gt_from_md > :first-child {
+#zpwarqostn .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#bfvuvttggo .gt_from_md > :last-child {
+#zpwarqostn .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#bfvuvttggo .gt_row {
+#zpwarqostn .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -859,7 +864,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   overflow-x: hidden;
 }
 
-#bfvuvttggo .gt_stub {
+#zpwarqostn .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -872,7 +877,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 5px;
 }
 
-#bfvuvttggo .gt_stub_row_group {
+#zpwarqostn .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -886,15 +891,15 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   vertical-align: top;
 }
 
-#bfvuvttggo .gt_row_group_first td {
+#zpwarqostn .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#bfvuvttggo .gt_row_group_first th {
+#zpwarqostn .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#bfvuvttggo .gt_summary_row {
+#zpwarqostn .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -904,16 +909,16 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 5px;
 }
 
-#bfvuvttggo .gt_first_summary_row {
+#zpwarqostn .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_first_summary_row.thick {
+#zpwarqostn .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#bfvuvttggo .gt_last_summary_row {
+#zpwarqostn .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -923,7 +928,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-bottom-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_grand_summary_row {
+#zpwarqostn .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -933,7 +938,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 5px;
 }
 
-#bfvuvttggo .gt_first_grand_summary_row {
+#zpwarqostn .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -943,7 +948,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-top-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_last_grand_summary_row_top {
+#zpwarqostn .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -953,11 +958,11 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-bottom-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_striped {
+#zpwarqostn .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#bfvuvttggo .gt_table_body {
+#zpwarqostn .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -966,7 +971,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-bottom-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_footnotes {
+#zpwarqostn .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -980,7 +985,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-right-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_footnote {
+#zpwarqostn .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -989,7 +994,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 5px;
 }
 
-#bfvuvttggo .gt_sourcenotes {
+#zpwarqostn .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1003,7 +1008,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-right-color: #D3D3D3;
 }
 
-#bfvuvttggo .gt_sourcenote {
+#zpwarqostn .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1011,70 +1016,69 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 5px;
 }
 
-#bfvuvttggo .gt_left {
+#zpwarqostn .gt_left {
   text-align: left;
 }
 
-#bfvuvttggo .gt_center {
+#zpwarqostn .gt_center {
   text-align: center;
 }
 
-#bfvuvttggo .gt_right {
+#zpwarqostn .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#bfvuvttggo .gt_font_normal {
+#zpwarqostn .gt_font_normal {
   font-weight: normal;
 }
 
-#bfvuvttggo .gt_font_bold {
+#zpwarqostn .gt_font_bold {
   font-weight: bold;
 }
 
-#bfvuvttggo .gt_font_italic {
+#zpwarqostn .gt_font_italic {
   font-style: italic;
 }
 
-#bfvuvttggo .gt_super {
+#zpwarqostn .gt_super {
   font-size: 65%;
 }
 
-#bfvuvttggo .gt_footnote_marks {
+#zpwarqostn .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#bfvuvttggo .gt_asterisk {
+#zpwarqostn .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#bfvuvttggo .gt_indent_1 {
+#zpwarqostn .gt_indent_1 {
   text-indent: 5px;
 }
 
-#bfvuvttggo .gt_indent_2 {
+#zpwarqostn .gt_indent_2 {
   text-indent: 10px;
 }
 
-#bfvuvttggo .gt_indent_3 {
+#zpwarqostn .gt_indent_3 {
   text-indent: 15px;
 }
 
-#bfvuvttggo .gt_indent_4 {
+#zpwarqostn .gt_indent_4 {
   text-indent: 20px;
 }
 
-#bfvuvttggo .gt_indent_5 {
+#zpwarqostn .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <caption><span id="tab:results-table-gt1-tab">TABLE 8.1: </span>Example of {gt} table with trust in government estimate</caption>
   <thead>
-    
     <tr class="gt_col_headings gt_spanner_row">
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" scope="col" id=""></th>
       <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" scope="colgroup" id="Trust in Government, 2020">
@@ -1116,27 +1120,29 @@ Let’s start by using some of the data we calculated earlier in this book. In C
 <span id="cb256-6"><a href="c08-communicating-results.html#cb256-6" tabindex="-1"></a>    <span class="st">&quot;Question text: How often can you trust the federal government</span></span>
 <span id="cb256-7"><a href="c08-communicating-results.html#cb256-7" tabindex="-1"></a><span class="st">    in Washington to do what is right?&quot;</span></span>
 <span id="cb256-8"><a href="c08-communicating-results.html#cb256-8" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb256-9"><a href="c08-communicating-results.html#cb256-9" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">scale_by =</span> <span class="dv">100</span>,</span>
-<span id="cb256-10"><a href="c08-communicating-results.html#cb256-10" tabindex="-1"></a>             <span class="at">decimals =</span> <span class="dv">1</span>)</span></code></pre></div>
+<span id="cb256-9"><a href="c08-communicating-results.html#cb256-9" tabindex="-1"></a>  <span class="fu">fmt_number</span>(</span>
+<span id="cb256-10"><a href="c08-communicating-results.html#cb256-10" tabindex="-1"></a>    <span class="at">scale_by =</span> <span class="dv">100</span>,</span>
+<span id="cb256-11"><a href="c08-communicating-results.html#cb256-11" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">1</span></span>
+<span id="cb256-12"><a href="c08-communicating-results.html#cb256-12" tabindex="-1"></a>  )</span></code></pre></div>
 <div class="sourceCode" id="cb257"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb257-1"><a href="c08-communicating-results.html#cb257-1" tabindex="-1"></a>trust_gov_gt2</span></code></pre></div>
 
-<div id="llrpqokuiv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#llrpqokuiv table {
+<div id="ohcjmpugth" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#ohcjmpugth table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#llrpqokuiv thead, #llrpqokuiv tbody, #llrpqokuiv tfoot, #llrpqokuiv tr, #llrpqokuiv td, #llrpqokuiv th {
+#ohcjmpugth thead, #ohcjmpugth tbody, #ohcjmpugth tfoot, #ohcjmpugth tr, #ohcjmpugth td, #ohcjmpugth th {
   border-style: none;
 }
 
-#llrpqokuiv p {
+#ohcjmpugth p {
   margin: 0;
   padding: 0;
 }
 
-#llrpqokuiv .gt_table {
+#ohcjmpugth .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1162,12 +1168,12 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-left-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_caption {
+#ohcjmpugth .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#llrpqokuiv .gt_title {
+#ohcjmpugth .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1179,7 +1185,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-bottom-width: 0;
 }
 
-#llrpqokuiv .gt_subtitle {
+#ohcjmpugth .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1191,7 +1197,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-top-width: 0;
 }
 
-#llrpqokuiv .gt_heading {
+#ohcjmpugth .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1203,13 +1209,13 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-right-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_bottom_border {
+#ohcjmpugth .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_col_headings {
+#ohcjmpugth .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1224,7 +1230,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-right-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_col_heading {
+#ohcjmpugth .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1244,7 +1250,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   overflow-x: hidden;
 }
 
-#llrpqokuiv .gt_column_spanner_outer {
+#ohcjmpugth .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1256,15 +1262,15 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 4px;
 }
 
-#llrpqokuiv .gt_column_spanner_outer:first-child {
+#ohcjmpugth .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#llrpqokuiv .gt_column_spanner_outer:last-child {
+#ohcjmpugth .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#llrpqokuiv .gt_column_spanner {
+#ohcjmpugth .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1276,11 +1282,11 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   width: 100%;
 }
 
-#llrpqokuiv .gt_spanner_row {
+#ohcjmpugth .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#llrpqokuiv .gt_group_heading {
+#ohcjmpugth .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1306,7 +1312,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   text-align: left;
 }
 
-#llrpqokuiv .gt_empty_group_heading {
+#ohcjmpugth .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1321,15 +1327,15 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   vertical-align: middle;
 }
 
-#llrpqokuiv .gt_from_md > :first-child {
+#ohcjmpugth .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#llrpqokuiv .gt_from_md > :last-child {
+#ohcjmpugth .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#llrpqokuiv .gt_row {
+#ohcjmpugth .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1348,7 +1354,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   overflow-x: hidden;
 }
 
-#llrpqokuiv .gt_stub {
+#ohcjmpugth .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1361,7 +1367,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 5px;
 }
 
-#llrpqokuiv .gt_stub_row_group {
+#ohcjmpugth .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1375,15 +1381,15 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   vertical-align: top;
 }
 
-#llrpqokuiv .gt_row_group_first td {
+#ohcjmpugth .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#llrpqokuiv .gt_row_group_first th {
+#ohcjmpugth .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#llrpqokuiv .gt_summary_row {
+#ohcjmpugth .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1393,16 +1399,16 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 5px;
 }
 
-#llrpqokuiv .gt_first_summary_row {
+#ohcjmpugth .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_first_summary_row.thick {
+#ohcjmpugth .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#llrpqokuiv .gt_last_summary_row {
+#ohcjmpugth .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1412,7 +1418,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-bottom-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_grand_summary_row {
+#ohcjmpugth .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1422,7 +1428,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 5px;
 }
 
-#llrpqokuiv .gt_first_grand_summary_row {
+#ohcjmpugth .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1432,7 +1438,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-top-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_last_grand_summary_row_top {
+#ohcjmpugth .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1442,11 +1448,11 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-bottom-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_striped {
+#ohcjmpugth .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#llrpqokuiv .gt_table_body {
+#ohcjmpugth .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1455,7 +1461,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-bottom-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_footnotes {
+#ohcjmpugth .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1469,7 +1475,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-right-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_footnote {
+#ohcjmpugth .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1478,7 +1484,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 5px;
 }
 
-#llrpqokuiv .gt_sourcenotes {
+#ohcjmpugth .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1492,7 +1498,7 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   border-right-color: #D3D3D3;
 }
 
-#llrpqokuiv .gt_sourcenote {
+#ohcjmpugth .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1500,63 +1506,63 @@ Let’s start by using some of the data we calculated earlier in this book. In C
   padding-right: 5px;
 }
 
-#llrpqokuiv .gt_left {
+#ohcjmpugth .gt_left {
   text-align: left;
 }
 
-#llrpqokuiv .gt_center {
+#ohcjmpugth .gt_center {
   text-align: center;
 }
 
-#llrpqokuiv .gt_right {
+#ohcjmpugth .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#llrpqokuiv .gt_font_normal {
+#ohcjmpugth .gt_font_normal {
   font-weight: normal;
 }
 
-#llrpqokuiv .gt_font_bold {
+#ohcjmpugth .gt_font_bold {
   font-weight: bold;
 }
 
-#llrpqokuiv .gt_font_italic {
+#ohcjmpugth .gt_font_italic {
   font-style: italic;
 }
 
-#llrpqokuiv .gt_super {
+#ohcjmpugth .gt_super {
   font-size: 65%;
 }
 
-#llrpqokuiv .gt_footnote_marks {
+#ohcjmpugth .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#llrpqokuiv .gt_asterisk {
+#ohcjmpugth .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#llrpqokuiv .gt_indent_1 {
+#ohcjmpugth .gt_indent_1 {
   text-indent: 5px;
 }
 
-#llrpqokuiv .gt_indent_2 {
+#ohcjmpugth .gt_indent_2 {
   text-indent: 10px;
 }
 
-#llrpqokuiv .gt_indent_3 {
+#ohcjmpugth .gt_indent_3 {
   text-indent: 15px;
 }
 
-#llrpqokuiv .gt_indent_4 {
+#ohcjmpugth .gt_indent_4 {
   text-indent: 20px;
 }
 
-#llrpqokuiv .gt_indent_5 {
+#ohcjmpugth .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1645,27 +1651,29 @@ The {gtsummary} package simultaneously summarizes data and creates publication-r
 <p>
 In the following example, we build a table using {gtsummary}, similar to the table in the {gt} example. The main function we use is <code>tbl_svysummary()</code>. In this function, we include the variables we want to analyze in the <code>include</code> argument and define the statistics we want to display in the <code>statistic</code> argument. To specify the statistics, we apply the syntax from the {glue} package, where we enclose the variables we want to insert within curly brackets. We must specify the desired statistics using the names listed above. For example, to specify that we want the proportion followed by the standard error of the proportion in parentheses, we use <code>{p} ({p.std.error})</code>. Table <a href="c08-communicating-results.html#tab:results-gts-ex-1-tab">8.3</a> displays the resulting table.</p>
 <div class="sourceCode" id="cb258"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb258-1"><a href="c08-communicating-results.html#cb258-1" tabindex="-1"></a>anes_des_gtsum <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb258-2"><a href="c08-communicating-results.html#cb258-2" tabindex="-1"></a>  <span class="fu">tbl_svysummary</span>(<span class="at">include =</span> TrustGovernment,</span>
-<span id="cb258-3"><a href="c08-communicating-results.html#cb258-3" tabindex="-1"></a>                 <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">&quot;{p} ({p.std.error})&quot;</span>)) </span></code></pre></div>
+<span id="cb258-2"><a href="c08-communicating-results.html#cb258-2" tabindex="-1"></a>  <span class="fu">tbl_svysummary</span>(</span>
+<span id="cb258-3"><a href="c08-communicating-results.html#cb258-3" tabindex="-1"></a>    <span class="at">include =</span> TrustGovernment,</span>
+<span id="cb258-4"><a href="c08-communicating-results.html#cb258-4" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">&quot;{p} ({p.std.error})&quot;</span>)</span>
+<span id="cb258-5"><a href="c08-communicating-results.html#cb258-5" tabindex="-1"></a>  )</span></code></pre></div>
 <div class="sourceCode" id="cb259"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb259-1"><a href="c08-communicating-results.html#cb259-1" tabindex="-1"></a>anes_des_gtsum</span></code></pre></div>
 
-<div id="elblppxtra" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#elblppxtra table {
+<div id="joifqsdptq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#joifqsdptq table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#elblppxtra thead, #elblppxtra tbody, #elblppxtra tfoot, #elblppxtra tr, #elblppxtra td, #elblppxtra th {
+#joifqsdptq thead, #joifqsdptq tbody, #joifqsdptq tfoot, #joifqsdptq tr, #joifqsdptq td, #joifqsdptq th {
   border-style: none;
 }
 
-#elblppxtra p {
+#joifqsdptq p {
   margin: 0;
   padding: 0;
 }
 
-#elblppxtra .gt_table {
+#joifqsdptq .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1691,12 +1699,12 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-left-color: #D3D3D3;
 }
 
-#elblppxtra .gt_caption {
+#joifqsdptq .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#elblppxtra .gt_title {
+#joifqsdptq .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1708,7 +1716,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-width: 0;
 }
 
-#elblppxtra .gt_subtitle {
+#joifqsdptq .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1720,7 +1728,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-top-width: 0;
 }
 
-#elblppxtra .gt_heading {
+#joifqsdptq .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1732,13 +1740,13 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#elblppxtra .gt_bottom_border {
+#joifqsdptq .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#elblppxtra .gt_col_headings {
+#joifqsdptq .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1753,7 +1761,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#elblppxtra .gt_col_heading {
+#joifqsdptq .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1773,7 +1781,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   overflow-x: hidden;
 }
 
-#elblppxtra .gt_column_spanner_outer {
+#joifqsdptq .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1785,15 +1793,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 4px;
 }
 
-#elblppxtra .gt_column_spanner_outer:first-child {
+#joifqsdptq .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#elblppxtra .gt_column_spanner_outer:last-child {
+#joifqsdptq .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#elblppxtra .gt_column_spanner {
+#joifqsdptq .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1805,11 +1813,11 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   width: 100%;
 }
 
-#elblppxtra .gt_spanner_row {
+#joifqsdptq .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#elblppxtra .gt_group_heading {
+#joifqsdptq .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1835,7 +1843,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   text-align: left;
 }
 
-#elblppxtra .gt_empty_group_heading {
+#joifqsdptq .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1850,15 +1858,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   vertical-align: middle;
 }
 
-#elblppxtra .gt_from_md > :first-child {
+#joifqsdptq .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#elblppxtra .gt_from_md > :last-child {
+#joifqsdptq .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#elblppxtra .gt_row {
+#joifqsdptq .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1877,7 +1885,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   overflow-x: hidden;
 }
 
-#elblppxtra .gt_stub {
+#joifqsdptq .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1890,7 +1898,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#elblppxtra .gt_stub_row_group {
+#joifqsdptq .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1904,15 +1912,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   vertical-align: top;
 }
 
-#elblppxtra .gt_row_group_first td {
+#joifqsdptq .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#elblppxtra .gt_row_group_first th {
+#joifqsdptq .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#elblppxtra .gt_summary_row {
+#joifqsdptq .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1922,16 +1930,16 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#elblppxtra .gt_first_summary_row {
+#joifqsdptq .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#elblppxtra .gt_first_summary_row.thick {
+#joifqsdptq .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#elblppxtra .gt_last_summary_row {
+#joifqsdptq .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1941,7 +1949,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#elblppxtra .gt_grand_summary_row {
+#joifqsdptq .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1951,7 +1959,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#elblppxtra .gt_first_grand_summary_row {
+#joifqsdptq .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1961,7 +1969,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-top-color: #D3D3D3;
 }
 
-#elblppxtra .gt_last_grand_summary_row_top {
+#joifqsdptq .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1971,11 +1979,11 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#elblppxtra .gt_striped {
+#joifqsdptq .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#elblppxtra .gt_table_body {
+#joifqsdptq .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1984,7 +1992,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#elblppxtra .gt_footnotes {
+#joifqsdptq .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1998,7 +2006,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#elblppxtra .gt_footnote {
+#joifqsdptq .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2007,7 +2015,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#elblppxtra .gt_sourcenotes {
+#joifqsdptq .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2021,7 +2029,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#elblppxtra .gt_sourcenote {
+#joifqsdptq .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2029,70 +2037,69 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#elblppxtra .gt_left {
+#joifqsdptq .gt_left {
   text-align: left;
 }
 
-#elblppxtra .gt_center {
+#joifqsdptq .gt_center {
   text-align: center;
 }
 
-#elblppxtra .gt_right {
+#joifqsdptq .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#elblppxtra .gt_font_normal {
+#joifqsdptq .gt_font_normal {
   font-weight: normal;
 }
 
-#elblppxtra .gt_font_bold {
+#joifqsdptq .gt_font_bold {
   font-weight: bold;
 }
 
-#elblppxtra .gt_font_italic {
+#joifqsdptq .gt_font_italic {
   font-style: italic;
 }
 
-#elblppxtra .gt_super {
+#joifqsdptq .gt_super {
   font-size: 65%;
 }
 
-#elblppxtra .gt_footnote_marks {
+#joifqsdptq .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#elblppxtra .gt_asterisk {
+#joifqsdptq .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#elblppxtra .gt_indent_1 {
+#joifqsdptq .gt_indent_1 {
   text-indent: 5px;
 }
 
-#elblppxtra .gt_indent_2 {
+#joifqsdptq .gt_indent_2 {
   text-indent: 10px;
 }
 
-#elblppxtra .gt_indent_3 {
+#joifqsdptq .gt_indent_3 {
   text-indent: 15px;
 }
 
-#elblppxtra .gt_indent_4 {
+#joifqsdptq .gt_indent_4 {
   text-indent: 20px;
 }
 
-#elblppxtra .gt_indent_5 {
+#joifqsdptq .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <caption><span id="tab:results-gts-ex-1-tab">TABLE 8.3: </span>Example of {gtsummary} table with trust in government estimates</caption>
   <thead>
-    
     <tr class="gt_col_headings">
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
       <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;N = 231,034,125&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>N = 231,034,125</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
@@ -2100,7 +2107,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="label" class="gt_row gt_left">PRE: How often trust government in Washington to do what is right [revised]</td>
-<td headers="stat_0" class="gt_row gt_center"></td></tr>
+<td headers="stat_0" class="gt_row gt_center"><br /></td></tr>
     <tr><td headers="label" class="gt_row gt_left">    Always</td>
 <td headers="stat_0" class="gt_row gt_center">1.6 (0.00)</td></tr>
     <tr><td headers="label" class="gt_row gt_left">    Most of the time</td>
@@ -2133,23 +2140,23 @@ In the following example, we build a table using {gtsummary}, similar to the tab
 <span id="cb260-8"><a href="c08-communicating-results.html#cb260-8" tabindex="-1"></a>  )</span></code></pre></div>
 <div class="sourceCode" id="cb261"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb261-1"><a href="c08-communicating-results.html#cb261-1" tabindex="-1"></a>anes_des_gtsum2</span></code></pre></div>
 
-<div id="jyfwzozooy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#jyfwzozooy table {
+<div id="yvmkacscjc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#yvmkacscjc table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#jyfwzozooy thead, #jyfwzozooy tbody, #jyfwzozooy tfoot, #jyfwzozooy tr, #jyfwzozooy td, #jyfwzozooy th {
+#yvmkacscjc thead, #yvmkacscjc tbody, #yvmkacscjc tfoot, #yvmkacscjc tr, #yvmkacscjc td, #yvmkacscjc th {
   border-style: none;
 }
 
-#jyfwzozooy p {
+#yvmkacscjc p {
   margin: 0;
   padding: 0;
 }
 
-#jyfwzozooy .gt_table {
+#yvmkacscjc .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2175,12 +2182,12 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-left-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_caption {
+#yvmkacscjc .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#jyfwzozooy .gt_title {
+#yvmkacscjc .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2192,7 +2199,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-width: 0;
 }
 
-#jyfwzozooy .gt_subtitle {
+#yvmkacscjc .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2204,7 +2211,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-top-width: 0;
 }
 
-#jyfwzozooy .gt_heading {
+#yvmkacscjc .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2216,13 +2223,13 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_bottom_border {
+#yvmkacscjc .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_col_headings {
+#yvmkacscjc .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2237,7 +2244,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_col_heading {
+#yvmkacscjc .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2257,7 +2264,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   overflow-x: hidden;
 }
 
-#jyfwzozooy .gt_column_spanner_outer {
+#yvmkacscjc .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2269,15 +2276,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 4px;
 }
 
-#jyfwzozooy .gt_column_spanner_outer:first-child {
+#yvmkacscjc .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#jyfwzozooy .gt_column_spanner_outer:last-child {
+#yvmkacscjc .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#jyfwzozooy .gt_column_spanner {
+#yvmkacscjc .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2289,11 +2296,11 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   width: 100%;
 }
 
-#jyfwzozooy .gt_spanner_row {
+#yvmkacscjc .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#jyfwzozooy .gt_group_heading {
+#yvmkacscjc .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2319,7 +2326,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   text-align: left;
 }
 
-#jyfwzozooy .gt_empty_group_heading {
+#yvmkacscjc .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2334,15 +2341,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   vertical-align: middle;
 }
 
-#jyfwzozooy .gt_from_md > :first-child {
+#yvmkacscjc .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#jyfwzozooy .gt_from_md > :last-child {
+#yvmkacscjc .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#jyfwzozooy .gt_row {
+#yvmkacscjc .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2361,7 +2368,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   overflow-x: hidden;
 }
 
-#jyfwzozooy .gt_stub {
+#yvmkacscjc .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2374,7 +2381,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#jyfwzozooy .gt_stub_row_group {
+#yvmkacscjc .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2388,15 +2395,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   vertical-align: top;
 }
 
-#jyfwzozooy .gt_row_group_first td {
+#yvmkacscjc .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#jyfwzozooy .gt_row_group_first th {
+#yvmkacscjc .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#jyfwzozooy .gt_summary_row {
+#yvmkacscjc .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2406,16 +2413,16 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#jyfwzozooy .gt_first_summary_row {
+#yvmkacscjc .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_first_summary_row.thick {
+#yvmkacscjc .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#jyfwzozooy .gt_last_summary_row {
+#yvmkacscjc .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2425,7 +2432,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_grand_summary_row {
+#yvmkacscjc .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2435,7 +2442,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#jyfwzozooy .gt_first_grand_summary_row {
+#yvmkacscjc .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2445,7 +2452,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-top-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_last_grand_summary_row_top {
+#yvmkacscjc .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2455,11 +2462,11 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_striped {
+#yvmkacscjc .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#jyfwzozooy .gt_table_body {
+#yvmkacscjc .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2468,7 +2475,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_footnotes {
+#yvmkacscjc .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2482,7 +2489,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_footnote {
+#yvmkacscjc .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2491,7 +2498,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#jyfwzozooy .gt_sourcenotes {
+#yvmkacscjc .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2505,7 +2512,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#jyfwzozooy .gt_sourcenote {
+#yvmkacscjc .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2513,70 +2520,69 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#jyfwzozooy .gt_left {
+#yvmkacscjc .gt_left {
   text-align: left;
 }
 
-#jyfwzozooy .gt_center {
+#yvmkacscjc .gt_center {
   text-align: center;
 }
 
-#jyfwzozooy .gt_right {
+#yvmkacscjc .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#jyfwzozooy .gt_font_normal {
+#yvmkacscjc .gt_font_normal {
   font-weight: normal;
 }
 
-#jyfwzozooy .gt_font_bold {
+#yvmkacscjc .gt_font_bold {
   font-weight: bold;
 }
 
-#jyfwzozooy .gt_font_italic {
+#yvmkacscjc .gt_font_italic {
   font-style: italic;
 }
 
-#jyfwzozooy .gt_super {
+#yvmkacscjc .gt_super {
   font-size: 65%;
 }
 
-#jyfwzozooy .gt_footnote_marks {
+#yvmkacscjc .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#jyfwzozooy .gt_asterisk {
+#yvmkacscjc .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#jyfwzozooy .gt_indent_1 {
+#yvmkacscjc .gt_indent_1 {
   text-indent: 5px;
 }
 
-#jyfwzozooy .gt_indent_2 {
+#yvmkacscjc .gt_indent_2 {
   text-indent: 10px;
 }
 
-#jyfwzozooy .gt_indent_3 {
+#yvmkacscjc .gt_indent_3 {
   text-indent: 15px;
 }
 
-#jyfwzozooy .gt_indent_4 {
+#yvmkacscjc .gt_indent_4 {
   text-indent: 20px;
 }
 
-#jyfwzozooy .gt_indent_5 {
+#yvmkacscjc .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <caption><span id="tab:results-gts-ex-2-tab">TABLE 8.4: </span>Example of {gtsummary} table with trust in government estimates with labeling and digits options</caption>
   <thead>
-    
     <tr class="gt_col_headings">
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
       <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;N = 231,034,125&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>N = 231,034,125</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
@@ -2584,7 +2590,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="label" class="gt_row gt_left">Trust in Government, 2020</td>
-<td headers="stat_0" class="gt_row gt_center"></td></tr>
+<td headers="stat_0" class="gt_row gt_center"><br /></td></tr>
     <tr><td headers="label" class="gt_row gt_left">    Always</td>
 <td headers="stat_0" class="gt_row gt_center">1.6 (0.2)</td></tr>
     <tr><td headers="label" class="gt_row gt_left">    Most of the time</td>
@@ -2614,36 +2620,38 @@ In the following example, we build a table using {gtsummary}, similar to the tab
 <span id="cb262-7"><a href="c08-communicating-results.html#cb262-7" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">list</span>(TrustGovernment <span class="sc">~</span> <span class="st">&quot;Trust in Government, 2020&quot;</span>)</span>
 <span id="cb262-8"><a href="c08-communicating-results.html#cb262-8" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb262-9"><a href="c08-communicating-results.html#cb262-9" tabindex="-1"></a>  <span class="fu">modify_footnote</span>(<span class="at">update =</span> <span class="fu">everything</span>() <span class="sc">~</span> <span class="cn">NA</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb262-10"><a href="c08-communicating-results.html#cb262-10" tabindex="-1"></a>  <span class="fu">modify_header</span>(<span class="at">label =</span> <span class="st">&quot; &quot;</span>,</span>
-<span id="cb262-11"><a href="c08-communicating-results.html#cb262-11" tabindex="-1"></a>                <span class="at">stat_0 =</span> <span class="st">&quot;% (s.e.)&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb262-12"><a href="c08-communicating-results.html#cb262-12" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb262-13"><a href="c08-communicating-results.html#cb262-13" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">&quot;American voter&#39;s trust</span></span>
-<span id="cb262-14"><a href="c08-communicating-results.html#cb262-14" tabindex="-1"></a><span class="st">             in the federal government, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb262-15"><a href="c08-communicating-results.html#cb262-15" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;American National Election Studies, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb262-16"><a href="c08-communicating-results.html#cb262-16" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
-<span id="cb262-17"><a href="c08-communicating-results.html#cb262-17" tabindex="-1"></a>    <span class="st">&quot;Question text: How often can you trust</span></span>
-<span id="cb262-18"><a href="c08-communicating-results.html#cb262-18" tabindex="-1"></a><span class="st">    the federal government in Washington</span></span>
-<span id="cb262-19"><a href="c08-communicating-results.html#cb262-19" tabindex="-1"></a><span class="st">    to do what is right?&quot;</span></span>
-<span id="cb262-20"><a href="c08-communicating-results.html#cb262-20" tabindex="-1"></a>  )</span></code></pre></div>
+<span id="cb262-10"><a href="c08-communicating-results.html#cb262-10" tabindex="-1"></a>  <span class="fu">modify_header</span>(</span>
+<span id="cb262-11"><a href="c08-communicating-results.html#cb262-11" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot; &quot;</span>,</span>
+<span id="cb262-12"><a href="c08-communicating-results.html#cb262-12" tabindex="-1"></a>    <span class="at">stat_0 =</span> <span class="st">&quot;% (s.e.)&quot;</span></span>
+<span id="cb262-13"><a href="c08-communicating-results.html#cb262-13" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb262-14"><a href="c08-communicating-results.html#cb262-14" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb262-15"><a href="c08-communicating-results.html#cb262-15" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">&quot;American voter&#39;s trust</span></span>
+<span id="cb262-16"><a href="c08-communicating-results.html#cb262-16" tabindex="-1"></a><span class="st">             in the federal government, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb262-17"><a href="c08-communicating-results.html#cb262-17" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;American National Election Studies, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb262-18"><a href="c08-communicating-results.html#cb262-18" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb262-19"><a href="c08-communicating-results.html#cb262-19" tabindex="-1"></a>    <span class="st">&quot;Question text: How often can you trust</span></span>
+<span id="cb262-20"><a href="c08-communicating-results.html#cb262-20" tabindex="-1"></a><span class="st">    the federal government in Washington</span></span>
+<span id="cb262-21"><a href="c08-communicating-results.html#cb262-21" tabindex="-1"></a><span class="st">    to do what is right?&quot;</span></span>
+<span id="cb262-22"><a href="c08-communicating-results.html#cb262-22" tabindex="-1"></a>  )</span></code></pre></div>
 <div class="sourceCode" id="cb263"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb263-1"><a href="c08-communicating-results.html#cb263-1" tabindex="-1"></a>anes_des_gtsum3</span></code></pre></div>
 
-<div id="ulocrakbkh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ulocrakbkh table {
+<div id="amjfmwyimp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#amjfmwyimp table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ulocrakbkh thead, #ulocrakbkh tbody, #ulocrakbkh tfoot, #ulocrakbkh tr, #ulocrakbkh td, #ulocrakbkh th {
+#amjfmwyimp thead, #amjfmwyimp tbody, #amjfmwyimp tfoot, #amjfmwyimp tr, #amjfmwyimp td, #amjfmwyimp th {
   border-style: none;
 }
 
-#ulocrakbkh p {
+#amjfmwyimp p {
   margin: 0;
   padding: 0;
 }
 
-#ulocrakbkh .gt_table {
+#amjfmwyimp .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2669,12 +2677,12 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-left-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_caption {
+#amjfmwyimp .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ulocrakbkh .gt_title {
+#amjfmwyimp .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2686,7 +2694,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-width: 0;
 }
 
-#ulocrakbkh .gt_subtitle {
+#amjfmwyimp .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2698,7 +2706,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-top-width: 0;
 }
 
-#ulocrakbkh .gt_heading {
+#amjfmwyimp .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2710,13 +2718,13 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_bottom_border {
+#amjfmwyimp .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_col_headings {
+#amjfmwyimp .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2731,7 +2739,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_col_heading {
+#amjfmwyimp .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2751,7 +2759,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   overflow-x: hidden;
 }
 
-#ulocrakbkh .gt_column_spanner_outer {
+#amjfmwyimp .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2763,15 +2771,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 4px;
 }
 
-#ulocrakbkh .gt_column_spanner_outer:first-child {
+#amjfmwyimp .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ulocrakbkh .gt_column_spanner_outer:last-child {
+#amjfmwyimp .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ulocrakbkh .gt_column_spanner {
+#amjfmwyimp .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2783,11 +2791,11 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   width: 100%;
 }
 
-#ulocrakbkh .gt_spanner_row {
+#amjfmwyimp .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ulocrakbkh .gt_group_heading {
+#amjfmwyimp .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2813,7 +2821,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   text-align: left;
 }
 
-#ulocrakbkh .gt_empty_group_heading {
+#amjfmwyimp .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2828,15 +2836,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   vertical-align: middle;
 }
 
-#ulocrakbkh .gt_from_md > :first-child {
+#amjfmwyimp .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ulocrakbkh .gt_from_md > :last-child {
+#amjfmwyimp .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ulocrakbkh .gt_row {
+#amjfmwyimp .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2855,7 +2863,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   overflow-x: hidden;
 }
 
-#ulocrakbkh .gt_stub {
+#amjfmwyimp .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2868,7 +2876,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#ulocrakbkh .gt_stub_row_group {
+#amjfmwyimp .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2882,15 +2890,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   vertical-align: top;
 }
 
-#ulocrakbkh .gt_row_group_first td {
+#amjfmwyimp .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ulocrakbkh .gt_row_group_first th {
+#amjfmwyimp .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ulocrakbkh .gt_summary_row {
+#amjfmwyimp .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2900,16 +2908,16 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#ulocrakbkh .gt_first_summary_row {
+#amjfmwyimp .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_first_summary_row.thick {
+#amjfmwyimp .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ulocrakbkh .gt_last_summary_row {
+#amjfmwyimp .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2919,7 +2927,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_grand_summary_row {
+#amjfmwyimp .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2929,7 +2937,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#ulocrakbkh .gt_first_grand_summary_row {
+#amjfmwyimp .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2939,7 +2947,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-top-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_last_grand_summary_row_top {
+#amjfmwyimp .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2949,11 +2957,11 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_striped {
+#amjfmwyimp .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ulocrakbkh .gt_table_body {
+#amjfmwyimp .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2962,7 +2970,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_footnotes {
+#amjfmwyimp .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2976,7 +2984,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_footnote {
+#amjfmwyimp .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2985,7 +2993,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#ulocrakbkh .gt_sourcenotes {
+#amjfmwyimp .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2999,7 +3007,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#ulocrakbkh .gt_sourcenote {
+#amjfmwyimp .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3007,63 +3015,63 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#ulocrakbkh .gt_left {
+#amjfmwyimp .gt_left {
   text-align: left;
 }
 
-#ulocrakbkh .gt_center {
+#amjfmwyimp .gt_center {
   text-align: center;
 }
 
-#ulocrakbkh .gt_right {
+#amjfmwyimp .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ulocrakbkh .gt_font_normal {
+#amjfmwyimp .gt_font_normal {
   font-weight: normal;
 }
 
-#ulocrakbkh .gt_font_bold {
+#amjfmwyimp .gt_font_bold {
   font-weight: bold;
 }
 
-#ulocrakbkh .gt_font_italic {
+#amjfmwyimp .gt_font_italic {
   font-style: italic;
 }
 
-#ulocrakbkh .gt_super {
+#amjfmwyimp .gt_super {
   font-size: 65%;
 }
 
-#ulocrakbkh .gt_footnote_marks {
+#amjfmwyimp .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ulocrakbkh .gt_asterisk {
+#amjfmwyimp .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ulocrakbkh .gt_indent_1 {
+#amjfmwyimp .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ulocrakbkh .gt_indent_2 {
+#amjfmwyimp .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ulocrakbkh .gt_indent_3 {
+#amjfmwyimp .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ulocrakbkh .gt_indent_4 {
+#amjfmwyimp .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ulocrakbkh .gt_indent_5 {
+#amjfmwyimp .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -3082,7 +3090,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="label" class="gt_row gt_left">Trust in Government, 2020</td>
-<td headers="stat_0" class="gt_row gt_center"></td></tr>
+<td headers="stat_0" class="gt_row gt_center"><br /></td></tr>
     <tr><td headers="label" class="gt_row gt_left">    Always</td>
 <td headers="stat_0" class="gt_row gt_center">1.6 (0.2)</td></tr>
     <tr><td headers="label" class="gt_row gt_left">    Most of the time</td>
@@ -3136,23 +3144,23 @@ In the following example, we build a table using {gtsummary}, similar to the tab
 <span id="cb264-25"><a href="c08-communicating-results.html#cb264-25" tabindex="-1"></a><span class="st">              estimates and average age&quot;</span>)</span></code></pre></div>
 <div class="sourceCode" id="cb265"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb265-1"><a href="c08-communicating-results.html#cb265-1" tabindex="-1"></a>anes_des_gtsum4</span></code></pre></div>
 
-<div id="naqzmlofbh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#naqzmlofbh table {
+<div id="uxrhzhuyhh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#uxrhzhuyhh table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#naqzmlofbh thead, #naqzmlofbh tbody, #naqzmlofbh tfoot, #naqzmlofbh tr, #naqzmlofbh td, #naqzmlofbh th {
+#uxrhzhuyhh thead, #uxrhzhuyhh tbody, #uxrhzhuyhh tfoot, #uxrhzhuyhh tr, #uxrhzhuyhh td, #uxrhzhuyhh th {
   border-style: none;
 }
 
-#naqzmlofbh p {
+#uxrhzhuyhh p {
   margin: 0;
   padding: 0;
 }
 
-#naqzmlofbh .gt_table {
+#uxrhzhuyhh .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3178,12 +3186,12 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-left-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_caption {
+#uxrhzhuyhh .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#naqzmlofbh .gt_title {
+#uxrhzhuyhh .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3195,7 +3203,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-width: 0;
 }
 
-#naqzmlofbh .gt_subtitle {
+#uxrhzhuyhh .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3207,7 +3215,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-top-width: 0;
 }
 
-#naqzmlofbh .gt_heading {
+#uxrhzhuyhh .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3219,13 +3227,13 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_bottom_border {
+#uxrhzhuyhh .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_col_headings {
+#uxrhzhuyhh .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3240,7 +3248,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_col_heading {
+#uxrhzhuyhh .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3260,7 +3268,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   overflow-x: hidden;
 }
 
-#naqzmlofbh .gt_column_spanner_outer {
+#uxrhzhuyhh .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3272,15 +3280,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 4px;
 }
 
-#naqzmlofbh .gt_column_spanner_outer:first-child {
+#uxrhzhuyhh .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#naqzmlofbh .gt_column_spanner_outer:last-child {
+#uxrhzhuyhh .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#naqzmlofbh .gt_column_spanner {
+#uxrhzhuyhh .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3292,11 +3300,11 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   width: 100%;
 }
 
-#naqzmlofbh .gt_spanner_row {
+#uxrhzhuyhh .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#naqzmlofbh .gt_group_heading {
+#uxrhzhuyhh .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3322,7 +3330,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   text-align: left;
 }
 
-#naqzmlofbh .gt_empty_group_heading {
+#uxrhzhuyhh .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3337,15 +3345,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   vertical-align: middle;
 }
 
-#naqzmlofbh .gt_from_md > :first-child {
+#uxrhzhuyhh .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#naqzmlofbh .gt_from_md > :last-child {
+#uxrhzhuyhh .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#naqzmlofbh .gt_row {
+#uxrhzhuyhh .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3364,7 +3372,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   overflow-x: hidden;
 }
 
-#naqzmlofbh .gt_stub {
+#uxrhzhuyhh .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3377,7 +3385,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#naqzmlofbh .gt_stub_row_group {
+#uxrhzhuyhh .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3391,15 +3399,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   vertical-align: top;
 }
 
-#naqzmlofbh .gt_row_group_first td {
+#uxrhzhuyhh .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#naqzmlofbh .gt_row_group_first th {
+#uxrhzhuyhh .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#naqzmlofbh .gt_summary_row {
+#uxrhzhuyhh .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3409,16 +3417,16 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#naqzmlofbh .gt_first_summary_row {
+#uxrhzhuyhh .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_first_summary_row.thick {
+#uxrhzhuyhh .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#naqzmlofbh .gt_last_summary_row {
+#uxrhzhuyhh .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3428,7 +3436,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_grand_summary_row {
+#uxrhzhuyhh .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3438,7 +3446,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#naqzmlofbh .gt_first_grand_summary_row {
+#uxrhzhuyhh .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3448,7 +3456,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-top-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_last_grand_summary_row_top {
+#uxrhzhuyhh .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3458,11 +3466,11 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_striped {
+#uxrhzhuyhh .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#naqzmlofbh .gt_table_body {
+#uxrhzhuyhh .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3471,7 +3479,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_footnotes {
+#uxrhzhuyhh .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3485,7 +3493,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_footnote {
+#uxrhzhuyhh .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3494,7 +3502,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#naqzmlofbh .gt_sourcenotes {
+#uxrhzhuyhh .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3508,7 +3516,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#naqzmlofbh .gt_sourcenote {
+#uxrhzhuyhh .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3516,63 +3524,63 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#naqzmlofbh .gt_left {
+#uxrhzhuyhh .gt_left {
   text-align: left;
 }
 
-#naqzmlofbh .gt_center {
+#uxrhzhuyhh .gt_center {
   text-align: center;
 }
 
-#naqzmlofbh .gt_right {
+#uxrhzhuyhh .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#naqzmlofbh .gt_font_normal {
+#uxrhzhuyhh .gt_font_normal {
   font-weight: normal;
 }
 
-#naqzmlofbh .gt_font_bold {
+#uxrhzhuyhh .gt_font_bold {
   font-weight: bold;
 }
 
-#naqzmlofbh .gt_font_italic {
+#uxrhzhuyhh .gt_font_italic {
   font-style: italic;
 }
 
-#naqzmlofbh .gt_super {
+#uxrhzhuyhh .gt_super {
   font-size: 65%;
 }
 
-#naqzmlofbh .gt_footnote_marks {
+#uxrhzhuyhh .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#naqzmlofbh .gt_asterisk {
+#uxrhzhuyhh .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#naqzmlofbh .gt_indent_1 {
+#uxrhzhuyhh .gt_indent_1 {
   text-indent: 5px;
 }
 
-#naqzmlofbh .gt_indent_2 {
+#uxrhzhuyhh .gt_indent_2 {
   text-indent: 10px;
 }
 
-#naqzmlofbh .gt_indent_3 {
+#uxrhzhuyhh .gt_indent_3 {
   text-indent: 15px;
 }
 
-#naqzmlofbh .gt_indent_4 {
+#uxrhzhuyhh .gt_indent_4 {
   text-indent: 20px;
 }
 
-#naqzmlofbh .gt_indent_5 {
+#uxrhzhuyhh .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -3590,7 +3598,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="label" class="gt_row gt_left">Trust in Government, 2020</td>
-<td headers="stat_0" class="gt_row gt_center"></td></tr>
+<td headers="stat_0" class="gt_row gt_center"><br /></td></tr>
     <tr><td headers="label" class="gt_row gt_left">    Always</td>
 <td headers="stat_0" class="gt_row gt_center">1.6 (0.2)</td></tr>
     <tr><td headers="label" class="gt_row gt_left">    Most of the time</td>
@@ -3629,40 +3637,42 @@ In the following example, we build a table using {gtsummary}, similar to the tab
 <span id="cb266-9"><a href="c08-communicating-results.html#cb266-9" tabindex="-1"></a>    <span class="at">by =</span> VotedPres2020</span>
 <span id="cb266-10"><a href="c08-communicating-results.html#cb266-10" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb266-11"><a href="c08-communicating-results.html#cb266-11" tabindex="-1"></a>  <span class="fu">modify_footnote</span>(<span class="at">update =</span> <span class="fu">everything</span>() <span class="sc">~</span> <span class="cn">NA</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb266-12"><a href="c08-communicating-results.html#cb266-12" tabindex="-1"></a>  <span class="fu">modify_header</span>(<span class="at">label =</span> <span class="st">&quot; &quot;</span>,</span>
-<span id="cb266-13"><a href="c08-communicating-results.html#cb266-13" tabindex="-1"></a>                <span class="at">stat_1 =</span> <span class="st">&quot;Voted&quot;</span>,</span>
-<span id="cb266-14"><a href="c08-communicating-results.html#cb266-14" tabindex="-1"></a>                <span class="at">stat_2 =</span> <span class="st">&quot;Didn&#39;t vote&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb266-15"><a href="c08-communicating-results.html#cb266-15" tabindex="-1"></a>  <span class="fu">modify_spanning_header</span>(<span class="fu">all_stat_cols</span>() <span class="sc">~</span> <span class="st">&quot;% (s.e.)&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb266-16"><a href="c08-communicating-results.html#cb266-16" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb266-17"><a href="c08-communicating-results.html#cb266-17" tabindex="-1"></a>  <span class="fu">tab_header</span>(</span>
-<span id="cb266-18"><a href="c08-communicating-results.html#cb266-18" tabindex="-1"></a>    <span class="st">&quot;American voter&#39;s trust</span></span>
-<span id="cb266-19"><a href="c08-communicating-results.html#cb266-19" tabindex="-1"></a><span class="st">             in the federal government by whether they voted</span></span>
-<span id="cb266-20"><a href="c08-communicating-results.html#cb266-20" tabindex="-1"></a><span class="st">             in the 2020 presidential election&quot;</span></span>
-<span id="cb266-21"><a href="c08-communicating-results.html#cb266-21" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb266-22"><a href="c08-communicating-results.html#cb266-22" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;American National Election Studies, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb266-23"><a href="c08-communicating-results.html#cb266-23" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
-<span id="cb266-24"><a href="c08-communicating-results.html#cb266-24" tabindex="-1"></a>    <span class="st">&quot;Question text: How often can you trust the federal government</span></span>
-<span id="cb266-25"><a href="c08-communicating-results.html#cb266-25" tabindex="-1"></a><span class="st">               in Washington to do what is right?&quot;</span></span>
-<span id="cb266-26"><a href="c08-communicating-results.html#cb266-26" tabindex="-1"></a>  )</span></code></pre></div>
+<span id="cb266-12"><a href="c08-communicating-results.html#cb266-12" tabindex="-1"></a>  <span class="fu">modify_header</span>(</span>
+<span id="cb266-13"><a href="c08-communicating-results.html#cb266-13" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot; &quot;</span>,</span>
+<span id="cb266-14"><a href="c08-communicating-results.html#cb266-14" tabindex="-1"></a>    <span class="at">stat_1 =</span> <span class="st">&quot;Voted&quot;</span>,</span>
+<span id="cb266-15"><a href="c08-communicating-results.html#cb266-15" tabindex="-1"></a>    <span class="at">stat_2 =</span> <span class="st">&quot;Didn&#39;t vote&quot;</span></span>
+<span id="cb266-16"><a href="c08-communicating-results.html#cb266-16" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb266-17"><a href="c08-communicating-results.html#cb266-17" tabindex="-1"></a>  <span class="fu">modify_spanning_header</span>(<span class="fu">all_stat_cols</span>() <span class="sc">~</span> <span class="st">&quot;% (s.e.)&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb266-18"><a href="c08-communicating-results.html#cb266-18" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb266-19"><a href="c08-communicating-results.html#cb266-19" tabindex="-1"></a>  <span class="fu">tab_header</span>(</span>
+<span id="cb266-20"><a href="c08-communicating-results.html#cb266-20" tabindex="-1"></a>    <span class="st">&quot;American voter&#39;s trust</span></span>
+<span id="cb266-21"><a href="c08-communicating-results.html#cb266-21" tabindex="-1"></a><span class="st">             in the federal government by whether they voted</span></span>
+<span id="cb266-22"><a href="c08-communicating-results.html#cb266-22" tabindex="-1"></a><span class="st">             in the 2020 presidential election&quot;</span></span>
+<span id="cb266-23"><a href="c08-communicating-results.html#cb266-23" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb266-24"><a href="c08-communicating-results.html#cb266-24" tabindex="-1"></a>  <span class="fu">tab_source_note</span>(<span class="st">&quot;American National Election Studies, 2020&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb266-25"><a href="c08-communicating-results.html#cb266-25" tabindex="-1"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb266-26"><a href="c08-communicating-results.html#cb266-26" tabindex="-1"></a>    <span class="st">&quot;Question text: How often can you trust the federal government</span></span>
+<span id="cb266-27"><a href="c08-communicating-results.html#cb266-27" tabindex="-1"></a><span class="st">               in Washington to do what is right?&quot;</span></span>
+<span id="cb266-28"><a href="c08-communicating-results.html#cb266-28" tabindex="-1"></a>  )</span></code></pre></div>
 <div class="sourceCode" id="cb267"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb267-1"><a href="c08-communicating-results.html#cb267-1" tabindex="-1"></a>anes_des_gtsum5</span></code></pre></div>
 
-<div id="gsjhxiioai" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#gsjhxiioai table {
+<div id="fvolnmqiwz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#fvolnmqiwz table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#gsjhxiioai thead, #gsjhxiioai tbody, #gsjhxiioai tfoot, #gsjhxiioai tr, #gsjhxiioai td, #gsjhxiioai th {
+#fvolnmqiwz thead, #fvolnmqiwz tbody, #fvolnmqiwz tfoot, #fvolnmqiwz tr, #fvolnmqiwz td, #fvolnmqiwz th {
   border-style: none;
 }
 
-#gsjhxiioai p {
+#fvolnmqiwz p {
   margin: 0;
   padding: 0;
 }
 
-#gsjhxiioai .gt_table {
+#fvolnmqiwz .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3688,12 +3698,12 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-left-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_caption {
+#fvolnmqiwz .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#gsjhxiioai .gt_title {
+#fvolnmqiwz .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3705,7 +3715,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-width: 0;
 }
 
-#gsjhxiioai .gt_subtitle {
+#fvolnmqiwz .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3717,7 +3727,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-top-width: 0;
 }
 
-#gsjhxiioai .gt_heading {
+#fvolnmqiwz .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3729,13 +3739,13 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_bottom_border {
+#fvolnmqiwz .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_col_headings {
+#fvolnmqiwz .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3750,7 +3760,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_col_heading {
+#fvolnmqiwz .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3770,7 +3780,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   overflow-x: hidden;
 }
 
-#gsjhxiioai .gt_column_spanner_outer {
+#fvolnmqiwz .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3782,15 +3792,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 4px;
 }
 
-#gsjhxiioai .gt_column_spanner_outer:first-child {
+#fvolnmqiwz .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#gsjhxiioai .gt_column_spanner_outer:last-child {
+#fvolnmqiwz .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#gsjhxiioai .gt_column_spanner {
+#fvolnmqiwz .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3802,11 +3812,11 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   width: 100%;
 }
 
-#gsjhxiioai .gt_spanner_row {
+#fvolnmqiwz .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#gsjhxiioai .gt_group_heading {
+#fvolnmqiwz .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3832,7 +3842,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   text-align: left;
 }
 
-#gsjhxiioai .gt_empty_group_heading {
+#fvolnmqiwz .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3847,15 +3857,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   vertical-align: middle;
 }
 
-#gsjhxiioai .gt_from_md > :first-child {
+#fvolnmqiwz .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#gsjhxiioai .gt_from_md > :last-child {
+#fvolnmqiwz .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#gsjhxiioai .gt_row {
+#fvolnmqiwz .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3874,7 +3884,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   overflow-x: hidden;
 }
 
-#gsjhxiioai .gt_stub {
+#fvolnmqiwz .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3887,7 +3897,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#gsjhxiioai .gt_stub_row_group {
+#fvolnmqiwz .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3901,15 +3911,15 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   vertical-align: top;
 }
 
-#gsjhxiioai .gt_row_group_first td {
+#fvolnmqiwz .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#gsjhxiioai .gt_row_group_first th {
+#fvolnmqiwz .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#gsjhxiioai .gt_summary_row {
+#fvolnmqiwz .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3919,16 +3929,16 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#gsjhxiioai .gt_first_summary_row {
+#fvolnmqiwz .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_first_summary_row.thick {
+#fvolnmqiwz .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#gsjhxiioai .gt_last_summary_row {
+#fvolnmqiwz .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3938,7 +3948,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_grand_summary_row {
+#fvolnmqiwz .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3948,7 +3958,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#gsjhxiioai .gt_first_grand_summary_row {
+#fvolnmqiwz .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3958,7 +3968,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-top-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_last_grand_summary_row_top {
+#fvolnmqiwz .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3968,11 +3978,11 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_striped {
+#fvolnmqiwz .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#gsjhxiioai .gt_table_body {
+#fvolnmqiwz .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3981,7 +3991,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-bottom-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_footnotes {
+#fvolnmqiwz .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3995,7 +4005,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_footnote {
+#fvolnmqiwz .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4004,7 +4014,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#gsjhxiioai .gt_sourcenotes {
+#fvolnmqiwz .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4018,7 +4028,7 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   border-right-color: #D3D3D3;
 }
 
-#gsjhxiioai .gt_sourcenote {
+#fvolnmqiwz .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4026,63 +4036,63 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   padding-right: 5px;
 }
 
-#gsjhxiioai .gt_left {
+#fvolnmqiwz .gt_left {
   text-align: left;
 }
 
-#gsjhxiioai .gt_center {
+#fvolnmqiwz .gt_center {
   text-align: center;
 }
 
-#gsjhxiioai .gt_right {
+#fvolnmqiwz .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#gsjhxiioai .gt_font_normal {
+#fvolnmqiwz .gt_font_normal {
   font-weight: normal;
 }
 
-#gsjhxiioai .gt_font_bold {
+#fvolnmqiwz .gt_font_bold {
   font-weight: bold;
 }
 
-#gsjhxiioai .gt_font_italic {
+#fvolnmqiwz .gt_font_italic {
   font-style: italic;
 }
 
-#gsjhxiioai .gt_super {
+#fvolnmqiwz .gt_super {
   font-size: 65%;
 }
 
-#gsjhxiioai .gt_footnote_marks {
+#fvolnmqiwz .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#gsjhxiioai .gt_asterisk {
+#fvolnmqiwz .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#gsjhxiioai .gt_indent_1 {
+#fvolnmqiwz .gt_indent_1 {
   text-indent: 5px;
 }
 
-#gsjhxiioai .gt_indent_2 {
+#fvolnmqiwz .gt_indent_2 {
   text-indent: 10px;
 }
 
-#gsjhxiioai .gt_indent_3 {
+#fvolnmqiwz .gt_indent_3 {
   text-indent: 15px;
 }
 
-#gsjhxiioai .gt_indent_4 {
+#fvolnmqiwz .gt_indent_4 {
   text-indent: 20px;
 }
 
-#gsjhxiioai .gt_indent_5 {
+#fvolnmqiwz .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -4108,8 +4118,8 @@ In the following example, we build a table using {gtsummary}, similar to the tab
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="label" class="gt_row gt_left">Trust in Government, 2020</td>
-<td headers="stat_1" class="gt_row gt_center"></td>
-<td headers="stat_2" class="gt_row gt_center"></td></tr>
+<td headers="stat_1" class="gt_row gt_center"><br /></td>
+<td headers="stat_2" class="gt_row gt_center"><br /></td></tr>
     <tr><td headers="label" class="gt_row gt_left">    Always</td>
 <td headers="stat_1" class="gt_row gt_center">1.1 (0.2)</td>
 <td headers="stat_2" class="gt_row gt_center">0.9 (0.9)</td></tr>
@@ -4175,11 +4185,13 @@ Survey analysis can yield an abundance of printed summary statistics and models.
 <p> </p>
 <p>Now, we can begin creating our chart with {ggplot2}. First, we set up our plot with <code>ggplot()</code>. Next, we define the data points to be displayed using aesthetics, or <code>aes</code>. Aesthetics represent the visual properties of the objects in the plot. In the following example, we create a bar chart of the percentage of people who usually trust the government by who they voted for in the 2020 election. To do this, we want to have who they voted for on the x-axis (<code>VotedPres2020_selection</code>) and the percent they usually trust the government on the y-axis (<code>pct_trust</code>.) We specify these variables in <code>ggplot()</code> and then indicate we want a bar chart with <code>geom_bar()</code>. The resulting plot is displayed in Figure <a href="c08-communicating-results.html#fig:results-plot1">8.1</a>.</p>
 <div class="sourceCode" id="cb270"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb270-1"><a href="c08-communicating-results.html#cb270-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb270-2"><a href="c08-communicating-results.html#cb270-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
-<span id="cb270-3"><a href="c08-communicating-results.html#cb270-3" tabindex="-1"></a>             <span class="at">y =</span> pct_trust)) <span class="sc">+</span></span>
-<span id="cb270-4"><a href="c08-communicating-results.html#cb270-4" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span>
-<span id="cb270-5"><a href="c08-communicating-results.html#cb270-5" tabindex="-1"></a></span>
-<span id="cb270-6"><a href="c08-communicating-results.html#cb270-6" tabindex="-1"></a>p</span></code></pre></div>
+<span id="cb270-2"><a href="c08-communicating-results.html#cb270-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(</span>
+<span id="cb270-3"><a href="c08-communicating-results.html#cb270-3" tabindex="-1"></a>    <span class="at">x =</span> VotedPres2020_selection,</span>
+<span id="cb270-4"><a href="c08-communicating-results.html#cb270-4" tabindex="-1"></a>    <span class="at">y =</span> pct_trust</span>
+<span id="cb270-5"><a href="c08-communicating-results.html#cb270-5" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb270-6"><a href="c08-communicating-results.html#cb270-6" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span>
+<span id="cb270-7"><a href="c08-communicating-results.html#cb270-7" tabindex="-1"></a></span>
+<span id="cb270-8"><a href="c08-communicating-results.html#cb270-8" tabindex="-1"></a>p</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:results-plot1"></span>
 <img src="bookdown_files/figure-html/results-plot1-1.png" alt="Bar chart with x-axis of 'VotedPres2020_selection' with labels Biden, Trump and Other. It has y-axis 'pct_trust' with labels 0.00, 0.05, 0.10 and 0.15. The chart is a bar chart with 3 vertical bars. Bar 1 (Biden) has a height of 0.12. Bar 2 (Trump) has a height of 0.17. Bar 3 (Other) has a height of 0.06." width="672" />
 <p class="caption">
@@ -4188,12 +4200,14 @@ FIGURE 8.1: Bar chart of trust in government by chosen 2020 presidential candida
 </div>
 <p>This is a great starting point: it appears that a higher percentage of people state they usually trust the government among those who voted for Trump compared to those who voted for Biden or other candidates. Now, what if we want to introduce color to better differentiate the three groups? We can add <code>fill</code> under <code>aesthetics</code>, indicating that we want to use distinct colors for each value of <code>VotedPres2020_selection</code>. In this instance, Biden and Trump are displayed in different colors (shades in the print version of this book) in Figure <a href="c08-communicating-results.html#fig:results-plot2">8.2</a>.</p>
 <div class="sourceCode" id="cb271"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb271-1"><a href="c08-communicating-results.html#cb271-1" tabindex="-1"></a>pcolor <span class="ot">&lt;-</span> anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb271-2"><a href="c08-communicating-results.html#cb271-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
-<span id="cb271-3"><a href="c08-communicating-results.html#cb271-3" tabindex="-1"></a>             <span class="at">y =</span> pct_trust,</span>
-<span id="cb271-4"><a href="c08-communicating-results.html#cb271-4" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
-<span id="cb271-5"><a href="c08-communicating-results.html#cb271-5" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span>
-<span id="cb271-6"><a href="c08-communicating-results.html#cb271-6" tabindex="-1"></a></span>
-<span id="cb271-7"><a href="c08-communicating-results.html#cb271-7" tabindex="-1"></a>pcolor</span></code></pre></div>
+<span id="cb271-2"><a href="c08-communicating-results.html#cb271-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(</span>
+<span id="cb271-3"><a href="c08-communicating-results.html#cb271-3" tabindex="-1"></a>    <span class="at">x =</span> VotedPres2020_selection,</span>
+<span id="cb271-4"><a href="c08-communicating-results.html#cb271-4" tabindex="-1"></a>    <span class="at">y =</span> pct_trust,</span>
+<span id="cb271-5"><a href="c08-communicating-results.html#cb271-5" tabindex="-1"></a>    <span class="at">fill =</span> VotedPres2020_selection</span>
+<span id="cb271-6"><a href="c08-communicating-results.html#cb271-6" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb271-7"><a href="c08-communicating-results.html#cb271-7" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>)</span>
+<span id="cb271-8"><a href="c08-communicating-results.html#cb271-8" tabindex="-1"></a></span>
+<span id="cb271-9"><a href="c08-communicating-results.html#cb271-9" tabindex="-1"></a>pcolor</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:results-plot2"></span>
 <img src="bookdown_files/figure-html/results-plot2-1.png" alt="Bar chart with x-axis of 'VotedPres2020_selection' with labels Biden, Trump and Other. It has y-axis 'pct_trust' with labels 0.00, 0.05, 0.10 and 0.15. The chart is a bar chart with 3 vertical bars. Bar 1 (Biden) has a height of 0.12 and a color of strong reddish orange. Bar 2 (Trump) has a height of 0.17 and a color of vivid yellowish green. Bar 3 (Other) has a height of 0.06 and color of brilliant blue." width="672" />
 <p class="caption">
@@ -4202,15 +4216,21 @@ FIGURE 8.2: Bar chart of trust in government by chosen 2020 presidential candida
 </div>
 <p>Let’s say we wanted to follow proper statistical analysis practice and incorporate variability in our plot. We can add another geom, <code>geom_errorbar()</code>, to display the confidence intervals on top of our existing <code>geom_bar()</code> layer. We can add the layer using a plus sign (<code>+</code>). The resulting graph is displayed in Figure <a href="c08-communicating-results.html#fig:results-plot3">8.3</a>.</p>
 <div class="sourceCode" id="cb272"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb272-1"><a href="c08-communicating-results.html#cb272-1" tabindex="-1"></a>pcol_error <span class="ot">&lt;-</span> anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb272-2"><a href="c08-communicating-results.html#cb272-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
-<span id="cb272-3"><a href="c08-communicating-results.html#cb272-3" tabindex="-1"></a>             <span class="at">y =</span> pct_trust,</span>
-<span id="cb272-4"><a href="c08-communicating-results.html#cb272-4" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
-<span id="cb272-5"><a href="c08-communicating-results.html#cb272-5" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
-<span id="cb272-6"><a href="c08-communicating-results.html#cb272-6" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low,</span>
-<span id="cb272-7"><a href="c08-communicating-results.html#cb272-7" tabindex="-1"></a>                    <span class="at">ymax =</span> pct_trust_upp),</span>
-<span id="cb272-8"><a href="c08-communicating-results.html#cb272-8" tabindex="-1"></a>                <span class="at">width =</span> .<span class="dv">2</span>)</span>
-<span id="cb272-9"><a href="c08-communicating-results.html#cb272-9" tabindex="-1"></a></span>
-<span id="cb272-10"><a href="c08-communicating-results.html#cb272-10" tabindex="-1"></a>pcol_error</span></code></pre></div>
+<span id="cb272-2"><a href="c08-communicating-results.html#cb272-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(</span>
+<span id="cb272-3"><a href="c08-communicating-results.html#cb272-3" tabindex="-1"></a>    <span class="at">x =</span> VotedPres2020_selection,</span>
+<span id="cb272-4"><a href="c08-communicating-results.html#cb272-4" tabindex="-1"></a>    <span class="at">y =</span> pct_trust,</span>
+<span id="cb272-5"><a href="c08-communicating-results.html#cb272-5" tabindex="-1"></a>    <span class="at">fill =</span> VotedPres2020_selection</span>
+<span id="cb272-6"><a href="c08-communicating-results.html#cb272-6" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb272-7"><a href="c08-communicating-results.html#cb272-7" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
+<span id="cb272-8"><a href="c08-communicating-results.html#cb272-8" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(</span>
+<span id="cb272-9"><a href="c08-communicating-results.html#cb272-9" tabindex="-1"></a>    <span class="fu">aes</span>(</span>
+<span id="cb272-10"><a href="c08-communicating-results.html#cb272-10" tabindex="-1"></a>      <span class="at">ymin =</span> pct_trust_low,</span>
+<span id="cb272-11"><a href="c08-communicating-results.html#cb272-11" tabindex="-1"></a>      <span class="at">ymax =</span> pct_trust_upp</span>
+<span id="cb272-12"><a href="c08-communicating-results.html#cb272-12" tabindex="-1"></a>    ),</span>
+<span id="cb272-13"><a href="c08-communicating-results.html#cb272-13" tabindex="-1"></a>    <span class="at">width =</span> .<span class="dv">2</span></span>
+<span id="cb272-14"><a href="c08-communicating-results.html#cb272-14" tabindex="-1"></a>  )</span>
+<span id="cb272-15"><a href="c08-communicating-results.html#cb272-15" tabindex="-1"></a></span>
+<span id="cb272-16"><a href="c08-communicating-results.html#cb272-16" tabindex="-1"></a>pcol_error</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:results-plot3"></span>
 <img src="bookdown_files/figure-html/results-plot3-1.png" alt="Bar chart with x-axis of 'VotedPres2020_selection' with labels Biden, Trump and Other. It has y-axis 'pct_trust' with labels 0.00, 0.05, 0.10 and 0.15. The chart is a bar chart with 3 vertical bars. Bar 1 (Biden) has a height of 0.12 and a color of strong reddish orange. Bar 2 (Trump) has a height of 0.17 and a color of vivid yellowish green. Bar 3 (Other) has a height of 0.06 and color of brilliant blue. Error bars are added with the Bar 1 (Biden) error ranging from 0.11 to 0.14, Bar 2 (Trump) error ranging from 0.16 to 0.19, and the Bar 3 (Other) error ranging from 0.02 to 0.14." width="672" />
 <p class="caption">
@@ -4220,23 +4240,31 @@ FIGURE 8.3: Bar chart of trust in government by chosen 2020 presidential candida
 <p>We can continue adding to our plot until we achieve our desired look. For example, we can eliminate the color legend as it doesn’t contribute meaningful information with <code>guides(fill = "none")</code>. We can also specify colors for <code>fill</code> using <code>scale_fill_manual()</code>. Inside this function, we provide a vector of values corresponding to the colors in our plot. These values are hexadecimal (hex) color codes, denoted by a leading pound sign <code>#</code> followed by six letters or numbers. The hex code <code>#0b3954</code> used below is dark blue. There are many tools online that help pick hex codes, such as <a href="https://htmlcolorcodes.com/">htmlcolorcodes.com</a>. Additionally, Figure <a href="c08-communicating-results.html#fig:results-plot4">8.4</a> incorporates better labels for the x and y axes (<code>xlab()</code>, <code>ylab()</code>), a title (<code>labs(title=)</code>), and a footnote with the data source (<code>labs(caption=)</code>.)</p>
 <div class="sourceCode" id="cb273"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb273-1"><a href="c08-communicating-results.html#cb273-1" tabindex="-1"></a>pfull <span class="ot">&lt;-</span></span>
 <span id="cb273-2"><a href="c08-communicating-results.html#cb273-2" tabindex="-1"></a>  anes_des_der <span class="sc">%&gt;%</span></span>
-<span id="cb273-3"><a href="c08-communicating-results.html#cb273-3" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VotedPres2020_selection,</span>
-<span id="cb273-4"><a href="c08-communicating-results.html#cb273-4" tabindex="-1"></a>             <span class="at">y =</span> pct_trust,</span>
-<span id="cb273-5"><a href="c08-communicating-results.html#cb273-5" tabindex="-1"></a>             <span class="at">fill =</span> VotedPres2020_selection)) <span class="sc">+</span></span>
-<span id="cb273-6"><a href="c08-communicating-results.html#cb273-6" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
-<span id="cb273-7"><a href="c08-communicating-results.html#cb273-7" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> pct_trust_low,</span>
-<span id="cb273-8"><a href="c08-communicating-results.html#cb273-8" tabindex="-1"></a>                    <span class="at">ymax =</span> pct_trust_upp),</span>
-<span id="cb273-9"><a href="c08-communicating-results.html#cb273-9" tabindex="-1"></a>                <span class="at">width =</span> .<span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb273-10"><a href="c08-communicating-results.html#cb273-10" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#0b3954&quot;</span>, <span class="st">&quot;#bfd7ea&quot;</span>, <span class="st">&quot;#8d6b94&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb273-11"><a href="c08-communicating-results.html#cb273-11" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Election choice (2020)&quot;</span>) <span class="sc">+</span></span>
-<span id="cb273-12"><a href="c08-communicating-results.html#cb273-12" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Usually trust the government&quot;</span>) <span class="sc">+</span></span>
-<span id="cb273-13"><a href="c08-communicating-results.html#cb273-13" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
-<span id="cb273-14"><a href="c08-communicating-results.html#cb273-14" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>) <span class="sc">+</span></span>
-<span id="cb273-15"><a href="c08-communicating-results.html#cb273-15" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Percent of voters who usually trust the government</span></span>
-<span id="cb273-16"><a href="c08-communicating-results.html#cb273-16" tabindex="-1"></a><span class="st">       by chosen 2020 presidential candidate&quot;</span>,</span>
-<span id="cb273-17"><a href="c08-communicating-results.html#cb273-17" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">&quot;Source: American National Election Studies, 2020&quot;</span>)</span>
-<span id="cb273-18"><a href="c08-communicating-results.html#cb273-18" tabindex="-1"></a></span>
-<span id="cb273-19"><a href="c08-communicating-results.html#cb273-19" tabindex="-1"></a>pfull</span></code></pre></div>
+<span id="cb273-3"><a href="c08-communicating-results.html#cb273-3" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(</span>
+<span id="cb273-4"><a href="c08-communicating-results.html#cb273-4" tabindex="-1"></a>    <span class="at">x =</span> VotedPres2020_selection,</span>
+<span id="cb273-5"><a href="c08-communicating-results.html#cb273-5" tabindex="-1"></a>    <span class="at">y =</span> pct_trust,</span>
+<span id="cb273-6"><a href="c08-communicating-results.html#cb273-6" tabindex="-1"></a>    <span class="at">fill =</span> VotedPres2020_selection</span>
+<span id="cb273-7"><a href="c08-communicating-results.html#cb273-7" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb273-8"><a href="c08-communicating-results.html#cb273-8" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>) <span class="sc">+</span></span>
+<span id="cb273-9"><a href="c08-communicating-results.html#cb273-9" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(</span>
+<span id="cb273-10"><a href="c08-communicating-results.html#cb273-10" tabindex="-1"></a>    <span class="fu">aes</span>(</span>
+<span id="cb273-11"><a href="c08-communicating-results.html#cb273-11" tabindex="-1"></a>      <span class="at">ymin =</span> pct_trust_low,</span>
+<span id="cb273-12"><a href="c08-communicating-results.html#cb273-12" tabindex="-1"></a>      <span class="at">ymax =</span> pct_trust_upp</span>
+<span id="cb273-13"><a href="c08-communicating-results.html#cb273-13" tabindex="-1"></a>    ),</span>
+<span id="cb273-14"><a href="c08-communicating-results.html#cb273-14" tabindex="-1"></a>    <span class="at">width =</span> .<span class="dv">2</span></span>
+<span id="cb273-15"><a href="c08-communicating-results.html#cb273-15" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb273-16"><a href="c08-communicating-results.html#cb273-16" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#0b3954&quot;</span>, <span class="st">&quot;#bfd7ea&quot;</span>, <span class="st">&quot;#8d6b94&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb273-17"><a href="c08-communicating-results.html#cb273-17" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Election choice (2020)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb273-18"><a href="c08-communicating-results.html#cb273-18" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Usually trust the government&quot;</span>) <span class="sc">+</span></span>
+<span id="cb273-19"><a href="c08-communicating-results.html#cb273-19" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb273-20"><a href="c08-communicating-results.html#cb273-20" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="st">&quot;none&quot;</span>) <span class="sc">+</span></span>
+<span id="cb273-21"><a href="c08-communicating-results.html#cb273-21" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb273-22"><a href="c08-communicating-results.html#cb273-22" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Percent of voters who usually trust the government</span></span>
+<span id="cb273-23"><a href="c08-communicating-results.html#cb273-23" tabindex="-1"></a><span class="st">       by chosen 2020 presidential candidate&quot;</span>,</span>
+<span id="cb273-24"><a href="c08-communicating-results.html#cb273-24" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Source: American National Election Studies, 2020&quot;</span></span>
+<span id="cb273-25"><a href="c08-communicating-results.html#cb273-25" tabindex="-1"></a>  )</span>
+<span id="cb273-26"><a href="c08-communicating-results.html#cb273-26" tabindex="-1"></a></span>
+<span id="cb273-27"><a href="c08-communicating-results.html#cb273-27" tabindex="-1"></a>pfull</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:results-plot4"></span>
 <img src="bookdown_files/figure-html/results-plot4-1.png" alt="Bar chart with x-axis of 'VotedPres2020_selection' with labels Biden, Trump and Other. It has y-axis 'pct_trust' with labels 0.00, 0.05, 0.10 and 0.15. The chart is a bar chart with 3 vertical bars. Bar 1 (Biden) has a height of 0.12 and a color of dark blue. Bar 2 (Trump) has a height of 0.17 and a color of very pale blue. Bar 3 (Other) has a height of 0.06 and color of moderate purple. Error bars are added with the Bar 1 (Biden) error ranging from 0.11 to 0.14, Bar 2 (Trump) error ranging from 0.16 to 0.19, and the Bar 3 (Other) error ranging from 0.02 to 0.14." width="672" />
 <p class="caption">
@@ -4252,7 +4280,7 @@ FIGURE 8.4: Bar chart of trust in government by chosen 2020 presidential candida
 <h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-R-gt" class="csl-entry">
-Iannone, Richard, Joe Cheng, Barret Schloerke, Ellis Hughes, Alexandra Lauer, and JooYoung Seo. 2023. <em><span class="nocase">gt</span>: Easily Create Presentation-Ready Display Tables</em>.
+Iannone, Richard, Joe Cheng, Barret Schloerke, Ellis Hughes, Alexandra Lauer, and JooYoung Seo. 2024. <em><span class="nocase">gt</span>: Easily Create Presentation-Ready Display Tables</em>. <a href="https://gt.rstudio.com">https://gt.rstudio.com</a>.
 </div>
 <div id="ref-gtsummarysjo" class="csl-entry">
 Sjoberg, Daniel D., Karissa Whiting, Michael Curry, Jessica A. Lavery, and Joseph Larmarange. 2021. <span>“Reproducible Summary Tables with the <span class="nocase">gtsummary</span> Package.”</span> <em><span>The R Journal</span></em> 13: 570–80. <a href="https://doi.org/10.32614/RJ-2021-053">https://doi.org/10.32614/RJ-2021-053</a>.

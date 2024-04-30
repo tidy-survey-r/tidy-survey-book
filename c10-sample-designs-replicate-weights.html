@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 10 Sample designs and replicate weights | Exploring Complex Survey Data Analysis in R</title>
   <meta name="description" content="Bookdown for upcoming book on survey analysis the tidy way." />
-  <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 10 Sample designs and replicate weights | Exploring Complex Survey Data Analysis in R" />
   <meta property="og:type" content="book" />
@@ -52,6 +52,7 @@
 <link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections/anchor-sections.js"></script>
+<link href="libs/htmltools-fill/fill.css" rel="stylesheet" />
 <script src="libs/htmlwidgets/htmlwidgets.js"></script>
 <script src="libs/d3/d3.min.js"></script>
 <script src="libs/dagre/dagre-d3.min.js"></script>
@@ -660,10 +661,12 @@ If a sample was drawn through SRS and had no nonresponse or other weighting adju
 </table>
 <p>To create the <code>tbl_survey</code> object for the SRS data, we specify the design as:</p>
 <div class="sourceCode" id="cb285"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb285-1"><a href="c10-sample-designs-replicate-weights.html#cb285-1" tabindex="-1"></a>apisrs_des <span class="ot">&lt;-</span> apisrs_slim <span class="sc">%&gt;%</span></span>
-<span id="cb285-2"><a href="c10-sample-designs-replicate-weights.html#cb285-2" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> pw,</span>
-<span id="cb285-3"><a href="c10-sample-designs-replicate-weights.html#cb285-3" tabindex="-1"></a>                   <span class="at">fpc =</span> fpc)</span>
-<span id="cb285-4"><a href="c10-sample-designs-replicate-weights.html#cb285-4" tabindex="-1"></a></span>
-<span id="cb285-5"><a href="c10-sample-designs-replicate-weights.html#cb285-5" tabindex="-1"></a>apisrs_des</span></code></pre></div>
+<span id="cb285-2"><a href="c10-sample-designs-replicate-weights.html#cb285-2" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
+<span id="cb285-3"><a href="c10-sample-designs-replicate-weights.html#cb285-3" tabindex="-1"></a>    <span class="at">weights =</span> pw,</span>
+<span id="cb285-4"><a href="c10-sample-designs-replicate-weights.html#cb285-4" tabindex="-1"></a>    <span class="at">fpc =</span> fpc</span>
+<span id="cb285-5"><a href="c10-sample-designs-replicate-weights.html#cb285-5" tabindex="-1"></a>  )</span>
+<span id="cb285-6"><a href="c10-sample-designs-replicate-weights.html#cb285-6" tabindex="-1"></a></span>
+<span id="cb285-7"><a href="c10-sample-designs-replicate-weights.html#cb285-7" tabindex="-1"></a>apisrs_des</span></code></pre></div>
 <pre><code>## Independent Sampling design
 ## Called via srvyr
 ## Sampling variables:
@@ -762,7 +765,7 @@ If some post-survey adjustments were implemented and the weights are not all equ
 ## 4 39686766042782   716  4880 Stockton City Unified Tyler Skills …   31.0</code></pre>
 <p>We created a weight variable in this example data, which is the inverse of the probability of selection. We specify the sampling design for <code>apisrswr</code> as:</p>
 <div class="sourceCode" id="cb295"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb295-1"><a href="c10-sample-designs-replicate-weights.html#cb295-1" tabindex="-1"></a>apisrswr_des <span class="ot">&lt;-</span> apisrswr <span class="sc">%&gt;%</span></span>
-<span id="cb295-2"><a href="c10-sample-designs-replicate-weights.html#cb295-2" tabindex="-1"></a> <span class="fu">as_survey_design</span>(<span class="at">weights =</span> weight)</span>
+<span id="cb295-2"><a href="c10-sample-designs-replicate-weights.html#cb295-2" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">weights =</span> weight)</span>
 <span id="cb295-3"><a href="c10-sample-designs-replicate-weights.html#cb295-3" tabindex="-1"></a></span>
 <span id="cb295-4"><a href="c10-sample-designs-replicate-weights.html#cb295-4" tabindex="-1"></a>apisrswr_des</span></code></pre></div>
 <pre><code>## Independent Sampling design (with replacement)
@@ -834,13 +837,13 @@ In addition to the <code>fpc</code> and <code>weights</code> arguments discussed
 <h4>Example<a href="c10-sample-designs-replicate-weights.html#example-4" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>In the example API data, <code>apistrat</code> is a stratified random sample, stratified by school type (<code>stype</code>) with three levels: <code>E</code> for elementary school, <code>M</code> for middle school, and <code>H</code> for high school. As with the SRS example above, we sort and select specific variables for use in printing. The data are illustrated below, including a count of the number of cases per stratum:</p>
 <div class="sourceCode" id="cb301"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb301-1"><a href="c10-sample-designs-replicate-weights.html#cb301-1" tabindex="-1"></a>apistrat_slim <span class="ot">&lt;-</span></span>
-<span id="cb301-2"><a href="c10-sample-designs-replicate-weights.html#cb301-2" tabindex="-1"></a> apistrat <span class="sc">%&gt;%</span></span>
-<span id="cb301-3"><a href="c10-sample-designs-replicate-weights.html#cb301-3" tabindex="-1"></a> <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb301-4"><a href="c10-sample-designs-replicate-weights.html#cb301-4" tabindex="-1"></a> <span class="fu">arrange</span>(dnum, snum) <span class="sc">%&gt;%</span></span>
-<span id="cb301-5"><a href="c10-sample-designs-replicate-weights.html#cb301-5" tabindex="-1"></a> <span class="fu">select</span>(cds, dnum, snum, dname, sname, stype, fpc, pw)</span>
+<span id="cb301-2"><a href="c10-sample-designs-replicate-weights.html#cb301-2" tabindex="-1"></a>  apistrat <span class="sc">%&gt;%</span></span>
+<span id="cb301-3"><a href="c10-sample-designs-replicate-weights.html#cb301-3" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb301-4"><a href="c10-sample-designs-replicate-weights.html#cb301-4" tabindex="-1"></a>  <span class="fu">arrange</span>(dnum, snum) <span class="sc">%&gt;%</span></span>
+<span id="cb301-5"><a href="c10-sample-designs-replicate-weights.html#cb301-5" tabindex="-1"></a>  <span class="fu">select</span>(cds, dnum, snum, dname, sname, stype, fpc, pw)</span>
 <span id="cb301-6"><a href="c10-sample-designs-replicate-weights.html#cb301-6" tabindex="-1"></a></span>
 <span id="cb301-7"><a href="c10-sample-designs-replicate-weights.html#cb301-7" tabindex="-1"></a>apistrat_slim <span class="sc">%&gt;%</span></span>
-<span id="cb301-8"><a href="c10-sample-designs-replicate-weights.html#cb301-8" tabindex="-1"></a> <span class="fu">count</span>(stype, fpc)</span></code></pre></div>
+<span id="cb301-8"><a href="c10-sample-designs-replicate-weights.html#cb301-8" tabindex="-1"></a>  <span class="fu">count</span>(stype, fpc)</span></code></pre></div>
 <pre><code>## # A tibble: 3 × 3
 ##   stype   fpc     n
 ##   &lt;fct&gt; &lt;dbl&gt; &lt;int&gt;
@@ -849,11 +852,13 @@ In addition to the <code>fpc</code> and <code>weights</code> arguments discussed
 ## 3 M      1018    50</code></pre>
 <p>The FPC is the same for each case within each stratum. This output also shows that 100 elementary schools, 50 middle schools, and 50 high schools were sampled. It is often common for the number of units sampled from each strata to be different based on the goals of the project, or to mirror the size of each strata in the population. We specify the design as:</p>
 <div class="sourceCode" id="cb303"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb303-1"><a href="c10-sample-designs-replicate-weights.html#cb303-1" tabindex="-1"></a>apistrat_des <span class="ot">&lt;-</span> apistrat_slim <span class="sc">%&gt;%</span></span>
-<span id="cb303-2"><a href="c10-sample-designs-replicate-weights.html#cb303-2" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">strata =</span> stype,</span>
-<span id="cb303-3"><a href="c10-sample-designs-replicate-weights.html#cb303-3" tabindex="-1"></a>                   <span class="at">weights =</span> pw,</span>
-<span id="cb303-4"><a href="c10-sample-designs-replicate-weights.html#cb303-4" tabindex="-1"></a>                   <span class="at">fpc =</span> fpc)</span>
-<span id="cb303-5"><a href="c10-sample-designs-replicate-weights.html#cb303-5" tabindex="-1"></a></span>
-<span id="cb303-6"><a href="c10-sample-designs-replicate-weights.html#cb303-6" tabindex="-1"></a>apistrat_des</span></code></pre></div>
+<span id="cb303-2"><a href="c10-sample-designs-replicate-weights.html#cb303-2" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
+<span id="cb303-3"><a href="c10-sample-designs-replicate-weights.html#cb303-3" tabindex="-1"></a>    <span class="at">strata =</span> stype,</span>
+<span id="cb303-4"><a href="c10-sample-designs-replicate-weights.html#cb303-4" tabindex="-1"></a>    <span class="at">weights =</span> pw,</span>
+<span id="cb303-5"><a href="c10-sample-designs-replicate-weights.html#cb303-5" tabindex="-1"></a>    <span class="at">fpc =</span> fpc</span>
+<span id="cb303-6"><a href="c10-sample-designs-replicate-weights.html#cb303-6" tabindex="-1"></a>  )</span>
+<span id="cb303-7"><a href="c10-sample-designs-replicate-weights.html#cb303-7" tabindex="-1"></a></span>
+<span id="cb303-8"><a href="c10-sample-designs-replicate-weights.html#cb303-8" tabindex="-1"></a>apistrat_des</span></code></pre></div>
 <pre><code>## Stratified Independent Sampling design
 ## Called via srvyr
 ## Sampling variables:
@@ -1098,13 +1103,15 @@ Replicate weights generally come in groups and are sequentially numbered, such a
 The {survey} package includes a data example from Section 12.2 of <span class="citation">Levy and Lemeshow (<a href="#ref-levy2013sampling">2013</a>)</span>. In this fictional data, two out of five ambulance stations were sampled from each of three emergency service areas (ESAs), thus BRR weights are appropriate with 2 PSUs (stations) sampled in each stratum (ESA.) In the code below, we create BRR weights as was done by <span class="citation">Levy and Lemeshow (<a href="#ref-levy2013sampling">2013</a>)</span>.</p>
 <div class="sourceCode" id="cb320"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb320-1"><a href="c10-sample-designs-replicate-weights.html#cb320-1" tabindex="-1"></a>scdbrr <span class="ot">&lt;-</span> scd <span class="sc">%&gt;%</span></span>
 <span id="cb320-2"><a href="c10-sample-designs-replicate-weights.html#cb320-2" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb320-3"><a href="c10-sample-designs-replicate-weights.html#cb320-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">wt =</span> <span class="dv">5</span> <span class="sc">/</span> <span class="dv">2</span>,</span>
-<span id="cb320-4"><a href="c10-sample-designs-replicate-weights.html#cb320-4" tabindex="-1"></a>         <span class="at">rep1 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb320-5"><a href="c10-sample-designs-replicate-weights.html#cb320-5" tabindex="-1"></a>         <span class="at">rep2 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
-<span id="cb320-6"><a href="c10-sample-designs-replicate-weights.html#cb320-6" tabindex="-1"></a>         <span class="at">rep3 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
-<span id="cb320-7"><a href="c10-sample-designs-replicate-weights.html#cb320-7" tabindex="-1"></a>         <span class="at">rep4 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
-<span id="cb320-8"><a href="c10-sample-designs-replicate-weights.html#cb320-8" tabindex="-1"></a></span>
-<span id="cb320-9"><a href="c10-sample-designs-replicate-weights.html#cb320-9" tabindex="-1"></a>scdbrr</span></code></pre></div>
+<span id="cb320-3"><a href="c10-sample-designs-replicate-weights.html#cb320-3" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb320-4"><a href="c10-sample-designs-replicate-weights.html#cb320-4" tabindex="-1"></a>    <span class="at">wt =</span> <span class="dv">5</span> <span class="sc">/</span> <span class="dv">2</span>,</span>
+<span id="cb320-5"><a href="c10-sample-designs-replicate-weights.html#cb320-5" tabindex="-1"></a>    <span class="at">rep1 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb320-6"><a href="c10-sample-designs-replicate-weights.html#cb320-6" tabindex="-1"></a>    <span class="at">rep2 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb320-7"><a href="c10-sample-designs-replicate-weights.html#cb320-7" tabindex="-1"></a>    <span class="at">rep3 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb320-8"><a href="c10-sample-designs-replicate-weights.html#cb320-8" tabindex="-1"></a>    <span class="at">rep4 =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb320-9"><a href="c10-sample-designs-replicate-weights.html#cb320-9" tabindex="-1"></a>  )</span>
+<span id="cb320-10"><a href="c10-sample-designs-replicate-weights.html#cb320-10" tabindex="-1"></a></span>
+<span id="cb320-11"><a href="c10-sample-designs-replicate-weights.html#cb320-11" tabindex="-1"></a>scdbrr</span></code></pre></div>
 <pre><code>## # A tibble: 6 × 9
 ##     ESA ambulance arrests alive    wt  rep1  rep2  rep3  rep4
 ##   &lt;int&gt;     &lt;int&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
@@ -1116,12 +1123,14 @@ The {survey} package includes a data example from Section 12.2 of <span class="c
 ## 6     3         2     530    70   2.5     0     2     2     0</code></pre>
 <p>To specify the BRR weights, we use the following syntax:</p>
 <div class="sourceCode" id="cb322"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb322-1"><a href="c10-sample-designs-replicate-weights.html#cb322-1" tabindex="-1"></a>scdbrr_des <span class="ot">&lt;-</span> scdbrr <span class="sc">%&gt;%</span></span>
-<span id="cb322-2"><a href="c10-sample-designs-replicate-weights.html#cb322-2" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
-<span id="cb322-3"><a href="c10-sample-designs-replicate-weights.html#cb322-3" tabindex="-1"></a>                <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;rep&quot;</span>),</span>
-<span id="cb322-4"><a href="c10-sample-designs-replicate-weights.html#cb322-4" tabindex="-1"></a>                <span class="at">combined_weights =</span> <span class="cn">FALSE</span>,  </span>
-<span id="cb322-5"><a href="c10-sample-designs-replicate-weights.html#cb322-5" tabindex="-1"></a>                <span class="at">weight =</span> wt)</span>
-<span id="cb322-6"><a href="c10-sample-designs-replicate-weights.html#cb322-6" tabindex="-1"></a></span>
-<span id="cb322-7"><a href="c10-sample-designs-replicate-weights.html#cb322-7" tabindex="-1"></a>scdbrr_des</span></code></pre></div>
+<span id="cb322-2"><a href="c10-sample-designs-replicate-weights.html#cb322-2" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
+<span id="cb322-3"><a href="c10-sample-designs-replicate-weights.html#cb322-3" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;BRR&quot;</span>,</span>
+<span id="cb322-4"><a href="c10-sample-designs-replicate-weights.html#cb322-4" tabindex="-1"></a>    <span class="at">repweights =</span> <span class="fu">starts_with</span>(<span class="st">&quot;rep&quot;</span>),</span>
+<span id="cb322-5"><a href="c10-sample-designs-replicate-weights.html#cb322-5" tabindex="-1"></a>    <span class="at">combined_weights =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb322-6"><a href="c10-sample-designs-replicate-weights.html#cb322-6" tabindex="-1"></a>    <span class="at">weight =</span> wt</span>
+<span id="cb322-7"><a href="c10-sample-designs-replicate-weights.html#cb322-7" tabindex="-1"></a>  )</span>
+<span id="cb322-8"><a href="c10-sample-designs-replicate-weights.html#cb322-8" tabindex="-1"></a></span>
+<span id="cb322-9"><a href="c10-sample-designs-replicate-weights.html#cb322-9" tabindex="-1"></a>scdbrr_des</span></code></pre></div>
 <pre><code>## Call: Called via srvyr
 ## Balanced Repeated Replicates with 4 replicates.
 ## Sampling variables:
@@ -1169,14 +1178,16 @@ The {survey} package includes a data example from Section 12.2 of <span class="c
 <p>
 The 2015 RECS <span class="citation">(<a href="#ref-recs-2015-micro">U.S. Energy Information Administration 2017</a>)</span> uses Fay’s BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96, and the documentation specifies a Fay’s multiplier of 0.5. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total energy cost, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. We use the 2015 RECS data from the {srvyrexploR} package that provides data for this book (see the prerequisites box at the beginning of this chapter.) To specify the design for the <code>recs_2015</code> data, we use the following syntax:</p>
 <div class="sourceCode" id="cb327"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb327-1"><a href="c10-sample-designs-replicate-weights.html#cb327-1" tabindex="-1"></a>recs_2015_des <span class="ot">&lt;-</span> recs_2015 <span class="sc">%&gt;%</span></span>
-<span id="cb327-2"><a href="c10-sample-designs-replicate-weights.html#cb327-2" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> NWEIGHT,</span>
-<span id="cb327-3"><a href="c10-sample-designs-replicate-weights.html#cb327-3" tabindex="-1"></a>                <span class="at">repweights =</span> BRRWT1<span class="sc">:</span>BRRWT96,</span>
-<span id="cb327-4"><a href="c10-sample-designs-replicate-weights.html#cb327-4" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;Fay&quot;</span>,</span>
-<span id="cb327-5"><a href="c10-sample-designs-replicate-weights.html#cb327-5" tabindex="-1"></a>                <span class="at">rho =</span> <span class="fl">0.5</span>,</span>
-<span id="cb327-6"><a href="c10-sample-designs-replicate-weights.html#cb327-6" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb327-7"><a href="c10-sample-designs-replicate-weights.html#cb327-7" tabindex="-1"></a>                <span class="at">variables =</span> <span class="fu">c</span>(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC))</span>
-<span id="cb327-8"><a href="c10-sample-designs-replicate-weights.html#cb327-8" tabindex="-1"></a></span>
-<span id="cb327-9"><a href="c10-sample-designs-replicate-weights.html#cb327-9" tabindex="-1"></a>recs_2015_des </span></code></pre></div>
+<span id="cb327-2"><a href="c10-sample-designs-replicate-weights.html#cb327-2" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
+<span id="cb327-3"><a href="c10-sample-designs-replicate-weights.html#cb327-3" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
+<span id="cb327-4"><a href="c10-sample-designs-replicate-weights.html#cb327-4" tabindex="-1"></a>    <span class="at">repweights =</span> BRRWT1<span class="sc">:</span>BRRWT96,</span>
+<span id="cb327-5"><a href="c10-sample-designs-replicate-weights.html#cb327-5" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;Fay&quot;</span>,</span>
+<span id="cb327-6"><a href="c10-sample-designs-replicate-weights.html#cb327-6" tabindex="-1"></a>    <span class="at">rho =</span> <span class="fl">0.5</span>,</span>
+<span id="cb327-7"><a href="c10-sample-designs-replicate-weights.html#cb327-7" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb327-8"><a href="c10-sample-designs-replicate-weights.html#cb327-8" tabindex="-1"></a>    <span class="at">variables =</span> <span class="fu">c</span>(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC)</span>
+<span id="cb327-9"><a href="c10-sample-designs-replicate-weights.html#cb327-9" tabindex="-1"></a>  )</span>
+<span id="cb327-10"><a href="c10-sample-designs-replicate-weights.html#cb327-10" tabindex="-1"></a></span>
+<span id="cb327-11"><a href="c10-sample-designs-replicate-weights.html#cb327-11" tabindex="-1"></a>recs_2015_des</span></code></pre></div>
 <pre><code>## Call: Called via srvyr
 ## Fay&#39;s variance method (rho= 0.5 ) with 96 replicates and MSE variances.
 ## Sampling variables:
@@ -1198,7 +1209,7 @@ The 2015 RECS <span class="citation">(<a href="#ref-recs-2015-micro">U.S. Energy
 ##   - weights: NWEIGHT 
 ## Data variables: 
 ##   - DOEID (dbl), TOTALDOL (dbl), TOTSQFT_EN (dbl), REGIONC (dbl)</code></pre>
-<div class="sourceCode" id="cb329"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb329-1"><a href="c10-sample-designs-replicate-weights.html#cb329-1" tabindex="-1"></a><span class="fu">summary</span>(recs_2015_des) </span></code></pre></div>
+<div class="sourceCode" id="cb329"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb329-1"><a href="c10-sample-designs-replicate-weights.html#cb329-1" tabindex="-1"></a><span class="fu">summary</span>(recs_2015_des)</span></code></pre></div>
 <pre><code>## Call: Called via srvyr
 ## Fay&#39;s variance method (rho= 0.5 ) with 96 replicates and MSE variances.
 ## Sampling variables:
@@ -1271,7 +1282,7 @@ The 2020 RECS <span class="citation">(<a href="#ref-recs-2020-micro">U.S. Energy
 <span id="cb333-3"><a href="c10-sample-designs-replicate-weights.html#cb333-3" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
 <span id="cb333-4"><a href="c10-sample-designs-replicate-weights.html#cb333-4" tabindex="-1"></a>    <span class="at">repweights =</span> NWEIGHT1<span class="sc">:</span>NWEIGHT60,</span>
 <span id="cb333-5"><a href="c10-sample-designs-replicate-weights.html#cb333-5" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;JK1&quot;</span>,</span>
-<span id="cb333-6"><a href="c10-sample-designs-replicate-weights.html#cb333-6" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">59</span><span class="sc">/</span><span class="dv">60</span>,</span>
+<span id="cb333-6"><a href="c10-sample-designs-replicate-weights.html#cb333-6" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">59</span> <span class="sc">/</span> <span class="dv">60</span>,</span>
 <span id="cb333-7"><a href="c10-sample-designs-replicate-weights.html#cb333-7" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span>,</span>
 <span id="cb333-8"><a href="c10-sample-designs-replicate-weights.html#cb333-8" tabindex="-1"></a>    <span class="at">variables =</span> <span class="fu">c</span>(DOEID, TOTALDOL, TOTSQFT_EN, REGIONC)</span>
 <span id="cb333-9"><a href="c10-sample-designs-replicate-weights.html#cb333-9" tabindex="-1"></a>  )</span>
@@ -1355,22 +1366,24 @@ Returning to the api example, we are going to create a dataset with bootstrap we
 <span id="cb338-6"><a href="c10-sample-designs-replicate-weights.html#cb338-6" tabindex="-1"></a></span>
 <span id="cb338-7"><a href="c10-sample-designs-replicate-weights.html#cb338-7" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">662152</span>)</span>
 <span id="cb338-8"><a href="c10-sample-designs-replicate-weights.html#cb338-8" tabindex="-1"></a>apibw <span class="ot">&lt;-</span></span>
-<span id="cb338-9"><a href="c10-sample-designs-replicate-weights.html#cb338-9" tabindex="-1"></a>  <span class="fu">bootweights</span>(<span class="at">psu =</span> apiclus1_slim<span class="sc">$</span>dnum,</span>
-<span id="cb338-10"><a href="c10-sample-designs-replicate-weights.html#cb338-10" tabindex="-1"></a>              <span class="at">strata =</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(apiclus1_slim)),</span>
-<span id="cb338-11"><a href="c10-sample-designs-replicate-weights.html#cb338-11" tabindex="-1"></a>              <span class="at">fpc =</span> apiclus1_slim<span class="sc">$</span>fpc,</span>
-<span id="cb338-12"><a href="c10-sample-designs-replicate-weights.html#cb338-12" tabindex="-1"></a>              <span class="at">replicates =</span> <span class="dv">50</span>)</span>
-<span id="cb338-13"><a href="c10-sample-designs-replicate-weights.html#cb338-13" tabindex="-1"></a></span>
-<span id="cb338-14"><a href="c10-sample-designs-replicate-weights.html#cb338-14" tabindex="-1"></a>bwmata <span class="ot">&lt;-</span></span>
-<span id="cb338-15"><a href="c10-sample-designs-replicate-weights.html#cb338-15" tabindex="-1"></a>  apibw<span class="sc">$</span>repweights<span class="sc">$</span>weights[apibw<span class="sc">$</span>repweights<span class="sc">$</span>index,] <span class="sc">*</span> apiclus1_slim<span class="sc">$</span>pw</span>
-<span id="cb338-16"><a href="c10-sample-designs-replicate-weights.html#cb338-16" tabindex="-1"></a></span>
-<span id="cb338-17"><a href="c10-sample-designs-replicate-weights.html#cb338-17" tabindex="-1"></a>apiclus1_slim <span class="ot">&lt;-</span> bwmata <span class="sc">%&gt;%</span></span>
-<span id="cb338-18"><a href="c10-sample-designs-replicate-weights.html#cb338-18" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb338-19"><a href="c10-sample-designs-replicate-weights.html#cb338-19" tabindex="-1"></a>  <span class="fu">set_names</span>(<span class="fu">str_c</span>(<span class="st">&quot;pw&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb338-20"><a href="c10-sample-designs-replicate-weights.html#cb338-20" tabindex="-1"></a>  <span class="fu">cbind</span>(apiclus1_slim) <span class="sc">%&gt;%</span></span>
-<span id="cb338-21"><a href="c10-sample-designs-replicate-weights.html#cb338-21" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb338-22"><a href="c10-sample-designs-replicate-weights.html#cb338-22" tabindex="-1"></a>  <span class="fu">select</span>(cds, dnum, fpc, pw, <span class="fu">everything</span>())</span>
-<span id="cb338-23"><a href="c10-sample-designs-replicate-weights.html#cb338-23" tabindex="-1"></a></span>
-<span id="cb338-24"><a href="c10-sample-designs-replicate-weights.html#cb338-24" tabindex="-1"></a>apiclus1_slim</span></code></pre></div>
+<span id="cb338-9"><a href="c10-sample-designs-replicate-weights.html#cb338-9" tabindex="-1"></a>  <span class="fu">bootweights</span>(</span>
+<span id="cb338-10"><a href="c10-sample-designs-replicate-weights.html#cb338-10" tabindex="-1"></a>    <span class="at">psu =</span> apiclus1_slim<span class="sc">$</span>dnum,</span>
+<span id="cb338-11"><a href="c10-sample-designs-replicate-weights.html#cb338-11" tabindex="-1"></a>    <span class="at">strata =</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(apiclus1_slim)),</span>
+<span id="cb338-12"><a href="c10-sample-designs-replicate-weights.html#cb338-12" tabindex="-1"></a>    <span class="at">fpc =</span> apiclus1_slim<span class="sc">$</span>fpc,</span>
+<span id="cb338-13"><a href="c10-sample-designs-replicate-weights.html#cb338-13" tabindex="-1"></a>    <span class="at">replicates =</span> <span class="dv">50</span></span>
+<span id="cb338-14"><a href="c10-sample-designs-replicate-weights.html#cb338-14" tabindex="-1"></a>  )</span>
+<span id="cb338-15"><a href="c10-sample-designs-replicate-weights.html#cb338-15" tabindex="-1"></a></span>
+<span id="cb338-16"><a href="c10-sample-designs-replicate-weights.html#cb338-16" tabindex="-1"></a>bwmata <span class="ot">&lt;-</span></span>
+<span id="cb338-17"><a href="c10-sample-designs-replicate-weights.html#cb338-17" tabindex="-1"></a>  apibw<span class="sc">$</span>repweights<span class="sc">$</span>weights[apibw<span class="sc">$</span>repweights<span class="sc">$</span>index, ] <span class="sc">*</span> apiclus1_slim<span class="sc">$</span>pw</span>
+<span id="cb338-18"><a href="c10-sample-designs-replicate-weights.html#cb338-18" tabindex="-1"></a></span>
+<span id="cb338-19"><a href="c10-sample-designs-replicate-weights.html#cb338-19" tabindex="-1"></a>apiclus1_slim <span class="ot">&lt;-</span> bwmata <span class="sc">%&gt;%</span></span>
+<span id="cb338-20"><a href="c10-sample-designs-replicate-weights.html#cb338-20" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb338-21"><a href="c10-sample-designs-replicate-weights.html#cb338-21" tabindex="-1"></a>  <span class="fu">set_names</span>(<span class="fu">str_c</span>(<span class="st">&quot;pw&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb338-22"><a href="c10-sample-designs-replicate-weights.html#cb338-22" tabindex="-1"></a>  <span class="fu">cbind</span>(apiclus1_slim) <span class="sc">%&gt;%</span></span>
+<span id="cb338-23"><a href="c10-sample-designs-replicate-weights.html#cb338-23" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb338-24"><a href="c10-sample-designs-replicate-weights.html#cb338-24" tabindex="-1"></a>  <span class="fu">select</span>(cds, dnum, fpc, pw, <span class="fu">everything</span>())</span>
+<span id="cb338-25"><a href="c10-sample-designs-replicate-weights.html#cb338-25" tabindex="-1"></a></span>
+<span id="cb338-26"><a href="c10-sample-designs-replicate-weights.html#cb338-26" tabindex="-1"></a>apiclus1_slim</span></code></pre></div>
 <pre><code>## # A tibble: 183 × 54
 ##    cds        dnum   fpc    pw   pw1   pw2   pw3   pw4   pw5   pw6   pw7
 ##    &lt;chr&gt;     &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
@@ -1396,13 +1409,15 @@ Returning to the api example, we are going to create a dataset with bootstrap we
 <p>where <span class="math inline">\(A\)</span> is the average number of PSUs per strata and <span class="math inline">\(R\)</span> is the number of replicates. There is only 1 stratum and the number of clusters/PSUs is 15 so <span class="math inline">\(A=15\)</span>. Using this information, we specify the design object as:
 </p>
 <div class="sourceCode" id="cb340"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb340-1"><a href="c10-sample-designs-replicate-weights.html#cb340-1" tabindex="-1"></a>api1_bs_des <span class="ot">&lt;-</span> apiclus1_slim <span class="sc">%&gt;%</span></span>
-<span id="cb340-2"><a href="c10-sample-designs-replicate-weights.html#cb340-2" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(<span class="at">weights =</span> pw,</span>
-<span id="cb340-3"><a href="c10-sample-designs-replicate-weights.html#cb340-3" tabindex="-1"></a>                <span class="at">repweights =</span> pw1<span class="sc">:</span>pw50,</span>
-<span id="cb340-4"><a href="c10-sample-designs-replicate-weights.html#cb340-4" tabindex="-1"></a>                <span class="at">type =</span> <span class="st">&quot;bootstrap&quot;</span>,</span>
-<span id="cb340-5"><a href="c10-sample-designs-replicate-weights.html#cb340-5" tabindex="-1"></a>                <span class="at">scale =</span> <span class="fl">0.02186589</span>,</span>
-<span id="cb340-6"><a href="c10-sample-designs-replicate-weights.html#cb340-6" tabindex="-1"></a>                <span class="at">mse =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb340-7"><a href="c10-sample-designs-replicate-weights.html#cb340-7" tabindex="-1"></a></span>
-<span id="cb340-8"><a href="c10-sample-designs-replicate-weights.html#cb340-8" tabindex="-1"></a>api1_bs_des </span></code></pre></div>
+<span id="cb340-2"><a href="c10-sample-designs-replicate-weights.html#cb340-2" tabindex="-1"></a>  <span class="fu">as_survey_rep</span>(</span>
+<span id="cb340-3"><a href="c10-sample-designs-replicate-weights.html#cb340-3" tabindex="-1"></a>    <span class="at">weights =</span> pw,</span>
+<span id="cb340-4"><a href="c10-sample-designs-replicate-weights.html#cb340-4" tabindex="-1"></a>    <span class="at">repweights =</span> pw1<span class="sc">:</span>pw50,</span>
+<span id="cb340-5"><a href="c10-sample-designs-replicate-weights.html#cb340-5" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;bootstrap&quot;</span>,</span>
+<span id="cb340-6"><a href="c10-sample-designs-replicate-weights.html#cb340-6" tabindex="-1"></a>    <span class="at">scale =</span> <span class="fl">0.02186589</span>,</span>
+<span id="cb340-7"><a href="c10-sample-designs-replicate-weights.html#cb340-7" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
+<span id="cb340-8"><a href="c10-sample-designs-replicate-weights.html#cb340-8" tabindex="-1"></a>  )</span>
+<span id="cb340-9"><a href="c10-sample-designs-replicate-weights.html#cb340-9" tabindex="-1"></a></span>
+<span id="cb340-10"><a href="c10-sample-designs-replicate-weights.html#cb340-10" tabindex="-1"></a>api1_bs_des</span></code></pre></div>
 <pre><code>## Call: Called via srvyr
 ## Survey bootstrap with 50 replicates and MSE variances.
 ## Sampling variables:
@@ -1424,7 +1439,7 @@ Returning to the api example, we are going to create a dataset with bootstrap we
 ##     (dbl), pw37 (dbl), pw38 (dbl), pw39 (dbl), pw40 (dbl), pw41 (dbl),
 ##     pw42 (dbl), pw43 (dbl), pw44 (dbl), pw45 (dbl), pw46 (dbl), pw47
 ##     (dbl), pw48 (dbl), pw49 (dbl), pw50 (dbl)</code></pre>
-<div class="sourceCode" id="cb342"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb342-1"><a href="c10-sample-designs-replicate-weights.html#cb342-1" tabindex="-1"></a><span class="fu">summary</span>(api1_bs_des) </span></code></pre></div>
+<div class="sourceCode" id="cb342"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb342-1"><a href="c10-sample-designs-replicate-weights.html#cb342-1" tabindex="-1"></a><span class="fu">summary</span>(api1_bs_des)</span></code></pre></div>
 <pre><code>## Call: Called via srvyr
 ## Survey bootstrap with 50 replicates and MSE variances.
 ## Sampling variables:
@@ -1482,7 +1497,7 @@ Davern, Michael, Rene Bautista, Jeremy Freese, Stephen L. Morgan, and Tom W. Smi
 Deming, W Edwards. 1991. <em>Sample Design in Business Research</em>. Vol. 23. John Wiley &amp; Sons.
 </div>
 <div id="ref-R-srvyr" class="csl-entry">
-Freedman Ellis, Greg, and Ben Schneider. 2023. <em><span class="nocase">srvyr</span>: ’<span class="nocase">dplyr</span>’-Like Syntax for Summary Statistics of Survey Data</em>.
+Freedman Ellis, Greg, and Ben Schneider. 2023. <em><span class="nocase">srvyr</span>: ’<span class="nocase">dplyr</span>’-Like Syntax for Summary Statistics of Survey Data</em>. <a href="https://github.com/gergness/srvyr">https://github.com/gergness/srvyr</a>.
 </div>
 <div id="ref-fuller2011sampling" class="csl-entry">
 Fuller, Wayne A. 2011. <em>Sampling Statistics</em>. John Wiley &amp; Sons.
@@ -1518,7 +1533,7 @@ Valliant, Richard, Jill A Dever, and Frauke Kreuter. 2013. <em>Practical Tools f
 Wolter, Kirk M. 2007. <em>Introduction to Variance Estimation</em>. Vol. 53. Springer.
 </div>
 <div id="ref-R-srvyrexploR" class="csl-entry">
-Zimmer, Stephanie, Rebecca Powell, and Isabella Velásquez. 2024. <em><span class="nocase">srvyrexploR</span>: Data Supplement for Exploring Complex Survey Data Analysis in <span>R</span></em>.
+Zimmer, Stephanie, Rebecca Powell, and Isabella Velásquez. 2024. <em><span class="nocase">srvyrexploR</span>: Data Supplement for Exploring Complex Survey Data Analysis in <span>R</span></em>. <a href="https://github.com/tidy-survey-r/srvyrexploR">https://github.com/tidy-survey-r/srvyrexploR</a>.
 </div>
 </div>
 <div class="footnotes">

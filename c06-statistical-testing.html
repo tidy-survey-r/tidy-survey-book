@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 6 Statistical testing | Exploring Complex Survey Data Analysis in R</title>
   <meta name="description" content="Bookdown for upcoming book on survey analysis the tidy way." />
-  <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 6 Statistical testing | Exploring Complex Survey Data Analysis in R" />
   <meta property="og:type" content="book" />
@@ -52,6 +52,7 @@
 <link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections/anchor-sections.js"></script>
+<link href="libs/htmltools-fill/fill.css" rel="stylesheet" />
 <script src="libs/htmlwidgets/htmlwidgets.js"></script>
 <script src="libs/d3/d3.min.js"></script>
 <script src="libs/dagre/dagre-d3.min.js"></script>
@@ -525,8 +526,8 @@ div.csl-indent {
 <div class="prereqbox">
 <p>For this chapter, load the following packages:</p>
 <div class="sourceCode" id="cb157"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb157-1"><a href="c06-statistical-testing.html#cb157-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb157-2"><a href="c06-statistical-testing.html#cb157-2" tabindex="-1"></a><span class="fu">library</span>(survey) </span>
-<span id="cb157-3"><a href="c06-statistical-testing.html#cb157-3" tabindex="-1"></a><span class="fu">library</span>(srvyr) </span>
+<span id="cb157-2"><a href="c06-statistical-testing.html#cb157-2" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
+<span id="cb157-3"><a href="c06-statistical-testing.html#cb157-3" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
 <span id="cb157-4"><a href="c06-statistical-testing.html#cb157-4" tabindex="-1"></a><span class="fu">library</span>(srvyrexploR)</span>
 <span id="cb157-5"><a href="c06-statistical-testing.html#cb157-5" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
 <span id="cb157-6"><a href="c06-statistical-testing.html#cb157-6" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
@@ -550,7 +551,7 @@ div.csl-indent {
 <span id="cb159-3"><a href="c06-statistical-testing.html#cb159-3" tabindex="-1"></a>    <span class="at">weights =</span> NWEIGHT,</span>
 <span id="cb159-4"><a href="c06-statistical-testing.html#cb159-4" tabindex="-1"></a>    <span class="at">repweights =</span> NWEIGHT1<span class="sc">:</span>NWEIGHT60,</span>
 <span id="cb159-5"><a href="c06-statistical-testing.html#cb159-5" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;JK1&quot;</span>,</span>
-<span id="cb159-6"><a href="c06-statistical-testing.html#cb159-6" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">59</span><span class="sc">/</span><span class="dv">60</span>,</span>
+<span id="cb159-6"><a href="c06-statistical-testing.html#cb159-6" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">59</span> <span class="sc">/</span> <span class="dv">60</span>,</span>
 <span id="cb159-7"><a href="c06-statistical-testing.html#cb159-7" tabindex="-1"></a>    <span class="at">mse =</span> <span class="cn">TRUE</span></span>
 <span id="cb159-8"><a href="c06-statistical-testing.html#cb159-8" tabindex="-1"></a>  )</span></code></pre></div>
 </div>
@@ -712,12 +713,12 @@ To pull out specific output, we can use R’s built-in <code>$</code> operator. 
 ## as.numeric(SummerTempNight - 68) 3.288  3.447
 ## attr(,&quot;conf.level&quot;)
 ## [1] 0.95</code></pre>
-<div class="sourceCode" id="cb172"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb172-1"><a href="c06-statistical-testing.html#cb172-1" tabindex="-1"></a><span class="fu">confint</span>(ttest_ex1, <span class="at">level =</span> <span class="fl">0.95</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb172"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb172-1"><a href="c06-statistical-testing.html#cb172-1" tabindex="-1"></a><span class="fu">confint</span>(ttest_ex1, <span class="at">level =</span> <span class="fl">0.95</span>)</span></code></pre></div>
 <pre><code>##                                  2.5 % 97.5 %
 ## as.numeric(SummerTempNight - 68) 3.288  3.447
 ## attr(,&quot;conf.level&quot;)
 ## [1] 0.95</code></pre>
-<div class="sourceCode" id="cb174"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb174-1"><a href="c06-statistical-testing.html#cb174-1" tabindex="-1"></a><span class="fu">confint</span>(ttest_ex1, <span class="at">level =</span> <span class="fl">0.8</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb174"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb174-1"><a href="c06-statistical-testing.html#cb174-1" tabindex="-1"></a><span class="fu">confint</span>(ttest_ex1, <span class="at">level =</span> <span class="fl">0.8</span>)</span></code></pre></div>
 <pre><code>## [1] 3.316 3.419
 ## attr(,&quot;conf.level&quot;)
 ## [1] 0.8</code></pre>
@@ -777,23 +778,23 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
 <span id="cb182-3"><a href="c06-statistical-testing.html#cb182-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb182-4"><a href="c06-statistical-testing.html#cb182-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="ctxaipuixk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ctxaipuixk table {
+<div id="qwlzggiypd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qwlzggiypd table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ctxaipuixk thead, #ctxaipuixk tbody, #ctxaipuixk tfoot, #ctxaipuixk tr, #ctxaipuixk td, #ctxaipuixk th {
+#qwlzggiypd thead, #qwlzggiypd tbody, #qwlzggiypd tfoot, #qwlzggiypd tr, #qwlzggiypd td, #qwlzggiypd th {
   border-style: none;
 }
 
-#ctxaipuixk p {
+#qwlzggiypd p {
   margin: 0;
   padding: 0;
 }
 
-#ctxaipuixk .gt_table {
+#qwlzggiypd .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -819,12 +820,12 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-left-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_caption {
+#qwlzggiypd .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ctxaipuixk .gt_title {
+#qwlzggiypd .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -836,7 +837,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-bottom-width: 0;
 }
 
-#ctxaipuixk .gt_subtitle {
+#qwlzggiypd .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -848,7 +849,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-top-width: 0;
 }
 
-#ctxaipuixk .gt_heading {
+#qwlzggiypd .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -860,13 +861,13 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-right-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_bottom_border {
+#qwlzggiypd .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_col_headings {
+#qwlzggiypd .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -881,7 +882,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-right-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_col_heading {
+#qwlzggiypd .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -901,7 +902,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   overflow-x: hidden;
 }
 
-#ctxaipuixk .gt_column_spanner_outer {
+#qwlzggiypd .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -913,15 +914,15 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   padding-right: 4px;
 }
 
-#ctxaipuixk .gt_column_spanner_outer:first-child {
+#qwlzggiypd .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ctxaipuixk .gt_column_spanner_outer:last-child {
+#qwlzggiypd .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ctxaipuixk .gt_column_spanner {
+#qwlzggiypd .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -933,11 +934,11 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   width: 100%;
 }
 
-#ctxaipuixk .gt_spanner_row {
+#qwlzggiypd .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ctxaipuixk .gt_group_heading {
+#qwlzggiypd .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -963,7 +964,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   text-align: left;
 }
 
-#ctxaipuixk .gt_empty_group_heading {
+#qwlzggiypd .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -978,15 +979,15 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   vertical-align: middle;
 }
 
-#ctxaipuixk .gt_from_md > :first-child {
+#qwlzggiypd .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ctxaipuixk .gt_from_md > :last-child {
+#qwlzggiypd .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ctxaipuixk .gt_row {
+#qwlzggiypd .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1005,7 +1006,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   overflow-x: hidden;
 }
 
-#ctxaipuixk .gt_stub {
+#qwlzggiypd .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1018,7 +1019,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   padding-right: 5px;
 }
 
-#ctxaipuixk .gt_stub_row_group {
+#qwlzggiypd .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1032,15 +1033,15 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   vertical-align: top;
 }
 
-#ctxaipuixk .gt_row_group_first td {
+#qwlzggiypd .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ctxaipuixk .gt_row_group_first th {
+#qwlzggiypd .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ctxaipuixk .gt_summary_row {
+#qwlzggiypd .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1050,16 +1051,16 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   padding-right: 5px;
 }
 
-#ctxaipuixk .gt_first_summary_row {
+#qwlzggiypd .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_first_summary_row.thick {
+#qwlzggiypd .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ctxaipuixk .gt_last_summary_row {
+#qwlzggiypd .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1069,7 +1070,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-bottom-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_grand_summary_row {
+#qwlzggiypd .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1079,7 +1080,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   padding-right: 5px;
 }
 
-#ctxaipuixk .gt_first_grand_summary_row {
+#qwlzggiypd .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1089,7 +1090,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-top-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_last_grand_summary_row_top {
+#qwlzggiypd .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1099,11 +1100,11 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-bottom-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_striped {
+#qwlzggiypd .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ctxaipuixk .gt_table_body {
+#qwlzggiypd .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1112,7 +1113,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-bottom-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_footnotes {
+#qwlzggiypd .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1126,7 +1127,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-right-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_footnote {
+#qwlzggiypd .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1135,7 +1136,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   padding-right: 5px;
 }
 
-#ctxaipuixk .gt_sourcenotes {
+#qwlzggiypd .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1149,7 +1150,7 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   border-right-color: #D3D3D3;
 }
 
-#ctxaipuixk .gt_sourcenote {
+#qwlzggiypd .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1157,70 +1158,69 @@ The ‘tidied’ output can also be piped into the {gt} package to create a tabl
   padding-right: 5px;
 }
 
-#ctxaipuixk .gt_left {
+#qwlzggiypd .gt_left {
   text-align: left;
 }
 
-#ctxaipuixk .gt_center {
+#qwlzggiypd .gt_center {
   text-align: center;
 }
 
-#ctxaipuixk .gt_right {
+#qwlzggiypd .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ctxaipuixk .gt_font_normal {
+#qwlzggiypd .gt_font_normal {
   font-weight: normal;
 }
 
-#ctxaipuixk .gt_font_bold {
+#qwlzggiypd .gt_font_bold {
   font-weight: bold;
 }
 
-#ctxaipuixk .gt_font_italic {
+#qwlzggiypd .gt_font_italic {
   font-style: italic;
 }
 
-#ctxaipuixk .gt_super {
+#qwlzggiypd .gt_super {
   font-size: 65%;
 }
 
-#ctxaipuixk .gt_footnote_marks {
+#qwlzggiypd .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ctxaipuixk .gt_asterisk {
+#qwlzggiypd .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ctxaipuixk .gt_indent_1 {
+#qwlzggiypd .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ctxaipuixk .gt_indent_2 {
+#qwlzggiypd .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ctxaipuixk .gt_indent_3 {
+#qwlzggiypd .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ctxaipuixk .gt_indent_4 {
+#qwlzggiypd .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ctxaipuixk .gt_indent_5 {
+#qwlzggiypd .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <caption><span id="tab:stattest-ttest-ex2-gt-tab">TABLE 6.1: </span>One-sample t-test output for estimates of U.S. households use A/C in their homes differing from 90%, RECS 2020</caption>
   <thead>
-    
     <tr class="gt_col_headings">
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="estimate">estimate</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="statistic">statistic</th>
@@ -1270,31 +1270,33 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
 <p> </p>
 <p>To conduct this in R, we use <code>svyttest()</code>:</p>
 <div class="sourceCode" id="cb185"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb185-1"><a href="c06-statistical-testing.html#cb185-1" tabindex="-1"></a>ttest_ex3 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb185-2"><a href="c06-statistical-testing.html#cb185-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(<span class="at">formula =</span> DOLLAREL <span class="sc">~</span> ACUsed,</span>
-<span id="cb185-3"><a href="c06-statistical-testing.html#cb185-3" tabindex="-1"></a>           <span class="at">design =</span> .,</span>
-<span id="cb185-4"><a href="c06-statistical-testing.html#cb185-4" tabindex="-1"></a>           <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<span id="cb185-2"><a href="c06-statistical-testing.html#cb185-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
+<span id="cb185-3"><a href="c06-statistical-testing.html#cb185-3" tabindex="-1"></a>    <span class="at">formula =</span> DOLLAREL <span class="sc">~</span> ACUsed,</span>
+<span id="cb185-4"><a href="c06-statistical-testing.html#cb185-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb185-5"><a href="c06-statistical-testing.html#cb185-5" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb185-6"><a href="c06-statistical-testing.html#cb185-6" tabindex="-1"></a>  )</span></code></pre></div>
 <div class="sourceCode" id="cb186"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb186-1"><a href="c06-statistical-testing.html#cb186-1" tabindex="-1"></a><span class="fu">tidy</span>(ttest_ex3) <span class="sc">%&gt;%</span></span>
 <span id="cb186-2"><a href="c06-statistical-testing.html#cb186-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value =</span> <span class="fu">pretty_p_value</span>(p.value)) <span class="sc">%&gt;%</span></span>
 <span id="cb186-3"><a href="c06-statistical-testing.html#cb186-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb186-4"><a href="c06-statistical-testing.html#cb186-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="mgjydljdby" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#mgjydljdby table {
+<div id="ekvvscctie" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#ekvvscctie table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#mgjydljdby thead, #mgjydljdby tbody, #mgjydljdby tfoot, #mgjydljdby tr, #mgjydljdby td, #mgjydljdby th {
+#ekvvscctie thead, #ekvvscctie tbody, #ekvvscctie tfoot, #ekvvscctie tr, #ekvvscctie td, #ekvvscctie th {
   border-style: none;
 }
 
-#mgjydljdby p {
+#ekvvscctie p {
   margin: 0;
   padding: 0;
 }
 
-#mgjydljdby .gt_table {
+#ekvvscctie .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1320,12 +1322,12 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-left-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_caption {
+#ekvvscctie .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#mgjydljdby .gt_title {
+#ekvvscctie .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1337,7 +1339,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-bottom-width: 0;
 }
 
-#mgjydljdby .gt_subtitle {
+#ekvvscctie .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1349,7 +1351,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-top-width: 0;
 }
 
-#mgjydljdby .gt_heading {
+#ekvvscctie .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1361,13 +1363,13 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-right-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_bottom_border {
+#ekvvscctie .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_col_headings {
+#ekvvscctie .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1382,7 +1384,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-right-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_col_heading {
+#ekvvscctie .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1402,7 +1404,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   overflow-x: hidden;
 }
 
-#mgjydljdby .gt_column_spanner_outer {
+#ekvvscctie .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1414,15 +1416,15 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   padding-right: 4px;
 }
 
-#mgjydljdby .gt_column_spanner_outer:first-child {
+#ekvvscctie .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#mgjydljdby .gt_column_spanner_outer:last-child {
+#ekvvscctie .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#mgjydljdby .gt_column_spanner {
+#ekvvscctie .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1434,11 +1436,11 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   width: 100%;
 }
 
-#mgjydljdby .gt_spanner_row {
+#ekvvscctie .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#mgjydljdby .gt_group_heading {
+#ekvvscctie .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1464,7 +1466,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   text-align: left;
 }
 
-#mgjydljdby .gt_empty_group_heading {
+#ekvvscctie .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1479,15 +1481,15 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   vertical-align: middle;
 }
 
-#mgjydljdby .gt_from_md > :first-child {
+#ekvvscctie .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#mgjydljdby .gt_from_md > :last-child {
+#ekvvscctie .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#mgjydljdby .gt_row {
+#ekvvscctie .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1506,7 +1508,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   overflow-x: hidden;
 }
 
-#mgjydljdby .gt_stub {
+#ekvvscctie .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1519,7 +1521,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   padding-right: 5px;
 }
 
-#mgjydljdby .gt_stub_row_group {
+#ekvvscctie .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1533,15 +1535,15 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   vertical-align: top;
 }
 
-#mgjydljdby .gt_row_group_first td {
+#ekvvscctie .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#mgjydljdby .gt_row_group_first th {
+#ekvvscctie .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#mgjydljdby .gt_summary_row {
+#ekvvscctie .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1551,16 +1553,16 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   padding-right: 5px;
 }
 
-#mgjydljdby .gt_first_summary_row {
+#ekvvscctie .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_first_summary_row.thick {
+#ekvvscctie .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#mgjydljdby .gt_last_summary_row {
+#ekvvscctie .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1570,7 +1572,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-bottom-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_grand_summary_row {
+#ekvvscctie .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1580,7 +1582,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   padding-right: 5px;
 }
 
-#mgjydljdby .gt_first_grand_summary_row {
+#ekvvscctie .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1590,7 +1592,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-top-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_last_grand_summary_row_top {
+#ekvvscctie .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1600,11 +1602,11 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-bottom-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_striped {
+#ekvvscctie .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#mgjydljdby .gt_table_body {
+#ekvvscctie .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1613,7 +1615,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-bottom-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_footnotes {
+#ekvvscctie .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1627,7 +1629,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-right-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_footnote {
+#ekvvscctie .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1636,7 +1638,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   padding-right: 5px;
 }
 
-#mgjydljdby .gt_sourcenotes {
+#ekvvscctie .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1650,7 +1652,7 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   border-right-color: #D3D3D3;
 }
 
-#mgjydljdby .gt_sourcenote {
+#ekvvscctie .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1658,70 +1660,69 @@ Two additional variables in the RECS data are the electric bill cost (<code>DOLL
   padding-right: 5px;
 }
 
-#mgjydljdby .gt_left {
+#ekvvscctie .gt_left {
   text-align: left;
 }
 
-#mgjydljdby .gt_center {
+#ekvvscctie .gt_center {
   text-align: center;
 }
 
-#mgjydljdby .gt_right {
+#ekvvscctie .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#mgjydljdby .gt_font_normal {
+#ekvvscctie .gt_font_normal {
   font-weight: normal;
 }
 
-#mgjydljdby .gt_font_bold {
+#ekvvscctie .gt_font_bold {
   font-weight: bold;
 }
 
-#mgjydljdby .gt_font_italic {
+#ekvvscctie .gt_font_italic {
   font-style: italic;
 }
 
-#mgjydljdby .gt_super {
+#ekvvscctie .gt_super {
   font-size: 65%;
 }
 
-#mgjydljdby .gt_footnote_marks {
+#ekvvscctie .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#mgjydljdby .gt_asterisk {
+#ekvvscctie .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#mgjydljdby .gt_indent_1 {
+#ekvvscctie .gt_indent_1 {
   text-indent: 5px;
 }
 
-#mgjydljdby .gt_indent_2 {
+#ekvvscctie .gt_indent_2 {
   text-indent: 10px;
 }
 
-#mgjydljdby .gt_indent_3 {
+#ekvvscctie .gt_indent_3 {
   text-indent: 15px;
 }
 
-#mgjydljdby .gt_indent_4 {
+#ekvvscctie .gt_indent_4 {
   text-indent: 20px;
 }
 
-#mgjydljdby .gt_indent_5 {
+#ekvvscctie .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <caption><span id="tab:stattest-ttest-ex3-gt-tab">TABLE 6.2: </span>Unpaired two-sample t-test output for estimates of U.S. households electrical bills by A/C use, RECS 2020</caption>
   <thead>
-    
     <tr class="gt_col_headings">
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="estimate">estimate</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="statistic">statistic</th>
@@ -1770,23 +1771,23 @@ Let’s say we want to test whether the temperature at which U.S. households set
 <span id="cb188-3"><a href="c06-statistical-testing.html#cb188-3" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb188-4"><a href="c06-statistical-testing.html#cb188-4" tabindex="-1"></a>  <span class="fu">fmt_number</span>()</span></code></pre></div>
 
-<div id="ttojgyjqsk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ttojgyjqsk table {
+<div id="pmyqzlghin" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pmyqzlghin table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ttojgyjqsk thead, #ttojgyjqsk tbody, #ttojgyjqsk tfoot, #ttojgyjqsk tr, #ttojgyjqsk td, #ttojgyjqsk th {
+#pmyqzlghin thead, #pmyqzlghin tbody, #pmyqzlghin tfoot, #pmyqzlghin tr, #pmyqzlghin td, #pmyqzlghin th {
   border-style: none;
 }
 
-#ttojgyjqsk p {
+#pmyqzlghin p {
   margin: 0;
   padding: 0;
 }
 
-#ttojgyjqsk .gt_table {
+#pmyqzlghin .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1812,12 +1813,12 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-left-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_caption {
+#pmyqzlghin .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ttojgyjqsk .gt_title {
+#pmyqzlghin .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1829,7 +1830,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-bottom-width: 0;
 }
 
-#ttojgyjqsk .gt_subtitle {
+#pmyqzlghin .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1841,7 +1842,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-top-width: 0;
 }
 
-#ttojgyjqsk .gt_heading {
+#pmyqzlghin .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1853,13 +1854,13 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-right-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_bottom_border {
+#pmyqzlghin .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_col_headings {
+#pmyqzlghin .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1874,7 +1875,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-right-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_col_heading {
+#pmyqzlghin .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1894,7 +1895,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   overflow-x: hidden;
 }
 
-#ttojgyjqsk .gt_column_spanner_outer {
+#pmyqzlghin .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1906,15 +1907,15 @@ Let’s say we want to test whether the temperature at which U.S. households set
   padding-right: 4px;
 }
 
-#ttojgyjqsk .gt_column_spanner_outer:first-child {
+#pmyqzlghin .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ttojgyjqsk .gt_column_spanner_outer:last-child {
+#pmyqzlghin .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ttojgyjqsk .gt_column_spanner {
+#pmyqzlghin .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1926,11 +1927,11 @@ Let’s say we want to test whether the temperature at which U.S. households set
   width: 100%;
 }
 
-#ttojgyjqsk .gt_spanner_row {
+#pmyqzlghin .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ttojgyjqsk .gt_group_heading {
+#pmyqzlghin .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1956,7 +1957,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   text-align: left;
 }
 
-#ttojgyjqsk .gt_empty_group_heading {
+#pmyqzlghin .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1971,15 +1972,15 @@ Let’s say we want to test whether the temperature at which U.S. households set
   vertical-align: middle;
 }
 
-#ttojgyjqsk .gt_from_md > :first-child {
+#pmyqzlghin .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ttojgyjqsk .gt_from_md > :last-child {
+#pmyqzlghin .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ttojgyjqsk .gt_row {
+#pmyqzlghin .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1998,7 +1999,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   overflow-x: hidden;
 }
 
-#ttojgyjqsk .gt_stub {
+#pmyqzlghin .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2011,7 +2012,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   padding-right: 5px;
 }
 
-#ttojgyjqsk .gt_stub_row_group {
+#pmyqzlghin .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2025,15 +2026,15 @@ Let’s say we want to test whether the temperature at which U.S. households set
   vertical-align: top;
 }
 
-#ttojgyjqsk .gt_row_group_first td {
+#pmyqzlghin .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ttojgyjqsk .gt_row_group_first th {
+#pmyqzlghin .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ttojgyjqsk .gt_summary_row {
+#pmyqzlghin .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2043,16 +2044,16 @@ Let’s say we want to test whether the temperature at which U.S. households set
   padding-right: 5px;
 }
 
-#ttojgyjqsk .gt_first_summary_row {
+#pmyqzlghin .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_first_summary_row.thick {
+#pmyqzlghin .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ttojgyjqsk .gt_last_summary_row {
+#pmyqzlghin .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2062,7 +2063,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-bottom-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_grand_summary_row {
+#pmyqzlghin .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2072,7 +2073,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   padding-right: 5px;
 }
 
-#ttojgyjqsk .gt_first_grand_summary_row {
+#pmyqzlghin .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2082,7 +2083,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-top-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_last_grand_summary_row_top {
+#pmyqzlghin .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2092,11 +2093,11 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-bottom-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_striped {
+#pmyqzlghin .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ttojgyjqsk .gt_table_body {
+#pmyqzlghin .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2105,7 +2106,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-bottom-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_footnotes {
+#pmyqzlghin .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2119,7 +2120,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-right-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_footnote {
+#pmyqzlghin .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2128,7 +2129,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   padding-right: 5px;
 }
 
-#ttojgyjqsk .gt_sourcenotes {
+#pmyqzlghin .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2142,7 +2143,7 @@ Let’s say we want to test whether the temperature at which U.S. households set
   border-right-color: #D3D3D3;
 }
 
-#ttojgyjqsk .gt_sourcenote {
+#pmyqzlghin .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2150,70 +2151,69 @@ Let’s say we want to test whether the temperature at which U.S. households set
   padding-right: 5px;
 }
 
-#ttojgyjqsk .gt_left {
+#pmyqzlghin .gt_left {
   text-align: left;
 }
 
-#ttojgyjqsk .gt_center {
+#pmyqzlghin .gt_center {
   text-align: center;
 }
 
-#ttojgyjqsk .gt_right {
+#pmyqzlghin .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ttojgyjqsk .gt_font_normal {
+#pmyqzlghin .gt_font_normal {
   font-weight: normal;
 }
 
-#ttojgyjqsk .gt_font_bold {
+#pmyqzlghin .gt_font_bold {
   font-weight: bold;
 }
 
-#ttojgyjqsk .gt_font_italic {
+#pmyqzlghin .gt_font_italic {
   font-style: italic;
 }
 
-#ttojgyjqsk .gt_super {
+#pmyqzlghin .gt_super {
   font-size: 65%;
 }
 
-#ttojgyjqsk .gt_footnote_marks {
+#pmyqzlghin .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ttojgyjqsk .gt_asterisk {
+#pmyqzlghin .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ttojgyjqsk .gt_indent_1 {
+#pmyqzlghin .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ttojgyjqsk .gt_indent_2 {
+#pmyqzlghin .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ttojgyjqsk .gt_indent_3 {
+#pmyqzlghin .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ttojgyjqsk .gt_indent_4 {
+#pmyqzlghin .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ttojgyjqsk .gt_indent_5 {
+#pmyqzlghin .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <caption><span id="tab:stattest-ttest-ex4-gt-tab">TABLE 6.3: </span>Paired two-sample t-test output for estimates of U.S. households thermostat temperature by season, RECS 2020</caption>
   <thead>
-    
     <tr class="gt_col_headings">
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="estimate">estimate</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="statistic">statistic</th>
@@ -2273,7 +2273,7 @@ Third, <strong>tests of homogeneity</strong> are used to compare two distributio
 <p>As with t-tests, the difference between using <span class="math inline">\(\chi^2\)</span> tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter <a href="c10-sample-designs-replicate-weights.html#c10-sample-designs-replicate-weights">10</a>.</p>
 <div id="stattest-chi-syntax" class="section level3 hasAnchor" number="6.4.1">
 <h3><span class="header-section-number">6.4.1</span> Syntax<a href="c06-statistical-testing.html#stattest-chi-syntax" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>When we do not have survey data, we may be able to use the <code>chisq.test()</code> function from the {stats} package in base R to run chi-squared tests <span class="citation">(<a href="#ref-R-base">R Core Team 2023</a>)</span>. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions: </p>
+<p>When we do not have survey data, we may be able to use the <code>chisq.test()</code> function from the {stats} package in base R to run chi-squared tests <span class="citation">(<a href="#ref-R-base">R Core Team 2024</a>)</span>. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions: </p>
 <ul>
 <li><code>svygofchisq()</code>: For goodness of fit tests</li>
 <li><code>svychisq()</code>: For tests of independence and homogeneity</li>
@@ -2356,17 +2356,22 @@ ANES asked respondents about their highest education level.<a href="#fn21" class
 ## 5 Graduate     0.126  0.00499</code></pre>
 <p> </p>
 <p>
-Based on this output, we can see that we have different levels from the ACS data. Specifically, the education data from ANES include two levels for Bachelor’s Degree or Higher (Bachelor’s and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse <span class="citation">(<a href="#ref-R-forcats">Wickham 2023a</a>)</span>. The package’s <code>fct_collapse()</code> function helps us create a new variable by collapsing categories into a single one. Then, we use the <code>svygofchisq()</code> function to compare the ANES data to the ACS data, where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing <code>NA</code> values.</p>
+Based on this output, we can see that we have different levels from the ACS data. Specifically, the education data from ANES include two levels for Bachelor’s Degree or Higher (Bachelor’s and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse <span class="citation">(<a href="#ref-R-forcats">Wickham 2023</a>)</span>. The package’s <code>fct_collapse()</code> function helps us create a new variable by collapsing categories into a single one. Then, we use the <code>svygofchisq()</code> function to compare the ANES data to the ACS data, where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing <code>NA</code> values.</p>
 <div class="sourceCode" id="cb193"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb193-1"><a href="c06-statistical-testing.html#cb193-1" tabindex="-1"></a>anes_des_educ <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb193-2"><a href="c06-statistical-testing.html#cb193-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Education2 =</span></span>
-<span id="cb193-3"><a href="c06-statistical-testing.html#cb193-3" tabindex="-1"></a>           <span class="fu">fct_collapse</span>(Education,</span>
-<span id="cb193-4"><a href="c06-statistical-testing.html#cb193-4" tabindex="-1"></a>                        <span class="st">&quot;Bachelor or Higher&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;Bachelor&#39;s&quot;</span>,</span>
-<span id="cb193-5"><a href="c06-statistical-testing.html#cb193-5" tabindex="-1"></a>                                                 <span class="st">&quot;Graduate&quot;</span>)))</span>
-<span id="cb193-6"><a href="c06-statistical-testing.html#cb193-6" tabindex="-1"></a></span>
-<span id="cb193-7"><a href="c06-statistical-testing.html#cb193-7" tabindex="-1"></a>anes_des_educ <span class="sc">%&gt;%</span></span>
-<span id="cb193-8"><a href="c06-statistical-testing.html#cb193-8" tabindex="-1"></a>  <span class="fu">drop_na</span>(Education2) <span class="sc">%&gt;%</span></span>
-<span id="cb193-9"><a href="c06-statistical-testing.html#cb193-9" tabindex="-1"></a>  <span class="fu">group_by</span>(Education2) <span class="sc">%&gt;%</span></span>
-<span id="cb193-10"><a href="c06-statistical-testing.html#cb193-10" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>())</span></code></pre></div>
+<span id="cb193-2"><a href="c06-statistical-testing.html#cb193-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb193-3"><a href="c06-statistical-testing.html#cb193-3" tabindex="-1"></a>    <span class="at">Education2 =</span></span>
+<span id="cb193-4"><a href="c06-statistical-testing.html#cb193-4" tabindex="-1"></a>      <span class="fu">fct_collapse</span>(Education,</span>
+<span id="cb193-5"><a href="c06-statistical-testing.html#cb193-5" tabindex="-1"></a>        <span class="st">&quot;Bachelor or Higher&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb193-6"><a href="c06-statistical-testing.html#cb193-6" tabindex="-1"></a>          <span class="st">&quot;Bachelor&#39;s&quot;</span>,</span>
+<span id="cb193-7"><a href="c06-statistical-testing.html#cb193-7" tabindex="-1"></a>          <span class="st">&quot;Graduate&quot;</span></span>
+<span id="cb193-8"><a href="c06-statistical-testing.html#cb193-8" tabindex="-1"></a>        )</span>
+<span id="cb193-9"><a href="c06-statistical-testing.html#cb193-9" tabindex="-1"></a>      )</span>
+<span id="cb193-10"><a href="c06-statistical-testing.html#cb193-10" tabindex="-1"></a>  )</span>
+<span id="cb193-11"><a href="c06-statistical-testing.html#cb193-11" tabindex="-1"></a></span>
+<span id="cb193-12"><a href="c06-statistical-testing.html#cb193-12" tabindex="-1"></a>anes_des_educ <span class="sc">%&gt;%</span></span>
+<span id="cb193-13"><a href="c06-statistical-testing.html#cb193-13" tabindex="-1"></a>  <span class="fu">drop_na</span>(Education2) <span class="sc">%&gt;%</span></span>
+<span id="cb193-14"><a href="c06-statistical-testing.html#cb193-14" tabindex="-1"></a>  <span class="fu">group_by</span>(Education2) <span class="sc">%&gt;%</span></span>
+<span id="cb193-15"><a href="c06-statistical-testing.html#cb193-15" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_mean</span>())</span></code></pre></div>
 <pre><code>## # A tibble: 4 × 3
 ##   Education2              p    p_se
 ##   &lt;fct&gt;               &lt;dbl&gt;   &lt;dbl&gt;
@@ -2376,7 +2381,7 @@ Based on this output, we can see that we have different levels from the ACS data
 ## 4 Bachelor or Higher 0.352  0.00732</code></pre>
 <div class="sourceCode" id="cb195"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb195-1"><a href="c06-statistical-testing.html#cb195-1" tabindex="-1"></a>chi_ex1 <span class="ot">&lt;-</span> anes_des_educ <span class="sc">%&gt;%</span></span>
 <span id="cb195-2"><a href="c06-statistical-testing.html#cb195-2" tabindex="-1"></a>  <span class="fu">svygofchisq</span>(</span>
-<span id="cb195-3"><a href="c06-statistical-testing.html#cb195-3" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> Education2,</span>
+<span id="cb195-3"><a href="c06-statistical-testing.html#cb195-3" tabindex="-1"></a>    <span class="at">formula =</span> <span class="sc">~</span>Education2,</span>
 <span id="cb195-4"><a href="c06-statistical-testing.html#cb195-4" tabindex="-1"></a>    <span class="at">p =</span> <span class="fu">c</span>(<span class="fl">0.11</span>, <span class="fl">0.27</span>, <span class="fl">0.29</span>, <span class="fl">0.33</span>),</span>
 <span id="cb195-5"><a href="c06-statistical-testing.html#cb195-5" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
 <span id="cb195-6"><a href="c06-statistical-testing.html#cb195-6" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
@@ -2396,7 +2401,7 @@ Based on this output, we can see that we have different levels from the ACS data
 <span id="cb197-3"><a href="c06-statistical-testing.html#cb197-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Education2) <span class="sc">%&gt;%</span></span>
 <span id="cb197-4"><a href="c06-statistical-testing.html#cb197-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed =</span> <span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb197-5"><a href="c06-statistical-testing.html#cb197-5" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Education =</span> Education2) <span class="sc">%&gt;%</span></span>
-<span id="cb197-6"><a href="c06-statistical-testing.html#cb197-6" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Expected=</span><span class="fu">c</span>(<span class="fl">0.11</span>, <span class="fl">0.27</span>, <span class="fl">0.29</span>, <span class="fl">0.33</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb197-6"><a href="c06-statistical-testing.html#cb197-6" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Expected =</span> <span class="fu">c</span>(<span class="fl">0.11</span>, <span class="fl">0.27</span>, <span class="fl">0.29</span>, <span class="fl">0.33</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb197-7"><a href="c06-statistical-testing.html#cb197-7" tabindex="-1"></a>  <span class="fu">select</span>(Education, Expected, <span class="fu">everything</span>())</span>
 <span id="cb197-8"><a href="c06-statistical-testing.html#cb197-8" tabindex="-1"></a></span>
 <span id="cb197-9"><a href="c06-statistical-testing.html#cb197-9" tabindex="-1"></a>ex1_table</span></code></pre></div>
@@ -2419,15 +2424,17 @@ Based on this output, we can see that we have different levels from the ACS data
 <span id="cb199-8"><a href="c06-statistical-testing.html#cb199-8" tabindex="-1"></a>    <span class="at">Observed_low =</span> <span class="fu">if_else</span>(Names <span class="sc">==</span> <span class="st">&quot;Observed&quot;</span>, Observed_low, <span class="cn">NA_real_</span>),</span>
 <span id="cb199-9"><a href="c06-statistical-testing.html#cb199-9" tabindex="-1"></a>    <span class="at">Observed_upp =</span> <span class="fu">if_else</span>(Names <span class="sc">==</span> <span class="st">&quot;Observed&quot;</span>, Observed_upp, <span class="cn">NA_real_</span>),</span>
 <span id="cb199-10"><a href="c06-statistical-testing.html#cb199-10" tabindex="-1"></a>    <span class="at">Names =</span> <span class="fu">if_else</span>(Names <span class="sc">==</span> <span class="st">&quot;Observed&quot;</span>,</span>
-<span id="cb199-11"><a href="c06-statistical-testing.html#cb199-11" tabindex="-1"></a>                    <span class="st">&quot;ANES (observed)&quot;</span>, <span class="st">&quot;ACS (expected)&quot;</span>)</span>
-<span id="cb199-12"><a href="c06-statistical-testing.html#cb199-12" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb199-13"><a href="c06-statistical-testing.html#cb199-13" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Education, <span class="at">y =</span> Proportion, <span class="at">color =</span> Names)) <span class="sc">+</span></span>
-<span id="cb199-14"><a href="c06-statistical-testing.html#cb199-14" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.75</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb199-15"><a href="c06-statistical-testing.html#cb199-15" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> Observed_low, <span class="at">ymax =</span> Observed_upp), </span>
-<span id="cb199-16"><a href="c06-statistical-testing.html#cb199-16" tabindex="-1"></a>                <span class="at">width =</span> <span class="fl">0.25</span>) <span class="sc">+</span></span>
-<span id="cb199-17"><a href="c06-statistical-testing.html#cb199-17" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb199-18"><a href="c06-statistical-testing.html#cb199-18" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">name =</span> <span class="st">&quot;Type&quot;</span>, <span class="at">values =</span> book_colors[<span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>)]) <span class="sc">+</span></span>
-<span id="cb199-19"><a href="c06-statistical-testing.html#cb199-19" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>, <span class="at">legend.title =</span> <span class="fu">element_blank</span>())</span></code></pre></div>
+<span id="cb199-11"><a href="c06-statistical-testing.html#cb199-11" tabindex="-1"></a>      <span class="st">&quot;ANES (observed)&quot;</span>, <span class="st">&quot;ACS (expected)&quot;</span></span>
+<span id="cb199-12"><a href="c06-statistical-testing.html#cb199-12" tabindex="-1"></a>    )</span>
+<span id="cb199-13"><a href="c06-statistical-testing.html#cb199-13" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb199-14"><a href="c06-statistical-testing.html#cb199-14" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Education, <span class="at">y =</span> Proportion, <span class="at">color =</span> Names)) <span class="sc">+</span></span>
+<span id="cb199-15"><a href="c06-statistical-testing.html#cb199-15" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.75</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb199-16"><a href="c06-statistical-testing.html#cb199-16" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> Observed_low, <span class="at">ymax =</span> Observed_upp),</span>
+<span id="cb199-17"><a href="c06-statistical-testing.html#cb199-17" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.25</span></span>
+<span id="cb199-18"><a href="c06-statistical-testing.html#cb199-18" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb199-19"><a href="c06-statistical-testing.html#cb199-19" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb199-20"><a href="c06-statistical-testing.html#cb199-20" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">name =</span> <span class="st">&quot;Type&quot;</span>, <span class="at">values =</span> book_colors[<span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>)]) <span class="sc">+</span></span>
+<span id="cb199-21"><a href="c06-statistical-testing.html#cb199-21" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>, <span class="at">legend.title =</span> <span class="fu">element_blank</span>())</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:stattest-chi-ex1-graph"></span>
 <img src="bookdown_files/figure-html/stattest-chi-ex1-graph-1.png" alt="Expected and observed proportions of education, showing the confidence intervals for the expected proportions and whether the observed proportions lie within them. The x-axis has labels 'Less than HS', 'High school', 'Post HS', and 'Bachelor or Higher'. The only ones where expected proportion is outside of the intervals is 'Less than HS' and 'Bachelor or Higher'." width="672" />
 <p class="caption">
@@ -2452,7 +2459,7 @@ ANES asked respondents two questions about trust:</p>
 <p>To conduct this in R, we use the <code>svychisq()</code> function to compare the two variables:</p>
 <div class="sourceCode" id="cb200"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb200-1"><a href="c06-statistical-testing.html#cb200-1" tabindex="-1"></a>chi_ex2 <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
 <span id="cb200-2"><a href="c06-statistical-testing.html#cb200-2" tabindex="-1"></a>  <span class="fu">svychisq</span>(</span>
-<span id="cb200-3"><a href="c06-statistical-testing.html#cb200-3" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> TrustGovernment <span class="sc">+</span> TrustPeople,</span>
+<span id="cb200-3"><a href="c06-statistical-testing.html#cb200-3" tabindex="-1"></a>    <span class="at">formula =</span> <span class="sc">~</span> TrustGovernment <span class="sc">+</span> TrustPeople,</span>
 <span id="cb200-4"><a href="c06-statistical-testing.html#cb200-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
 <span id="cb200-5"><a href="c06-statistical-testing.html#cb200-5" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="st">&quot;Wald&quot;</span>,</span>
 <span id="cb200-6"><a href="c06-statistical-testing.html#cb200-6" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
@@ -2483,38 +2490,42 @@ The output from <code>svychisq()</code> indicates that the distribution of peopl
 ##   Never                        217.994  189.307</code></pre>
 <p>
 However, we often want to know about the proportions, not just the respondent counts from the survey. There are a couple of different ways that we can do this. The first is using the counts from <code>chi_ex2$observed</code> to calculate the proportion. We can then pivot the table to create a cross-tabulation similar to the counts table above. Adding <code>group_by()</code> to the code means that we obtain the proportions within each variable level. In this case, we are looking at the distribution of <code>TrustGovernment</code> for each level of <code>TrustPeople</code>. The resulting table is shown in Table <a href="c06-statistical-testing.html#tab:stattest-chi-ex2-prop1-tab">6.4</a>.</p>
-<div class="sourceCode" id="cb204"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb204-1"><a href="c06-statistical-testing.html#cb204-1" tabindex="-1"></a>chi_ex2_table<span class="ot">&lt;-</span>chi_ex2<span class="sc">$</span>observed <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb204"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb204-1"><a href="c06-statistical-testing.html#cb204-1" tabindex="-1"></a>chi_ex2_table <span class="ot">&lt;-</span> chi_ex2<span class="sc">$</span>observed <span class="sc">%&gt;%</span></span>
 <span id="cb204-2"><a href="c06-statistical-testing.html#cb204-2" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb204-3"><a href="c06-statistical-testing.html#cb204-3" tabindex="-1"></a>  <span class="fu">group_by</span>(TrustPeople) <span class="sc">%&gt;%</span></span>
 <span id="cb204-4"><a href="c06-statistical-testing.html#cb204-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">round</span>(n <span class="sc">/</span> <span class="fu">sum</span>(n), <span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb204-5"><a href="c06-statistical-testing.html#cb204-5" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>n) <span class="sc">%&gt;%</span></span>
-<span id="cb204-6"><a href="c06-statistical-testing.html#cb204-6" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> TrustPeople, <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span> </span>
+<span id="cb204-6"><a href="c06-statistical-testing.html#cb204-6" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> TrustPeople, <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span></span>
 <span id="cb204-7"><a href="c06-statistical-testing.html#cb204-7" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb204-8"><a href="c06-statistical-testing.html#cb204-8" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb204-9"><a href="c06-statistical-testing.html#cb204-9" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Trust in People&quot;</span>,</span>
-<span id="cb204-10"><a href="c06-statistical-testing.html#cb204-10" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">everything</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb204-11"><a href="c06-statistical-testing.html#cb204-11" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="st">`</span><span class="at">Most of the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;Most of&lt;br /&gt;the time&quot;</span>),</span>
-<span id="cb204-12"><a href="c06-statistical-testing.html#cb204-12" tabindex="-1"></a>             <span class="st">`</span><span class="at">About half the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;About half&lt;br /&gt;the time&quot;</span>),</span>
-<span id="cb204-13"><a href="c06-statistical-testing.html#cb204-13" tabindex="-1"></a>             <span class="st">`</span><span class="at">Some of the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;Some of&lt;br /&gt;the time&quot;</span>))</span></code></pre></div>
+<span id="cb204-9"><a href="c06-statistical-testing.html#cb204-9" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb204-10"><a href="c06-statistical-testing.html#cb204-10" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;Trust in People&quot;</span>,</span>
+<span id="cb204-11"><a href="c06-statistical-testing.html#cb204-11" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">everything</span>()</span>
+<span id="cb204-12"><a href="c06-statistical-testing.html#cb204-12" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb204-13"><a href="c06-statistical-testing.html#cb204-13" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
+<span id="cb204-14"><a href="c06-statistical-testing.html#cb204-14" tabindex="-1"></a>    <span class="st">`</span><span class="at">Most of the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;Most of&lt;br /&gt;the time&quot;</span>),</span>
+<span id="cb204-15"><a href="c06-statistical-testing.html#cb204-15" tabindex="-1"></a>    <span class="st">`</span><span class="at">About half the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;About half&lt;br /&gt;the time&quot;</span>),</span>
+<span id="cb204-16"><a href="c06-statistical-testing.html#cb204-16" tabindex="-1"></a>    <span class="st">`</span><span class="at">Some of the time</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">md</span>(<span class="st">&quot;Some of&lt;br /&gt;the time&quot;</span>)</span>
+<span id="cb204-17"><a href="c06-statistical-testing.html#cb204-17" tabindex="-1"></a>  )</span></code></pre></div>
 <div class="sourceCode" id="cb205"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb205-1"><a href="c06-statistical-testing.html#cb205-1" tabindex="-1"></a>chi_ex2_table</span></code></pre></div>
 
-<div id="laylurekfo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#laylurekfo table {
+<div id="behcdooaiv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#behcdooaiv table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#laylurekfo thead, #laylurekfo tbody, #laylurekfo tfoot, #laylurekfo tr, #laylurekfo td, #laylurekfo th {
+#behcdooaiv thead, #behcdooaiv tbody, #behcdooaiv tfoot, #behcdooaiv tr, #behcdooaiv td, #behcdooaiv th {
   border-style: none;
 }
 
-#laylurekfo p {
+#behcdooaiv p {
   margin: 0;
   padding: 0;
 }
 
-#laylurekfo .gt_table {
+#behcdooaiv .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2540,12 +2551,12 @@ However, we often want to know about the proportions, not just the respondent co
   border-left-color: #D3D3D3;
 }
 
-#laylurekfo .gt_caption {
+#behcdooaiv .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#laylurekfo .gt_title {
+#behcdooaiv .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2557,7 +2568,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-bottom-width: 0;
 }
 
-#laylurekfo .gt_subtitle {
+#behcdooaiv .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2569,7 +2580,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-top-width: 0;
 }
 
-#laylurekfo .gt_heading {
+#behcdooaiv .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2581,13 +2592,13 @@ However, we often want to know about the proportions, not just the respondent co
   border-right-color: #D3D3D3;
 }
 
-#laylurekfo .gt_bottom_border {
+#behcdooaiv .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#laylurekfo .gt_col_headings {
+#behcdooaiv .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2602,7 +2613,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-right-color: #D3D3D3;
 }
 
-#laylurekfo .gt_col_heading {
+#behcdooaiv .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2622,7 +2633,7 @@ However, we often want to know about the proportions, not just the respondent co
   overflow-x: hidden;
 }
 
-#laylurekfo .gt_column_spanner_outer {
+#behcdooaiv .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2634,15 +2645,15 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 4px;
 }
 
-#laylurekfo .gt_column_spanner_outer:first-child {
+#behcdooaiv .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#laylurekfo .gt_column_spanner_outer:last-child {
+#behcdooaiv .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#laylurekfo .gt_column_spanner {
+#behcdooaiv .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2654,11 +2665,11 @@ However, we often want to know about the proportions, not just the respondent co
   width: 100%;
 }
 
-#laylurekfo .gt_spanner_row {
+#behcdooaiv .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#laylurekfo .gt_group_heading {
+#behcdooaiv .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2684,7 +2695,7 @@ However, we often want to know about the proportions, not just the respondent co
   text-align: left;
 }
 
-#laylurekfo .gt_empty_group_heading {
+#behcdooaiv .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2699,15 +2710,15 @@ However, we often want to know about the proportions, not just the respondent co
   vertical-align: middle;
 }
 
-#laylurekfo .gt_from_md > :first-child {
+#behcdooaiv .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#laylurekfo .gt_from_md > :last-child {
+#behcdooaiv .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#laylurekfo .gt_row {
+#behcdooaiv .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2726,7 +2737,7 @@ However, we often want to know about the proportions, not just the respondent co
   overflow-x: hidden;
 }
 
-#laylurekfo .gt_stub {
+#behcdooaiv .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2739,7 +2750,7 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 5px;
 }
 
-#laylurekfo .gt_stub_row_group {
+#behcdooaiv .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2753,15 +2764,15 @@ However, we often want to know about the proportions, not just the respondent co
   vertical-align: top;
 }
 
-#laylurekfo .gt_row_group_first td {
+#behcdooaiv .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#laylurekfo .gt_row_group_first th {
+#behcdooaiv .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#laylurekfo .gt_summary_row {
+#behcdooaiv .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2771,16 +2782,16 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 5px;
 }
 
-#laylurekfo .gt_first_summary_row {
+#behcdooaiv .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#laylurekfo .gt_first_summary_row.thick {
+#behcdooaiv .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#laylurekfo .gt_last_summary_row {
+#behcdooaiv .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2790,7 +2801,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-bottom-color: #D3D3D3;
 }
 
-#laylurekfo .gt_grand_summary_row {
+#behcdooaiv .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2800,7 +2811,7 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 5px;
 }
 
-#laylurekfo .gt_first_grand_summary_row {
+#behcdooaiv .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2810,7 +2821,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-top-color: #D3D3D3;
 }
 
-#laylurekfo .gt_last_grand_summary_row_top {
+#behcdooaiv .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2820,11 +2831,11 @@ However, we often want to know about the proportions, not just the respondent co
   border-bottom-color: #D3D3D3;
 }
 
-#laylurekfo .gt_striped {
+#behcdooaiv .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#laylurekfo .gt_table_body {
+#behcdooaiv .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2833,7 +2844,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-bottom-color: #D3D3D3;
 }
 
-#laylurekfo .gt_footnotes {
+#behcdooaiv .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2847,7 +2858,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-right-color: #D3D3D3;
 }
 
-#laylurekfo .gt_footnote {
+#behcdooaiv .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2856,7 +2867,7 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 5px;
 }
 
-#laylurekfo .gt_sourcenotes {
+#behcdooaiv .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2870,7 +2881,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-right-color: #D3D3D3;
 }
 
-#laylurekfo .gt_sourcenote {
+#behcdooaiv .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2878,70 +2889,69 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 5px;
 }
 
-#laylurekfo .gt_left {
+#behcdooaiv .gt_left {
   text-align: left;
 }
 
-#laylurekfo .gt_center {
+#behcdooaiv .gt_center {
   text-align: center;
 }
 
-#laylurekfo .gt_right {
+#behcdooaiv .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#laylurekfo .gt_font_normal {
+#behcdooaiv .gt_font_normal {
   font-weight: normal;
 }
 
-#laylurekfo .gt_font_bold {
+#behcdooaiv .gt_font_bold {
   font-weight: bold;
 }
 
-#laylurekfo .gt_font_italic {
+#behcdooaiv .gt_font_italic {
   font-style: italic;
 }
 
-#laylurekfo .gt_super {
+#behcdooaiv .gt_super {
   font-size: 65%;
 }
 
-#laylurekfo .gt_footnote_marks {
+#behcdooaiv .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#laylurekfo .gt_asterisk {
+#behcdooaiv .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#laylurekfo .gt_indent_1 {
+#behcdooaiv .gt_indent_1 {
   text-indent: 5px;
 }
 
-#laylurekfo .gt_indent_2 {
+#behcdooaiv .gt_indent_2 {
   text-indent: 10px;
 }
 
-#laylurekfo .gt_indent_3 {
+#behcdooaiv .gt_indent_3 {
   text-indent: 15px;
 }
 
-#laylurekfo .gt_indent_4 {
+#behcdooaiv .gt_indent_4 {
   text-indent: 20px;
 }
 
-#laylurekfo .gt_indent_5 {
+#behcdooaiv .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <caption><span id="tab:stattest-chi-ex2-prop1-tab">TABLE 6.4: </span>Proportion of adults in the U.S. by levels of trust in people and government, ANES 2020</caption>
   <thead>
-    
     <tr class="gt_col_headings gt_spanner_row">
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" scope="col" id="Trust in Government">Trust in Government</th>
       <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="5" scope="colgroup" id="Trust in People">
@@ -2997,40 +3007,46 @@ However, we often want to know about the proportions, not just the respondent co
 <div class="sourceCode" id="cb206"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb206-1"><a href="c06-statistical-testing.html#cb206-1" tabindex="-1"></a>chi_ex2_obs <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
 <span id="cb206-2"><a href="c06-statistical-testing.html#cb206-2" tabindex="-1"></a>  <span class="fu">drop_na</span>(TrustPeople, TrustGovernment) <span class="sc">%&gt;%</span></span>
 <span id="cb206-3"><a href="c06-statistical-testing.html#cb206-3" tabindex="-1"></a>  <span class="fu">group_by</span>(TrustPeople, TrustGovernment) <span class="sc">%&gt;%</span></span>
-<span id="cb206-4"><a href="c06-statistical-testing.html#cb206-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed =</span> <span class="fu">round</span>(<span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>), <span class="dv">3</span>),</span>
-<span id="cb206-5"><a href="c06-statistical-testing.html#cb206-5" tabindex="-1"></a>            <span class="at">.groups=</span><span class="st">&quot;drop&quot;</span>) </span>
-<span id="cb206-6"><a href="c06-statistical-testing.html#cb206-6" tabindex="-1"></a></span>
-<span id="cb206-7"><a href="c06-statistical-testing.html#cb206-7" tabindex="-1"></a>chi_ex2_obs_table<span class="ot">&lt;-</span>chi_ex2_obs <span class="sc">%&gt;%</span></span>
-<span id="cb206-8"><a href="c06-statistical-testing.html#cb206-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">paste0</span>(Observed, <span class="st">&quot; (&quot;</span>, Observed_low, <span class="st">&quot;, &quot;</span>,</span>
-<span id="cb206-9"><a href="c06-statistical-testing.html#cb206-9" tabindex="-1"></a>                       Observed_upp, <span class="st">&quot;)&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb206-10"><a href="c06-statistical-testing.html#cb206-10" tabindex="-1"></a>  <span class="fu">select</span>(TrustGovernment, TrustPeople, prop) <span class="sc">%&gt;%</span></span>
-<span id="cb206-11"><a href="c06-statistical-testing.html#cb206-11" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> TrustPeople, <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span></span>
-<span id="cb206-12"><a href="c06-statistical-testing.html#cb206-12" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb206-13"><a href="c06-statistical-testing.html#cb206-13" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb206-14"><a href="c06-statistical-testing.html#cb206-14" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">&quot;Trust in People&quot;</span>,</span>
-<span id="cb206-15"><a href="c06-statistical-testing.html#cb206-15" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">everything</span>()) <span class="sc">%&gt;%</span> </span>
-<span id="cb206-16"><a href="c06-statistical-testing.html#cb206-16" tabindex="-1"></a>  <span class="fu">tab_options</span>(<span class="at">page.orientation =</span> <span class="st">&quot;landscape&quot;</span>)</span></code></pre></div>
+<span id="cb206-4"><a href="c06-statistical-testing.html#cb206-4" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb206-5"><a href="c06-statistical-testing.html#cb206-5" tabindex="-1"></a>    <span class="at">Observed =</span> <span class="fu">round</span>(<span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>), <span class="dv">3</span>),</span>
+<span id="cb206-6"><a href="c06-statistical-testing.html#cb206-6" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb206-7"><a href="c06-statistical-testing.html#cb206-7" tabindex="-1"></a>  )</span>
+<span id="cb206-8"><a href="c06-statistical-testing.html#cb206-8" tabindex="-1"></a></span>
+<span id="cb206-9"><a href="c06-statistical-testing.html#cb206-9" tabindex="-1"></a>chi_ex2_obs_table <span class="ot">&lt;-</span> chi_ex2_obs <span class="sc">%&gt;%</span></span>
+<span id="cb206-10"><a href="c06-statistical-testing.html#cb206-10" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">paste0</span>(</span>
+<span id="cb206-11"><a href="c06-statistical-testing.html#cb206-11" tabindex="-1"></a>    Observed, <span class="st">&quot; (&quot;</span>, Observed_low, <span class="st">&quot;, &quot;</span>,</span>
+<span id="cb206-12"><a href="c06-statistical-testing.html#cb206-12" tabindex="-1"></a>    Observed_upp, <span class="st">&quot;)&quot;</span></span>
+<span id="cb206-13"><a href="c06-statistical-testing.html#cb206-13" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb206-14"><a href="c06-statistical-testing.html#cb206-14" tabindex="-1"></a>  <span class="fu">select</span>(TrustGovernment, TrustPeople, prop) <span class="sc">%&gt;%</span></span>
+<span id="cb206-15"><a href="c06-statistical-testing.html#cb206-15" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> TrustPeople, <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span></span>
+<span id="cb206-16"><a href="c06-statistical-testing.html#cb206-16" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;TrustGovernment&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb206-17"><a href="c06-statistical-testing.html#cb206-17" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Trust in Government&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb206-18"><a href="c06-statistical-testing.html#cb206-18" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb206-19"><a href="c06-statistical-testing.html#cb206-19" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;Trust in People&quot;</span>,</span>
+<span id="cb206-20"><a href="c06-statistical-testing.html#cb206-20" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">everything</span>()</span>
+<span id="cb206-21"><a href="c06-statistical-testing.html#cb206-21" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb206-22"><a href="c06-statistical-testing.html#cb206-22" tabindex="-1"></a>  <span class="fu">tab_options</span>(<span class="at">page.orientation =</span> <span class="st">&quot;landscape&quot;</span>)</span></code></pre></div>
 <p> </p>
 <div class="sourceCode" id="cb207"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb207-1"><a href="c06-statistical-testing.html#cb207-1" tabindex="-1"></a>chi_ex2_obs_table</span></code></pre></div>
 <p></p>
 
-<div id="kasvpyuaqf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#kasvpyuaqf table {
+<div id="jrklgaiqdb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jrklgaiqdb table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#kasvpyuaqf thead, #kasvpyuaqf tbody, #kasvpyuaqf tfoot, #kasvpyuaqf tr, #kasvpyuaqf td, #kasvpyuaqf th {
+#jrklgaiqdb thead, #jrklgaiqdb tbody, #jrklgaiqdb tfoot, #jrklgaiqdb tr, #jrklgaiqdb td, #jrklgaiqdb th {
   border-style: none;
 }
 
-#kasvpyuaqf p {
+#jrklgaiqdb p {
   margin: 0;
   padding: 0;
 }
 
-#kasvpyuaqf .gt_table {
+#jrklgaiqdb .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3056,12 +3072,12 @@ However, we often want to know about the proportions, not just the respondent co
   border-left-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_caption {
+#jrklgaiqdb .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#kasvpyuaqf .gt_title {
+#jrklgaiqdb .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3073,7 +3089,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-bottom-width: 0;
 }
 
-#kasvpyuaqf .gt_subtitle {
+#jrklgaiqdb .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3085,7 +3101,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-top-width: 0;
 }
 
-#kasvpyuaqf .gt_heading {
+#jrklgaiqdb .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3097,13 +3113,13 @@ However, we often want to know about the proportions, not just the respondent co
   border-right-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_bottom_border {
+#jrklgaiqdb .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_col_headings {
+#jrklgaiqdb .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3118,7 +3134,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-right-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_col_heading {
+#jrklgaiqdb .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3138,7 +3154,7 @@ However, we often want to know about the proportions, not just the respondent co
   overflow-x: hidden;
 }
 
-#kasvpyuaqf .gt_column_spanner_outer {
+#jrklgaiqdb .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3150,15 +3166,15 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 4px;
 }
 
-#kasvpyuaqf .gt_column_spanner_outer:first-child {
+#jrklgaiqdb .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#kasvpyuaqf .gt_column_spanner_outer:last-child {
+#jrklgaiqdb .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#kasvpyuaqf .gt_column_spanner {
+#jrklgaiqdb .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3170,11 +3186,11 @@ However, we often want to know about the proportions, not just the respondent co
   width: 100%;
 }
 
-#kasvpyuaqf .gt_spanner_row {
+#jrklgaiqdb .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#kasvpyuaqf .gt_group_heading {
+#jrklgaiqdb .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3200,7 +3216,7 @@ However, we often want to know about the proportions, not just the respondent co
   text-align: left;
 }
 
-#kasvpyuaqf .gt_empty_group_heading {
+#jrklgaiqdb .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3215,15 +3231,15 @@ However, we often want to know about the proportions, not just the respondent co
   vertical-align: middle;
 }
 
-#kasvpyuaqf .gt_from_md > :first-child {
+#jrklgaiqdb .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#kasvpyuaqf .gt_from_md > :last-child {
+#jrklgaiqdb .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#kasvpyuaqf .gt_row {
+#jrklgaiqdb .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3242,7 +3258,7 @@ However, we often want to know about the proportions, not just the respondent co
   overflow-x: hidden;
 }
 
-#kasvpyuaqf .gt_stub {
+#jrklgaiqdb .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3255,7 +3271,7 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 5px;
 }
 
-#kasvpyuaqf .gt_stub_row_group {
+#jrklgaiqdb .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3269,15 +3285,15 @@ However, we often want to know about the proportions, not just the respondent co
   vertical-align: top;
 }
 
-#kasvpyuaqf .gt_row_group_first td {
+#jrklgaiqdb .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#kasvpyuaqf .gt_row_group_first th {
+#jrklgaiqdb .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#kasvpyuaqf .gt_summary_row {
+#jrklgaiqdb .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3287,16 +3303,16 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 5px;
 }
 
-#kasvpyuaqf .gt_first_summary_row {
+#jrklgaiqdb .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_first_summary_row.thick {
+#jrklgaiqdb .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#kasvpyuaqf .gt_last_summary_row {
+#jrklgaiqdb .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3306,7 +3322,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-bottom-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_grand_summary_row {
+#jrklgaiqdb .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3316,7 +3332,7 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 5px;
 }
 
-#kasvpyuaqf .gt_first_grand_summary_row {
+#jrklgaiqdb .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3326,7 +3342,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-top-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_last_grand_summary_row_top {
+#jrklgaiqdb .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3336,11 +3352,11 @@ However, we often want to know about the proportions, not just the respondent co
   border-bottom-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_striped {
+#jrklgaiqdb .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#kasvpyuaqf .gt_table_body {
+#jrklgaiqdb .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3349,7 +3365,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-bottom-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_footnotes {
+#jrklgaiqdb .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3363,7 +3379,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-right-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_footnote {
+#jrklgaiqdb .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3372,7 +3388,7 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 5px;
 }
 
-#kasvpyuaqf .gt_sourcenotes {
+#jrklgaiqdb .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3386,7 +3402,7 @@ However, we often want to know about the proportions, not just the respondent co
   border-right-color: #D3D3D3;
 }
 
-#kasvpyuaqf .gt_sourcenote {
+#jrklgaiqdb .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3394,70 +3410,69 @@ However, we often want to know about the proportions, not just the respondent co
   padding-right: 5px;
 }
 
-#kasvpyuaqf .gt_left {
+#jrklgaiqdb .gt_left {
   text-align: left;
 }
 
-#kasvpyuaqf .gt_center {
+#jrklgaiqdb .gt_center {
   text-align: center;
 }
 
-#kasvpyuaqf .gt_right {
+#jrklgaiqdb .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#kasvpyuaqf .gt_font_normal {
+#jrklgaiqdb .gt_font_normal {
   font-weight: normal;
 }
 
-#kasvpyuaqf .gt_font_bold {
+#jrklgaiqdb .gt_font_bold {
   font-weight: bold;
 }
 
-#kasvpyuaqf .gt_font_italic {
+#jrklgaiqdb .gt_font_italic {
   font-style: italic;
 }
 
-#kasvpyuaqf .gt_super {
+#jrklgaiqdb .gt_super {
   font-size: 65%;
 }
 
-#kasvpyuaqf .gt_footnote_marks {
+#jrklgaiqdb .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#kasvpyuaqf .gt_asterisk {
+#jrklgaiqdb .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#kasvpyuaqf .gt_indent_1 {
+#jrklgaiqdb .gt_indent_1 {
   text-indent: 5px;
 }
 
-#kasvpyuaqf .gt_indent_2 {
+#jrklgaiqdb .gt_indent_2 {
   text-indent: 10px;
 }
 
-#kasvpyuaqf .gt_indent_3 {
+#jrklgaiqdb .gt_indent_3 {
   text-indent: 15px;
 }
 
-#kasvpyuaqf .gt_indent_4 {
+#jrklgaiqdb .gt_indent_4 {
   text-indent: 20px;
 }
 
-#kasvpyuaqf .gt_indent_5 {
+#jrklgaiqdb .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <caption><span id="tab:stattest-chi-ex2-prop2-tab">TABLE 6.5: </span>Proportion of adults in the U.S. by levels of trust in people and government with confidence intervals, ANES 2020</caption>
   <thead>
-    
     <tr class="gt_col_headings gt_spanner_row">
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" scope="col" id="Trust in Government">Trust in Government</th>
       <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="5" scope="colgroup" id="Trust in People">
@@ -3511,23 +3526,32 @@ However, we often want to know about the proportions, not just the respondent co
 <p>Both methods produce the same output as the <code>svychisq()</code> function. However, calculating the proportions directly from the design object allows us to obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those who never trust people, 50.3% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people. </p>
 <p>We may find it easier to look at these proportions graphically. We can use <code>ggplot()</code> and facets to provide an overview to create Figure <a href="c06-statistical-testing.html#fig:stattest-chi-ex2-graph">6.2</a> below:</p>
 <div class="sourceCode" id="cb208"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb208-1"><a href="c06-statistical-testing.html#cb208-1" tabindex="-1"></a>chi_ex2_obs <span class="sc">%&gt;%</span></span>
-<span id="cb208-2"><a href="c06-statistical-testing.html#cb208-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TrustPeople=</span></span>
-<span id="cb208-3"><a href="c06-statistical-testing.html#cb208-3" tabindex="-1"></a>           <span class="fu">fct_reorder</span>(<span class="fu">str_c</span>(<span class="st">&quot;Trust in People:</span><span class="sc">\n</span><span class="st">&quot;</span>, TrustPeople), </span>
-<span id="cb208-4"><a href="c06-statistical-testing.html#cb208-4" tabindex="-1"></a>                       <span class="fu">order</span>(TrustPeople))) <span class="sc">%&gt;%</span></span>
-<span id="cb208-5"><a href="c06-statistical-testing.html#cb208-5" tabindex="-1"></a>  <span class="fu">ggplot</span>(</span>
-<span id="cb208-6"><a href="c06-statistical-testing.html#cb208-6" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> TrustGovernment, <span class="at">y =</span> Observed, <span class="at">color =</span> TrustGovernment)) <span class="sc">+</span></span>
-<span id="cb208-7"><a href="c06-statistical-testing.html#cb208-7" tabindex="-1"></a>  <span class="fu">facet_wrap</span>( <span class="sc">~</span> TrustPeople, <span class="at">ncol =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb208-8"><a href="c06-statistical-testing.html#cb208-8" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb208-9"><a href="c06-statistical-testing.html#cb208-9" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> Observed_low, <span class="at">ymax =</span> Observed_upp)) <span class="sc">+</span></span>
-<span id="cb208-10"><a href="c06-statistical-testing.html#cb208-10" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Proportion&quot;</span>) <span class="sc">+</span></span>
-<span id="cb208-11"><a href="c06-statistical-testing.html#cb208-11" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;&quot;</span>) <span class="sc">+</span></span>
-<span id="cb208-12"><a href="c06-statistical-testing.html#cb208-12" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb208-13"><a href="c06-statistical-testing.html#cb208-13" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">name=</span><span class="st">&quot;Trust in Government&quot;</span>, </span>
-<span id="cb208-14"><a href="c06-statistical-testing.html#cb208-14" tabindex="-1"></a>                     <span class="at">values=</span>book_colors) <span class="sc">+</span></span>
-<span id="cb208-15"><a href="c06-statistical-testing.html#cb208-15" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(), </span>
-<span id="cb208-16"><a href="c06-statistical-testing.html#cb208-16" tabindex="-1"></a>        <span class="at">axis.ticks.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb208-17"><a href="c06-statistical-testing.html#cb208-17" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>) <span class="sc">+</span></span>
-<span id="cb208-18"><a href="c06-statistical-testing.html#cb208-18" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">col =</span> <span class="fu">guide_legend</span>(<span class="at">nrow=</span><span class="dv">2</span>))</span></code></pre></div>
+<span id="cb208-2"><a href="c06-statistical-testing.html#cb208-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb208-3"><a href="c06-statistical-testing.html#cb208-3" tabindex="-1"></a>    <span class="at">TrustPeople =</span></span>
+<span id="cb208-4"><a href="c06-statistical-testing.html#cb208-4" tabindex="-1"></a>      <span class="fu">fct_reorder</span>(</span>
+<span id="cb208-5"><a href="c06-statistical-testing.html#cb208-5" tabindex="-1"></a>        <span class="fu">str_c</span>(<span class="st">&quot;Trust in People:</span><span class="sc">\n</span><span class="st">&quot;</span>, TrustPeople),</span>
+<span id="cb208-6"><a href="c06-statistical-testing.html#cb208-6" tabindex="-1"></a>        <span class="fu">order</span>(TrustPeople)</span>
+<span id="cb208-7"><a href="c06-statistical-testing.html#cb208-7" tabindex="-1"></a>      )</span>
+<span id="cb208-8"><a href="c06-statistical-testing.html#cb208-8" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb208-9"><a href="c06-statistical-testing.html#cb208-9" tabindex="-1"></a>  <span class="fu">ggplot</span>(</span>
+<span id="cb208-10"><a href="c06-statistical-testing.html#cb208-10" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> TrustGovernment, <span class="at">y =</span> Observed, <span class="at">color =</span> TrustGovernment)</span>
+<span id="cb208-11"><a href="c06-statistical-testing.html#cb208-11" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb208-12"><a href="c06-statistical-testing.html#cb208-12" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>TrustPeople, <span class="at">ncol =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb208-13"><a href="c06-statistical-testing.html#cb208-13" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb208-14"><a href="c06-statistical-testing.html#cb208-14" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> Observed_low, <span class="at">ymax =</span> Observed_upp)) <span class="sc">+</span></span>
+<span id="cb208-15"><a href="c06-statistical-testing.html#cb208-15" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Proportion&quot;</span>) <span class="sc">+</span></span>
+<span id="cb208-16"><a href="c06-statistical-testing.html#cb208-16" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;&quot;</span>) <span class="sc">+</span></span>
+<span id="cb208-17"><a href="c06-statistical-testing.html#cb208-17" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb208-18"><a href="c06-statistical-testing.html#cb208-18" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(</span>
+<span id="cb208-19"><a href="c06-statistical-testing.html#cb208-19" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Trust in Government&quot;</span>,</span>
+<span id="cb208-20"><a href="c06-statistical-testing.html#cb208-20" tabindex="-1"></a>    <span class="at">values =</span> book_colors</span>
+<span id="cb208-21"><a href="c06-statistical-testing.html#cb208-21" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb208-22"><a href="c06-statistical-testing.html#cb208-22" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb208-23"><a href="c06-statistical-testing.html#cb208-23" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb208-24"><a href="c06-statistical-testing.html#cb208-24" tabindex="-1"></a>    <span class="at">axis.ticks.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb208-25"><a href="c06-statistical-testing.html#cb208-25" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span></span>
+<span id="cb208-26"><a href="c06-statistical-testing.html#cb208-26" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb208-27"><a href="c06-statistical-testing.html#cb208-27" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">col =</span> <span class="fu">guide_legend</span>(<span class="at">nrow =</span> <span class="dv">2</span>))</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:stattest-chi-ex2-graph"></span>
 <img src="bookdown_files/figure-html/stattest-chi-ex2-graph-1.png" alt="Proportion of adults in the U.S. by levels of trust in people and government with confidence intervals, ANES 2020. This presents the same information as the previous table in graphical form." width="672" />
 <p class="caption">
@@ -3557,7 +3581,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
 <div class="sourceCode" id="cb209"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb209-1"><a href="c06-statistical-testing.html#cb209-1" tabindex="-1"></a>chi_ex3 <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
 <span id="cb209-2"><a href="c06-statistical-testing.html#cb209-2" tabindex="-1"></a>  <span class="fu">drop_na</span>(VotedPres2020_selection, AgeGroup) <span class="sc">%&gt;%</span></span>
 <span id="cb209-3"><a href="c06-statistical-testing.html#cb209-3" tabindex="-1"></a>  <span class="fu">svychisq</span>(</span>
-<span id="cb209-4"><a href="c06-statistical-testing.html#cb209-4" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> AgeGroup <span class="sc">+</span> VotedPres2020_selection,</span>
+<span id="cb209-4"><a href="c06-statistical-testing.html#cb209-4" tabindex="-1"></a>    <span class="at">formula =</span> <span class="sc">~</span> AgeGroup <span class="sc">+</span> VotedPres2020_selection,</span>
 <span id="cb209-5"><a href="c06-statistical-testing.html#cb209-5" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
 <span id="cb209-6"><a href="c06-statistical-testing.html#cb209-6" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="st">&quot;Chisq&quot;</span>,</span>
 <span id="cb209-7"><a href="c06-statistical-testing.html#cb209-7" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
@@ -3575,36 +3599,40 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
 <span id="cb211-2"><a href="c06-statistical-testing.html#cb211-2" tabindex="-1"></a>  <span class="fu">filter</span>(VotedPres2020 <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb211-3"><a href="c06-statistical-testing.html#cb211-3" tabindex="-1"></a>  <span class="fu">drop_na</span>(VotedPres2020_selection, AgeGroup) <span class="sc">%&gt;%</span></span>
 <span id="cb211-4"><a href="c06-statistical-testing.html#cb211-4" tabindex="-1"></a>  <span class="fu">group_by</span>(VotedPres2020_selection, AgeGroup) <span class="sc">%&gt;%</span></span>
-<span id="cb211-5"><a href="c06-statistical-testing.html#cb211-5" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed =</span> <span class="fu">round</span>(<span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>), <span class="dv">3</span>)) </span>
+<span id="cb211-5"><a href="c06-statistical-testing.html#cb211-5" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Observed =</span> <span class="fu">round</span>(<span class="fu">survey_mean</span>(<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>), <span class="dv">3</span>))</span>
 <span id="cb211-6"><a href="c06-statistical-testing.html#cb211-6" tabindex="-1"></a></span>
-<span id="cb211-7"><a href="c06-statistical-testing.html#cb211-7" tabindex="-1"></a>chi_ex3_obs_table<span class="ot">&lt;-</span>chi_ex3_obs <span class="sc">%&gt;%</span></span>
-<span id="cb211-8"><a href="c06-statistical-testing.html#cb211-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">paste0</span>(Observed, <span class="st">&quot; (&quot;</span>, Observed_low, <span class="st">&quot;, &quot;</span>,</span>
-<span id="cb211-9"><a href="c06-statistical-testing.html#cb211-9" tabindex="-1"></a>                       Observed_upp, <span class="st">&quot;)&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb211-10"><a href="c06-statistical-testing.html#cb211-10" tabindex="-1"></a>  <span class="fu">select</span>(AgeGroup, VotedPres2020_selection, prop) <span class="sc">%&gt;%</span></span>
-<span id="cb211-11"><a href="c06-statistical-testing.html#cb211-11" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> VotedPres2020_selection, </span>
-<span id="cb211-12"><a href="c06-statistical-testing.html#cb211-12" tabindex="-1"></a>              <span class="at">values_from =</span> prop) <span class="sc">%&gt;%</span></span>
-<span id="cb211-13"><a href="c06-statistical-testing.html#cb211-13" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;AgeGroup&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb211-14"><a href="c06-statistical-testing.html#cb211-14" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Age Group&quot;</span>)</span></code></pre></div>
+<span id="cb211-7"><a href="c06-statistical-testing.html#cb211-7" tabindex="-1"></a>chi_ex3_obs_table <span class="ot">&lt;-</span> chi_ex3_obs <span class="sc">%&gt;%</span></span>
+<span id="cb211-8"><a href="c06-statistical-testing.html#cb211-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> <span class="fu">paste0</span>(</span>
+<span id="cb211-9"><a href="c06-statistical-testing.html#cb211-9" tabindex="-1"></a>    Observed, <span class="st">&quot; (&quot;</span>, Observed_low, <span class="st">&quot;, &quot;</span>,</span>
+<span id="cb211-10"><a href="c06-statistical-testing.html#cb211-10" tabindex="-1"></a>    Observed_upp, <span class="st">&quot;)&quot;</span></span>
+<span id="cb211-11"><a href="c06-statistical-testing.html#cb211-11" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb211-12"><a href="c06-statistical-testing.html#cb211-12" tabindex="-1"></a>  <span class="fu">select</span>(AgeGroup, VotedPres2020_selection, prop) <span class="sc">%&gt;%</span></span>
+<span id="cb211-13"><a href="c06-statistical-testing.html#cb211-13" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(</span>
+<span id="cb211-14"><a href="c06-statistical-testing.html#cb211-14" tabindex="-1"></a>    <span class="at">names_from =</span> VotedPres2020_selection,</span>
+<span id="cb211-15"><a href="c06-statistical-testing.html#cb211-15" tabindex="-1"></a>    <span class="at">values_from =</span> prop</span>
+<span id="cb211-16"><a href="c06-statistical-testing.html#cb211-16" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb211-17"><a href="c06-statistical-testing.html#cb211-17" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;AgeGroup&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb211-18"><a href="c06-statistical-testing.html#cb211-18" tabindex="-1"></a>  <span class="fu">tab_stubhead</span>(<span class="at">label =</span> <span class="st">&quot;Age Group&quot;</span>)</span></code></pre></div>
 <p> </p>
 <div class="sourceCode" id="cb212"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb212-1"><a href="c06-statistical-testing.html#cb212-1" tabindex="-1"></a>chi_ex3_obs_table</span></code></pre></div>
 
-<div id="qvpgmtxucb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#qvpgmtxucb table {
+<div id="cgxucrlpuu" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#cgxucrlpuu table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#qvpgmtxucb thead, #qvpgmtxucb tbody, #qvpgmtxucb tfoot, #qvpgmtxucb tr, #qvpgmtxucb td, #qvpgmtxucb th {
+#cgxucrlpuu thead, #cgxucrlpuu tbody, #cgxucrlpuu tfoot, #cgxucrlpuu tr, #cgxucrlpuu td, #cgxucrlpuu th {
   border-style: none;
 }
 
-#qvpgmtxucb p {
+#cgxucrlpuu p {
   margin: 0;
   padding: 0;
 }
 
-#qvpgmtxucb .gt_table {
+#cgxucrlpuu .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3630,12 +3658,12 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-left-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_caption {
+#cgxucrlpuu .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#qvpgmtxucb .gt_title {
+#cgxucrlpuu .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3647,7 +3675,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-width: 0;
 }
 
-#qvpgmtxucb .gt_subtitle {
+#cgxucrlpuu .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3659,7 +3687,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-top-width: 0;
 }
 
-#qvpgmtxucb .gt_heading {
+#cgxucrlpuu .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3671,13 +3699,13 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_bottom_border {
+#cgxucrlpuu .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_col_headings {
+#cgxucrlpuu .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3692,7 +3720,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_col_heading {
+#cgxucrlpuu .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3712,7 +3740,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   overflow-x: hidden;
 }
 
-#qvpgmtxucb .gt_column_spanner_outer {
+#cgxucrlpuu .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3724,15 +3752,15 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 4px;
 }
 
-#qvpgmtxucb .gt_column_spanner_outer:first-child {
+#cgxucrlpuu .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#qvpgmtxucb .gt_column_spanner_outer:last-child {
+#cgxucrlpuu .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#qvpgmtxucb .gt_column_spanner {
+#cgxucrlpuu .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3744,11 +3772,11 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   width: 100%;
 }
 
-#qvpgmtxucb .gt_spanner_row {
+#cgxucrlpuu .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#qvpgmtxucb .gt_group_heading {
+#cgxucrlpuu .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3774,7 +3802,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   text-align: left;
 }
 
-#qvpgmtxucb .gt_empty_group_heading {
+#cgxucrlpuu .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3789,15 +3817,15 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   vertical-align: middle;
 }
 
-#qvpgmtxucb .gt_from_md > :first-child {
+#cgxucrlpuu .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#qvpgmtxucb .gt_from_md > :last-child {
+#cgxucrlpuu .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#qvpgmtxucb .gt_row {
+#cgxucrlpuu .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3816,7 +3844,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   overflow-x: hidden;
 }
 
-#qvpgmtxucb .gt_stub {
+#cgxucrlpuu .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3829,7 +3857,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#qvpgmtxucb .gt_stub_row_group {
+#cgxucrlpuu .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3843,15 +3871,15 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   vertical-align: top;
 }
 
-#qvpgmtxucb .gt_row_group_first td {
+#cgxucrlpuu .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#qvpgmtxucb .gt_row_group_first th {
+#cgxucrlpuu .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#qvpgmtxucb .gt_summary_row {
+#cgxucrlpuu .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3861,16 +3889,16 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#qvpgmtxucb .gt_first_summary_row {
+#cgxucrlpuu .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_first_summary_row.thick {
+#cgxucrlpuu .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#qvpgmtxucb .gt_last_summary_row {
+#cgxucrlpuu .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3880,7 +3908,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_grand_summary_row {
+#cgxucrlpuu .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3890,7 +3918,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#qvpgmtxucb .gt_first_grand_summary_row {
+#cgxucrlpuu .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3900,7 +3928,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-top-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_last_grand_summary_row_top {
+#cgxucrlpuu .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3910,11 +3938,11 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_striped {
+#cgxucrlpuu .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#qvpgmtxucb .gt_table_body {
+#cgxucrlpuu .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3923,7 +3951,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-bottom-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_footnotes {
+#cgxucrlpuu .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3937,7 +3965,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_footnote {
+#cgxucrlpuu .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3946,7 +3974,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#qvpgmtxucb .gt_sourcenotes {
+#cgxucrlpuu .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3960,7 +3988,7 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   border-right-color: #D3D3D3;
 }
 
-#qvpgmtxucb .gt_sourcenote {
+#cgxucrlpuu .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3968,70 +3996,69 @@ where <span class="math inline">\(p_{i_{Biden}}\)</span> is the observed proport
   padding-right: 5px;
 }
 
-#qvpgmtxucb .gt_left {
+#cgxucrlpuu .gt_left {
   text-align: left;
 }
 
-#qvpgmtxucb .gt_center {
+#cgxucrlpuu .gt_center {
   text-align: center;
 }
 
-#qvpgmtxucb .gt_right {
+#cgxucrlpuu .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#qvpgmtxucb .gt_font_normal {
+#cgxucrlpuu .gt_font_normal {
   font-weight: normal;
 }
 
-#qvpgmtxucb .gt_font_bold {
+#cgxucrlpuu .gt_font_bold {
   font-weight: bold;
 }
 
-#qvpgmtxucb .gt_font_italic {
+#cgxucrlpuu .gt_font_italic {
   font-style: italic;
 }
 
-#qvpgmtxucb .gt_super {
+#cgxucrlpuu .gt_super {
   font-size: 65%;
 }
 
-#qvpgmtxucb .gt_footnote_marks {
+#cgxucrlpuu .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#qvpgmtxucb .gt_asterisk {
+#cgxucrlpuu .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#qvpgmtxucb .gt_indent_1 {
+#cgxucrlpuu .gt_indent_1 {
   text-indent: 5px;
 }
 
-#qvpgmtxucb .gt_indent_2 {
+#cgxucrlpuu .gt_indent_2 {
   text-indent: 10px;
 }
 
-#qvpgmtxucb .gt_indent_3 {
+#cgxucrlpuu .gt_indent_3 {
   text-indent: 15px;
 }
 
-#qvpgmtxucb .gt_indent_4 {
+#cgxucrlpuu .gt_indent_4 {
   text-indent: 20px;
 }
 
-#qvpgmtxucb .gt_indent_5 {
+#cgxucrlpuu .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <caption><span id="tab:stattest-chi-ex3-tab">TABLE 6.6: </span>Distribution of age group by presidential candidate selection with confidence intervals</caption>
   <thead>
-    
     <tr class="gt_col_headings">
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Age Group">Age Group</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Biden">Biden</th>
@@ -4104,16 +4131,16 @@ Csardi, Gabor. 2023. <em><span class="nocase">prettyunits</span>: Pretty, Human 
 Lumley, Thomas. 2010. <em>Complex Surveys: A Guide to Analysis Using <span>R</span></em>. John Wiley; Sons.
 </div>
 <div id="ref-R-base" class="csl-entry">
-R Core Team. 2023. <em><span>R</span>: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
+R Core Team. 2024. <em><span>R</span>: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
 </div>
 <div id="ref-R-broom" class="csl-entry">
-Robinson, David, Alex Hayes, and Simon Couch. 2023. <em><span class="nocase">broom</span>: Convert Statistical Objects into Tidy Tibbles</em>.
+Robinson, David, Alex Hayes, and Simon Couch. 2023. <em><span class="nocase">broom</span>: Convert Statistical Objects into Tidy Tibbles</em>. <a href="https://broom.tidymodels.org/">https://broom.tidymodels.org/</a>.
 </div>
 <div id="ref-Scott2007" class="csl-entry">
 Scott, Alastair. 2007. <span>“Rao-Scott Corrections and Their Impact.”</span> In <em>Section on Survey Research Methods</em>, 3514–18. <a href="http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf" class="uri">http://www.asasrms.org/Proceedings/y2007/Files/JSM2007-000874.pdf</a>.
 </div>
 <div id="ref-R-forcats" class="csl-entry">
-———. 2023a. <em><span class="nocase">forcats</span>: Tools for Working with Categorical Variables (Factors)</em>.
+———. 2023. <em><span class="nocase">forcats</span>: Tools for Working with Categorical Variables (Factors)</em>. <a href="https://forcats.tidyverse.org/">https://forcats.tidyverse.org/</a>.
 </div>
 </div>
 <div class="footnotes">

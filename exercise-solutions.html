@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>D Exercise solutions | Exploring Complex Survey Data Analysis in R</title>
   <meta name="description" content="Bookdown for upcoming book on survey analysis the tidy way." />
-  <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
   <meta property="og:title" content="D Exercise solutions | Exploring Complex Survey Data Analysis in R" />
   <meta property="og:type" content="book" />
@@ -52,6 +52,7 @@
 <link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections/anchor-sections.js"></script>
+<link href="libs/htmltools-fill/fill.css" rel="stylesheet" />
 <script src="libs/htmlwidgets/htmlwidgets.js"></script>
 <script src="libs/d3/d3.min.js"></script>
 <script src="libs/dagre/dagre-d3.min.js"></script>
@@ -802,9 +803,9 @@ div.csl-indent {
 <li>What percentage of people voted in both the 2016 election and the 2020 election? Include the logit confidence interval. Hint: The variable <code>VotedPres2016</code> indicates whether someone voted in 2016.</li>
 </ol>
 <div class="sourceCode" id="cb556"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb556-1"><a href="exercise-solutions.html#cb556-1" tabindex="-1"></a>pvb <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
-<span id="cb556-2"><a href="exercise-solutions.html#cb556-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(VotedPres2016),<span class="sc">!</span><span class="fu">is.na</span>(VotedPres2020)) <span class="sc">%&gt;%</span></span>
+<span id="cb556-2"><a href="exercise-solutions.html#cb556-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(VotedPres2016), <span class="sc">!</span><span class="fu">is.na</span>(VotedPres2020)) <span class="sc">%&gt;%</span></span>
 <span id="cb556-3"><a href="exercise-solutions.html#cb556-3" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="fu">interact</span>(VotedPres2016, VotedPres2020)) <span class="sc">%&gt;%</span></span>
-<span id="cb556-4"><a href="exercise-solutions.html#cb556-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_prop</span>(<span class="at">var =</span> <span class="st">&quot;ci&quot;</span>, <span class="at">method =</span> <span class="st">&quot;logit&quot;</span>),) <span class="sc">%&gt;%</span></span>
+<span id="cb556-4"><a href="exercise-solutions.html#cb556-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">p =</span> <span class="fu">survey_prop</span>(<span class="at">var =</span> <span class="st">&quot;ci&quot;</span>, <span class="at">method =</span> <span class="st">&quot;logit&quot;</span>), ) <span class="sc">%&gt;%</span></span>
 <span id="cb556-5"><a href="exercise-solutions.html#cb556-5" tabindex="-1"></a>  <span class="fu">filter</span>(VotedPres2016 <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span>, VotedPres2020 <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span>)</span>
 <span id="cb556-6"><a href="exercise-solutions.html#cb556-6" tabindex="-1"></a></span>
 <span id="cb556-7"><a href="exercise-solutions.html#cb556-7" tabindex="-1"></a>pvb</span></code></pre></div>
@@ -832,10 +833,12 @@ div.csl-indent {
 <li>What is the median temperature people set their thermostats to at night during the winter? Hint: The variable <code>WinterTempNight</code> indicates the temperature that people set their temperature in the winter at night.</li>
 </ol>
 <div class="sourceCode" id="cb560"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb560-1"><a href="exercise-solutions.html#cb560-1" tabindex="-1"></a>med_wintertempnight <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb560-2"><a href="exercise-solutions.html#cb560-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">wtn_med =</span> <span class="fu">survey_median</span>(<span class="at">x =</span> WinterTempNight,</span>
-<span id="cb560-3"><a href="exercise-solutions.html#cb560-3" tabindex="-1"></a>                                   <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb560-4"><a href="exercise-solutions.html#cb560-4" tabindex="-1"></a></span>
-<span id="cb560-5"><a href="exercise-solutions.html#cb560-5" tabindex="-1"></a>med_wintertempnight</span></code></pre></div>
+<span id="cb560-2"><a href="exercise-solutions.html#cb560-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">wtn_med =</span> <span class="fu">survey_median</span>(</span>
+<span id="cb560-3"><a href="exercise-solutions.html#cb560-3" tabindex="-1"></a>    <span class="at">x =</span> WinterTempNight,</span>
+<span id="cb560-4"><a href="exercise-solutions.html#cb560-4" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb560-5"><a href="exercise-solutions.html#cb560-5" tabindex="-1"></a>  ))</span>
+<span id="cb560-6"><a href="exercise-solutions.html#cb560-6" tabindex="-1"></a></span>
+<span id="cb560-7"><a href="exercise-solutions.html#cb560-7" tabindex="-1"></a>med_wintertempnight</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 2
 ##   wtn_med wtn_med_se
 ##     &lt;dbl&gt;      &lt;dbl&gt;
@@ -848,7 +851,7 @@ div.csl-indent {
 <span id="cb562-2"><a href="exercise-solutions.html#cb562-2" tabindex="-1"></a></span>
 <span id="cb562-3"><a href="exercise-solutions.html#cb562-3" tabindex="-1"></a>med_temps <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb562-4"><a href="exercise-solutions.html#cb562-4" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb562-5"><a href="exercise-solutions.html#cb562-5" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">c</span>(WinterTempDay, WinterTempNight, SummerTempDay, SummerTempNight), <span class="sc">~</span><span class="fu">survey_median</span>(.x, <span class="at">na.rm=</span><span class="cn">TRUE</span>))</span>
+<span id="cb562-5"><a href="exercise-solutions.html#cb562-5" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">c</span>(WinterTempDay, WinterTempNight, SummerTempDay, SummerTempNight), <span class="sc">~</span> <span class="fu">survey_median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
 <span id="cb562-6"><a href="exercise-solutions.html#cb562-6" tabindex="-1"></a>  )</span>
 <span id="cb562-7"><a href="exercise-solutions.html#cb562-7" tabindex="-1"></a></span>
 <span id="cb562-8"><a href="exercise-solutions.html#cb562-8" tabindex="-1"></a>med_temps</span></code></pre></div>
@@ -862,7 +865,7 @@ div.csl-indent {
 <span id="cb564-2"><a href="exercise-solutions.html#cb564-2" tabindex="-1"></a></span>
 <span id="cb564-3"><a href="exercise-solutions.html#cb564-3" tabindex="-1"></a>quant_temps <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb564-4"><a href="exercise-solutions.html#cb564-4" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb564-5"><a href="exercise-solutions.html#cb564-5" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">c</span>(WinterTempDay, WinterTempNight, SummerTempDay, SummerTempNight), <span class="sc">~</span><span class="fu">survey_quantile</span>(.x, <span class="at">quantiles=</span><span class="fl">0.5</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>))</span>
+<span id="cb564-5"><a href="exercise-solutions.html#cb564-5" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">c</span>(WinterTempDay, WinterTempNight, SummerTempDay, SummerTempNight), <span class="sc">~</span> <span class="fu">survey_quantile</span>(.x, <span class="at">quantiles =</span> <span class="fl">0.5</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
 <span id="cb564-6"><a href="exercise-solutions.html#cb564-6" tabindex="-1"></a>  )</span>
 <span id="cb564-7"><a href="exercise-solutions.html#cb564-7" tabindex="-1"></a></span>
 <span id="cb564-8"><a href="exercise-solutions.html#cb564-8" tabindex="-1"></a>quant_temps</span></code></pre></div>
@@ -883,9 +886,10 @@ div.csl-indent {
 </ol>
 <div class="sourceCode" id="cb566"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb566-1"><a href="exercise-solutions.html#cb566-1" tabindex="-1"></a>corr_summer_temp <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb566-2"><a href="exercise-solutions.html#cb566-2" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">summer_corr =</span> <span class="fu">survey_corr</span>(SummerTempNight, SummerTempDay,</span>
-<span id="cb566-3"><a href="exercise-solutions.html#cb566-3" tabindex="-1"></a>                                      <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb566-4"><a href="exercise-solutions.html#cb566-4" tabindex="-1"></a></span>
-<span id="cb566-5"><a href="exercise-solutions.html#cb566-5" tabindex="-1"></a>corr_summer_temp</span></code></pre></div>
+<span id="cb566-3"><a href="exercise-solutions.html#cb566-3" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb566-4"><a href="exercise-solutions.html#cb566-4" tabindex="-1"></a>  ))</span>
+<span id="cb566-5"><a href="exercise-solutions.html#cb566-5" tabindex="-1"></a></span>
+<span id="cb566-6"><a href="exercise-solutions.html#cb566-6" tabindex="-1"></a>corr_summer_temp</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 2
 ##   summer_corr summer_corr_se
 ##         &lt;dbl&gt;          &lt;dbl&gt;
@@ -1416,13 +1420,15 @@ div.csl-indent {
 <li>Using the RECS data, do more than 50% of U.S. households use A/C (<code>ACUsed</code>)?</li>
 </ol>
 <div class="sourceCode" id="cb570"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb570-1"><a href="exercise-solutions.html#cb570-1" tabindex="-1"></a>ttest_solution1 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
-<span id="cb570-2"><a href="exercise-solutions.html#cb570-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(<span class="at">design =</span> .,</span>
-<span id="cb570-3"><a href="exercise-solutions.html#cb570-3" tabindex="-1"></a>           <span class="at">formula =</span> ((ACUsed <span class="sc">==</span> <span class="cn">TRUE</span>) <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">~</span> <span class="dv">0</span>,</span>
-<span id="cb570-4"><a href="exercise-solutions.html#cb570-4" tabindex="-1"></a>           <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb570-5"><a href="exercise-solutions.html#cb570-5" tabindex="-1"></a>           <span class="at">alternative=</span><span class="st">&quot;greater&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb570-6"><a href="exercise-solutions.html#cb570-6" tabindex="-1"></a>  <span class="fu">tidy</span>()</span>
-<span id="cb570-7"><a href="exercise-solutions.html#cb570-7" tabindex="-1"></a></span>
-<span id="cb570-8"><a href="exercise-solutions.html#cb570-8" tabindex="-1"></a>ttest_solution1</span></code></pre></div>
+<span id="cb570-2"><a href="exercise-solutions.html#cb570-2" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
+<span id="cb570-3"><a href="exercise-solutions.html#cb570-3" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
+<span id="cb570-4"><a href="exercise-solutions.html#cb570-4" tabindex="-1"></a>    <span class="at">formula =</span> ((ACUsed <span class="sc">==</span> <span class="cn">TRUE</span>) <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">~</span> <span class="dv">0</span>,</span>
+<span id="cb570-5"><a href="exercise-solutions.html#cb570-5" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb570-6"><a href="exercise-solutions.html#cb570-6" tabindex="-1"></a>    <span class="at">alternative =</span> <span class="st">&quot;greater&quot;</span></span>
+<span id="cb570-7"><a href="exercise-solutions.html#cb570-7" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb570-8"><a href="exercise-solutions.html#cb570-8" tabindex="-1"></a>  <span class="fu">tidy</span>()</span>
+<span id="cb570-9"><a href="exercise-solutions.html#cb570-9" tabindex="-1"></a></span>
+<span id="cb570-10"><a href="exercise-solutions.html#cb570-10" tabindex="-1"></a>ttest_solution1</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 8
 ##   estimate statistic  p.value parameter conf.low conf.high method       
 ##      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;        
@@ -1480,7 +1486,7 @@ div.csl-indent {
 </ol>
 <div class="sourceCode" id="cb576"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb576-1"><a href="exercise-solutions.html#cb576-1" tabindex="-1"></a>chisq_solution2 <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb576-2"><a href="exercise-solutions.html#cb576-2" tabindex="-1"></a>  <span class="fu">svychisq</span>(</span>
-<span id="cb576-3"><a href="exercise-solutions.html#cb576-3" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> HousingUnitType <span class="sc">+</span> YearMade,</span>
+<span id="cb576-3"><a href="exercise-solutions.html#cb576-3" tabindex="-1"></a>    <span class="at">formula =</span> <span class="sc">~</span> HousingUnitType <span class="sc">+</span> YearMade,</span>
 <span id="cb576-4"><a href="exercise-solutions.html#cb576-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
 <span id="cb576-5"><a href="exercise-solutions.html#cb576-5" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="st">&quot;Wald&quot;</span>,</span>
 <span id="cb576-6"><a href="exercise-solutions.html#cb576-6" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
@@ -1498,7 +1504,7 @@ div.csl-indent {
 </ol>
 <div class="sourceCode" id="cb579"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb579-1"><a href="exercise-solutions.html#cb579-1" tabindex="-1"></a>chisq_solution3 <span class="ot">&lt;-</span> anes_des <span class="sc">%&gt;%</span></span>
 <span id="cb579-2"><a href="exercise-solutions.html#cb579-2" tabindex="-1"></a>  <span class="fu">svychisq</span>(</span>
-<span id="cb579-3"><a href="exercise-solutions.html#cb579-3" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> Gender <span class="sc">+</span> EarlyVote2020,</span>
+<span id="cb579-3"><a href="exercise-solutions.html#cb579-3" tabindex="-1"></a>    <span class="at">formula =</span> <span class="sc">~</span> Gender <span class="sc">+</span> EarlyVote2020,</span>
 <span id="cb579-4"><a href="exercise-solutions.html#cb579-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
 <span id="cb579-5"><a href="exercise-solutions.html#cb579-5" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="st">&quot;F&quot;</span>,</span>
 <span id="cb579-6"><a href="exercise-solutions.html#cb579-6" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
@@ -1519,11 +1525,13 @@ div.csl-indent {
 </ol>
 <div class="sourceCode" id="cb583"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb583-1"><a href="exercise-solutions.html#cb583-1" tabindex="-1"></a>expense_by_hut <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb583-2"><a href="exercise-solutions.html#cb583-2" tabindex="-1"></a>  <span class="fu">group_by</span>(HousingUnitType) <span class="sc">%&gt;%</span></span>
-<span id="cb583-3"><a href="exercise-solutions.html#cb583-3" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Expense =</span> <span class="fu">survey_mean</span>(TOTALDOL, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb583-4"><a href="exercise-solutions.html#cb583-4" tabindex="-1"></a>            <span class="at">HUs =</span> <span class="fu">survey_total</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb583-5"><a href="exercise-solutions.html#cb583-5" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(HUs))</span>
-<span id="cb583-6"><a href="exercise-solutions.html#cb583-6" tabindex="-1"></a></span>
-<span id="cb583-7"><a href="exercise-solutions.html#cb583-7" tabindex="-1"></a>expense_by_hut</span></code></pre></div>
+<span id="cb583-3"><a href="exercise-solutions.html#cb583-3" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb583-4"><a href="exercise-solutions.html#cb583-4" tabindex="-1"></a>    <span class="at">Expense =</span> <span class="fu">survey_mean</span>(TOTALDOL, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb583-5"><a href="exercise-solutions.html#cb583-5" tabindex="-1"></a>    <span class="at">HUs =</span> <span class="fu">survey_total</span>()</span>
+<span id="cb583-6"><a href="exercise-solutions.html#cb583-6" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb583-7"><a href="exercise-solutions.html#cb583-7" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(HUs))</span>
+<span id="cb583-8"><a href="exercise-solutions.html#cb583-8" tabindex="-1"></a></span>
+<span id="cb583-9"><a href="exercise-solutions.html#cb583-9" tabindex="-1"></a>expense_by_hut</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 5
 ##   HousingUnitType            Expense Expense_se       HUs       HUs_se
 ##   &lt;fct&gt;                        &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;
@@ -1556,12 +1564,12 @@ div.csl-indent {
 <div class="sourceCode" id="cb587"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb587-1"><a href="exercise-solutions.html#cb587-1" tabindex="-1"></a>temps_sqft_exp <span class="ot">&lt;-</span> recs_des <span class="sc">%&gt;%</span></span>
 <span id="cb587-2"><a href="exercise-solutions.html#cb587-2" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
 <span id="cb587-3"><a href="exercise-solutions.html#cb587-3" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb587-4"><a href="exercise-solutions.html#cb587-4" tabindex="-1"></a>    <span class="at">formula =</span> DOLLAREL <span class="sc">~</span> (TOTSQFT_EN <span class="sc">+</span> CDD65 <span class="sc">+</span> HDD65) <span class="sc">^</span> <span class="dv">2</span>,</span>
+<span id="cb587-4"><a href="exercise-solutions.html#cb587-4" tabindex="-1"></a>    <span class="at">formula =</span> DOLLAREL <span class="sc">~</span> (TOTSQFT_EN <span class="sc">+</span> CDD65 <span class="sc">+</span> HDD65)<span class="sc">^</span><span class="dv">2</span>,</span>
 <span id="cb587-5"><a href="exercise-solutions.html#cb587-5" tabindex="-1"></a>    <span class="at">na.action =</span> na.omit</span>
 <span id="cb587-6"><a href="exercise-solutions.html#cb587-6" tabindex="-1"></a>  )</span>
 <span id="cb587-7"><a href="exercise-solutions.html#cb587-7" tabindex="-1"></a></span>
 <span id="cb587-8"><a href="exercise-solutions.html#cb587-8" tabindex="-1"></a><span class="fu">tidy</span>(temps_sqft_exp) <span class="sc">%&gt;%</span></span>
-<span id="cb587-9"><a href="exercise-solutions.html#cb587-9" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value=</span><span class="fu">pretty_p_value</span>(p.value) <span class="sc">%&gt;%</span> <span class="fu">str_pad</span>(<span class="dv">7</span>))</span></code></pre></div>
+<span id="cb587-9"><a href="exercise-solutions.html#cb587-9" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value =</span> <span class="fu">pretty_p_value</span>(p.value) <span class="sc">%&gt;%</span> <span class="fu">str_pad</span>(<span class="dv">7</span>))</span></code></pre></div>
 <pre><code>## # A tibble: 7 × 5
 ##   term                 estimate   std.error statistic p.value  
 ##   &lt;chr&gt;                   &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;    
@@ -1579,18 +1587,22 @@ div.csl-indent {
 <p>Answer:</p>
 <div class="sourceCode" id="cb589"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb589-1"><a href="exercise-solutions.html#cb589-1" tabindex="-1"></a>temps_sqft_exp_fit <span class="ot">&lt;-</span> temps_sqft_exp <span class="sc">%&gt;%</span></span>
 <span id="cb589-2"><a href="exercise-solutions.html#cb589-2" tabindex="-1"></a>  <span class="fu">augment</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb589-3"><a href="exercise-solutions.html#cb589-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)), </span>
-<span id="cb589-4"><a href="exercise-solutions.html#cb589-4" tabindex="-1"></a>         <span class="co"># extract the variance of the fitted value</span></span>
-<span id="cb589-5"><a href="exercise-solutions.html#cb589-5" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)) </span></code></pre></div>
+<span id="cb589-3"><a href="exercise-solutions.html#cb589-3" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb589-4"><a href="exercise-solutions.html#cb589-4" tabindex="-1"></a>    <span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)),</span>
+<span id="cb589-5"><a href="exercise-solutions.html#cb589-5" tabindex="-1"></a>    <span class="co"># extract the variance of the fitted value</span></span>
+<span id="cb589-6"><a href="exercise-solutions.html#cb589-6" tabindex="-1"></a>    <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)</span>
+<span id="cb589-7"><a href="exercise-solutions.html#cb589-7" tabindex="-1"></a>  )</span></code></pre></div>
 <div class="sourceCode" id="cb590"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb590-1"><a href="exercise-solutions.html#cb590-1" tabindex="-1"></a>temps_sqft_exp_fit <span class="sc">%&gt;%</span></span>
 <span id="cb590-2"><a href="exercise-solutions.html#cb590-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> DOLLAREL, <span class="at">y =</span> .fitted)) <span class="sc">+</span></span>
 <span id="cb590-3"><a href="exercise-solutions.html#cb590-3" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb590-4"><a href="exercise-solutions.html#cb590-4" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>,</span>
-<span id="cb590-5"><a href="exercise-solutions.html#cb590-5" tabindex="-1"></a>              <span class="at">slope =</span> <span class="dv">1</span>,</span>
-<span id="cb590-6"><a href="exercise-solutions.html#cb590-6" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
-<span id="cb590-7"><a href="exercise-solutions.html#cb590-7" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Actual expenditures&quot;</span>) <span class="sc">+</span></span>
-<span id="cb590-8"><a href="exercise-solutions.html#cb590-8" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Predicted expenditures&quot;</span>) <span class="sc">+</span></span>
-<span id="cb590-9"><a href="exercise-solutions.html#cb590-9" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<span id="cb590-4"><a href="exercise-solutions.html#cb590-4" tabindex="-1"></a>  <span class="fu">geom_abline</span>(</span>
+<span id="cb590-5"><a href="exercise-solutions.html#cb590-5" tabindex="-1"></a>    <span class="at">intercept =</span> <span class="dv">0</span>,</span>
+<span id="cb590-6"><a href="exercise-solutions.html#cb590-6" tabindex="-1"></a>    <span class="at">slope =</span> <span class="dv">1</span>,</span>
+<span id="cb590-7"><a href="exercise-solutions.html#cb590-7" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;red&quot;</span></span>
+<span id="cb590-8"><a href="exercise-solutions.html#cb590-8" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb590-9"><a href="exercise-solutions.html#cb590-9" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Actual expenditures&quot;</span>) <span class="sc">+</span></span>
+<span id="cb590-10"><a href="exercise-solutions.html#cb590-10" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Predicted expenditures&quot;</span>) <span class="sc">+</span></span>
+<span id="cb590-11"><a href="exercise-solutions.html#cb590-11" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:model-ex-solution4"></span>
 <img src="bookdown_files/figure-html/model-ex-solution4-1.png" alt="Actual and predicted electricity expenditures" width="672" />
 <p class="caption">
@@ -1618,11 +1630,11 @@ FIGURE D.2: Residual plot of electric cost model with covariates TOTSQFT_EN, CDD
 <span id="cb592-2"><a href="exercise-solutions.html#cb592-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(EarlyVote2020)) <span class="sc">%&gt;%</span></span>
 <span id="cb592-3"><a href="exercise-solutions.html#cb592-3" tabindex="-1"></a>  <span class="fu">svyglm</span>(</span>
 <span id="cb592-4"><a href="exercise-solutions.html#cb592-4" tabindex="-1"></a>    <span class="at">design =</span> .,</span>
-<span id="cb592-5"><a href="exercise-solutions.html#cb592-5" tabindex="-1"></a>    <span class="at">formula =</span> EarlyVote2020 <span class="sc">~</span> (Age <span class="sc">+</span> Education <span class="sc">+</span> PartyID) <span class="sc">^</span> <span class="dv">2</span> ,</span>
+<span id="cb592-5"><a href="exercise-solutions.html#cb592-5" tabindex="-1"></a>    <span class="at">formula =</span> EarlyVote2020 <span class="sc">~</span> (Age <span class="sc">+</span> Education <span class="sc">+</span> PartyID)<span class="sc">^</span><span class="dv">2</span>,</span>
 <span id="cb592-6"><a href="exercise-solutions.html#cb592-6" tabindex="-1"></a>    <span class="at">family =</span> quasibinomial</span>
 <span id="cb592-7"><a href="exercise-solutions.html#cb592-7" tabindex="-1"></a>  )</span>
 <span id="cb592-8"><a href="exercise-solutions.html#cb592-8" tabindex="-1"></a></span>
-<span id="cb592-9"><a href="exercise-solutions.html#cb592-9" tabindex="-1"></a><span class="fu">tidy</span>(earlyvote_mod) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n=</span><span class="dv">50</span>)</span></code></pre></div>
+<span id="cb592-9"><a href="exercise-solutions.html#cb592-9" tabindex="-1"></a><span class="fu">tidy</span>(earlyvote_mod) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">50</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 46 × 5
 ##    term                             estimate std.error statistic p.value
 ##    &lt;chr&gt;                               &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
@@ -1687,11 +1699,13 @@ FIGURE D.2: Residual plot of electric cost model with covariates TOTSQFT_EN, CDD
 <span id="cb594-10"><a href="exercise-solutions.html#cb594-10" tabindex="-1"></a></span>
 <span id="cb594-11"><a href="exercise-solutions.html#cb594-11" tabindex="-1"></a>log_ex_2_out <span class="ot">&lt;-</span> earlyvote_mod <span class="sc">%&gt;%</span></span>
 <span id="cb594-12"><a href="exercise-solutions.html#cb594-12" tabindex="-1"></a>  <span class="fu">augment</span>(<span class="at">newdata =</span> add_vote_dat, <span class="at">type.predict =</span> <span class="st">&quot;response&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb594-13"><a href="exercise-solutions.html#cb594-13" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)),</span>
-<span id="cb594-14"><a href="exercise-solutions.html#cb594-14" tabindex="-1"></a>         <span class="co"># extract the variance of the fitted value</span></span>
-<span id="cb594-15"><a href="exercise-solutions.html#cb594-15" tabindex="-1"></a>         <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted))</span>
-<span id="cb594-16"><a href="exercise-solutions.html#cb594-16" tabindex="-1"></a></span>
-<span id="cb594-17"><a href="exercise-solutions.html#cb594-17" tabindex="-1"></a>log_ex_2_out</span></code></pre></div>
+<span id="cb594-13"><a href="exercise-solutions.html#cb594-13" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb594-14"><a href="exercise-solutions.html#cb594-14" tabindex="-1"></a>    <span class="at">.se.fit =</span> <span class="fu">sqrt</span>(<span class="fu">attr</span>(.fitted, <span class="st">&quot;var&quot;</span>)),</span>
+<span id="cb594-15"><a href="exercise-solutions.html#cb594-15" tabindex="-1"></a>    <span class="co"># extract the variance of the fitted value</span></span>
+<span id="cb594-16"><a href="exercise-solutions.html#cb594-16" tabindex="-1"></a>    <span class="at">.fitted =</span> <span class="fu">as.numeric</span>(.fitted)</span>
+<span id="cb594-17"><a href="exercise-solutions.html#cb594-17" tabindex="-1"></a>  )</span>
+<span id="cb594-18"><a href="exercise-solutions.html#cb594-18" tabindex="-1"></a></span>
+<span id="cb594-19"><a href="exercise-solutions.html#cb594-19" tabindex="-1"></a>log_ex_2_out</span></code></pre></div>
 <pre><code>## # A tibble: 2 × 6
 ##   EarlyVote2020   Age Education PartyID           .fitted .se.fit
 ##   &lt;fct&gt;         &lt;dbl&gt; &lt;fct&gt;     &lt;fct&gt;               &lt;dbl&gt;   &lt;dbl&gt;
@@ -1717,9 +1731,11 @@ FIGURE D.2: Residual plot of electric cost model with covariates TOTSQFT_EN, CDD
 </ol>
 <p>Answer:</p>
 <div class="sourceCode" id="cb597"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb597-1"><a href="exercise-solutions.html#cb597-1" tabindex="-1"></a>gss_des <span class="ot">&lt;-</span> gss_data <span class="sc">%&gt;%</span></span>
-<span id="cb597-2"><a href="exercise-solutions.html#cb597-2" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">ids =</span> VPSU_2,</span>
-<span id="cb597-3"><a href="exercise-solutions.html#cb597-3" tabindex="-1"></a>                   <span class="at">strata =</span> VSTRAT_2,</span>
-<span id="cb597-4"><a href="exercise-solutions.html#cb597-4" tabindex="-1"></a>                   <span class="at">weights =</span> WTSSNR_2)</span></code></pre></div>
+<span id="cb597-2"><a href="exercise-solutions.html#cb597-2" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(</span>
+<span id="cb597-3"><a href="exercise-solutions.html#cb597-3" tabindex="-1"></a>    <span class="at">ids =</span> VPSU_2,</span>
+<span id="cb597-4"><a href="exercise-solutions.html#cb597-4" tabindex="-1"></a>    <span class="at">strata =</span> VSTRAT_2,</span>
+<span id="cb597-5"><a href="exercise-solutions.html#cb597-5" tabindex="-1"></a>    <span class="at">weights =</span> WTSSNR_2</span>
+<span id="cb597-6"><a href="exercise-solutions.html#cb597-6" tabindex="-1"></a>  )</span></code></pre></div>
 </div>
 <div id="national-crime-victimization-survey-vignette" class="section level2 unnumbered hasAnchor">
 <h2>13 - National Crime Victimization Survey Vignette<a href="exercise-solutions.html#national-crime-victimization-survey-vignette" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -1738,10 +1754,10 @@ FIGURE D.2: Residual plot of electric cost model with covariates TOTSQFT_EN, CDD
 <span id="cb599-2"><a href="exercise-solutions.html#cb599-2" tabindex="-1"></a>  <span class="fu">filter</span>(Violent) <span class="sc">%&gt;%</span></span>
 <span id="cb599-3"><a href="exercise-solutions.html#cb599-3" tabindex="-1"></a>  <span class="fu">survey_count</span>(Region) <span class="sc">%&gt;%</span></span>
 <span id="cb599-4"><a href="exercise-solutions.html#cb599-4" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>n_se) <span class="sc">%&gt;%</span></span>
-<span id="cb599-5"><a href="exercise-solutions.html#cb599-5" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col=</span><span class="st">&quot;Region&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb599-5"><a href="exercise-solutions.html#cb599-5" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Region&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb599-6"><a href="exercise-solutions.html#cb599-6" tabindex="-1"></a>  <span class="fu">fmt_integer</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb599-7"><a href="exercise-solutions.html#cb599-7" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
-<span id="cb599-8"><a href="exercise-solutions.html#cb599-8" tabindex="-1"></a>    <span class="at">n =</span><span class="st">&quot;Violent victimizations&quot;</span>,</span>
+<span id="cb599-8"><a href="exercise-solutions.html#cb599-8" tabindex="-1"></a>    <span class="at">n =</span> <span class="st">&quot;Violent victimizations&quot;</span>,</span>
 <span id="cb599-9"><a href="exercise-solutions.html#cb599-9" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb599-10"><a href="exercise-solutions.html#cb599-10" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">&quot;Estimated number of violent crimes by region&quot;</span>)</span></code></pre></div>
 <div id="kqivcbyivm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
@@ -2216,15 +2232,16 @@ FIGURE D.2: Residual plot of electric cost model with covariates TOTSQFT_EN, CDD
 <div class="sourceCode" id="cb600"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb600-1"><a href="exercise-solutions.html#cb600-1" tabindex="-1"></a>hh_des <span class="sc">%&gt;%</span></span>
 <span id="cb600-2"><a href="exercise-solutions.html#cb600-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Income)) <span class="sc">%&gt;%</span></span>
 <span id="cb600-3"><a href="exercise-solutions.html#cb600-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Income) <span class="sc">%&gt;%</span></span>
-<span id="cb600-4"><a href="exercise-solutions.html#cb600-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Property_Rate =</span> <span class="fu">survey_mean</span>(Property <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span>, </span>
-<span id="cb600-5"><a href="exercise-solutions.html#cb600-5" tabindex="-1"></a>                                        <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb600-6"><a href="exercise-solutions.html#cb600-6" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col=</span><span class="st">&quot;Income&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb600-7"><a href="exercise-solutions.html#cb600-7" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
-<span id="cb600-8"><a href="exercise-solutions.html#cb600-8" tabindex="-1"></a>    <span class="at">Property_Rate=</span><span class="st">&quot;Rate&quot;</span>,</span>
-<span id="cb600-9"><a href="exercise-solutions.html#cb600-9" tabindex="-1"></a>    <span class="at">Property_Rate_se=</span><span class="st">&quot;Standard Error&quot;</span></span>
-<span id="cb600-10"><a href="exercise-solutions.html#cb600-10" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb600-11"><a href="exercise-solutions.html#cb600-11" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals=</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb600-12"><a href="exercise-solutions.html#cb600-12" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">&quot;Estimated property victimization rate by income level&quot;</span>)</span></code></pre></div>
+<span id="cb600-4"><a href="exercise-solutions.html#cb600-4" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Property_Rate =</span> <span class="fu">survey_mean</span>(Property <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb600-5"><a href="exercise-solutions.html#cb600-5" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
+<span id="cb600-6"><a href="exercise-solutions.html#cb600-6" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb600-7"><a href="exercise-solutions.html#cb600-7" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Income&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb600-8"><a href="exercise-solutions.html#cb600-8" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
+<span id="cb600-9"><a href="exercise-solutions.html#cb600-9" tabindex="-1"></a>    <span class="at">Property_Rate =</span> <span class="st">&quot;Rate&quot;</span>,</span>
+<span id="cb600-10"><a href="exercise-solutions.html#cb600-10" tabindex="-1"></a>    <span class="at">Property_Rate_se =</span> <span class="st">&quot;Standard Error&quot;</span></span>
+<span id="cb600-11"><a href="exercise-solutions.html#cb600-11" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb600-12"><a href="exercise-solutions.html#cb600-12" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb600-13"><a href="exercise-solutions.html#cb600-13" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">&quot;Estimated property victimization rate by income level&quot;</span>)</span></code></pre></div>
 <div id="mdvpqxzjwg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#mdvpqxzjwg table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -2704,12 +2721,12 @@ FIGURE D.2: Residual plot of electric cost model with covariates TOTSQFT_EN, CDD
 <div class="sourceCode" id="cb601"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb601-1"><a href="exercise-solutions.html#cb601-1" tabindex="-1"></a>vr_gender <span class="ot">&lt;-</span> pers_des <span class="sc">%&gt;%</span></span>
 <span id="cb601-2"><a href="exercise-solutions.html#cb601-2" tabindex="-1"></a>  <span class="fu">group_by</span>(Sex) <span class="sc">%&gt;%</span></span>
 <span id="cb601-3"><a href="exercise-solutions.html#cb601-3" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb601-4"><a href="exercise-solutions.html#cb601-4" tabindex="-1"></a>    <span class="at">Violent_rate=</span><span class="fu">survey_mean</span>(Violent <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb601-4"><a href="exercise-solutions.html#cb601-4" tabindex="-1"></a>    <span class="at">Violent_rate =</span> <span class="fu">survey_mean</span>(Violent <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb601-5"><a href="exercise-solutions.html#cb601-5" tabindex="-1"></a>  )</span>
 <span id="cb601-6"><a href="exercise-solutions.html#cb601-6" tabindex="-1"></a></span>
 <span id="cb601-7"><a href="exercise-solutions.html#cb601-7" tabindex="-1"></a>vr_gender_test <span class="ot">&lt;-</span> pers_des <span class="sc">%&gt;%</span></span>
 <span id="cb601-8"><a href="exercise-solutions.html#cb601-8" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb601-9"><a href="exercise-solutions.html#cb601-9" tabindex="-1"></a>    <span class="at">Violent_Adj=</span>Violent <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span></span>
+<span id="cb601-9"><a href="exercise-solutions.html#cb601-9" tabindex="-1"></a>    <span class="at">Violent_Adj =</span> Violent <span class="sc">*</span> ADJINC_WT <span class="sc">*</span> <span class="dv">1000</span></span>
 <span id="cb601-10"><a href="exercise-solutions.html#cb601-10" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb601-11"><a href="exercise-solutions.html#cb601-11" tabindex="-1"></a>  <span class="fu">svyttest</span>(</span>
 <span id="cb601-12"><a href="exercise-solutions.html#cb601-12" tabindex="-1"></a>    <span class="at">formula =</span> Violent_Adj <span class="sc">~</span> Sex,</span>
@@ -2736,24 +2753,24 @@ Answer:</li>
 <span id="cb604-5"><a href="exercise-solutions.html#cb604-5" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
 <span id="cb604-6"><a href="exercise-solutions.html#cb604-6" tabindex="-1"></a>    <span class="at">p_broadband =</span> <span class="fu">survey_mean</span>(BroadbandInternet, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>,</span>
 <span id="cb604-7"><a href="exercise-solutions.html#cb604-7" tabindex="-1"></a>    <span class="at">p_internet =</span> <span class="fu">survey_mean</span>(Internet, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span></span>
-<span id="cb604-8"><a href="exercise-solutions.html#cb604-8" tabindex="-1"></a>  ) </span>
+<span id="cb604-8"><a href="exercise-solutions.html#cb604-8" tabindex="-1"></a>  )</span>
 <span id="cb604-9"><a href="exercise-solutions.html#cb604-9" tabindex="-1"></a></span>
 <span id="cb604-10"><a href="exercise-solutions.html#cb604-10" tabindex="-1"></a>int_ests <span class="sc">%&gt;%</span></span>
 <span id="cb604-11"><a href="exercise-solutions.html#cb604-11" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">&quot;Country&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb604-12"><a href="exercise-solutions.html#cb604-12" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals=</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb604-12"><a href="exercise-solutions.html#cb604-12" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">decimals =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb604-13"><a href="exercise-solutions.html#cb604-13" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb604-14"><a href="exercise-solutions.html#cb604-14" tabindex="-1"></a>    <span class="at">label=</span><span class="st">&quot;Broadband at home&quot;</span>,</span>
-<span id="cb604-15"><a href="exercise-solutions.html#cb604-15" tabindex="-1"></a>    <span class="at">columns=</span><span class="fu">c</span>(p_broadband, p_broadband_se)</span>
+<span id="cb604-14"><a href="exercise-solutions.html#cb604-14" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;Broadband at home&quot;</span>,</span>
+<span id="cb604-15"><a href="exercise-solutions.html#cb604-15" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">c</span>(p_broadband, p_broadband_se)</span>
 <span id="cb604-16"><a href="exercise-solutions.html#cb604-16" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb604-17"><a href="exercise-solutions.html#cb604-17" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb604-18"><a href="exercise-solutions.html#cb604-18" tabindex="-1"></a>    <span class="at">label=</span><span class="st">&quot;Internet at home&quot;</span>,</span>
-<span id="cb604-19"><a href="exercise-solutions.html#cb604-19" tabindex="-1"></a>    <span class="at">columns=</span><span class="fu">c</span>(p_internet, p_internet_se)</span>
+<span id="cb604-18"><a href="exercise-solutions.html#cb604-18" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;Internet at home&quot;</span>,</span>
+<span id="cb604-19"><a href="exercise-solutions.html#cb604-19" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">c</span>(p_internet, p_internet_se)</span>
 <span id="cb604-20"><a href="exercise-solutions.html#cb604-20" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb604-21"><a href="exercise-solutions.html#cb604-21" tabindex="-1"></a>  <span class="fu">cols_label</span>(</span>
-<span id="cb604-22"><a href="exercise-solutions.html#cb604-22" tabindex="-1"></a>    <span class="at">p_broadband=</span><span class="st">&quot;Percent&quot;</span>,</span>
-<span id="cb604-23"><a href="exercise-solutions.html#cb604-23" tabindex="-1"></a>    <span class="at">p_internet=</span><span class="st">&quot;Percent&quot;</span>,</span>
-<span id="cb604-24"><a href="exercise-solutions.html#cb604-24" tabindex="-1"></a>    <span class="at">p_broadband_se=</span><span class="st">&quot;S.E.&quot;</span>,</span>
-<span id="cb604-25"><a href="exercise-solutions.html#cb604-25" tabindex="-1"></a>    <span class="at">p_internet_se=</span><span class="st">&quot;S.E.&quot;</span>,</span>
+<span id="cb604-22"><a href="exercise-solutions.html#cb604-22" tabindex="-1"></a>    <span class="at">p_broadband =</span> <span class="st">&quot;Percent&quot;</span>,</span>
+<span id="cb604-23"><a href="exercise-solutions.html#cb604-23" tabindex="-1"></a>    <span class="at">p_internet =</span> <span class="st">&quot;Percent&quot;</span>,</span>
+<span id="cb604-24"><a href="exercise-solutions.html#cb604-24" tabindex="-1"></a>    <span class="at">p_broadband_se =</span> <span class="st">&quot;S.E.&quot;</span>,</span>
+<span id="cb604-25"><a href="exercise-solutions.html#cb604-25" tabindex="-1"></a>    <span class="at">p_internet_se =</span> <span class="st">&quot;S.E.&quot;</span>,</span>
 <span id="cb604-26"><a href="exercise-solutions.html#cb604-26" tabindex="-1"></a>  )</span></code></pre></div>
 <div id="fqvyyzfmai" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#fqvyyzfmai table {
@@ -3197,7 +3214,6 @@ Answer:</li>
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <thead>
-    
     <tr class="gt_col_headings gt_spanner_row">
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" scope="col" id=""></th>
       <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" scope="colgroup" id="Broadband at home">
@@ -3339,25 +3355,26 @@ Answer:</li>
 <span id="cb605-13"><a href="exercise-solutions.html#cb605-13" tabindex="-1"></a></span>
 <span id="cb605-14"><a href="exercise-solutions.html#cb605-14" tabindex="-1"></a>b_int_sf <span class="sc">%&gt;%</span></span>
 <span id="cb605-15"><a href="exercise-solutions.html#cb605-15" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> p),</span>
-<span id="cb605-16"><a href="exercise-solutions.html#cb605-16" tabindex="-1"></a>         <span class="at">color=</span><span class="st">&quot;darkgray&quot;</span>) <span class="sc">+</span></span>
-<span id="cb605-17"><a href="exercise-solutions.html#cb605-17" tabindex="-1"></a>  <span class="fu">geom_sf</span>() <span class="sc">+</span></span>
-<span id="cb605-18"><a href="exercise-solutions.html#cb605-18" tabindex="-1"></a>  <span class="fu">facet_wrap</span>( <span class="sc">~</span> Type) <span class="sc">+</span></span>
-<span id="cb605-19"><a href="exercise-solutions.html#cb605-19" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
-<span id="cb605-20"><a href="exercise-solutions.html#cb605-20" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;colorbar&quot;</span>,</span>
-<span id="cb605-21"><a href="exercise-solutions.html#cb605-21" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Percent&quot;</span>,</span>
-<span id="cb605-22"><a href="exercise-solutions.html#cb605-22" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span>comma,</span>
-<span id="cb605-23"><a href="exercise-solutions.html#cb605-23" tabindex="-1"></a>    <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087E8B&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>),</span>
-<span id="cb605-24"><a href="exercise-solutions.html#cb605-24" tabindex="-1"></a>    <span class="at">na.value =</span> <span class="cn">NA</span></span>
-<span id="cb605-25"><a href="exercise-solutions.html#cb605-25" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb605-26"><a href="exercise-solutions.html#cb605-26" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(</span>
-<span id="cb605-27"><a href="exercise-solutions.html#cb605-27" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">filter</span>(b_int_sf, <span class="fu">is.na</span>(p)),</span>
-<span id="cb605-28"><a href="exercise-solutions.html#cb605-28" tabindex="-1"></a>    <span class="at">pattern =</span> <span class="st">&quot;crosshatch&quot;</span>,</span>
-<span id="cb605-29"><a href="exercise-solutions.html#cb605-29" tabindex="-1"></a>    <span class="at">pattern_fill =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
-<span id="cb605-30"><a href="exercise-solutions.html#cb605-30" tabindex="-1"></a>    <span class="at">pattern_color =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
-<span id="cb605-31"><a href="exercise-solutions.html#cb605-31" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NA</span>,</span>
-<span id="cb605-32"><a href="exercise-solutions.html#cb605-32" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
-<span id="cb605-33"><a href="exercise-solutions.html#cb605-33" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb605-34"><a href="exercise-solutions.html#cb605-34" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<span id="cb605-16"><a href="exercise-solutions.html#cb605-16" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
+<span id="cb605-17"><a href="exercise-solutions.html#cb605-17" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb605-18"><a href="exercise-solutions.html#cb605-18" tabindex="-1"></a>  <span class="fu">geom_sf</span>() <span class="sc">+</span></span>
+<span id="cb605-19"><a href="exercise-solutions.html#cb605-19" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Type) <span class="sc">+</span></span>
+<span id="cb605-20"><a href="exercise-solutions.html#cb605-20" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
+<span id="cb605-21"><a href="exercise-solutions.html#cb605-21" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;colorbar&quot;</span>,</span>
+<span id="cb605-22"><a href="exercise-solutions.html#cb605-22" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Percent&quot;</span>,</span>
+<span id="cb605-23"><a href="exercise-solutions.html#cb605-23" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span>comma,</span>
+<span id="cb605-24"><a href="exercise-solutions.html#cb605-24" tabindex="-1"></a>    <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#BFD7EA&quot;</span>, <span class="st">&quot;#087E8B&quot;</span>, <span class="st">&quot;#0B3954&quot;</span>),</span>
+<span id="cb605-25"><a href="exercise-solutions.html#cb605-25" tabindex="-1"></a>    <span class="at">na.value =</span> <span class="cn">NA</span></span>
+<span id="cb605-26"><a href="exercise-solutions.html#cb605-26" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb605-27"><a href="exercise-solutions.html#cb605-27" tabindex="-1"></a>  <span class="fu">geom_sf_pattern</span>(</span>
+<span id="cb605-28"><a href="exercise-solutions.html#cb605-28" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">filter</span>(b_int_sf, <span class="fu">is.na</span>(p)),</span>
+<span id="cb605-29"><a href="exercise-solutions.html#cb605-29" tabindex="-1"></a>    <span class="at">pattern =</span> <span class="st">&quot;crosshatch&quot;</span>,</span>
+<span id="cb605-30"><a href="exercise-solutions.html#cb605-30" tabindex="-1"></a>    <span class="at">pattern_fill =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
+<span id="cb605-31"><a href="exercise-solutions.html#cb605-31" tabindex="-1"></a>    <span class="at">pattern_color =</span> <span class="st">&quot;lightgray&quot;</span>,</span>
+<span id="cb605-32"><a href="exercise-solutions.html#cb605-32" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NA</span>,</span>
+<span id="cb605-33"><a href="exercise-solutions.html#cb605-33" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgray&quot;</span></span>
+<span id="cb605-34"><a href="exercise-solutions.html#cb605-34" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb605-35"><a href="exercise-solutions.html#cb605-35" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
 <div class="figure"><span style="display:block;" id="fig:ambarom-ex-solution2"></span>
 <img src="bookdown_files/figure-html/ambarom-ex-solution2-1.png" alt="Percent of broadband internet and any internet usage, Central and South America" width="672" />
 <p class="caption">
