@@ -13,7 +13,7 @@ library(tidyselect)
 
 ## Introduction
 
-This chapter provides an overview of the packages, data, and design objects we use frequently throughout this book. As mentioned in Chapter \@ref(c02-overview-surveys), understanding how a survey was conducted helps us make sense of the results and interpret findings. Therefore, we provide background on the datasets used in examples and exercises. Next, we walk through how to create the survey design objects necessary to begin an analysis. Finally, we provide an overview of the {srvyr} package and the steps needed for analysis. Please report any bugs and issues while going through the book to the book's [GitHub repository](https://github.com/tidy-survey-r/tidy-survey-book).
+This chapter provides an overview of the packages, data, and design objects we use frequently throughout this book. As mentioned in Chapter \@ref(c02-overview-surveys), understanding how a survey was conducted helps us make sense of the results and interpret findings. Therefore, we provide background on the datasets used in examples and exercises. Next, we walk through how to create the survey design objects necessary to begin an analysis. Finally, we provide an overview of the {srvyr} package and the steps needed for analysis. Please report any bugs and issues encountered while going through the book to the book's [GitHub repository](https://github.com/tidy-survey-r/tidy-survey-book).
 
 ## Setup
 
@@ -93,7 +93,7 @@ After installing this package, load it using the `library()` function:
 library(censusapi)
 ```
 
-Note that the {censusapi} package requires a Census API key, available for free from the [U.S. Census Bureau website](https://api.census.gov/data/key_signup.html) (refer to the package documentation for more information). We recommend storing the Census API key in the R environment instead of directly in the code. To do this, run `Sys.setenv()` after obtaining the API key.
+Note that the {censusapi} package requires a Census API key, available for free from the [U.S. Census Bureau website](https://api.census.gov/data/key_signup.html) (refer to the package documentation for more information.) We recommend storing the Census API key in the R environment instead of directly in the code. To do this, run the `Sys.setenv()` script below, substituting the API key where it says `YOUR_API_KEY_HERE`.
 
 ```{r}
 #| label: setup-census-api-setup
@@ -121,32 +121,9 @@ This book uses two main datasets: the American National Election Studies [ANES -
 #### American National Election Studies (ANES) Data {-}
 
 \index{American National Election Studies (ANES)|(}
-ANES is a study that collects data from election surveys dating back to 1948. These surveys contain information on public opinion and voting behavior in U.S. presidential elections and some midterm elections^[In the United States, presidential elections are held in years divisible by four. In other even years, there are elections at the federal level for congress which are referred to as midterm elections as they occur at the middle of the term of a president.]. They cover topics such as party affiliation, voting choice, and level of trust in the government. The 2020 survey (data used in this book) was fielded online, through live video interviews, or via computer-assisted telephone interviews (CATI). 
+ANES is a study that collects data from election surveys dating back to 1948. These surveys contain information on public opinion and voting behavior in U.S. presidential elections and some midterm elections^[In the United States, presidential elections are held in years divisible by four. In other even years, there are elections at the federal level for Congress, which are referred to as midterm elections as they occur at the middle of the term of a president.]. They cover topics such as party affiliation, voting choice, and level of trust in the government. The 2020 survey (data used in this book) was fielded online, through live video interviews, or via computer-assisted telephone interviews (CATI). 
 
-When working with new survey data, we should review the survey documentation (see Chapter \@ref(c03-survey-data-documentation)) to understand the data collection methods. The original ANES data contains variables starting with `V20` [@debell], so to assist with our analysis throughout the book, we created descriptive variable names. For example, the respondent's age is now in a variable called `Age`, and gender is in a variable called `Gender`. These descriptive variables are included in the {srvyrexploR} package, and Table \@ref(tab:anes-view-tab) displays the list of these renamed variables. A complete overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(anes-cb)`r if (!knitr:::is_html_output()) ')'`.
-
-(ref:anes-view-tab) List of created variables in the ANES Data
-
-```{r}
-#| label: setup-anes-variables
-#| echo: FALSE
-#| warning: FALSE
-
-anes_view <- anes_2020 %>%
-  select(-matches("^V\\d")) %>%
-  colnames() %>%
-  as_tibble() %>%
-  rename(`Variable Name` = value) %>%
-  gt() %>%
-  cols_width(everything()~px(295))
-```
-
-```{r}
-#| label: anes-view-tab
-#| echo: FALSE
-anes_view %>%
-  print_gt_book(knitr::opts_current$get()[["label"]])
-```
+When working with new survey data, we should review the survey documentation (see Chapter \@ref(c03-survey-data-documentation)) to understand the data collection methods. The original ANES data contains variables starting with `V20` [@debell], so to assist with our analysis throughout the book, we created descriptive variable names. For example, the respondent's age is now in a variable called `Age`, and gender is in a variable called `Gender`. These descriptive variables are included in the {srvyrexploR} package. A complete overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(anes-cb)`r if (!knitr:::is_html_output()) ')'`.
 
 Before beginning an analysis, it is useful to view the data to understand the available variables. The `dplyr::glimpse()` function produces a list of all variables, their types (e.g., function, double), and a few example values. Below, we remove variables containing a "V" followed by numbers with `select(-matches("^V\\d"))` before using `glimpse()` to get a quick overview of the data with descriptive variable names:
 
@@ -165,31 +142,7 @@ From the output, we can see there are `r nrow(anes_2020 %>% select(-matches("^V\
 \index{Residential Energy Consumption Survey (RECS)|(}
 RECS is a study that measures energy consumption and expenditure in American households. Funded by the Energy Information Administration, RECS data are collected through interviews with household members and energy suppliers. These interviews take place in person, over the phone, via mail, and on the web, with modes changing over time. The survey has been fielded 14 times between 1950 and 2020. It includes questions about appliances, electronics, heating, air conditioning (A/C), temperatures, water heating, lighting, energy bills, respondent demographics, and energy assistance. 
 
-We should read the survey documentation (see Chapter \@ref(c03-survey-data-documentation)) to understand how the data were collected and implemented. Table \@ref(tab:recs-view-tab) displays the list of variables in the RECS data (not including the weights, which start with `NWEIGHT` and are described in more detail in Chapter \@ref(c10-sample-designs-replicate-weights)). An overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(recs-cb)`r if (!knitr:::is_html_output()) ')'`. 
-
-(ref:recs-view-tab) List of Variables in the RECS Data
-
-```{r}
-#| label: setup-recs-variables
-#| echo: FALSE
-#| warning: FALSE
-
-recs_view <- recs_2020 %>%
-  select(-matches("^NWEIGHT")) %>%
-  colnames() %>%
-  as_tibble() %>%
-  rename(`Variable Name` = value)  %>%
-  gt() %>%
-  cols_width(everything()~px(295))
-```
-
-
-```{r}
-#| label: recs-view-tab
-#| echo: FALSE
-recs_view %>%
-  print_gt_book("recs-view-tab")
-```
+We should read the survey documentation (see Chapter \@ref(c03-survey-data-documentation)) to understand how the data were collected and implemented. An overview of all variables can be found in `r if (!knitr:::is_html_output()) 'the online Appendix ('`Appendix \@ref(recs-cb)`r if (!knitr:::is_html_output()) ')'`. 
 
 Before starting an analysis, we recommend viewing the data to understand the types of data and variables that are included. The `dplyr::glimpse()` function produces a list of all variables, the type of the variable (e.g., function, double), and a few example values. Below, we remove the weight variables with `select(-matches("^NWEIGHT"))` before using `glimpse()` to get a quick overview of the data:
 

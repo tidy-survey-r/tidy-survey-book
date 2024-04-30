@@ -155,7 +155,7 @@ des_obj %>%
 
 The arguments are:
 
-* `formula`: Formula in the form of `outcome~group`. The group variable must be a factor or character.
+* `formula`: formula in the form of `outcome~group`. The group variable must be a factor or character.
 * `design`: a `tbl_svy` object created by `as_survey`
 * `na.action`: handling of missing data
 * \index{Degrees of freedom|(}`df.resid`: degrees of freedom for Wald tests (optional) - defaults to using `degf(design)-(g-1)` where $g$ is the number of groups\index{Degrees of freedom|)}
@@ -194,7 +194,7 @@ tidy(anova_out)
 In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In this output, the intercept represents the reference value of the Northeast region. The other coefficients indicate the difference in temperature relative to the Northeast region. For example, in the Midwest, temperatures are set, on average, `r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(estimate) %>% signif(3)` (p-value`r tidy(anova_out) %>% filter(term=="RegionMidwest") %>% pull(p.value) %>% pretty_p_value()`) degrees higher than in the Northeast during summer nights, and each region sets their thermostats at significantly higher temperatures than the Northeast.
 
 \index{Factor|(}
-If we wanted to change the reference value, we would reorder the factor before modeling using the function `relevel()` from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`.  For example, if we wanted the reference level to be the Midwest region, we could use the following code. \index{gt package|(}Note the usage of the `gt()` function on top of `tidy()` to print a nice-looking output table [@R-gt; @R-broom] (see Chapter \@ref(c08-communicating-results) for more information on the {gt} package.)
+If we wanted to change the reference value, we would reorder the factor before modeling using the `relevel()` function from {stats} or using one of many factor ordering functions in {forcats} such as `fct_relevel()` or `fct_infreq()`.  For example, if we wanted the reference level to be the Midwest region, we could use the following code. \index{gt package|(}Note the usage of the `gt()` function on top of `tidy()` to print a nice-looking output table [@R-gt; @R-broom] (see Chapter \@ref(c08-communicating-results) for more information on the {gt} package.)
 
 ```{r}
 #| label: model-anova-ex-relevel
@@ -270,13 +270,13 @@ des_obj %>%
 
 The arguments are:
 
-* `formula`: Formula in the form of `y~x`
+* `formula`: formula in the form of `y~x`
 * `design`: a `tbl_svy` object created by `as_survey`
 * `na.action`: handling of missing data
 * \index{Degrees of freedom|(}`df.resid`: degrees of freedom for Wald tests (optional) - defaults to using `degf(design)-p` where $p$ is the rank of the design matrix\index{Degrees of freedom|)}
 
 \index{Formula notation|(}
-As discussed in Section \@ref(model-intro), the formula on the right-hand side can be specified in many ways, whether interactions are desired or not, for example. 
+As discussed in Section \@ref(model-intro), the formula on the right-hand side can be specified in many ways, for example, denoting whether or not interactions are desired.
 \index{Formula notation|)}
 
 ### Examples
@@ -347,7 +347,7 @@ tidy(m_electric_sqft) %>%
 
 In the output above, we can see the estimated coefficients (`estimate`), estimated standard errors of the coefficients (`std.error`), the t-statistic (`statistic`), and the p-value for each coefficient. In these results, we can say that, on average, for every additional square foot of house size, the electricity bill increases by `r (tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(estimate) %>% signif(2))*100` cents, and that square footage is significantly associated with electricity expenditure (p-value`r tidy(m_electric_sqft) %>% filter(term=="TOTSQFT_EN") %>% pull(p.value) %>% pretty_p_value()`.) 
 
-This is a straightforward model, and there are likely many more factors related to electricity expenditure, including the type of cooling, number of appliances, location, and more. However, starting with one-variable models can help researchers understand what potential relationships there are between variables before fitting more complex models. Often, researchers start with known relationships before building models to determine what impact additional variables have on the model.
+This is a straightforward model, and there are likely many more factors related to electricity expenditure, including the type of cooling, number of appliances, location, and more. However, starting with one-variable models can help analysts understand what potential relationships there are between variables before fitting more complex models. Often, we start with known relationships before building models to determine what impact additional variables have on the model.
 
 #### Example 2: Linear regression with multiple variables and interactions {.unnumbered}
 
@@ -391,7 +391,7 @@ tidy(m_electric_multi) %>%
 ```
 
 
-As shown above, there are many terms in this model. To test whether coefficients for a term are different from zero, the function `regTermTest()` can be used. For example, in the above regression, we can test whether the interaction of region and urbanicity is significant as follows:
+As shown above, there are many terms in this model. To test whether coefficients for a term are different from zero, the `regTermTest()` function can be used. For example, in the above regression, we can test whether the interaction of region and urbanicity is significant as follows:
 
 ```{r}
 #| label: model-lmr-test-term
@@ -404,7 +404,7 @@ urb_reg_test
 This output indicates there is a significant interaction between urbanicity and region (p-value=`r pretty_p_value(urb_reg_test[["p"]])`.)
 \index{p-value|)} 
 
-To examine the predictions, residuals, and more from the model, the function `augment()` from {broom} can be used. The `augment()` function returns a tibble with the independent and dependent variables and other fit statistics. The `augment()` function has not been specifically written for objects of class `svyglm`, and as such, a warning is displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using `augment()`. To obtain the standard error of the predicted values (`.se.fit`), we need to use the `attr()` function on the predicted values (`.fitted`) created by `augment()`. Additionally, the predicted values created are outputted with a type of `svrep`. If we want to plot the predicted values, we need to use `as.numeric()` to get the predicted values into a numeric format to work with.  However, it is important to note that this adjustment must be completed **after** the standard error adjustment. 
+To examine the predictions, residuals, and more from the model, the `augment()` function from {broom} can be used. The `augment()` function returns a tibble with the independent and dependent variables and other fit statistics. The `augment()` function has not been specifically written for objects of class `svyglm`, and as such, a warning is displayed indicating this at this time. As it was not written exactly for this class of objects, a little tweaking needs to be done after using `augment()`. To obtain the standard error of the predicted values (`.se.fit`), we need to use the `attr()` function on the predicted values (`.fitted`) created by `augment()`. Additionally, the predicted values created are outputted with a type of `svrep`. If we want to plot the predicted values, we need to use `as.numeric()` to get the predicted values into a numeric format to work with.  However, it is important to note that this adjustment must be completed **after** the standard error adjustment. 
 
 ```{r}
 #| label: model-aug-examp-se
@@ -528,7 +528,7 @@ Note `svyglm()` is the same function used in both ANOVA and normal linear regres
 #### Example 1: Logistic regression with single variable {.unnumbered}
 
 \index{American National Election Studies (ANES)|(}
-In the following example, the ANES data are used, and we are modeling whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for president in 2020. As a reminder, the leading candidates were Biden and Trump though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. \index{Factor|(}We first create a binary outcome for trusting in the government by collapsing "Always" and "Most of the time" into a single factor level, and the other response options ("About half the time", "Some of the time", and "Never") into a second factor level.  Next, a scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(} \index{Factor|)}
+In the following example, we use the ANES data to model whether someone usually has trust in the government^[Question: How often can you trust the federal government in Washington to do what is right?] by who someone voted for president in 2020. As a reminder, the leading candidates were Biden and Trump, though people could vote for someone else not in the Democratic or Republican parties. Those votes are all grouped into an "Other" category. \index{Factor|(}We first create a binary outcome for trusting in the government by collapsing "Always" and "Most of the time" into a single-factor level, and the other response options ("About half the time", "Some of the time", and "Never") into a second factor level.  Next, a scatter plot of the raw data is not useful as it is all 0 and 1 outcomes, so instead, we plot a summary of the data. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(} \index{Factor|)}
 
 ```{r}
 #| label: model-logisticexamp-plot
