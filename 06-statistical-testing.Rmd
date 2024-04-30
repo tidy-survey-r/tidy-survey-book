@@ -1,5 +1,7 @@
 # Statistical testing {#c06-statistical-testing}
 
+\index{Statistical testing|(} \index{Hypothesis testing|see {Statistical testing}}
+
 ```{r}
 #| label: stattest-styler
 #| include: false
@@ -76,7 +78,9 @@ Let's review an example outside of survey data. If we are flipping a coin, a nul
 - $H_0: \rho_{heads} = \rho_{tails}$, where $\rho_{x}$ is the probability of flipping the coin and having it land on heads ($\rho_{heads}$) or tails ($\rho_{tails}$)
 - $H_A: \rho_{heads} \neq \rho_{tails}$
 
+\index{p-value|(} 
 When we conduct hypothesis testing, the statistical models calculate a p-value, which shows how likely we are to observe the data if the null hypothesis is true. If the p-value (a probability between 0 and 1) is small, we have strong evidence to reject the null hypothesis as it is unlikely to see the data we observe if the null hypothesis is true. However, if the p-value is large, we say we do not have evidence to reject the null hypothesis. The size of the p-value for this cut-off is determined by Type 1 error known as $\alpha$.  A common Type 1 error value for statistical testing is to use $\alpha = 0.05$.^[For more information on statistical testing, we recommend reviewing introduction to statistics textbooks.] It is common for explanations of statistical testing to refer to confidence level.  The confidence level is the inverse of the Type 1 error.  Thus, if $\alpha = 0.05$, the confidence level would be 95%.
+\index{p-value|)} 
 
 The functions in the {survey} package allow for the correct estimation of the uncertainty estimates (e.g., standard deviations and confidence intervals). This chapter covers the following statistical tests with survey data and the following functions from the {survey} package[@lumley2010complex]:
 
@@ -88,6 +92,7 @@ The functions in the {survey} package allow for the correct estimation of the un
 
 ## Dot notation {#dot-notation}
 
+\index{Dot notation|(}
 Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we need to use dot (`.`) notation.^[This could change in the future if another package is built or {srvyr} is expanded to work with {tidymodels} packages but no such plans are known at this time.]
 
 Functions that work with the magrittr pipe (`%>%`) have the dataset as the first argument. When we run a function with the pipe, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `towny` data from the {gt} package and filter to municipalities with the Census Subdivision Type of "city", we can write the code in at least four different ways:
@@ -99,7 +104,7 @@ Functions that work with the magrittr pipe (`%>%`) have the dataset as the first
 
 Each of these lines of code produces the same output since the argument that takes the dataset is in the first spot in `filter()`. The first two are probably familiar to those who have worked with the tidyverse. The third option functions the same way as the second one but is explicit that `towny` goes into the first argument, and the fourth option indicates that `towny` is going into the named argument of `.data`. Here, we are telling R to take what is on the left side of the pipe (`towny`) and pipe it into the spot with the dot (`.`)---the first argument.
 
-In functions that are not part of the tidyverse, the data argument may not be in the first spot. For example, in `svyttest()`, the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example:
+In functions that are not part of the tidyverse, the data argument may not be in the first spot. For example, in \index{Functions in survey!svyttest|(}`svyttest()`, the data argument is in the second spot, which means we need to place the dot (`.`) in the second spot and not the first. For example: \index{svyttest|see {Functions in survey}}
 
 ```r
 svydata_des %>%
@@ -108,7 +113,7 @@ svydata_des %>%
 
 By default, the pipe places the left-hand object in the first argument spot. Placing the dot (`.`) in the second argument spot indicates that the survey design object `svydata_des` should be used in the second argument and not the first.
 
-Alternatively, named arguments could be used to place the dot first as named arguments can appear at any location, as in the following:
+Alternatively, named arguments could be used to place the dot first as named arguments can appear at any location, as in the following: 
 
 ```r
 svydata_des %>%
@@ -121,32 +126,40 @@ However, the following code does not work as the `svyttest()` function expects t
 svydata_des %>%
  svyttest(., x ~ y)
 ```
+\index{Functions in survey!svyttest|)} \index{Dot notation|)}
 
 ## Comparison of proportions and means {#stattest-ttest}
 
-We use t-tests to compare two proportions or means. T-tests allow us to determine if one proportion or mean is statistically different from another. They are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., North versus South.) Comparing a single estimate to a known value is called a *one-sample t-test*, and we can set up the hypothesis test as follows:  
+\index{t-test|(}
+We use t-tests to compare two proportions or means. T-tests allow us to determine if one proportion or mean is statistically different from another. \index{t-test!one-sample t-test|(}They are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., North versus South.) Comparing a single estimate to a known value is called a *one-sample t-test*, and we can set up the hypothesis test as follows:  
 
   - $H_0: \mu = 0$ where $\mu$ is the mean outcome and $0$ is the value we are comparing it to
   - $H_A: \mu \neq 0$
 
+\index{t-test!one-sample t-test|)}
+
+\index{t-test!two-sample t-test|(}
 For comparing two estimates, this is called a *two-sample t-test*. We can set up the hypothesis test as follows:
 
   - $H_0: \mu_1 = \mu_2$ where $\mu_i$ is the mean outcome for group $i$
   - $H_A: \mu_1 \neq \mu_2$
 
+\index{t-test!unpaired two-sample t-test|(} \index{t-test!paired two-sample t-test|(}
 Two-sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., North versus South), the t-test run is an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention.)
+\index{t-test!two-sample t-test|)} \index{t-test!unpaired two-sample t-test|)} \index{t-test!paired two-sample t-test|)}
 
 The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c10-sample-designs-replicate-weights) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package account for these nuances, provided the design object is correctly defined.
 
 ### Syntax {#stattest-ttest-syntax}
 
+\index{Functions in survey!svyttest|(}
 When we do not have survey data, we can use the `t.test()` function from the {stats} package to run t-tests. This function does not allow for weights or the variance structure that need to be accounted for with survey data. Therefore, we need to use the `svyttest()` function from {survey} when using survey data. Many of the arguments are the same between the two functions, but there are a few key differences:
 
   - We need to use the survey design object instead of the original data frame
   - We can only use a formula and not separate x and y data
   - The confidence level cannot be specified and is always be set to 95%. However, we show examples of how the confidence level can be changed after running the `svyttest()` function by using the `confint()` function.
 
-Here is the syntax for the `svyttest()` function:
+Here is the syntax for the `svyttest()` function: 
 
 ```r
 svyttest(formula,
@@ -160,33 +173,36 @@ The arguments are:
 * `design`: survey design object
 * `...`: This passes options on for one-sided tests only, and thus, we can specify `na.rm=TRUE`
 
-Notice that the first argument here is the `formula` and not the `design`. This means we must use the dot `(.)` if we pipe in the survey design object (as described in Section \@ref(dot-notation)).
+\index{Dot notation|(}Notice that the first argument here is the `formula` and not the `design`. This means we must use the dot `(.)` if we pipe in the survey design object (as described in Section \@ref(dot-notation)).\index{Dot notation|)}
 
-The `formula` argument can take several different forms depending on what we are measuring. Here are a few common scenarios:
+The `formula` argument can take several different forms depending on what we are measuring. Here are a few common scenarios: \index{Formula notation|(}
 
-1. **One-sample t-test:** 
+1. \index{t-test!one-sample t-test|(}**One-sample t-test:** 
     a. **Comparison to 0:** `var ~ 0`, where `var` is the measure of interest, and we compare it to the value `0`. For example, we could test if the population mean of household debt is different from `0` given the sample data collected.
-    b. **Comparison to a different value:** `var - value ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `var - 0.25 ~ 0`. Note that specifying the formula as `var ~ 0.25` is not equivalent and results in a syntax error.
-2. **Two-sample t-test:**
-    a. **Unpaired:**
+    b. **Comparison to a different value:** `var - value ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `var - 0.25 ~ 0`. Note that specifying the formula as `var ~ 0.25` is not equivalent and results in a syntax error.\index{t-test!one-sample t-test|)}
+2. \index{t-test!two-sample t-test|(}**Two-sample t-test:**
+    a. \index{t-test!unpaired two-sample t-test|(}**Unpaired:**
         - **2 level grouping variable:** `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories. For example, we could test if the average age of the population who voted for president in 2020 differed from the age of people who did not vote. In this case, age would be used for `var`, and a binary variable indicating voting activity would be the `groupVar`.
-        - **3+ level grouping variable:** `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms where `groupVar` would be the variable holding the values for classroom IDs and `level` is the classroom ID we want to compare to the others.
-    b. **Paired:** `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course, so `var_1` would be the test score at the beginning of the course, and `var_2` would be the score at the end of the course.
+        - **3+ level grouping variable:** `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms where `groupVar` would be the variable holding the values for classroom IDs and `level` is the classroom ID we want to compare to the others.\index{t-test!unpaired two-sample t-test|)}
+    b. \index{t-test!paired two-sample t-test|(}**Paired:** `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course, so `var_1` would be the test score at the beginning of the course, and `var_2` would be the score at the end of the course.\index{t-test!two-sample t-test|)}\index{t-test!paired two-sample t-test|)}
     
+\index{Formula notation|)}
 The `na.rm` argument defaults to `FALSE`, which means if any data values are missing, the t-test does not compute. Throughout this chapter, we always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data.
 
-Let's walk through a few examples using the ANES and RECS data.
+Let's walk through a few examples using the RECS data.
 
 ### Examples {#stattest-ttest-examples}
 
 #### Example 1: One-sample t-test for mean {.unnumbered #stattest-ttest-ex1}  
 
+\index{Residential Energy Consumption Survey (RECS)|(} \index{t-test!one-sample t-test|(}
 RECS asks respondents to indicate what temperature they set their house to during the summer at night.^[During the summer, what is your home’s typical indoor temperature inside your home at night?] In our data, we have called this variable `SummerTempNight`. If we want to see if the average U.S. household sets its temperature at a value different from 68$^\circ$F^[This is the temperature that Stephanie prefers at night during the summer, and she wanted to see if she was different from the population.], we could set up the hypothesis as follows: 
 
 - $H_0: \mu = 68$ where $\mu$ is the average temperature U.S. households set their thermostat to in the summer at night
 - $H_A: \mu \neq 68$
 
-To conduct this in R, we use `svyttest()` and subtract the temperature on the left-hand side of the formula:
+\index{Formula notation|(}
+To conduct this in R, we use `svyttest()` and subtract the temperature on the left-hand side of the formula: 
 
 ```{r}
 #| label: stattest-ttest-ex1
@@ -200,6 +216,7 @@ ttest_ex1 <- recs_des %>%
 ttest_ex1
 ```
 
+\index{Formula notation|)}
 To pull out specific output, we can use R's built-in `$` operator. For instance, to obtain the estimate $\mu - 68$, we run `ttest_ex1$estimate`.
 
 If we want the average, we take our t-test estimate and add it to 68: 
@@ -209,15 +226,16 @@ If we want the average, we take our t-test estimate and add it to 68:
 ttest_ex1$estimate + 68
 ```
 
-Or, we can use the `survey_mean()` function described in Chapter \@ref(c05-descriptive-analysis):
+Or, we can use the \index{Functions in srvyr!survey\_mean|(} `survey_mean()` function described in Chapter \@ref(c05-descriptive-analysis):  \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: stattest-ttest-ex1-svymean
 recs_des %>%
   summarize(mu = survey_mean(SummerTempNight, na.rm = TRUE))
 ```
+\index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)} 
 
-The result is the same in both methods, so we see that the average temperature U.S. households set their thermostat to in the summer at night is `r signif(ttest_ex1$estimate + 68,3)`$^\circ$F. Looking at the output from `svyttest()`, the t-statistic is `r signif(ttest_ex1$statistic, 3)`, and the p-value is $`r pretty_p_value(ttest_ex1[["p.value"]])`$, indicating that the average is statistically different from 68$^\circ$F at an $\alpha$ level of $0.05$.
+The result is the same in both methods, so we see that the average temperature U.S. households set their thermostat to in the summer at night is `r signif(ttest_ex1$estimate + 68,3)`$^\circ$F. Looking at the output from `svyttest()`, the t-statistic is `r signif(ttest_ex1$statistic, 3)`, and \index{p-value|(} the p-value is $`r pretty_p_value(ttest_ex1[["p.value"]])`$, indicating that the average is statistically different from 68$^\circ$F at an $\alpha$ level of $0.05$. \index{p-value|)} 
 
 If we want an 80% confidence interval for the test statistic, we can use the function `confint()` to change the confidence level. Below, we print the default confidence interval (95%), the confidence interval explicitly specifying the level as 95%, and the 80% confidence interval. When the confidence level is 95% either by default or explicitly, R returns a vector with both row and column names. However, when we specify any other confidence level, an unnamed vector is returned, with the first element being the lower bound and the second element being the upper bound of the confidence interval.
 
@@ -232,7 +250,8 @@ In this case, neither confidence interval contains 0, and we draw the same concl
 
 #### Example 2: One-sample t-test for proportion {.unnumbered #stattest-ttest-ex2}
 
-RECS asked respondents if they use air conditioning (A/C) in their home.^[Is any air conditioning equipment used in your home?] In our data, we call this variable `ACUsed`. Let's look at the proportion of U.S. households that use A/C in their homes using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis).
+\index{Categorical data|(}
+RECS asked respondents if they use air conditioning (A/C) in their home.^[Is any air conditioning equipment used in your home?] In our data, we call this variable `ACUsed`. Let's look at the proportion of U.S. households that use A/C in their homes using the `survey_prop()` function we learned in Chapter \@ref(c05-descriptive-analysis). \index{Functions in srvyr!survey\_prop|(} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: stattest-ttest-acused
@@ -242,13 +261,14 @@ acprop <- recs_des %>%
 
 acprop
 ```
+\index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_prop|)}
 
 Based on this, `r signif((acprop %>% filter(ACUsed==TRUE) %>% pull(p))*100,3)`% of U.S. households use A/C in their homes. If we wanted to know if this differs from 90%, we could set up our hypothesis as follows:
 
 - $H_0: p = 0.90$ where $p$ is the proportion of U.S. households that use A/C in their homes
 - $H_A: p \neq 0.90$
 
-To conduct this in R, we use the `svyttest()` function as follows:
+To conduct this in R, we use the `svyttest()` function as follows: 
 
 ```{r}
 #| label: stattest-ttest-ex2
@@ -269,6 +289,8 @@ The output from the `svyttest()` function can be a bit hard to read. Using the `
 tidy(ttest_ex2)
 ```
 
+
+\index{gt package|(} \index{p-value|(} 
 The 'tidied' output can also be piped into the {gt} package to create a table ready for publication. We go over the {gt} package in Chapter \@ref(c08-communicating-results). The function `pretty_p_value()` comes from the {prettyunits} package and converts numeric p-values to characters and, by default, prints four decimal places and displays any p-value less than 0.0001 as `"<0.0001"`, though another minimum display p-value can be specified [@R-prettyunits].
 
 ```{r}
@@ -294,16 +316,20 @@ tidy(ttest_ex2) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
+\index{gt package|)} \index{p-value|)} 
+
 The estimate differs from Example 1 in that the estimate does not display \(p - 0.90\) but rather \(p\), or the difference between the U.S. households that use A/C and our comparison proportion. We can see that there is a difference of `r signif(ttest_ex2$estimate*100,3)` percentage points. Additionally, the t-statistic value in the `statistic` column is `r signif(ttest_ex2$statistic,3)`, and the p-value is `r pretty_p_value(ttest_ex2$p.value)`. These results indicate that fewer than 90% of U.S. households use A/C in their homes.
+\index{Categorical data|)} \index{t-test!one-sample t-test|)}
 
 #### Example 3: Unpaired two-sample t-test {.unnumbered #stattest-ttest-ex3}
 
+\index{t-test!two-sample t-test|(} \index{t-test!unpaired two-sample t-test|(}
 Two additional variables in the RECS data are the electric bill cost (`DOLLAREL`) and whether the house used A/C or not (`ACUsed`.)^[Is any air conditioning equipment used in your home?] If we want to know if the U.S. households that used A/C had higher electrical bills compared to those that did not, we could set up the hypothesis as follows:
 
 - $H_0: \mu_{AC} = \mu_{noAC}$ where $\mu_{AC}$ is the electrical bill cost for U.S. households that used A/C and $\mu_{noAC}$ is the electrical bill cost for U.S. households that did not use A/C
 - $H_A: \mu_{AC} \neq \mu_{noAC}$
  
-Let's take a quick look at the data to see how they are formatted: 
+Let's take a quick look at the data to see how they are formatted: \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: stattest-ttest-ex3-desc
@@ -311,6 +337,7 @@ recs_des %>%
   group_by(ACUsed) %>%
   summarize(mean = survey_mean(DOLLAREL, na.rm = TRUE))
 ```
+\index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)} 
 
 To conduct this in R, we use `svyttest()`:
 
@@ -346,9 +373,11 @@ tidy(ttest_ex3) %>%
 ```
 
 The results indicate that the difference in electrical bills for those who used A/C and those who did not is, on average, \$`r round(ttest_ex3$estimate,2)`. The difference appears to be statistically significant as the t-statistic is `r signif(ttest_ex3$statistic, 3)` and the p-value is $`r pretty_p_value(ttest_ex3[["p.value"]])`$. Households that used A/C spent, on average, $`r round(ttest_ex3[["estimate"]], 2) %>% unname()` more in 2020 on electricity than households without A/C.
+\index{t-test!unpaired two-sample t-test|)}
 
 #### Example 4: Paired two-sample t-test {.unnumbered #stattest-ttest-ex4}
 
+\index{t-test!paired two-sample t-test|(}
 Let's say we want to test whether the temperature at which U.S. households set their thermostat at night differs depending on the season (comparing summer^[During the summer, what is your home’s typical indoor temperature inside your home at night?] and winter^[During the winter, what is your home’s typical indoor temperature inside your home at night?] temperatures.) We could set up the hypothesis as follows:
 
 - $H_0: \mu_{summer} = \mu_{winter}$ where $\mu_{summer}$ is the temperature that U.S. households set their thermostat to during summer nights, and $\mu_{winter}$ is the temperature that U.S. households set their thermostat to during winter nights
@@ -389,39 +418,52 @@ tidy(ttest_ex4) %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-U.S. households set their thermostat on average `r signif(ttest_ex4$estimate,2)`$^\circ$F warmer in summer nights than winter nights, which is statistically significant (t = `r signif(ttest_ex4$statistic, 3)`, p-value = $`r pretty_p_value(ttest_ex4[["p.value"]])`$.)  
+\index{p-value|(} 
+U.S. households set their thermostat on average `r signif(ttest_ex4$estimate,2)`$^\circ$F warmer in summer nights than winter nights, which is statistically significant (t = `r signif(ttest_ex4$statistic, 3)`, p-value = $`r pretty_p_value(ttest_ex4[["p.value"]])`$.)  \index{Functions in survey!svyttest|)} \index{Residential Energy Consumption Survey (RECS)|(} \index{p-value|)} \index{t-test|)} \index{t-test!two-sample t-test|(} \index{t-test!paired two-sample t-test|(}
 
 ## Chi-squared tests {#stattest-chi}
 
+\index{Chi-squared test|(} \index{Categorical data|(}
 Chi-squared tests ($\chi^2$) allow us to examine multiple proportions using a goodness-of-fit test, a test of independence, or a test of homogeneity. These three tests have the same $\chi^2$ distributions but with slightly different underlying assumptions.
+\index{Categorical data|)}
 
+\index{Chi-squared test!Goodness of fit test|(}
 First, **goodness-of-fit** tests are used when comparing *observed* data to *expected* data. For example, this could be used to determine if respondent demographics (the observed data in the sample) match known population information (the expected data.) In this case, we can set up the hypothesis test as follows:
 
   - $H_0: p_1 = \pi_1, ~ p_2 = \pi_2, ~ ..., ~ p_k = \pi_k$ where $p_i$ is the observed proportion for category $i$, $\pi_i$ is expected proportion for category $i$, and $k$ is the number of categories
   - $H_A:$ at least one level of $p_i$ does not match $\pi_i$
 
+\index{Chi-squared test!Goodness of fit test|)}
+
+\index{Chi-squared test!Test of independence|(}
 Second, **tests of independence** are used when comparing two types of *observed* data to see if there is a relationship. For example, this could be used to determine if the proportion of respondents who voted for each political party in the presidential election matches the proportion of respondents who voted for each political party in a local election. In this case, we can set up the hypothesis test as follows:
 
   - $H_0:$ The two variables/factors are independent
   - $H_A:$ The two variables/factors are *not* independent 
 
+\index{Chi-squared test!Test of independence|)}
+
+\index{Chi-squared test!Test of homogeneity|(}
 Third, **tests of homogeneity** are used to compare two distributions to see if they match. For example, this could be used to determine if the highest education achieved is the same for both men and women. In this case, we can set up the hypothesis test as follows:
 
   - $H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}$ where $p_{ia}$ is the observed proportion of category $i$ for subgroup $a$, $p_{ib}$ is the observed proportion of category $i$ for subgroup $a$ and $k$ is the number of categories
   - $H_A:$ at least one category of $p_{ia}$ does not match $p_{ib}$
 
+\index{Chi-squared test!Test of homogeneity|)}
+
 As with t-tests, the difference between using $\chi^2$ tests with non-survey data and survey data is based on the underlying variance estimation. The functions in the {survey} package account for these nuances, provided the design object is correctly defined. For basic variance estimation formulas for different survey design types, refer to Chapter \@ref(c10-sample-designs-replicate-weights).
 
 ### Syntax {#stattest-chi-syntax}
 
-When we do not have survey data, we may be able to use the `chisq.test()` function from the {stats} package in base R to run chi-squared tests [@R-base]. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions:
+When we do not have survey data, we may be able to use the `chisq.test()` function from the {stats} package in base R to run chi-squared tests [@R-base]. However, this function does not allow for weights or the variance structure to be accounted for with survey data. Therefore, when using survey data, we need to use one of two functions: \index{Functions in survey!svygofchisq|(} \index{Functions in survey!svychisq|(} \index{svygofchisq|see {Functions in survey}} \index{svychisq|see {Functions in survey}}
 
-- `svygofchisq()`: For goodness of fit tests
-- `svychisq()`: For tests of independence and homogeneity
+- \index{Chi-squared test!Goodness of fit test|(}`svygofchisq()`: For goodness of fit tests\index{Chi-squared test!Goodness of fit test|)}
+- \index{Chi-squared test!Test of homogeneity|(}\index{Chi-squared test!Test of independence|(}`svychisq()`: For tests of independence and homogeneity\index{Chi-squared test!Test of homogeneity|)}\index{Chi-squared test!Test of independence|)}
 
-The non-survey data function of `chisq.test()` requires either a single set of counts and given proportions (for goodness of fit tests) or two sets of counts for tests of independence and homogeneity. The functions we use with survey data require respondent-level data and formulas instead of counts. This ensures that the variances are correctly calculated.
+The non-survey data function of `chisq.test()` requires either a single set of counts and given proportions (for goodness of fit tests) or two sets of counts for tests of independence and homogeneity. \index{Formula notation|(}The functions we use with survey data require respondent-level data and formulas instead of counts. This ensures that the variances are correctly calculated.\index{Formula notation|)}
 
-First, the function for the goodness of fit tests is `svygofchisq()`:
+\index{Chi-squared test!Goodness of fit test|(}
+First, the function for the goodness of fit tests is `svygofchisq()`: 
 
 ```r
 svygofchisq(formula,
@@ -438,9 +480,11 @@ The arguments are:
 * `design`: Survey design object
 * ...: Other arguments to pass on, such as `na.rm`
 
-Based on the order of the arguments, we again must use the dot `(.)` notation if we pipe in the survey design object or explicitly name the arguments as described in Section \@ref(dot-notation). For the goodness of fit tests, the formula is a single variable `formula = ~var` as we compare the observed data from this variable to the expected data. The expected probabilities are then entered in the `p` argument and need to be a vector of the same length as the number of categories in the variable. For example, if we want to know if the proportion of males and females matches a distribution of 30/70, then the sex variable (with two categories) would be used `formula = ~SEX`, and the proportions would be included as `p = c(.3, .7)`. It is important to note that the variable entered into the formula should be formatted as either a factor or a character. The examples below provide more detail and tips on how to make sure the levels match up correctly.
+\index{Dot notation|(} \index{Formula notation|(}
+Based on the order of the arguments, we again must use the dot `(.)` notation if we pipe in the survey design object or explicitly name the arguments as described in Section \@ref(dot-notation).\index{Dot notation|)} For the goodness of fit tests, the formula is a single variable `formula = ~var` as we compare the observed data from this variable to the expected data. The expected probabilities are then entered in the `p` argument and need to be a vector of the same length as the number of categories in the variable. For example, if we want to know if the proportion of males and females matches a distribution of 30/70, then the sex variable (with two categories) would be used `formula = ~SEX`, and the proportions would be included as `p = c(.3, .7)`. \index{Factor|(}It is important to note that the variable entered into the formula should be formatted as either a factor or a character. The examples below provide more detail and tips on how to make sure the levels match up correctly.  \index{Functions in srvyr!drop\_na|)} \index{Factor|)} \index{Chi-squared test!Goodness of fit test|)}\index{Formula notation|)}
 
-For tests of homogeneity and independence, the `svychisq()` function should be used. The syntax is as follows:
+\index{Chi-squared test!Test of homogeneity|(} \index{Chi-squared test!Test of independence|(}
+For tests of homogeneity and independence, the `svychisq()` function should be used. The syntax is as follows: 
 
 ```r
 svychisq(
@@ -459,20 +503,28 @@ The arguments are:
 * `statistic`: Type of test statistic to use in test (details below)
 * `na.rm`: Remove missing values
 
-There are six statistics that are accepted in this formula. For tests of homogeneity (when comparing cross-tabulations), the `F` or `Chisq` statistics should be used.^[These two statistics can also be used for goodness of fit tests if the `svygofchisq()` function is not used.] The `F` statistic is the default and uses the Rao-Scott second-order correction. This correction is designed to assist with complicated sampling designs (i.e., those other than a simple random sample) [@Scott2007]. The `Chisq` statistic is an adjusted version of the Pearson $\chi^2$ statistic. The version of this statistic in the `svychisq()` function compares the design effect estimate from the provided survey data to what the $\chi^2$ distribution would have been if the data came from a simple random sampling.
+\index{Cross-tabulation|(} 
+There are six statistics that are accepted in this formula. For tests of homogeneity (when comparing cross-tabulations), the `F` or `Chisq` statistics should be used.^[These two statistics can also be used for goodness of fit tests if the `svygofchisq()` function is not used.] The `F` statistic is the default and uses the Rao-Scott second-order correction. This correction is designed to assist with complicated sampling designs (i.e., those other than a simple random sample) [@Scott2007]. The `Chisq` statistic is an adjusted version of the Pearson $\chi^2$ statistic. The version of this statistic in the `svychisq()` function compares the design effect \index{Design effect} estimate from the provided survey data to what the $\chi^2$ distribution would have been if the data came from a simple random sampling. 
+\index{Cross-tabulation|)} \index{Chi-squared test!Test of homogeneity|)} 
 
-For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons [@lumley2010complex]. If the data have a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this. The `lincom` and `saddlepoint` statistics are available for more complicated data structures.
+\index{Primary sampling unit|(}
+For tests of independence, the `Wald` and `adjWald` are recommended as they provide a better adjustment for variable comparisons [@lumley2010complex]. \index{Degrees of freedom|(}If the data have a small number of primary sampling units (PSUs) compared to the degrees of freedom, then the `adjWald` statistic should be used to account for this.\index{Degrees of freedom|)} The `lincom` and `saddlepoint` statistics are available for more complicated data structures.
+\index{Primary sampling unit|)} \index{Chi-squared test!Test of independence|)}
 
+\index{Formula notation|(}
 The formula argument is always one-sided, unlike the `svyttest()` function. The two variables of interest should be included with a plus sign: `formula = ~ var_1 + var_2`. As with the `svygofchisq()` function, the variables entered into the formula should be formatted as either a factor or a character. 
+\index{Formula notation|)}
 
-Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. If any data values are missing, the $\chi^2$ tests assume that `NA` is a category and include it in the calculation. Throughout this chapter, we always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data.
+Additionally, as with the t-test function, both `svygofchisq()` and `svychisq()` have the `na.rm` argument. If any data values are missing, the $\chi^2$ tests assume that `NA` is a category and include it in the calculation. Throughout this chapter, we always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data. \index{Functions in survey!svychisq|)}
 
 ### Examples {#stattest-chi-examples}
 
+\index{American National Election Studies (ANES)|(}
 Let's walk through a few examples using the ANES data.
 
 #### Example 1: Goodness of fit test {.unnumbered #stattest-chi-ex1}
 
+\index{American Community Survey (ACS)|(} \index{Chi-squared test!Goodness of fit test|(}
 ANES asked respondents about their highest education level.^[What is the highest level of school you have completed or the highest degree you have received?] Based on the data from the 2020 American Community Survey (ACS) 5-year estimates^[Data was pulled from data.census.gov using the S1501 Education Attainment 2020: ACS 5-Year Estimates Subject Tables.], the education distribution of those aged 18+ in the United States (among the 50 states and District of Columbia) is as follows:
 
   - 11% had less than a High School degree
@@ -485,7 +537,7 @@ If we want to see if the weighted distribution from the ANES 2020 data matches t
   - $H_0: p_1 = 0.11, ~ p_2 = 0.27, ~ p_3 = 0.29, ~ p_4 = 0.33$
   - $H_A:$ at least one of the education levels does not match between the ANES and the ACS
 
-To conduct this in R, let's first look at the education variable (`Education`) we have on the ANES data. Using the `survey_mean()` function discussed in Chapter \@ref(c05-descriptive-analysis), we can see the education levels and estimated proportions.
+To conduct this in R, let's first look at the education variable (`Education`) we have on the ANES data. Using the \index{Functions in srvyr!survey\_mean|(} `survey_mean()` function discussed in Chapter \@ref(c05-descriptive-analysis), we can see the education levels and estimated proportions.  \index{Functions in srvyr!summarize|(} \index{Functions in srvyr!drop\_na|(}
 
 ```{r}
 #| label: stattest-chi-ex1-educmean
@@ -494,7 +546,9 @@ anes_des %>%
   group_by(Education) %>%
   summarize(p = survey_mean())
 ```
+\index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)}
 
+\index{Formula notation|(}
 Based on this output, we can see that we have different levels from the ACS data. Specifically, the education data from ANES include two levels for Bachelor's Degree or Higher (Bachelor's and Graduate), so these two categories need to be collapsed into a single category to match the ACS data. For this, among other methods, we can use the {forcats} package from the tidyverse [@R-forcats]. The package's `fct_collapse()` function helps us create a new variable by collapsing categories into a single one. Then, we use the `svygofchisq()` function to compare the ANES data to the ACS data, where we specify the updated design object, the formula using the collapsed education variable, the ACS estimates for education levels as p, and removing `NA` values.
 
 ```{r}
@@ -521,7 +575,9 @@ chi_ex1 <- anes_des_educ %>%
 chi_ex1
 ```
 
-The output from the `svygofchisq()` indicates that at least one proportion from ANES does not match the ACS data ($\chi^2 =$ `r  prettyNum(chi_ex1$statistic, big.mark=",")`; p-value `r pretty_p_value(chi_ex1[["p.value"]])`.) To get a better idea of the differences, we can use the `expected` output along with `survey_mean()` to create a comparison table:  
+\index{Formula notation|)}
+
+The output from the `svygofchisq()` indicates that at least one proportion from ANES does not match the ACS data ($\chi^2 =$ `r  prettyNum(chi_ex1$statistic, big.mark=",")`; p-value `r pretty_p_value(chi_ex1[["p.value"]])`.) To get a better idea of the differences, we can use the `expected` output along with `survey_mean()` to create a comparison table:  \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(} \index{Functions in srvyr!drop\_na|(}
 
 ```{r}
 #| label: stattest-chi-ex1-table
@@ -535,6 +591,7 @@ ex1_table <- anes_des_educ %>%
 
 ex1_table
 ```
+\index{Functions in srvyr!drop\_na|)} \index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)}
 
 This output includes our expected proportions from the ACS that we provided the `svygofchisq()` function along with the output of the observed proportions and their confidence intervals. This table shows that the "High school" and "Post HS" categories have nearly identical proportions but that the other two categories are slightly different. Looking at the confidence intervals, we can see that the ANES data skew to include fewer people in the "Less than HS" category and more people in the "Bachelor or Higher" category. This may be easier to see if we plot this. The code below uses the tabular output to create Figure \@ref(fig:stattest-chi-ex1-graph).
 
@@ -563,9 +620,11 @@ ex1_table %>%
   scale_color_manual(name = "Type", values = book_colors[c(4, 1)]) +
   theme(legend.position = "bottom", legend.title = element_blank())
 ```
+\index{Functions in survey!svygofchisq|)} \index{American Community Survey (ACS)|)} \index{Chi-squared test!Goodness of fit test|)}
 
 #### Example 2: Test of independence {.unnumbered #stattest-chi-ex2}
 
+\index{Functions in survey!svychisq|(} \index{Chi-squared test!Test of independence|(}
 ANES asked respondents two questions about trust:
 
   - How often can you trust the federal government to do what is right?
@@ -576,7 +635,7 @@ If we want to see if the distributions of these two questions are similar or not
   - $H_0:$ People's trust in the federal government and their trust in other people are independent (i.e., *not* related)
   - $H_A:$ People's trust in the federal government and their trust in other people are *not* independent (i.e., they are related)
 
-To conduct this in R, we use the `svychisq()` function to compare the two variables:
+To conduct this in R, we use the `svychisq()` function to compare the two variables: 
 
 ```{r}
 #| label: stattest-chi-ex2
@@ -591,13 +650,15 @@ chi_ex2 <- anes_des %>%
 chi_ex2
 ```
 
-The output from `svychisq()` indicates that the distribution of people's trust in the federal government and their trust in other people are *not* independent, meaning that they are related. Let's output the distributions in a table to see the relationship. The `observed` output from the test provides a cross-tabulation of the counts for each category:
+\index{Cross-tabulation|(}
+The output from `svychisq()` indicates that the distribution of people's trust in the federal government and their trust in other people are *not* independent, meaning that they are related. Let's output the distributions in a table to see the relationship. The `observed` output from the test provides a cross-tabulation of the counts for each category: 
 
 ```{r}
 #| label: stattest-chi-ex2-counts
 chi_ex2$observed
 ```
 
+\index{gt package|(} 
 However, we often want to know about the proportions, not just the respondent counts from the survey. There are a couple of different ways that we can do this. The first is using the counts from `chi_ex2$observed` to calculate the proportion. We can then pivot the table to create a cross-tabulation similar to the counts table above. Adding `group_by()` to the code means that we obtain the proportions within each variable level. In this case, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. The resulting table is shown in Table \@ref(tab:stattest-chi-ex2-prop1-tab).
 
 ```{r}
@@ -635,9 +696,10 @@ chi_ex2_table %>%
     print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-In Table \@ref(tab:stattest-chi-ex2-prop1-tab), each column sums to 1. For example, we can say that it is estimated that of people who always trust in people, `r round(chi_ex2$observed[1,1]/sum(chi_ex2$observed[,1])*100, 1)`% also always trust in the government based on the top-left cell, but `r round(chi_ex2$observed[5,1]/sum(chi_ex2$observed[,1])*100, 1)`% never trust in the government.
+In Table \@ref(tab:stattest-chi-ex2-prop1-tab), each column sums to 1. For example, we can say that it is estimated that of people who always trust in people, `r round(chi_ex2$observed[1,1]/sum(chi_ex2$observed[,1])*100, 1)`% also always trust in the government based on the top-left cell, but `r round(chi_ex2$observed[5,1]/sum(chi_ex2$observed[,1])*100, 1)`% never trust in the government. \index{Cross-tabulation|)} 
 
-The second option is to use the `group_by()` and `survey_mean()` functions to calculate the proportions from the ANES design object. Remember that with more than one variable listed in the `group_by()` statement, the proportions are within the first variable listed. As mentioned above, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. 
+The second option is to use the `group_by()` and `survey_mean()` functions to calculate the proportions from the ANES design object. Remember that with more than one variable listed in the `group_by()` statement, the proportions are within the first variable listed. As mentioned above, we are looking at the distribution of `TrustGovernment` for each level of `TrustPeople`. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(} \index{Functions in srvyr!drop\_na|(}
+
 ```{r}
 #| label: stattest-chi-ex2-prop2
 chi_ex2_obs <- anes_des %>%
@@ -657,12 +719,14 @@ chi_ex2_obs_table<-chi_ex2_obs %>%
               columns = everything()) %>% 
   tab_options(page.orientation = "landscape")
 ```
+\index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)}
 
 ```{r}
 #| label: stattest-chi-ex2-prop2-noeval
 #| eval: false
 chi_ex2_obs_table
 ```
+\index{Functions in srvyr!drop\_na|)}
 
 (ref:stattest-chi-ex2-prop2-tab) Proportion of adults in the U.S. by levels of trust in people and government with confidence intervals, ANES 2020
 
@@ -675,7 +739,7 @@ chi_ex2_obs_table %>%
     print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-Both methods produce the same output as the `svychisq()` function. However, calculating the proportions directly from the design object allows us to obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those who never trust people, `r round(chi_ex2$observed[5,5]/sum(chi_ex2$observed[,5])*100, 1)`% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people. 
+Both methods produce the same output as the `svychisq()` function. However, calculating the proportions directly from the design object allows us to obtain the variance information. In this case, the table output displays the survey estimate followed by the confidence intervals. Based on the output, we can see that of those who never trust people, `r round(chi_ex2$observed[5,5]/sum(chi_ex2$observed[,5])*100, 1)`% also never trust the government, while the proportions of never trusting the government are much lower for each of the other levels of trusting people. \index{gt package|)} 
 
 We may find it easier to look at these proportions graphically. We can use `ggplot()` and facets to provide an overview to create Figure \@ref(fig:stattest-chi-ex2-graph) below:
 
@@ -704,8 +768,11 @@ chi_ex2_obs %>%
   guides(col = guide_legend(nrow=2))
 ```
 
+\index{Chi-squared test!Test of independence|)}
+
 #### Example 3: Test of homogeneity {.unnumbered #stattest-chi-ex3}
 
+\index{Chi-squared test!Test of homogeneity|(}
 Researchers and politicians often look at specific demographics each election cycle to understand how each group is leaning or voting toward candidates. The ANES data are collected post-election, but we can still see if there are differences in how specific demographic groups voted.
 
 If we want to see if there is a difference in how each age group voted for the 2020 candidates, this would be a test of homogeneity, and we can set up the hypothesis as follows:
@@ -722,7 +789,7 @@ H_0: p_{1_{Biden}} &= p_{1_{Trump}} = p_{1_{Other}},\\
     
 - $H_A:$ at least one category of $p_{i_{Biden}}$ does not match $p_{i_{Trump}}$ or $p_{i_{Other}}$
 
-To conduct this in R, we use the `svychisq()` function to compare the two variables:
+To conduct this in R, we use the `svychisq()` function to compare the two variables: \index{Functions in srvyr!drop\_na|(} 
 
 ```{r}
 #| label: stattest-chi-ex3
@@ -737,8 +804,9 @@ chi_ex3 <- anes_des %>%
 
 chi_ex3
 ```
+\index{Functions in srvyr!drop\_na|)}
 
-The output from `svychisq()` indicates a difference in how each age group voted in the 2020 election. To get a better idea of the different distributions, let's output proportions to see the relationship. As we learned in Example 2 above, we can use `chi_ex3$observed`, or if we want to get the variance information (which is crucial with survey data), we can use `survey_mean()`. Remember, when we have two variables in `group_by()`, we obtain the proportions within each level of the variable listed. In this case, we are looking at the distribution of `AgeGroup` for each level of `VotedPres2020_selection`.
+The output from `svychisq()` indicates a difference in how each age group voted in the 2020 election. To get a better idea of the different distributions, let's output proportions to see the relationship. As we learned in Example 2 above, we can use `chi_ex3$observed`, or if we want to get the variance information (which is crucial with survey data), we can use `survey_mean()`. Remember, when we have two variables in `group_by()`, we obtain the proportions within each level of the variable listed. In this case, we are looking at the distribution of `AgeGroup` for each level of `VotedPres2020_selection`. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!filter|(} \index{Functions in srvyr!summarize|(} \index{Functions in srvyr!drop\_na|(}
 
 ```{r}
 #| label: stattest-chi-ex3-table
@@ -757,6 +825,7 @@ chi_ex3_obs_table<-chi_ex3_obs %>%
   gt(rowname_col = "AgeGroup") %>%
   tab_stubhead(label = "Age Group")
 ```
+\index{Functions in srvyr!drop\_na|)} \index{Functions in srvyr!filter|)} \index{Functions in srvyr!summarize|)} \index{Functions in srvyr!survey\_mean|)}
 
 ```{r}
 #| label: stattest-chi-ex3-table-noeval
@@ -775,7 +844,9 @@ chi_ex3_obs_table %>%
     print_gt_book(knitr::opts_current$get()[["label"]])
 ```
 
-We can see that the age group distribution that voted for Biden and other candidates was younger than those that voted for Trump. For example, of those who voted for Biden, 20.4% were in the 18-29 age group, compared to only 11.4% of those who voted for Trump were in that age group. Conversely, 23.4% of those who voted for Trump were in the 50-59 age group compared to only 15.4% of those who voted for Biden.
+We can see that the age group distribution that voted for Biden and other candidates was younger than those that voted for Trump. For example, of those who voted for Biden, 20.4% were in the 18-29 age group, compared to only 11.4% of those who voted for Trump were in that age group. Conversely, 23.4% of those who voted for Trump were in the 50-59 age group compared to only 15.4% of those who voted for Biden. \index{Functions in survey!svychisq|)} \index{Chi-squared test|)} \index{American National Election Studies (ANES)|)} \index{Statistical testing|)}
+
+\index{Chi-squared test!Test of homogeneity|)}
 
 ## Exercises {#stattest-exercises}
 
