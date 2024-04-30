@@ -63,7 +63,7 @@ recs_des <- recs_2020 %>%
 
 ## Introduction {#model-intro}
 
-Modeling data is a way for researchers to investigate the relationship between a single dependent variable and one or more independent variables. This builds upon the analyses conducted in Chapter \@ref(c06-statistical-testing), which looked at the relationships between just two variables.  For example, in Example 3 in Section \@ref(stattest-ttest-examples), we investigated if there is a relationship between the electrical bill cost and whether or not the household used air-conditioning.  However, there are potentially other elements that could go into what the cost of electrical bills are in a household (e.g., outside temperature, desired internal temperature, types and number of appliances, etc.)
+Modeling data is a way for researchers to investigate the relationship between a single dependent variable and one or more independent variables. This builds upon the analyses conducted in Chapter \@ref(c06-statistical-testing), which looked at the relationships between just two variables.  For example, in Example 3 in Section \@ref(stattest-ttest-examples), we investigated if there is a relationship between the electrical bill cost and whether or not the household used air conditioning (A/C).  However, there are potentially other elements that could go into what the cost of electrical bills are in a household (e.g., outside temperature, desired internal temperature, types and number of appliances, etc.)
 
 \index{Analysis of variance (ANOVA)|(}
 T-tests only allow us to investigate the relationship of one independent variable at a time, but using models, we can look into multiple variables and even explore interactions between these variables. There are several types of models, but in this chapter, we cover Analysis of Variance (ANOVA) and linear regression models following common normal (Gaussian) and logit models. Jonas Kristoffer Lindeløv has an interesting [discussion](https://lindeloev.github.io/tests-as-linear/) of many statistical tests and models being equivalent to a linear model. For example, a one-way ANOVA is a linear model with one categorical independent variable, and a two-sample t-test is an ANOVA where the independent variable has exactly two levels.
@@ -165,7 +165,7 @@ The arguments are:
 ### Example
 
 \index{Residential Energy Consumption Survey (RECS)|(}
-Looking at an example helps us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using the air-conditioning (A/C) during the summer. To analyze these data, we filter the respondents to only those using A/C (`ACUsed`.) Then, if we want to see if there are regional differences, we can use `group_by()`. A descriptive analysis of the temperature at night (`SummerTempNight`) set by region and the sample sizes is displayed below. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!unweighted|(} \index{Functions in srvyr!filter|(} \index{Functions in srvyr!summarize|(}
+Looking at an example helps us discuss the output and how to interpret the results. In RECS, respondents are asked what temperature they set their thermostat to during the day and evening when using A/C during the summer. To analyze these data, we filter the respondents to only those using A/C (`ACUsed`.) Then, if we want to see if there are regional differences, we can use `group_by()`. A descriptive analysis of the temperature at night (`SummerTempNight`) set by region and the sample sizes is displayed below. \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!unweighted|(} \index{Functions in srvyr!filter|(} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: model-anova-prep
@@ -352,7 +352,7 @@ This is a straightforward model, and there are likely many more factors related 
 #### Example 2: Linear regression with multiple variables and interactions {.unnumbered}
 
 \index{Formula notation|(}
-In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether air-conditioning (A/C) is used (logical/categorical) with all two-way interactions also included.  In this example, we are choosing to fit this model without an intercept (using `-1` in the formula.)  This results in an intercept estimate for each region instead of a single intercept for all data.
+In the following example, a model is fit to predict electricity expenditure, including Census region (factor/categorical), urbanicity (factor/categorical), square footage (double/numeric), and whether A/C is used (logical/categorical) with all two-way interactions also included.  In this example, we are choosing to fit this model without an intercept (using `-1` in the formula.)  This results in an intercept estimate for each region instead of a single intercept for all data.
 
 ```{r}
 #| label: model-lmr-examp
@@ -376,7 +376,7 @@ tidy(m_electric_multi) %>%
   fmt_number()
 ```
 
-(ref:model-lmr-examp-tab) Linear regression output predicting electricity expenditure given region, urbanicity, square footage, air conditioning usage, and one-way interactions, RECS 2020
+(ref:model-lmr-examp-tab) Linear regression output predicting electricity expenditure given region, urbanicity, square footage, A/C usage, and one-way interactions, RECS 2020
 
 ```{r}
 #| label: model-lmr-examp-tab
@@ -435,7 +435,7 @@ fitstats %>%
 
 ```
 
-Additionally, `augment()` can be used to predict outcomes for data not used in modeling. Perhaps we would like to predict the energy expenditure for a home in an urban area in the south that uses air-conditioning and is 2,500 square feet. To do this, we first make a tibble including that additional data and then use the `newdata` argument in the `augment()` function.  As before, to obtain the standard error of the predicted values, we need to use the `attr()` function.
+Additionally, `augment()` can be used to predict outcomes for data not used in modeling. Perhaps we would like to predict the energy expenditure for a home in an urban area in the south that uses A/C and is 2,500 square feet. To do this, we first make a tibble including that additional data and then use the `newdata` argument in the `augment()` function.  As before, to obtain the standard error of the predicted values, we need to use the `attr()` function.
 
 ```{r}
 #| label: model-predict-new-dat
@@ -615,7 +615,7 @@ tidy(logistic_trust_vote, exponentiate = TRUE) %>%
 #| label: model-logisticexamp-model-odds-tab
 #| echo: FALSE
 #| warning: FALSE
-tidy(logistic_trust_vote, exponentiate = TRUE) %>% 
+tidy(logistic_trust_vote, exponentiate = TRUE) %>%
   select(term, estimate) %>%
   gt() %>%
   fmt_number() %>%
@@ -626,12 +626,13 @@ tidy(logistic_trust_vote, exponentiate = TRUE) %>%
 #| label: model-logisticcalc
 #| echo: false
 or_trump <-
-  tidy(logistic_trust_vote, exponentiate = TRUE) %>% 
-  filter(str_detect(term, "Trump")) %>% 
+  tidy(logistic_trust_vote, exponentiate = TRUE) %>%
+  filter(str_detect(term, "Trump")) %>%
   pull(estimate)
+
 or_other <-
-  tidy(logistic_trust_vote, exponentiate = TRUE) %>% 
-  filter(str_detect(term, "Other")) %>% 
+  tidy(logistic_trust_vote, exponentiate = TRUE) %>%
+  filter(str_detect(term, "Other")) %>%
   pull(estimate)
 ```
 
@@ -644,7 +645,7 @@ As with linear regression, the `augment()` can be used to predict values. By def
 #| warning: false
 logistic_trust_vote %>%
   augment(type.predict = "response") %>%
-  mutate(.se.fit = sqrt(attr(.fitted, "var")), 
+  mutate(.se.fit = sqrt(attr(.fitted, "var")),
          .fitted = as.numeric(.fitted)) %>%
   select(TrustGovernmentUsually,
          VotedPres2020_selection,
@@ -675,17 +676,19 @@ Let's first look at the main effects of income grouping and early voting behavio
 ```{r}
 #| label: model-logisticexamp-biden-main
 log_biden_main <- anes_des_ind %>%
-  mutate(EarlyVote2020 = fct_relevel(EarlyVote2020, "No", after = 0)) %>% 
-  svyglm(design = .,
-         formula = VoteBiden ~ EarlyVote2020 + Income7,
-         family = quasibinomial) 
+  mutate(EarlyVote2020 = fct_relevel(EarlyVote2020, "No", after = 0)) %>%
+  svyglm(
+    design = .,
+    formula = VoteBiden ~ EarlyVote2020 + Income7,
+    family = quasibinomial
+  ) 
 ```
 
 ```{r}
 #| label: model-logisticexamp-biden-main-noeval
 #| eval: FALSE
 tidy(log_biden_main) %>%
-  mutate(p.value=pretty_p_value(p.value)) %>%
+  mutate(p.value = pretty_p_value(p.value)) %>%
   gt() %>%
   fmt_number()
 ```
@@ -698,7 +701,7 @@ tidy(log_biden_main) %>%
 #| warning: FALSE
 
 tidy(log_biden_main) %>%
-  mutate(p.value=pretty_p_value(p.value)) %>%
+  mutate(p.value = pretty_p_value(p.value)) %>%
   gt() %>%
   fmt_number() %>%
   print_gt_book(knitr::opts_current$get()[["label"]])
@@ -709,6 +712,7 @@ This main effect model (see Table \@ref(tab:model-logisticexamp-biden-main-tab))
 \index{p-value|)} 
 
 Although early voting behavior was not significant, there may be an interaction between income and early voting behavior. To determine this, we can create a model that includes the interaction effects:
+
 ```{r}
 #| label: model-logisticexamp-biden-int
 log_biden_int <- anes_des_ind %>%
