@@ -1,4 +1,4 @@
-# Exploring Complex Survey Data Analysis using R: A Tidy Introduction with {srvyr} and {survey}
+# Exploring Complex Survey Data Analysis Using R: A Tidy Introduction with {srvyr} and {survey}
 
 Surveys are a powerful tool for gathering information, drawing insights, and driving decisions. However, they require specific analysis methods to ensure the correct interpretation of results. This book will provide an in-depth introduction to conducting survey analysis with the {srvyr} package and {tidyverse} family of functions. Readers will understand how and why to use survey analysis techniques as well as how to interpret and communicate results.
 
