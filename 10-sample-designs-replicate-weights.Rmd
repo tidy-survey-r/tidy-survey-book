@@ -1,4 +1,4 @@
-# (PART) Real life data {-}
+# (PART) Real-life data {-}
 
 # Sample designs and replicate weights {#c10-sample-designs-replicate-weights}
 
@@ -32,30 +32,30 @@ data(api)
 data(scd)
 ```
 
-This chapter uses data from the Residential Energy Consumption Survey (RECS) - both 2015 and 2020, so we load the RECS data from the {srvyrexploR} package using their object names `recs_2015` and `recs_2020`, respectively [@R-srvyrexploR].
+This chapter uses data from the Residential Energy Consumption Survey (RECS), both 2015 and 2020, so we load the RECS data from the {srvyrexploR} package using their object names `recs_2015` and `recs_2020`, respectively [@R-srvyrexploR].
 :::
 
 ## Introduction
 
 The primary reason for using packages like {survey} and {srvyr} is to account for the sampling design or replicate weights into point and uncertainty estimates [@R-srvyr; @lumley2010complex]. By incorporating the sampling design or replicate weights, these estimates are appropriately calculated.
 
-In this chapter, we introduce common sampling designs and common types of replicate weights, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design or replicate weights. While we show the math behind the estimates, the functions in these packages handle the calculation. To deeply understand the math and the derivation, refer to @pennstate506, @sarndal2003model, @wolter2007introduction, or @fuller2011sampling (these are listed in order of increasing statistical rigorousness.) 
+In this chapter, we introduce common sampling designs and common types of replicate weights, the mathematical methods for calculating estimates and standard errors for a given sampling design, and the R syntax to specify the sampling design or replicate weights. While we show the math behind the estimates, the functions in these packages handle the calculation. To deeply understand the math and the derivation, refer to @pennstate506, @sarndal2003model, @wolter2007introduction, or @fuller2011sampling (these are listed in order of increasing statistical rigorousness). 
 
 \index{Survey analysis process|(}The general process for estimation in the {srvyr} package is to:
 
 1. Create a `tbl_svy` object (a survey object) using: `as_survey_design()` or `as_survey_rep()`
 
-2. Subset data (if needed) using `filter()` (subpopulations)
+2. Subset data (if needed) using `filter()` (sub-populations)
 
 3. Specify domains of analysis using `group_by()` 
 
 4. Within `summarize()`, specify variables to calculate, including means, totals, proportions, quantiles, and more
 
-This chapter includes details on the first step - creating the survey object. Once this survey object is created, it can be used in the other steps (detailed in chapters \@ref(c05-descriptive-analysis) through \@ref(c07-modeling)) to account for the complex survey design.\index{Survey analysis process|)}
+This chapter includes details on the first step: creating the survey object. Once this survey object is created, it can be used in the other steps (detailed in Chapters \@ref(c05-descriptive-analysis) through \@ref(c07-modeling)) to account for the complex survey design.\index{Survey analysis process|)}
 
 ## Common sampling designs
 
-A sampling design is the method used to draw a sample. Both logistical and statistical elements are considered when developing a sampling design. When specifying a sampling design in R, we specify the levels of sampling along with the weights. The weight for each record is constructed so that the particular record represents that many units in the population. For example, in a survey of 6th-grade students in the United States, the weight associated with each responding student reflects how many 6th grade students across the country that record represents. Generally, the weights represent the inverse of the probability of selection, such that the sum of the weights corresponds to the total population size, although some studies may have the sum of the weights equal to the number of respondent records.
+A sampling design is the method used to draw a sample. Both logistical and statistical elements are considered when developing a sampling design. When specifying a sampling design in R, we specify the levels of sampling along with the weights. The weight for each record is constructed so that the particular record represents that many units in the population. For example, in a survey of 6th-grade students in the United States, the weight associated with each responding student reflects how many 6th-grade students across the country that record represents. Generally, the weights represent the inverse of the probability of selection, such that the sum of the weights corresponds to the total population size, although some studies may have the sum of the weights equal to the number of respondent records.
 
 Some common terminology across the designs are:
 
@@ -66,7 +66,7 @@ Some common terminology across the designs are:
 ### Simple random sample without replacement
 
 \index{Simple random sampling|(}
-The simple random sample (SRS) without replacement is a sampling design in which a fixed sample size is selected from a sampling frame, and every possible subsample has an equal probability of selection. Without replacement refers to the fact that once a sampling unit has been selected, it is removed from the sample frame and cannot be selected again.
+The simple random sample (SRS) without replacement is a sampling design in which a fixed sample size is selected from a sampling frame, and every possible sub-sample has an equal probability of selection. Without replacement refers to the fact that once a sampling unit has been selected, it is removed from the sample frame and cannot be selected again.
 
   - **Requirements**: The sampling frame must include the entire population.
   - **Advantages**: SRS requires no information about the units apart from contact information.
@@ -87,7 +87,7 @@ $$se(\bar{y})=\sqrt{\frac{s^2}{n}\left( 1-\frac{n}{N} \right)}$$ where
 $$s^2=\frac{1}{n-1}\sum_{i=1}^n\left(y_i-\bar{y}\right)^2.$$
 
 \index{Finite population correction|(} \index{fpc|see {Finite population correction}}
-and $N$ is the population size. This standard error estimate might look very similar to equations in other statistical statistical applications except for the part on the right side of the equation: $1-\frac{n}{N}$. This is called the finite population correction (FPC) factor. If the size of the frame, $N$, is very large in comparison to the sample, the FPC is negligible, so it is often ignored. A common guideline is if the sample is less than 10% of the population, the FPC is negligible.
+and $N$ is the population size. This standard error estimate might look very similar to equations in other statistical applications except for the part on the right side of the equation: $1-\frac{n}{N}$. This is called the finite population correction (FPC) factor. If the size of the frame, $N$, is very large in comparison to the sample, the FPC is negligible, so it is often ignored. A common guideline is if the sample is less than 10% of the population, the FPC is negligible.
 
 To estimate proportions, we define $x_i$ as the indicator if the outcome is observed. That is, $x_i=1$ if the outcome is observed, and $x_i=0$ if the outcome is not observed for respondent $i$. Then the estimated proportion from an SRS design is:
 
@@ -99,14 +99,14 @@ $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}\left(1-\frac{n}{N}\right)} $$
 #### The syntax {-} 
 
 \index{Functions in srvyr!as\_survey\_design|(}
-If a sample was drawn through SRS and had no nonresponse or other weighting adjustments, in R, we we specify this design as:
+If a sample was drawn through SRS and had no non-response or other weighting adjustments, in R, we specify this design as:
 
 ```r
 srs1_des <- dat %>%
   as_survey_design(fpc = fpcvar)
 ```
 
-where `dat` is a tibble or data.frame with the survey data, and `fpcvar` is a variable in the data indicating the sampling frame's size (this variable has the same value for all cases in an SRS design.) If the frame is very large, sometimes the frame size is not provided. In that case, the FPC is not needed, and we specify the design as:
+where `dat` is a tibble or data.frame with the survey data, and `fpcvar` is a variable in the data indicating the sampling frame's size (this variable has the same value for all cases in an SRS design). If the frame is very large, sometimes the frame size is not provided. In that case, the FPC is not needed, and we specify the design as:
 
 ```r
 srs2_des <- dat %>%
@@ -125,7 +125,7 @@ where `wtvar` is a variable in the data indicating the weight for each case. Aga
 
 #### Example {-} 
 
-The {survey} package in R provides some example datasets that we use throughout this chapter. One of the example datasets we use is from the Academic Performance Index (API.) The API was a program administered by the California Department of Education, and the {survey} package includes a population file (sample frame) of all schools with at least 100 students and several different samples pulled from that data using different sampling methods. For this first example, we use the `apisrs` dataset, which contains an SRS of 200 schools. For printing purposes, we create a new dataset called `apisrs_slim`, which sorts the data by the school district and school ID and subsets the data to only a few columns. The SRS sample data are illustrated below: 
+The {survey} package in R provides some example datasets that we use throughout this chapter. One of the example datasets we use is from the Academic Performance Index Program (APIP). The APIP program administered by the California Department of Education, and the {survey} package includes a population file (sample frame) of all schools with at least 100 students and several different samples pulled from that data using different sampling methods. For this first example, we use the `apisrs` dataset, which contains an SRS of 200 schools. For printing purposes, we create a new dataset called `apisrs_slim`, which sorts the data by the school district and school ID and subsets the data to only a few columns. The SRS sample data are illustrated below: 
 
 ```{r}
 #| label: samp-des-apisrs-display
@@ -141,7 +141,7 @@ apisrs_slim
 
 Table \@ref(tab:apidata) provides details on all the variables in this dataset.
 
-Table: (\#tab:apidata) Overview of Variables in `api` Data
+Table: (\#tab:apidata) Overview of Variables in APIP Data
 
 Variable Name | Description
 :--: | --------
@@ -150,7 +150,7 @@ Variable Name | Description
 `snum` | School identifier within district
 `dname` | District Name
 `sname` | School Name
-`fpc` | Finite population correction factor (FPC)
+`fpc` | Finite population correction factor
 `pw` | Weight
 
 To create the `tbl_survey` object for the SRS data, we specify the design as:
@@ -164,7 +164,7 @@ apisrs_des <- apisrs_slim %>%
 apisrs_des
 ```
 
-In the printed design object, the design is described as an "Independent Sampling design," which is another term for SRS. The ids are specified as `1`, which means there is no clustering (a topic described in Section \@ref(samp-cluster)), the FPC variable is indicated, and the weights are indicated. We can also look at the summary of the design object (`summary()`), and see the distribution of the probabilities (inverse of the weights) along with the population size and a list of the variables in the dataset. 
+In the printed design object, the design is described as an "Independent Sampling design," which is another term for SRS. The ids are specified as `1`, which means there is no clustering (a topic described in Section \@ref(samp-cluster)), the FPC variable is indicated, and the weights are indicated. We can also look at the summary of the design object (`summary()`) and see the distribution of the probabilities (inverse of the weights) along with the population size and a list of the variables in the dataset. 
 
 ```{r}
 #| label: samp-des-apisrs-summary
@@ -206,14 +206,14 @@ $$se(\hat{p})=\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} $$
 
 #### The syntax {-} 
 
-If we had a sample that was drawn through SRSWR and had no nonresponse or other weighting adjustments, in R, we specify this design as:  
+If we had a sample that was drawn through SRSWR and had no non-response or other weighting adjustments, in R, we specify this design as:  
 
 ```r
 srswr1_des <- dat %>%
  as_survey_design()
 ```
 \index{Finite population correction|(}
-where `dat` is a tibble or data.frame containing our survey data.  This syntax is the same as a SRS design, except a finite population correction (FPC) is not included. This is because when calculating a sample with replacement, the population pool to select from is no longer finite, so a correction is not needed. Therefore, with large populations where the FPC is negligible, the underlying formulas for SRS and SRSWR designs are the same.
+where `dat` is a tibble or data.frame containing our survey data.  This syntax is the same as an SRS design, except a FPC is not included. This is because when calculating a sample with replacement, the population pool to select from is no longer finite, so a correction is not needed. Therefore, with large populations where the FPC is negligible, the underlying formulas for SRS and SRSWR designs are the same.
 
 \index{Finite population correction|)}
 If some post-survey adjustments were implemented and the weights are not all equal, we specify the design as:
@@ -227,7 +227,7 @@ where `wtvar` is the variable for the weight of the data.
 
 #### Example {-} 
 
-The {survey} package does not include an example of SRSWR, so to illustrate this design, we need to create an example.  We use the api population data provided by the {survey} package `apipop` and select a sample of 200 cases using the `slice_sample()` function from the tidyverse. One of the arguments in the `slice_sample()` function is `replace`.  If `replace=TRUE`, then we are conducting a SRSWR. We then calculate selection weights as the inverse of the probability of selection and call this new dataset `apisrswr`.
+The {survey} package does not include an example of SRSWR; so to illustrate this design, we need to create an example.  We use the APIP population data provided by the {survey} package (`apipop`) and select a sample of 200 cases using the `slice_sample()` function from the tidyverse. One of the arguments in the `slice_sample()` function is `replace`.  If `replace=TRUE`, then we are conducting an SRSWR. We then calculate selection weights as the inverse of the probability of selection and call this new dataset `apisrswr`.
 
 ```{r}
 #| label: samp-des-apisrs-wr-display
@@ -242,7 +242,7 @@ apisrswr <- apipop %>%
 head(apisrswr)
 ```
 
-Because this is a SRS design *with replacement*, there may be duplicates in the data. It is important to keep the duplicates in the data for proper estimation, but for reference, we can view the duplicates in the example data we just created.
+Because this is an SRS design *with replacement*, there may be duplicates in the data. It is important to keep the duplicates in the data for proper estimation; but for reference, we can view the duplicates in the example data we just created.
 
 ```{r}
 #| label: samp-des-apisrs-wr-duplicates
@@ -270,21 +270,21 @@ In the output above, the design object and the object summary are shown. Both no
 
 ### Stratified sampling \index{Stratified sampling|(} \index{Strata|(}
 
-Stratified sampling occurs when a population is divided into mutually exclusive subpopulations (strata), and then samples are selected independently within each stratum.
+Stratified sampling occurs when a population is divided into mutually exclusive sub-populations (strata), and then samples are selected independently within each stratum.
 
   - **Requirements**: The sampling frame must include the information to divide the population into strata for every unit.
   - **Advantages**: 
-    - This design ensures sample representation in all subpopulations. 
-    - If the strata are correlated with survey outcomes, a stratified sample has smaller standard errors compared to a SRS sample of the same size.  
+    - This design ensures sample representation in all sub-populations. 
+    - If the strata are correlated with survey outcomes, a stratified sample has smaller standard errors compared to a SRS sample of the same size.
     - This results in a more efficient design.
   - **Disadvantages**: Auxiliary data may not exist to divide the sampling frame into strata, or the data may be outdated.
   - **Examples**: 
     - **Example 1**: A population of North Carolina residents could be stratified into urban and rural areas, and then an SRS of residents from both rural and urban areas is selected independently. This ensures there are residents from both areas in the sample.
-    - **Example 2**: Law enforcement agencies could be stratified into the three primary general-purpose categories in the U.S.: local police, sheriff's departments, and state police. A SRS of agencies from each of the three types is then selected independently to ensure all three types of agencies are represented.
+    - **Example 2**: Law enforcement agencies could be stratified into the three primary general-purpose categories in the U.S.: local police, sheriff's departments, and state police. An SRS of agencies from each of the three types is then selected independently to ensure all three types of agencies are represented.
 
 #### The math {-} 
 
-Let $\bar{y}_h$ be the sample mean for stratum $h$, $N_h$ be the population size of stratum $h$, $n_h$ be the sample size of stratum $h$, and $H$ is the total number of strata. Then, the estimate for the population mean under stratified SRS sampling is:
+Let $\bar{y}_h$ be the sample mean for stratum $h$, $N_h$ be the population size of stratum $h$, $n_h$ be the sample size of stratum $h$, and $H$ be the total number of strata. Then, the estimate for the population mean under stratified SRS sampling is:
 
 $$\bar{y}=\frac{1}{N}\sum_{h=1}^H N_h\bar{y}_h$$ 
 and the estimate of the standard error of $\bar{y}$ is:
@@ -310,7 +310,7 @@ In addition to the `fpc` and `weights` arguments discussed in the types above, s
 ```r
 stsrs1_des <- dat %>%
  as_survey_design(fpc = fpcvar, 
-                  strata = stratvar)
+                  strata = stratavar)
 ```
 
 where `fpcvar` is a variable on our data that indicates $N_h$ for each row, and `stratavar` is a variable indicating the stratum for each row. We can omit the FPC if it is not applicable. Additionally, we can indicate the weight variable if it is present where `wtvar` is a variable on our data with a numeric weight.
@@ -318,12 +318,12 @@ where `fpcvar` is a variable on our data that indicates $N_h$ for each row, and 
 ```r
 stsrs2_des <- dat %>%
  as_survey_design(weights = wtvar, 
-                  strata = stratvar)
+                  strata = stratavar)
 ```
 
 #### Example {-} 
 
-In the example API data, `apistrat` is a stratified random sample, stratified by school type (`stype`) with three levels: `E` for elementary school, `M` for middle school, and `H` for high school. As with the SRS example above, we sort and select specific variables for use in printing. The data are illustrated below, including a count of the number of cases per stratum:
+In the example APIP data, `apistrat` is a stratified random sample, stratified by school type (`stype`) with three levels: `E` for elementary school, `M` for middle school, and `H` for high school. As with the SRS example above, we sort and select specific variables for use in printing. The data are illustrated below, including a count of the number of cases per stratum:
 
 ```{r}
 #| label: samp-des-apistrat-dis
@@ -350,36 +350,36 @@ apistrat_des
 summary(apistrat_des)
 ```
 
-When printing the object, it is specified as an "Stratified Independent Sampling design," also known as a stratified SRS, and the strata variable is included. Printing the summary, we see a distribution of probabilities, as we saw with SRS, but we also see the sample and population sizes by stratum. \index{Finite population correction|)} \index{Stratified sampling|)} \index{Strata|)}
+When printing the object, it is specified as a "Stratified Independent Sampling design," also known as a stratified SRS, and the strata variable is included. Printing the summary, we see a distribution of probabilities, as we saw with SRS; but we also see the sample and population sizes by stratum. \index{Finite population correction|)} \index{Stratified sampling|)} \index{Strata|)}
 
 ### Clustered sampling {#samp-cluster}
 
 \index{Clustered sampling|(} \index{Primary sampling unit|(}
-Clustered sampling occurs when a population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs.) A random selection of PSUs is sampled, and then another level of sampling is done within these clusters. There can be multiple levels of this selection. \index{Data collection|(}Clustered sampling is often used when a list of the entire population is not available or data collection involves interviewers needing direct contact with respondents.
+Clustered sampling occurs when a population is divided into mutually exclusive subgroups called clusters or primary sampling units (PSUs). A random selection of PSUs is sampled, and then another level of sampling is done within these clusters. There can be multiple levels of this selection. \index{Data collection|(}Clustered sampling is often used when a list of the entire population is not available or data collection involves interviewers needing direct contact with respondents.
 
-  - **Requirements**: There must be a way to divide the population into clusters. Clusters are commonly structural, such as institutions (e.g., schools, prisons) or geography (e.g., states, counties.) 
+  - **Requirements**: There must be a way to divide the population into clusters. Clusters are commonly structural, such as institutions (e.g., schools, prisons) or geography (e.g., states, counties). 
   - **Advantages**: 
     - Clustered sampling is advantageous when data collection is done in person, so interviewers are sent to specific sampled areas rather than completely at random across a country. \index{Data collection|)}
     - With clustered sampling, a list of the entire population is not necessary. For example, if sampling students, we do not need a list of all students, but only a list of all schools. Once the schools are sampled, lists of students can be obtained within the sampled schools.
   - **Disadvantages**: Compared to a simple random sample for the same sample size, clustered samples generally have larger standard errors of estimates.
   - **Examples**: 
     - **Example 1**: Consider a study needing a sample of 6th-grade students in the United States. No list likely exists of all these students. However, it is more likely to obtain a list of schools that enroll 6th graders, so a study design could select a random sample of schools that enroll 6th graders. The selected schools can then provide a list of students to do a second stage of sampling where 6th-grade students are randomly sampled within each of the sampled schools. This is a one-stage sample design (the one representing the number of clusters) and is the type of design we discuss in the formulas below.
-    - **Example 2**: Consider a study sending interviewers to households for a survey. This is a more complicated example that requires two levels of clustering (two-stage sample design) to efficiently use interviewers in geographic clusters. First, in the U.S., counties could be selected as the PSU and then census block groups within counties could be selected as the secondary sampling unit (SSU.) Households could then be randomly sampled within the block groups. This type of design is popular for in-person surveys as it reduces the travel necessary for interviewers.
+    - **Example 2**: Consider a study sending interviewers to households for a survey. This is a more complicated example that requires two levels of clustering (two-stage sample design) to efficiently use interviewers in geographic clusters. First, in the U.S., counties could be selected as the PSU and then census block groups within counties could be selected as the secondary sampling unit (SSU). Households could then be randomly sampled within the block groups. This type of design is popular for in-person surveys, as it reduces the travel necessary for interviewers.
 
 #### The math {-}
 
-Consider a survey where a sample of $a$ clusters are sampled from a population of $A$ clusters via SRS. Units within each sampled cluster are sampled via SRS as well. Within each sampled cluster, $i$, there are $B_i$ units in the population and $b_i$ units are sampled via SRS. Let $\bar{y}_{i}$ be the sample mean of cluster $i$. Then, a ratio estimator of the population mean is:
+Consider a survey where $a$ clusters are sampled from a population of $A$ clusters via SRS. Within each sampled cluster, $i$, there are $B_i$ units in the population, and $b_i$ units are sampled via SRS. Let $\bar{y}_{i}$ be the sample mean of cluster $i$. Then, a ratio estimator of the population mean is:
 
 $$\bar{y}=\frac{\sum_{i=1}^a B_i \bar{y}_{i}}{ \sum_{i=1}^a B_i}$$
 Note this is a consistent but biased estimator. Often the population size is not known, so this is a method to estimate a mean without knowing the population size. The estimated standard error of the mean is:
 
 $$se(\bar{y})= \frac{1}{\hat{N}}\sqrt{\left(1-\frac{a}{A}\right)\frac{s_a^2}{a} + \frac{A}{a} \sum_{i=1}^a \left(1-\frac{b_i}{B_i}\right) \frac{s_i^2}{b_i} }$$
-where $\hat{N}$ is the estimated population size, $s_a^2$ is the between-cluster variance and $s_i^2$ is the within-cluster variance.
+where $\hat{N}$ is the estimated population size, $s_a^2$ is the between-cluster variance, and $s_i^2$ is the within-cluster variance.
 
 The formula for the between-cluster variance ($s_a^2$) is:
 
 $$s_a^2=\frac{1}{a-1}\sum_{i=1}^a \left( \hat{y}_i - \frac{\sum_{i=1}^a \hat{y}_{i} }{a}\right)^2$$
-where  $\hat{y}_i =B_i\bar{y_i}$ .
+where  $\hat{y}_i =B_i\bar{y_i}$.
 
 The formula for the within-cluster variance ($s_i^2$) is:
 
@@ -389,7 +389,7 @@ where $y_{ij}$ is the outcome for sampled unit $j$ within cluster $i$.
 #### The syntax {-} 
 
 \index{Finite population correction|(}
-Clustered sampling designs require the addition of the `ids` argument, which specifies what the cluster levels variables. To specify a two-stage clustered design without replacement, we specify the design as:
+Clustered sampling designs require the addition of the `ids` argument, which specifies the cluster levels variable(s). To specify a two-stage clustered design without replacement, we specify the design as:
 
 ```r
 clus2_des <- dat %>%
@@ -398,9 +398,9 @@ clus2_des <- dat %>%
                   fpc = c(A, B))
 ```
 
-where `PSU` and `SSU` are the variables indicating the PSU and SSU identifiers, and `A` and `B` are the variables indicating the population sizes for each level (i.e., `A` is the number of clusters, and `B` is the number of units within each cluster.) Note that `A` is the same for all records, and `B` is the same for all records within the same cluster.
+where `PSU` and `SSU` are the variables indicating the PSU and SSU identifiers, and `A` and `B` are the variables indicating the population sizes for each level (i.e., `A` is the number of clusters, and `B` is the number of units within each cluster). Note that `A` is the same for all records, and `B` is the same for all records within the same cluster.
 
-If clusters were sampled with replacement or from a very large population, the FPC is unnecessary. Additionally, only the first stage of selection is necessary regardless of whether the units were selected with replacement at any stage. The subsequent stages of selection are ignored in computation as their contribution to the variance is overpowered by the first stage (see @sarndal2003model or @wolter2007introduction for a more in-depth discussion.) Therefore, the two design objects specified below yield the same estimates in the end:
+If clusters were sampled with replacement or from a very large population, the FPC is unnecessary. Additionally, only the first stage of selection is necessary regardless of whether the units were selected with replacement at any stage. The subsequent stages of selection are ignored in computation as their contribution to the variance is overpowered by the first stage (see @sarndal2003model or @wolter2007introduction for a more in-depth discussion). Therefore, the two design objects specified below yield the same estimates in the end:
 \index{Finite population correction|)}
 
 ```r
@@ -421,7 +421,7 @@ Note that there is one additional argument that is sometimes necessary, which is
 #### Example {-} 
 
 \index{Finite population correction|(}
-The `survey` package includes a two-stage cluster sample data, `apiclus2`, in which school districts were sampled, and then a random sample of five schools was selected within each district. For districts with fewer than five schools, all schools were sampled. School districts are identified by `dnum`, and schools are identified by `snum`. The variable `fpc1` indicates how many districts there are in California (the total number of PSUs or `A`), and `fpc2` indicates how many schools were in a given district with at least 100 students (the total number of SSUs or `B`.) The data include a row for each school. In the data printed below, there are 757 school districts, as indicated by `fpc1`, and there are nine schools in District 731, one school in District 742, two schools in District 768, and so on as indicated by `fpc2`. For illustration purposes, the object `apiclus2_slim` has been created from `apiclus2`, which subsets the data to only the necessary columns and sorts the data.
+The `survey` package includes a two-stage cluster sample data, `apiclus2`, in which school districts were sampled, and then a random sample of five schools was selected within each district. For districts with fewer than five schools, all schools were sampled. School districts are identified by `dnum`, and schools are identified by `snum`. The variable `fpc1` indicates how many districts there are in California (the total number of PSUs or `A`), and `fpc2` indicates how many schools were in a given district with at least 100 students (the total number of SSUs or `B`). The data include a row for each school. In the data printed below, there are 757 school districts, as indicated by `fpc1`, and there are nine schools in District 731, one school in District 742, two schools in District 768, and so on as indicated by `fpc2`. For illustration purposes, the object `apiclus2_slim` has been created from `apiclus2`, which subsets the data to only the necessary columns and sorts the data.
 
 ```{r}
 #| label: samp-des-api2clus-dis
@@ -457,7 +457,7 @@ The design objects are described as "2 - level Cluster Sampling design," and inc
 
 SRS, stratified, and clustered designs are the backbone of sampling designs, and the features are often combined in one design. Additionally, rather than using SRS for selection, other sampling mechanisms are commonly used, such as probability proportional to size (PPS), systematic sampling, or selection with unequal probabilities, which are briefly described here. In PPS sampling, a size measure is constructed for each unit (e.g., the population of the PSU or the number of occupied housing units), and units with larger size measures are more likely to be sampled. Systematic sampling is commonly used to ensure representation across a population. Units are sorted by a feature, and then every $k$ units is selected from a random start point so the sample is spread across the population. \index{Burden|(}In addition to PPS, other unequal probabilities of selection may be used. For example, in a study of establishments (e.g., businesses or public institutions) that conducts a survey every year, an establishment that recently participated (e.g., participated last year) may have a reduced chance of selection in a subsequent round to reduce the burden on the establishment.\index{Burden|)} To learn more about sampling designs, refer to @valliant2013practical, @cox2011business, @cochran1977sampling, and @deming1991sample.
 
-A common method of sampling is to stratify PSUs, select PSUs within the stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step in survey analysis to understand the design of the survey we are using and variables necessary to specify the design. Good documentation highlights the variables necessary to specify the design. This is often found in the user guide, methodology report, analysis guide, or technical documentation (see Chapter \@ref(c03-survey-data-documentation) for more details.)
+A common method of sampling is to stratify PSUs, select PSUs within the stratum using PPS selection, and then select units within the PSUs either with SRS or PPS. Reading survey documentation is an important first step in survey analysis to understand the design of the survey we are using and variables necessary to specify the design. Good documentation highlights the variables necessary to specify the design. This is often found in the user guide, methodology report, analysis guide, or technical documentation (see Chapter \@ref(c03-survey-data-documentation) for more details).
 \index{Finite population correction|)} \index{Stratified sampling|)} \index{Clustered sampling|)} \index{Primary sampling unit|)} \index{Strata|(}
 
 ### Example {-}
@@ -483,14 +483,14 @@ nsfg_des <- nsfgdata %>%
 ## Replicate weights
 
 \index{Replicate weights|(}
-Replicate weights are often included on analysis files instead of, or in addition to, the design variables (strata and PSUs.) Replicate weights are used as another method to estimate variability.  Often, researchers choose to use replicate weights to avoid publishing design variables (strata or clustering variables) as a measure to reduce the risk of disclosure. There are several types of replicate weights, including balanced repeated replication (BRR), Fay's BRR, jackknife, and bootstrap methods. An overview of the process for using replicate weights is as follows:
+Replicate weights are often included on analysis files instead of, or in addition to, the design variables (strata and PSUs). Replicate weights are used as another method to estimate variability.  Often, researchers choose to use replicate weights to avoid publishing design variables (strata or clustering variables) as a measure to reduce the risk of disclosure. There are several types of replicate weights, including balanced repeated replication (BRR), Fay's BRR, jackknife, and bootstrap methods. An overview of the process for using replicate weights is as follows:
 
-1. Divide the sample into subsample replicates that mirror the design of the sample
-2. Calculate weights for each replicate using the same procedures for the full-sample weight (i.e., nonresponse and post-stratification)
+1. Divide the sample into sub-sample replicates that mirror the design of the sample
+2. Calculate weights for each replicate using the same procedures for the full-sample weight (i.e., non-response and post-stratification)
 3. Calculate estimates for each replicate using the same method as the full-sample estimate
 4. Calculate the estimated variance, which is proportional to the variance of the replicate estimates
 
-The different types of replicate weights largely differ between step 1 (how the sample is divided into subsamples) and step 4 (which multiplication factors (scales) are used to multiply the variance.) The general format for the standard error is:
+The different types of replicate weights largely differ between step 1 (how the sample is divided into sub-samples) and step 4 (which multiplication factors, scales, are used to multiply the variance). The general format for the standard error is:
 
 $$ \sqrt{\alpha \sum_{r=1}^R \alpha_r (\hat{\theta}_r - \hat{\theta})^2 }$$
 
@@ -498,13 +498,13 @@ where $R$ is the number of replicates, $\alpha$ is a constant that depends on th
 
 To create the design object for surveys with replicate weights, we use `as_survey_rep()` instead of `as_survey_design()`, which we use for the common sampling designs in the sections above.
 
-### Balanced Repeated Replication (BRR) method
+### Balanced Repeated Replication method
 
 \index{Replicate weights!Balanced repeated replication (BRR)|(} \index{Primary sampling unit|(} \index{Strata|(}
-The BRR method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by two but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or -1 with mutually orthogonal rows. Hadamard matrices must have one row, two rows, or a multiple of four rows. The size of the Hadamard matrix is determined by the first multiple of 4 greater than or equal to the number of strata.  For example, if a survey had seven strata, the Hadamard matrix would be an $8\times8$ matrix. Additionally, a survey with eight strata would also have an $8\times8$ Hadamard matrix. The columns in the matrix specify the strata and the rows specify the replicate. In each replicate (row), a +1 means to use the first PSU and a -1 means to use the second PSU in the estimate. For example, here is a $4\times4$ Hadamard matrix: 
+The balanced repeated replication (BRR) method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by two but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or --1 with mutually orthogonal rows. Hadamard matrices must have one row, two rows, or a multiple of four rows. The size of the Hadamard matrix is determined by the first multiple of 4 greater than or equal to the number of strata.  For example, if a survey had seven strata, the Hadamard matrix would be an $8\times8$ matrix. Additionally, a survey with eight strata would also have an $8\times8$ Hadamard matrix. The columns in the matrix specify the strata, and the rows specify the replicate. In each replicate (row), a +1 means to use the first PSU and a --1 means to use the second PSU in the estimate. For example, here is a $4\times4$ Hadamard matrix: 
 
 $$ \begin{array}{rrrr} +1 &+1 &+1 &+1\\ +1&-1&+1&-1\\ +1&+1&-1&-1\\ +1 &-1&-1&+1 \end{array} $$
-In the first replicate (row), all the values are +1, so in each stratum, the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in strata 1 and 3, while the second PSU would be used in strata 2 and 4. In the third replicate, the first PSU would be used in strata 1 and 2, while the second PSU would be used in strata 3 and 4. Finally, in the fourth replicate, the first PSU would be used in strata 1 and 4, while the second PSU would be used in strata 2 and 3. For more information about Hadamard matrices, see @wolter2007introduction. Note that supplied BRR weights from a data provider already incorporate this adjustment, and the {survey} package generates the Hadamard matrix, if necessary, for calculating BRR weights, so an analyst does not need to create or provide the matrix.
+In the first replicate (row), all the values are +1; so in each stratum, the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in strata 1 and 3, while the second PSU would be used in strata 2 and 4. In the third replicate, the first PSU would be used in strata 1 and 2, while the second PSU would be used in strata 3 and 4. Finally, in the fourth replicate, the first PSU would be used in strata 1 and 4, while the second PSU would be used in strata 2 and 3. For more information about Hadamard matrices, see @wolter2007introduction. Note that supplied BRR weights from a data provider already incorporate this adjustment, and the {survey} package generates the Hadamard matrix, if necessary, for calculating BRR weights; so an analyst does not need to create or provide the matrix.
 \index{Primary sampling unit|)} \index{Strata|)}
 
 #### The math {-}
@@ -513,11 +513,11 @@ A weighted estimate for the full sample is calculated as $\hat{\theta}$, and the
 
 $$se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\hat{\theta}\right)^2}$$
 
-Specifying replicate weights in R requires specifying the type of replicate weights, the main weight variable, the replicate weight variables, and other options. One of the key options is for the mean squared error (MSE.) If `mse=TRUE`, variances are computed around the point estimate $(\hat{\theta})$, whereas if `mse=FALSE`, variances are computed around the mean of the replicates $(\bar{\theta})$ instead, which looks like this: 
+Specifying replicate weights in R requires specifying the type of replicate weights, the main weight variable, the replicate weight variables, and other options. One of the key options is for the mean squared error (MSE). If `mse=TRUE`, variances are computed around the point estimate $(\hat{\theta})$; whereas if `mse=FALSE`, variances are computed around the mean of the replicates $(\bar{\theta})$ instead, which looks like this: 
 
 $$se(\hat{\theta})=\sqrt{\frac{1}{R} \sum_{r=1}^R \left( \hat{\theta}_r-\bar{\theta}\right)^2}$$ where $$\bar{\theta}=\frac{1}{R}\sum_{r=1}^R \hat{\theta}_r$$
 
-The default option for `mse` is to use the global option of "survey.replicates.mse" which is set to `FALSE` initially unless a user changes it. To determine if `mse` should be set to `TRUE` or `FALSE`, read the survey documentation.  If there is no indication in the survey documentation for BRR, we recommend setting `mse` to `TRUE` as this is the default in other software (e.g., SAS, SUDAAN.)
+The default option for `mse` is to use the global option of "survey.replicates.mse," which is set to `FALSE` initially unless a user changes it. To determine if `mse` should be set to `TRUE` or `FALSE`, read the survey documentation.  If there is no indication in the survey documentation for BRR, we recommend setting `mse` to `TRUE`, as this is the default in other software (e.g., SAS, SUDAAN).
 
 #### The syntax {-} 
 
@@ -525,7 +525,7 @@ The default option for `mse` is to use the global option of "survey.replicates.m
 Replicate weights generally come in groups and are sequentially numbered, such as PWGTP1, PWGTP2, ..., PWGTP80 for the person weights in the American Community Survey (ACS) [@acs-pums-2021] or BRRWT1, BRRWT2, ..., BRRWT96 in the 2015 Residential Energy Consumption Survey (RECS) [@recs-2015-micro]. This makes it easy to use some of the [tidy selection](https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html) functions in R. 
 \index{American Community Survey (ACS)|)}
 
-To specify a BRR design, we need to specify the weight variable (`weights`), the replicate weight variables (`repweights`), the type of replicate weights as BRR (`type = BRR`), and whether the mean squared error should be used (`mse = TRUE`) or not (`mse = FALSE`.)  For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, we can use the following syntax (both are equivalent):
+To specify a BRR design, we need to specify the weight variable (`weights`), the replicate weight variables (`repweights`), the type of replicate weights as BRR (`type = BRR`), and whether the mean squared error should be used (`mse = TRUE`) or not (`mse = FALSE`).  For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated WT1, WT2, ..., WT20, we can use the following syntax (both are equivalent):
 
 ```r
 brr_des <- dat %>%
@@ -567,7 +567,7 @@ brr_des <- dat %>%
                 mse = TRUE)
 ```
 
-Typically, each replicate weight sums to a value similar to the main weight, as both the replicate weights and the main weight are supposed to provide population estimates. Rarely, an alternative method is used where the replicate weights have values of 0 or 2 in the case of BRR weights. This would be indicated in the documentation (see Chapter \@ref(c03-survey-data-documentation) for more information on reading documentation.) In this case, the replicate weights are not combined, and the option `combined_weights = FALSE` should be indicated, as the default value for this argument is `TRUE`. This specific syntax is shown below:
+Typically, each replicate weight sums to a value similar to the main weight, as both the replicate weights and the main weight are supposed to provide population estimates. Rarely, an alternative method is used where the replicate weights have values of 0 or 2 in the case of BRR weights. This would be indicated in the documentation (see Chapter \@ref(c03-survey-data-documentation) for more information on reading documentation). In this case, the replicate weights are not combined, and the option `combined_weights = FALSE` should be indicated, as the default value for this argument is `TRUE`. This specific syntax is shown below:
 
 ```r
 brr_des <- dat %>%
@@ -581,7 +581,7 @@ brr_des <- dat %>%
 #### Example {-} 
 
 \index{Primary sampling unit|(}
-The {survey} package includes a data example from Section 12.2 of @levy2013sampling. In this fictional data, two out of five ambulance stations were sampled from each of three emergency service areas (ESAs), thus BRR weights are appropriate with 2 PSUs (stations) sampled in each stratum (ESA.) In the code below, we create BRR weights as was done by @levy2013sampling.
+The {survey} package includes a data example from section 12.2 of @levy2013sampling. In this fictional data, two out of five ambulance stations were sampled from each of three emergency service areas (ESAs); thus BRR weights are appropriate with two PSUs (stations) sampled in each stratum (ESA). In the code below, we create BRR weights as was done by @levy2013sampling.
 
 ```{r}
 #| label: samp-des-brr-display
@@ -616,7 +616,7 @@ Note that `combined_weights` was specified as `FALSE` because these weights are 
 
 ### Fay's BRR method
 
-Fay's BRR method for replicate weights is similar to the BRR method in that it uses a Hadamard matrix to construct replicate weights. However, rather than deleting PSUs for each replicate, with Fay's BRR, half of the PSUs have a replicate weight, which is the main weight multiplied by $\rho$, and the other half have the main weight multiplied by $(2-\rho)$, where $0 \le \rho < 1$. Note that when $\rho=0$, this is equivalent to the standard BRR weights, and as $\rho$ becomes closer to 1, this method is more similar to jackknife discussed in Section \@ref(samp-jackknife). To obtain the value of $\rho$, it is necessary to read the survey documentation (see Chapter \@ref(c03-survey-data-documentation).)
+Fay's BRR method for replicate weights is similar to the BRR method in that it uses a Hadamard matrix to construct replicate weights. However, rather than deleting PSUs for each replicate, with Fay's BRR, half of the PSUs have a replicate weight, which is the main weight multiplied by $\rho$, and the other half have the main weight multiplied by $(2-\rho)$, where $0 \le \rho < 1$. Note that when $\rho=0$, this is equivalent to the standard BRR weights, and as $\rho$ becomes closer to 1, this method is more similar to jackknife discussed in Section \@ref(samp-jackknife). To obtain the value of $\rho$, it is necessary to read the survey documentation (see Chapter \@ref(c03-survey-data-documentation)).
 
 #### The math {-}
 
@@ -626,7 +626,7 @@ $$se(\hat{\theta})=\sqrt{\frac{1}{R (1-\rho)^2} \sum_{r=1}^R \left( \hat{\theta}
 
 #### The syntax {-} 
 
-The syntax is very similar for BRR and Fay's BRR. To specify a Fay's BRR design, we need to specify the weight variable (`weights`), the replicate weight variables (`repweights`), the type of replicate weights as Fay's BRR (`type = Fay`), whether the mean squared error should be used (`mse = TRUE`) or not (`mse = FALSE`), and Fay's multiplier (`rho`.) For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated as WT1, WT2, ..., WT20, and Fay's multiplier is 0.3, we use the following syntax:
+The syntax is very similar for BRR and Fay's BRR. To specify a Fay's BRR design, we need to specify the weight variable (`weights`), the replicate weight variables (`repweights`), the type of replicate weights as Fay's BRR (`type = Fay`), whether the mean squared error should be used (`mse = TRUE`) or not (`mse = FALSE`), and Fay's multiplier (`rho`). For example, if a dataset had WT0 for the main weight and had 20 BRR weights indicated as WT1, WT2, ..., WT20, and Fay's multiplier is 0.3, we use the following syntax:
 
 ```r
 fay_des <- dat %>%
@@ -640,7 +640,7 @@ fay_des <- dat %>%
 #### Example {-} 
 
 \index{Residential Energy Consumption Survey (RECS)|(}
-The 2015 RECS [@recs-2015-micro] uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96, and the documentation specifies a Fay's multiplier of 0.5. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total energy cost, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region. We use the 2015 RECS data from the {srvyrexploR} package that provides data for this book (see the prerequisites box at the beginning of this chapter.)  To specify the design for the `recs_2015` data, we use the following syntax:
+The 2015 RECS [@recs-2015-micro] uses Fay's BRR weights with the final weight as NWEIGHT and replicate weights as BRRWT1 - BRRWT96, and the documentation specifies a Fay's multiplier of 0.5. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total energy cost, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the census region. We use the 2015 RECS data from the {srvyrexploR} package that provides data for this book (see the Prerequisites box at the beginning of this chapter).  To specify the design for the `recs_2015` data, we use the following syntax:
 
 ```{r}
 #| label: samp-des-recs-des
@@ -664,7 +664,7 @@ In specifying the design, the `variables` option was also used to include which 
 ### Jackknife method {#samp-jackknife}
 
 \index{Replicate weights!Jackknife|(} \index{Primary sampling unit|(}
-There are three jackknife estimators implemented in {srvyr} - jackknife 1 (JK1), jackknife n (JKn), and jackknife 2 (JK2.) The JK1 method can be used for unstratified designs, and replicates are created by removing one PSU at a time so the number of replicates is the same as the number of PSUs. If there is no clustering, then the PSU is the ultimate sampling unit (e.g., students.) 
+There are three jackknife estimators implemented in {srvyr}: jackknife 1 (JK1), jackknife n (JKn), and jackknife 2 (JK2). The JK1 method can be used for unstratified designs, and replicates are created by removing one PSU at a time so the number of replicates is the same as the number of PSUs. If there is no clustering, then the PSU is the ultimate sampling unit (e.g., students). 
 
 \index{Strata|(}
 The JKn method is used for stratified designs and requires two or more PSUs per stratum. In this case, each replicate is created by deleting one PSU from a single stratum, so the number of replicates is the number of total PSUs across all strata. The JK2 method is a special case of JKn when there are exactly 2 PSUs sampled per stratum. For variance estimation, we also need to specify the scaling constants. 
@@ -712,7 +712,7 @@ jkn_des <- dat %>%
 #### Example {-}
 
 \index{Residential Energy Consumption Survey (RECS)|(}
-The 2020 RECS [@recs-2020-micro] uses jackknife weights with the final weight as NWEIGHT and replicate weights as NWEIGHT1 - NWEIGHT60 with a scale of $(R-1)/R=59/60$. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the Census region.  We use the 2020 RECS data from the {srvyrexploR} package that provides data for this book (see the prerequisites box at the beginning of this chapter.) 
+The 2020 RECS [@recs-2020-micro] uses jackknife weights with the final weight as NWEIGHT and replicate weights as NWEIGHT1 - NWEIGHT60 with a scale of $(R-1)/R=59/60$. On the file, DOEID is a unique identifier for each respondent, TOTALDOL is the total cost of energy, TOTSQFT_EN is the total square footage of the residence, and REGOINC is the census region.  We use the 2020 RECS data from the {srvyrexploR} package that provides data for this book (see the Prerequisites box at the beginning of this chapter). 
 
 To specify this design, we use the following syntax:
 
@@ -749,12 +749,12 @@ recs_des <- recs_2020 %>%
 ```
 
 
-When printing the design object or looking at the summary, the replicate weight type is re-iterated as `Unstratified cluster jacknife (JK1) with 60 replicates and MSE variances`, and the variables are included. No weight or probability summary is included. \index{Replicate weights!Jackknife|)} \index{Residential Energy Consumption Survey (RECS)|)}
+When printing the design object or looking at the summary, the replicate weight type is reiterated as `Unstratified cluster jacknife (JK1) with 60 replicates and MSE variances`, and the variables are included. No weight or probability summary is included. \index{Replicate weights!Jackknife|)} \index{Residential Energy Consumption Survey (RECS)|)}
 
 ### Bootstrap method
 
 \index{Replicate weights!Bootstrap|(} \index{Primary sampling unit|(}
-In bootstrap resampling, replicates are created by selecting random samples of the PSUs with replacement (SRSWR.) If there are $A$ PSUs in the sample, then each replicate is created by selecting a random sample of $A$ PSUs with replacement. Each replicate is created independently, and the weights for each replicate are adjusted to reflect the population, generally using the same method as how the analysis weight was adjusted.  
+In bootstrap resampling, replicates are created by selecting random samples of the PSUs with replacement (SRSWR). If there are $A$ PSUs in the sample, then each replicate is created by selecting a random sample of $A$ PSUs with replacement. Each replicate is created independently, and the weights for each replicate are adjusted to reflect the population, generally using the same method as how the analysis weight was adjusted.  
 \index{Primary sampling unit|)}
 
 #### The math {-}
@@ -785,7 +785,7 @@ bs_des <- dat %>%
 #### Example {-}
 
 \index{Primary sampling unit|(} 
-Returning to the api example, we are going to create a dataset with bootstrap weights to use as an example. In this example, we construct a one-cluster design with fifty replicate weights.^[We provide the code here to replicate this example, but are not focusing on the creation of the weights as that is outside the scope of this book.  We recommend referencing @wolter2007introduction for more information on creating bootstrap weights.]
+Returning to the APIP example, we are going to create a dataset with bootstrap weights to use as an example. In this example, we construct a one-cluster design with 50 replicate weights^[We provide the code here to replicate this example but are not focusing on the creation of the weights, as that is outside the scope of this book.  We recommend referencing @wolter2007introduction for more information on creating bootstrap weights.].
 
 ```{r}
 #| label: samp-des-genbs
@@ -815,11 +815,11 @@ apiclus1_slim <- bwmata %>%
 apiclus1_slim
 ```
 
-The output of `apiclus1_slim` includes the same variables we have seen in other api examples (see Table \@ref(tab:apidata)), but now additionally includes bootstrap weights `pw1`, ..., `pw50`.  When creating the survey design object, we use the bootstrap weights as the replicate weights. Additionally, with replicate weights we need to include the scale ($\alpha$.)  For this example, we created:
+The output of `apiclus1_slim` includes the same variables we have seen in other APIP examples (see Table \@ref(tab:apidata)), but now it additionally includes bootstrap weights `pw1`, ..., `pw50`.  When creating the survey design object, we use the bootstrap weights as the replicate weights. Additionally, with replicate weights we need to include the scale ($\alpha$).  For this example, we created:
 
 $$\alpha=\frac{A}{(A-1)(R-1)}=\frac{15}{(15-1)*(50-1)}=0.02186589$$
 
-where $A$ is the average number of PSUs per strata and $R$ is the number of replicates. There is only 1 stratum and the number of clusters/PSUs is 15 so $A=15$. Using this information, we specify the design object as:
+where $A$ is the average number of PSUs per stratum, and $R$ is the number of replicates. There is only 1 stratum and the number of clusters/PSUs is 15 so $A=15$. Using this information, we specify the design object as:
 \index{Primary sampling unit|)}
 
 ```{r}
@@ -843,6 +843,6 @@ As with other replicate design objects, when printing the object or looking at t
 
 For this chapter, the exercises entail reading public documentation to determine how to specify the survey design. While reading the documentation, be on the lookout for description of the weights and the survey design variables or replicate weights.
 
-1. The National Health Interview Survey (NHIS) is an annual household survey conducted by the National Center for Health Statistics (NCHS.) The NHIS includes a wide variety of health topics for adults, including health status and conditions, functioning and disability, health care access and health service utilization, health-related behaviors, health promotion, mental health, barriers to care, and community engagement. Like many national in-person surveys, the sampling design is a stratified clustered design with details included in the Survey Description [@nhis-svy-des]. The Survey Description provides information on setting up syntax in SUDAAN, Stata, SPSS, SAS, and R ({survey} package implementation.) We have imported the data and the variable containing the data as `nhis_adult_data`. How would we specify the design using either `as_survey_design()` or `as_survey_rep()`?
+1. The National Health Interview Survey (NHIS) is an annual household survey conducted by the National Center for Health Statistics (NCHS). The NHIS includes a wide variety of health topics for adults including health status and conditions, functioning and disability, health care access and health service utilization, health-related behaviors, health promotion, mental health, barriers to receiving care, and community engagement. Like many national in-person surveys, the sampling design is a stratified clustered design with details included in the Survey Description [@nhis-svy-des]. The Survey Description provides information on setting up syntax in SUDAAN, Stata, SPSS, SAS, and R ({survey} package implementation). We have imported the data and the variable containing the data as: `nhis_adult_data`. How would we specify the design using either `as_survey_design()` or `as_survey_rep()`?
 
-2. The General Social Survey is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook provides examples of setting up syntax in SAS and Stata but not R [@gss-codebook]. We have imported the data and the variable containing the data as: `gss_data`. How would we specify the design in R using either `as_survey_design()` or `as_survey_rep()`?
+2. The General Social Survey (GSS) is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook provides examples of setting up syntax in SAS and Stata but not R [@gss-codebook]. We have imported the data and the variable containing the data as: `gss_data`. How would we specify the design in R using either `as_survey_design()` or `as_survey_rep()`?
