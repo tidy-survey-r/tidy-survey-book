@@ -93,7 +93,7 @@ The functions in the {survey} package allow for the correct estimation of the un
 ## Dot notation {#dot-notation}
 
 \index{Dot notation|(}
-Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is *not* the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we need to use dot (`.`) notation^[This could change in the future if another package is built or {srvyr} is expanded to work with {tidymodels} packages, but no such plans are known at this time.].
+Up to this point, we have shown functions that use wrappers from the {srvyr} package. This means that the functions work with tidyverse syntax. However, the functions in this chapter do not have wrappers in the {srvyr} package and are instead used directly from the {survey} package. Therefore, the design object is not the first argument, and to use these functions with the magrittr pipe (`%>%`) and tidyverse syntax, we need to use dot (`.`) notation^[This could change in the future if another package is built or {srvyr} is expanded to work with {tidymodels} packages, but no such plans are known at this time.].
 
 Functions that work with the magrittr pipe (`%>%`) have the dataset as the first argument. When we run a function with the pipe, it automatically places anything to the left of the pipe into the first argument of the function to the right of the pipe. For example, if we wanted to take the `towny` data from the {gt} package and filter to municipalities with the Census Subdivision Type of "city," we can write the code in at least four different ways:
 
@@ -131,7 +131,7 @@ svydata_des %>%
 ## Comparison of proportions and means {#stattest-ttest}
 
 \index{t-test|(}
-We use t-tests to compare two proportions or means. T-tests allow us to determine if one proportion or mean is statistically different from another. \index{t-test!one-sample t-test|(}They are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., North versus South). Comparing a single estimate to a known value is called a *one-sample t-test*, and we can set up the hypothesis test as follows:  
+We use t-tests to compare two proportions or means. T-tests allow us to determine if one proportion or mean is statistically different from another. \index{t-test!one-sample t-test|(}They are commonly used to determine if a single estimate differs from a known value (e.g., 0 or 50%) or to compare two group means (e.g., North versus South). Comparing a single estimate to a known value is called a one-sample t-test, and we can set up the hypothesis test as follows:  
 
   - $H_0: \mu = 0$ where $\mu$ is the mean outcome and $0$ is the value we are comparing it to
   - $H_A: \mu \neq 0$
@@ -139,13 +139,13 @@ We use t-tests to compare two proportions or means. T-tests allow us to determin
 \index{t-test!one-sample t-test|)}
 
 \index{t-test!two-sample t-test|(}
-For comparing two estimates, this is called a *two-sample t-test*. We can set up the hypothesis test as follows:
+For comparing two estimates, this is called a two-sample t-test. We can set up the hypothesis test as follows:
 
   - $H_0: \mu_1 = \mu_2$ where $\mu_i$ is the mean outcome for group $i$
   - $H_A: \mu_1 \neq \mu_2$
 
 \index{t-test!unpaired two-sample t-test|(} \index{t-test!paired two-sample t-test|(}
-Two-sample t-tests can also be *paired* or *unpaired*. If the data come from two different populations (e.g., North versus South), the t-test run is an *unpaired* or *independent samples* t-test. *Paired* t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention).
+Two-sample t-tests can also be paired or unpaired. If the data come from two different populations (e.g., North versus South), the t-test run is an unpaired or independent samples t-test. Paired t-tests occur when the data come from the same population. This is commonly seen with data from the same population in two different time periods (e.g., before and after an intervention).
 \index{t-test!two-sample t-test|)} \index{t-test!unpaired two-sample t-test|)} \index{t-test!paired two-sample t-test|)}
 
 The difference between t-tests with non-survey data and survey data is based on the underlying variance estimation difference.  Chapter \@ref(c10-sample-designs-replicate-weights) provides a detailed overview of the math behind the mean and sampling error calculations for various sample designs. The functions in the {survey} package account for these nuances, provided the design object is correctly defined.
@@ -177,14 +177,14 @@ The arguments are:
 
 The `formula` argument can take several different forms depending on what we are measuring. Here are a few common scenarios: \index{Formula notation|(}
 
-1. \index{t-test!one-sample t-test|(}**One-sample t-test:** 
-    a. **Comparison to 0:** `var ~ 0`, where `var` is the measure of interest, and we compare it to the value `0`. For example, we could test if the population mean of household debt is different from `0` given the sample data collected.
-    b. **Comparison to a different value:** `var - value ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `var - 0.25 ~ 0`. Note that specifying the formula as `var ~ 0.25` is not equivalent and results in a syntax error.\index{t-test!one-sample t-test|)}
-2. \index{t-test!two-sample t-test|(}**Two-sample t-test:**
-    a. \index{t-test!unpaired two-sample t-test|(}**Unpaired:**
-        - **2 level grouping variable:** `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories. For example, we could test if the average age of the population who voted for president in 2020 differed from the age of people who did not vote. In this case, age would be used for `var`, and a binary variable indicating voting activity would be the `groupVar`.
-        - **3+ level grouping variable:** `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms where `groupVar` would be the variable holding the values for classroom IDs and `level` is the classroom ID we want to compare to the others.\index{t-test!unpaired two-sample t-test|)}
-    b. \index{t-test!paired two-sample t-test|(}**Paired:** `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course, so `var_1` would be the test score at the beginning of the course, and `var_2` would be the score at the end of the course.\index{t-test!two-sample t-test|)}\index{t-test!paired two-sample t-test|)}
+1. \index{t-test!one-sample t-test|(}One-sample t-test:
+    a. Comparison to 0: `var ~ 0`, where `var` is the measure of interest, and we compare it to the value `0`. For example, we could test if the population mean of household debt is different from `0` given the sample data collected.
+    b. Comparison to a different value: `var - value ~ 0`, where `var` is the measure of interest and `value` is what we are comparing to. For example, we could test if the proportion of the population that has blue eyes is different from `25%` by using `var - 0.25 ~ 0`. Note that specifying the formula as `var ~ 0.25` is not equivalent and results in a syntax error.\index{t-test!one-sample t-test|)}
+2. \index{t-test!two-sample t-test|(}Two-sample t-test:
+    a. \index{t-test!unpaired two-sample t-test|(}Unpaired:
+        - 2 level grouping variable: `var ~ groupVar`, where `var` is the measure of interest and `groupVar` is a variable with two categories. For example, we could test if the average age of the population who voted for president in 2020 differed from the age of people who did not vote. In this case, age would be used for `var`, and a binary variable indicating voting activity would be the `groupVar`.
+        - 3+ level grouping variable: `var ~ groupVar == level`, where `var` is the measure of interest, `groupVar` is the categorical variable, and `level` is the category level to isolate. For example, we could test if the test scores in one classroom differed from all other classrooms where `groupVar` would be the variable holding the values for classroom IDs and `level` is the classroom ID we want to compare to the others.\index{t-test!unpaired two-sample t-test|)}
+    b. \index{t-test!paired two-sample t-test|(}Paired: `var_1 - var_2 ~ 0`, where `var_1` is the first variable of interest and `var_2` is the second variable of interest. For example, we could test if test scores on a subject differed between the start and the end of a course, so `var_1` would be the test score at the beginning of the course, and `var_2` would be the score at the end of the course.\index{t-test!two-sample t-test|)}\index{t-test!paired two-sample t-test|)}
     
 \index{Formula notation|)}
 The `na.rm` argument defaults to `FALSE`, which means if any data values are missing, the t-test does not compute. Throughout this chapter, we always set `na.rm = TRUE`, but before analyzing the survey data, review the notes provided in Chapter \@ref(c11-missing-data) to better understand how to handle missing data.
@@ -428,7 +428,7 @@ Chi-squared tests ($\chi^2$) allow us to examine multiple proportions using a go
 \index{Categorical data|)}
 
 \index{Chi-squared test!Goodness-of-fit test|(}
-First, **goodness-of-fit** tests are used when comparing *observed* data to *expected* data. For example, this could be used to determine if respondent demographics (the observed data in the sample) match known population information (the expected data). In this case, we can set up the hypothesis test as follows:
+First, goodness-of-fit tests are used when comparing observed data to expected data. For example, this could be used to determine if respondent demographics (the observed data in the sample) match known population information (the expected data). In this case, we can set up the hypothesis test as follows:
 
   - $H_0: p_1 = \pi_1, ~ p_2 = \pi_2, ~ ..., ~ p_k = \pi_k$ where $p_i$ is the observed proportion for category $i$, $\pi_i$ is the expected proportion for category $i$, and $k$ is the number of categories
   - $H_A:$ at least one level of $p_i$ does not match $\pi_i$
@@ -436,15 +436,15 @@ First, **goodness-of-fit** tests are used when comparing *observed* data to *exp
 \index{Chi-squared test!Goodness-of-fit test|)}
 
 \index{Chi-squared test!Test of independence|(}
-Second, **tests of independence** are used when comparing two types of *observed* data to see if there is a relationship. For example, this could be used to determine if the proportion of respondents who voted for each political party in the presidential election matches the proportion of respondents who voted for each political party in a local election. In this case, we can set up the hypothesis test as follows:
+Second, tests of independence are used when comparing two types of observed data to see if there is a relationship. For example, this could be used to determine if the proportion of respondents who voted for each political party in the presidential election matches the proportion of respondents who voted for each political party in a local election. In this case, we can set up the hypothesis test as follows:
 
   - $H_0:$ The two variables/factors are independent
-  - $H_A:$ The two variables/factors are *not* independent 
+  - $H_A:$ The two variables/factors are not independent 
 
 \index{Chi-squared test!Test of independence|)}
 
 \index{Chi-squared test!Test of homogeneity|(}
-Third, **tests of homogeneity** are used to compare two distributions to see if they match. For example, this could be used to determine if the highest education achieved is the same for both men and women. In this case, we can set up the hypothesis test as follows:
+Third, tests of homogeneity are used to compare two distributions to see if they match. For example, this could be used to determine if the highest education achieved is the same for both men and women. In this case, we can set up the hypothesis test as follows:
 
   - $H_0: p_{1a} = p_{1b}, ~ p_{2a} = p_{2b}, ~ ..., ~ p_{ka} = p_{kb}$ where $p_{ia}$ is the observed proportion of category $i$ for subgroup $a$, $p_{ib}$ is the observed proportion of category $i$ for subgroup $a$, and $k$ is the number of categories
   - $H_A:$ at least one category of $p_{ia}$ does not match $p_{ib}$
@@ -632,8 +632,8 @@ ANES asked respondents two questions about trust:
 
 If we want to see if the distributions of these two questions are similar or not, we can conduct a test of independence. Here is how the hypothesis could be set up:
 
-  - $H_0:$ People's trust in the federal government and their trust in other people are independent (i.e., *not* related)
-  - $H_A:$ People's trust in the federal government and their trust in other people are *not* independent (i.e., they are related)
+  - $H_0:$ People's trust in the federal government and their trust in other people are independent (i.e., not related)
+  - $H_A:$ People's trust in the federal government and their trust in other people are not independent (i.e., they are related)
 
 To conduct this in R, we use the `svychisq()` function to compare the two variables: 
 
@@ -651,7 +651,7 @@ chi_ex2
 ```
 
 \index{Cross-tabulation|(}
-The output from `svychisq()` indicates that the distribution of people's trust in the federal government and their trust in other people are *not* independent, meaning that they are related. Let's output the distributions in a table to see the relationship. The `observed` output from the test provides a cross-tabulation of the counts for each category: 
+The output from `svychisq()` indicates that the distribution of people's trust in the federal government and their trust in other people are not independent, meaning that they are related. Let's output the distributions in a table to see the relationship. The `observed` output from the test provides a cross-tabulation of the counts for each category: 
 
 ```{r}
 #| label: stattest-chi-ex2-counts
