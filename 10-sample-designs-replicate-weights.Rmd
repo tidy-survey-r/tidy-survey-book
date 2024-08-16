@@ -45,7 +45,7 @@ In this chapter, we introduce common sampling designs and common types of replic
 
 1. Create a `tbl_svy` object (a survey object) using: `as_survey_design()` or `as_survey_rep()`
 
-2. Subset data (if needed) using `filter()` (sub-populations)
+2. Subset data (if needed) using `filter()` (subpopulations)
 
 3. Specify domains of analysis using `group_by()` 
 
@@ -66,7 +66,7 @@ Some common terminology across the designs are:
 ### Simple random sample without replacement
 
 \index{Simple random sampling|(}
-The simple random sample (SRS) without replacement is a sampling design in which a fixed sample size is selected from a sampling frame, and every possible sub-sample has an equal probability of selection. Without replacement refers to the fact that once a sampling unit has been selected, it is removed from the sample frame and cannot be selected again.
+The simple random sample (SRS) without replacement is a sampling design in which a fixed sample size is selected from a sampling frame, and every possible subsample has an equal probability of selection. Without replacement refers to the fact that once a sampling unit has been selected, it is removed from the sample frame and cannot be selected again.
 
   - **Requirements**: The sampling frame must include the entire population.
   - **Advantages**: SRS requires no information about the units apart from contact information.
@@ -213,7 +213,7 @@ srswr1_des <- dat %>%
  as_survey_design()
 ```
 \index{Finite population correction|(}
-where `dat` is a tibble or data.frame containing our survey data.  This syntax is the same as an SRS design, except a FPC is not included. This is because when calculating a sample with replacement, the population pool to select from is no longer finite, so a correction is not needed. Therefore, with large populations where the FPC is negligible, the underlying formulas for SRS and SRSWR designs are the same.
+where `dat` is a tibble or data.frame containing our survey data.  This syntax is the same as an SRS design, except an FPC is not included. This is because when calculating a sample with replacement, the population pool to select from is no longer finite, so a correction is not needed. Therefore, with large populations where the FPC is negligible, the underlying formulas for SRS and SRSWR designs are the same.
 
 \index{Finite population correction|)}
 If some post-survey adjustments were implemented and the weights are not all equal, we specify the design as:
@@ -227,7 +227,7 @@ where `wtvar` is the variable for the weight of the data.
 
 #### Example {-} 
 
-The {survey} package does not include an example of SRSWR; so to illustrate this design, we need to create an example.  We use the APIP population data provided by the {survey} package (`apipop`) and select a sample of 200 cases using the `slice_sample()` function from the tidyverse. One of the arguments in the `slice_sample()` function is `replace`.  If `replace=TRUE`, then we are conducting an SRSWR. We then calculate selection weights as the inverse of the probability of selection and call this new dataset `apisrswr`.
+The {survey} package does not include an example of SRSWR. To illustrate this design, we need to create an example.  We use the APIP population data provided by the {survey} package (`apipop`) and select a sample of 200 cases using the `slice_sample()` function from the tidyverse. One of the arguments in the `slice_sample()` function is `replace`.  If `replace=TRUE`, then we are conducting an SRSWR. We then calculate selection weights as the inverse of the probability of selection and call this new dataset `apisrswr`.
 
 ```{r}
 #| label: samp-des-apisrs-wr-display
@@ -242,7 +242,7 @@ apisrswr <- apipop %>%
 head(apisrswr)
 ```
 
-Because this is an SRS design *with replacement*, there may be duplicates in the data. It is important to keep the duplicates in the data for proper estimation; but for reference, we can view the duplicates in the example data we just created.
+Because this is an SRS design *with replacement*, there may be duplicates in the data. It is important to keep the duplicates in the data for proper estimation. For reference, we can view the duplicates in the example data we just created.
 
 ```{r}
 #| label: samp-des-apisrs-wr-duplicates
@@ -270,11 +270,11 @@ In the output above, the design object and the object summary are shown. Both no
 
 ### Stratified sampling \index{Stratified sampling|(} \index{Strata|(}
 
-Stratified sampling occurs when a population is divided into mutually exclusive sub-populations (strata), and then samples are selected independently within each stratum.
+Stratified sampling occurs when a population is divided into mutually exclusive subpopulations (strata), and then samples are selected independently within each stratum.
 
   - **Requirements**: The sampling frame must include the information to divide the population into strata for every unit.
   - **Advantages**: 
-    - This design ensures sample representation in all sub-populations. 
+    - This design ensures sample representation in all subpopulations. 
     - If the strata are correlated with survey outcomes, a stratified sample has smaller standard errors compared to a SRS sample of the same size.
     - This results in a more efficient design.
   - **Disadvantages**: Auxiliary data may not exist to divide the sampling frame into strata, or the data may be outdated.
@@ -389,7 +389,7 @@ where $y_{ij}$ is the outcome for sampled unit $j$ within cluster $i$.
 #### The syntax {-} 
 
 \index{Finite population correction|(}
-Clustered sampling designs require the addition of the `ids` argument, which specifies the cluster levels variable(s). To specify a two-stage clustered design without replacement, we specify the design as:
+Clustered sampling designs require the addition of the `ids` argument, which specifies the cluster level variable(s). To specify a two-stage clustered design without replacement, we specify the design as:
 
 ```r
 clus2_des <- dat %>%
@@ -485,12 +485,12 @@ nsfg_des <- nsfgdata %>%
 \index{Replicate weights|(}
 Replicate weights are often included on analysis files instead of, or in addition to, the design variables (strata and PSUs). Replicate weights are used as another method to estimate variability.  Often, researchers choose to use replicate weights to avoid publishing design variables (strata or clustering variables) as a measure to reduce the risk of disclosure. There are several types of replicate weights, including balanced repeated replication (BRR), Fay's BRR, jackknife, and bootstrap methods. An overview of the process for using replicate weights is as follows:
 
-1. Divide the sample into sub-sample replicates that mirror the design of the sample
+1. Divide the sample into subsample replicates that mirror the design of the sample
 2. Calculate weights for each replicate using the same procedures for the full-sample weight (i.e., non-response and post-stratification)
 3. Calculate estimates for each replicate using the same method as the full-sample estimate
 4. Calculate the estimated variance, which is proportional to the variance of the replicate estimates
 
-The different types of replicate weights largely differ between step 1 (how the sample is divided into sub-samples) and step 4 (which multiplication factors, scales, are used to multiply the variance). The general format for the standard error is:
+The different types of replicate weights largely differ between step 1 (how the sample is divided into subsamples) and step 4 (which multiplication factors, scales, are used to multiply the varianfce). The general format for the standard error is:
 
 $$ \sqrt{\alpha \sum_{r=1}^R \alpha_r (\hat{\theta}_r - \hat{\theta})^2 }$$
 
@@ -501,7 +501,7 @@ To create the design object for surveys with replicate weights, we use `as_surve
 ### Balanced Repeated Replication method
 
 \index{Replicate weights!Balanced repeated replication (BRR)|(} \index{Primary sampling unit|(} \index{Strata|(}
-The balanced repeated replication (BRR) method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by two but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or --1 with mutually orthogonal rows. Hadamard matrices must have one row, two rows, or a multiple of four rows. The size of the Hadamard matrix is determined by the first multiple of 4 greater than or equal to the number of strata.  For example, if a survey had seven strata, the Hadamard matrix would be an $8\times8$ matrix. Additionally, a survey with eight strata would also have an $8\times8$ Hadamard matrix. The columns in the matrix specify the strata, and the rows specify the replicate. In each replicate (row), a +1 means to use the first PSU and a --1 means to use the second PSU in the estimate. For example, here is a $4\times4$ Hadamard matrix: 
+The balanced repeated replication (BRR) method requires a stratified sample design with two PSUs in each stratum. Each replicate is constructed by deleting one PSU per stratum using a Hadamard matrix. For the PSU that is included, the weight is generally multiplied by two but may have other adjustments, such as post-stratification. A Hadamard matrix is a special square matrix with entries of +1 or --1 with mutually orthogonal rows. Hadamard matrices must have one row, two rows, or a multiple of four rows. The size of the Hadamard matrix is determined by the first multiple of 4 greater than or equal to the number of strata.  For example, if a survey had seven strata, the Hadamard matrix would be an $8\times8$ matrix. Additionally, a survey with eight strata would also have an $8\times8$ Hadamard matrix. The columns in the matrix specify the strata, and the rows specify the replicate. In each replicate (row), a +1 means to use the first PSU, and a --1 means to use the second PSU in the estimate. For example, here is a $4\times4$ Hadamard matrix: 
 
 $$ \begin{array}{rrrr} +1 &+1 &+1 &+1\\ +1&-1&+1&-1\\ +1&+1&-1&-1\\ +1 &-1&-1&+1 \end{array} $$
 In the first replicate (row), all the values are +1; so in each stratum, the first PSU would be used in the estimate. In the second replicate, the first PSU would be used in strata 1 and 3, while the second PSU would be used in strata 2 and 4. In the third replicate, the first PSU would be used in strata 1 and 2, while the second PSU would be used in strata 3 and 4. Finally, in the fourth replicate, the first PSU would be used in strata 1 and 4, while the second PSU would be used in strata 2 and 3. For more information about Hadamard matrices, see @wolter2007introduction. Note that supplied BRR weights from a data provider already incorporate this adjustment, and the {survey} package generates the Hadamard matrix, if necessary, for calculating BRR weights; so an analyst does not need to create or provide the matrix.
