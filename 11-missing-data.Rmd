@@ -28,7 +28,7 @@ library(gt)
 ```
 
 
-We are using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information.)
+We are using data from ANES and RECS described in Chapter \@ref(c04-getting-started). As a reminder, here is the code to create the design objects for each to use throughout this chapter. For ANES, we need to adjust the weight so it sums to the population instead of the sample (see the ANES documentation and Chapter \@ref(c04-getting-started) for more information).
 
 ```{r}
 #| label: missing-anes-des
@@ -65,11 +65,11 @@ recs_des <- recs_2020 %>%
 
 ## Introduction
 
-Missing data in surveys refer to situations where participants do not provide complete responses to survey questions. Respondents may not have seen a question by design. Or, they may not respond to a question for various other reasons, such as not wanting to answer a particular question, not understanding the question, or simply forgetting to answer. Missing data are important to consider and account for, as it can introduce bias and reduce the representativeness of the data. This chapter provides an overview of the types of missing data, how to assess missing data in surveys, and how to conduct analysis when missing data are present. Understanding this complex topic can help ensure accurate reporting of survey results and provide insight into potential changes to the survey design for the future.
+Missing data in surveys refer to situations where participants do not provide complete responses to survey questions. Respondents may not have seen a question by design. Or, they may not respond to a question for various other reasons, such as not wanting to answer a particular question, not understanding the question, or simply forgetting to answer. Missing data are important to consider and account for, as they can introduce bias and reduce the representativeness of the data. This chapter provides an overview of the types of missing data, how to assess missing data in surveys, and how to conduct analysis when missing data are present. Understanding this complex topic can help ensure accurate reporting of survey results and provide insight into potential changes to the survey design for the future.
 
 ## Missing data mechanisms
 
-\index{Item nonresponse|(}There are two main categories that missing data typically fall into: missing by design and unintentional missing data. Missing by design is part of the survey plan and can be more easily incorporated into weights and analyses.  Unintentional missing data on the other hand, can lead to bias in survey estimates if not correctly accounted for.  Below we provide more information on the types of missing data.
+\index{Item non-response|(}There are two main categories that missing data typically fall into: missing by design and unintentional missing data. Missing by design is part of the survey plan and can be more easily incorporated into weights and analyses.  Unintentional missing data, on the other hand, can lead to bias in survey estimates if not correctly accounted for.  Below we provide more information on the types of missing data.
 
 1. **Missing by design/questionnaire skip logic**: This type of missingness occurs when certain respondents are intentionally directed to skip specific questions based on their previous responses or characteristics. For example, in a survey about employment, if a respondent indicates that they are not employed, they may be directed to skip questions related to their job responsibilities. Additionally, some surveys randomize questions or modules so that not all participants respond to all questions. In these instances, respondents would have missing data for the modules not randomly assigned to them.
 
@@ -77,14 +77,14 @@ Missing data in surveys refer to situations where participants do not provide co
 
     a. **Missing completely at random (MCAR)**: The missing data are unrelated to both observed and unobserved data, and the probability of being missing is the same across all cases. For example, if a respondent missed a question because they had to leave the survey early due to an emergency.
 
-    b. **Missing at random (MAR)**: The missing data are related to observed data but not unobserved data, and the probability of being missing is the same within groups. For example, we know the respondents' ages if and older respondents choose not to answer specific questions but younger respondents do answer them.
+    b. **Missing at random (MAR)**: The missing data are related to observed data but not unobserved data, and the probability of being missing is the same within groups. For example, we know the respondents' ages and older respondents choose not to answer specific questions but younger respondents do answer them.
 
     c. **Missing not at random (MNAR)**: The missing data are related to unobserved data, and the probability of being missing varies for reasons we are not measuring. For example, if respondents with depression do not answer a question about depression severity.
 
 
 ## Assessing missing data
 
-Before beginning an analysis, we should explore the data to determine if there is missing data and what types of missing data are present. Conducting descriptive analysis can help with the analysis and reporting of survey data (see Section \@ref(c12-recommendations)) and can inform the survey design in future studies. For example, large amounts of unexpected missing data may indicate the questions were unclear or difficult to recall.  There are several ways to explore missing data, which we walk through below. When assessing the missing data, we recommend using a data.frame object and not the survey object, as most of the analysis is about patterns of records, and weights are not necessary.
+Before beginning an analysis, we should explore the data to determine if there is missing data and what types of missing data are present. Conducting descriptive analysis can help with the analysis and reporting of survey data and can inform the survey design in future studies. For example, large amounts of unexpected missing data may indicate the questions were unclear or difficult to recall.  There are several ways to explore missing data, which we walk through below. When assessing the missing data, we recommend using a data.frame object and not the survey object, as most of the analysis is about patterns of records, and weights are not necessary.
 
 ### Summarize data
 
@@ -99,7 +99,7 @@ anes_2020 %>%
   summary()
 ```
 
-We see that there are `NA` values in several of the derived variables (those not beginning with "V") and negative values in the original variables (those beginning with "V".) We can also use the `count()` function to get an understanding of the different types of missing data on the original variables.  For example, let's look at the count of data for `V202072`, which corresponds to our `VotedPres2020` variable.
+We see that there are `NA` values in several of the derived variables (those not beginning with "V") and negative values in the original variables (those beginning with "V"). We can also use the `count()` function to get an understanding of the different types of missing data on the original variables.  For example, let's look at the count of data for `V202072`, which corresponds to our `VotedPres2020` variable.
 
 ```{r}
 #| label: missing-anes-count
@@ -122,25 +122,30 @@ It can be challenging to look at tables for every variable and instead may be mo
 #| fig.alt: "This chart shows a the missingness of the selected variables where missing is highlighted in a dark color. Each row of the plot is an observation and each column is a variable. There are some patterns observed such as a large block of missing for `VotedPres2016_selection` and many of the same respondents also having missing for `VotedPres2020_selection`."
 
 anes_2020_derived<-anes_2020 %>%
-  select(!starts_with("V2"),-CaseID,-InterviewMode,-Weight,-Stratum,-VarUnit)
+  select(
+    -starts_with("V2"), -CaseID, -InterviewMode, 
+    -Weight, -Stratum, -VarUnit)
 
 anes_2020_derived %>%
   vis_miss(cluster= TRUE, show_perc = FALSE) +
   scale_fill_manual(values = book_colors[c(3,1)], 
                     labels = c("Present","Missing"),
-                    name = "")
+                    name = "") +
+  theme(
+    plot.margin=margin(5.5,30,5.5,5.5, "pt"),
+    axis.text.x=element_text(angle=70))
 
 ```
 
-From the visualization in Figure \@ref(fig:missing-anes-vismiss), we can start to get a picture of what questions may be connected to each other in terms of missing data.  Even if we did not have the informative variable names, we could deduce that `VotedPres2020`, `VotedPres2020_selection`, and `EarlyVote2020` are likely connected since their missing data patterns are similar.
+From the visualization in Figure \@ref(fig:missing-anes-vismiss), we can start to get a picture of what questions may be connected in terms of missing data.  Even if we did not have the informative variable names, we could deduce that `VotedPres2020`, `VotedPres2020_selection`, and `EarlyVote2020` are likely connected since their missing data patterns are similar.
 
-Additionally, we can also look at `VotedPres2016_selection` and see that there is a lot of missing data in that variable. The missing data are likely due to a skip pattern, and we can look at other graphics to see how they relate to other variables. The {naniar} package has multiple visualization functions that can help dive deeper, such as the `gg_miss_fct()` function, which looks at missing data for all variables by levels of another variable (see Figure \@ref(fig:missing-anes-ggmissfct).)
+Additionally, we can also look at `VotedPres2016_selection` and see that there are a lot of missing data in that variable. The missing data are likely due to a skip pattern, and we can look at other graphics to see how they relate to other variables. The {naniar} package has multiple visualization functions that can help dive deeper, such as the `gg_miss_fct()` function, which looks at missing data for all variables by levels of another variable (see Figure \@ref(fig:missing-anes-ggmissfct)).
 
 ```{r}
 #| label: missing-anes-ggmissfct
 #| warning: FALSE
 #| message: FALSE
-#| fig.cap: "Missingness in variables for each level of `VotedPres2016` in the ANES 2020 data"
+#| fig.cap: Missingness in variables for each level of 'VotedPres2016,' in the ANES 2020 data
 #| fig.alt: "This chart has x-axis 'Voted for President in 2016' with labels Yes, No and NA and has y-axis 'Variable' with labels Age, AgeGroup, CampaignInterest, EarlyVote2020, Education, Gender, Income, Income7, PartyID, RaceEth, TrustGovernment, TrustPeople, VotedPres2016_selection, VotedPres2020 and VotedPres2020_selection. There is a legend indicating fill is used to show pct_miss, ranging from 0 represented by fill very pale blue to 100 shown as fill dark blue. Among those that voted for president in 2016, they had little missing for other variables (light color) but those that did not vote have more missing data in their 2020 voting patterns and their 2016 president selection."
 
 anes_2020_derived %>% 
@@ -154,7 +159,7 @@ anes_2020_derived %>%
   xlab("Voted for President in 2016")
 ```
 
-In Figure \@ref(fig:missing-anes-ggmissfct), we can see that if respondents did not vote for president in 2016 or did not answer that question, then they were not asked about who they voted for in 2016 (the percentage of missing data is 100%.)  Additionally, we can see with Figure \@ref(fig:missing-anes-ggmissfct), that there is more missing data across all questions if they did not provide an answer to `VotedPres2016`.
+In Figure \@ref(fig:missing-anes-ggmissfct), we can see that if respondents did not vote for president in 2016 or did not answer that question, then they were not asked about who they voted for in 2016 (the percentage of missing data is 100%).  Additionally, we can see with Figure \@ref(fig:missing-anes-ggmissfct) that there are more missing data across all questions if they did not provide an answer to `VotedPres2016`.
 \index{American National Election Studies (ANES)|)}
 
 \index{Residential Energy Consumption Survey (RECS)|(}
@@ -173,11 +178,11 @@ recs_2020_shadow %>%
   count(HeatingBehavior,HeatingBehavior_NA)
 ```
 
-We can then use these new variables to plot the missing data alongside the actual data.  For example, let's plot a histogram of the total electric bill grouped by those missing and not missing by heating behavior (see Figure \@ref(fig:missing-recs-hist).)
+We can then use these new variables to plot the missing data alongside the actual data.  For example, let's plot a histogram of the total electric bill grouped by those missing and not missing by heating behavior (see Figure \@ref(fig:missing-recs-hist)).
 
 ```{r}
 #| label: missing-recs-hist
-#| fig.cap: "Histogram of Energy Cost by Heating Behavior Missing Data"
+#| fig.cap: "Histogram of energy cost by heating behavior missing data"
 #| fig.alt: "This chart has title 'Histogram of Energy Cost by Heating Behavior Missing Data'. It has x-axis 'Total Energy Cost (Truncated at $5000)' with labels 0, 1000, 2000, 3000, 4000 and 5000. It has y-axis 'Number of Households' with labels 0, 500, 1000 and 1500. There is a legend indicating fill is used to show HeatingBehavior_NA, with 2 levels: !NA shown as very pale blue fill and  NA shown as dark blue fill. The chart is a bar chart with 30 vertical bars. These are stacked, as sorted by HeatingBehavior_NA."
 recs_2020_shadow %>%
   filter(TOTALDOL < 5000) %>%
@@ -190,8 +195,7 @@ recs_2020_shadow %>%
   ) +
   theme_minimal() +
   xlab("Total Energy Cost (Truncated at $5000)") +
-  ylab("Number of Households") +
-  ggtitle("Histogram of Energy Cost by Heating Behavior Missing Data")
+  ylab("Number of Households")
 ```
 
 Figure \@ref(fig:missing-recs-hist) indicates that respondents who did not provide a response for the heating behavior question may have a different distribution of total energy cost compared to respondents who did provide a response. This view of the raw data and missingness could indicate some bias in the data. Researchers take these different bias aspects into account when calculating weights, and we need to make sure that we incorporate the weights when analyzing the data. \index{Residential Energy Consumption Survey (RECS)|)}
@@ -202,7 +206,7 @@ There are many other visualizations that can be helpful in reviewing the data, a
 ## Analysis with missing data
 
 \index{Imputation|(}
-Once we understand the types of missingness, we can begin the analysis of the data. Different missingness types may be handled in different ways. In most publicly available datasets, researchers have already calculated weights and imputed missing values if necessary. Often there are imputation flags included in the data that indicate if each value in a given variable is imputed.  For example, in the RECS data we may see a logical variable of `ZWinterTempNight`, where a value of `TRUE` means that the value of `WinterTempNight` for that respondent was imputed and `FALSE` means that it was not imputed. We may use these imputation flags if we are interested in examining the nonresponse rates in the original data. For those interested in learning more about how to calculate weights and impute data for different missing data mechanisms, we recommended @Kim2021 and @Valliant2018weights.
+Once we understand the types of missingness, we can begin the analysis of the data. Different missingness types may be handled in different ways. In most publicly available datasets, researchers have already calculated weights and imputed missing values if necessary. Often, there are imputation flags included in the data that indicate if each value in a given variable is imputed.  For example, in the RECS data we may see a logical variable of `ZWinterTempNight`, where a value of `TRUE` means that the value of `WinterTempNight` for that respondent was imputed, and `FALSE` means that it was not imputed. We may use these imputation flags if we are interested in examining the non-response rates in the original data. For those interested in learning more about how to calculate weights and impute data for different missing data mechanisms, we recommend @Kim2021 and @Valliant2018weights.
 
 Even with weights and imputation, missing data are most likely still present and need to be accounted for in analysis. This section provides an overview on how to recode missing data in R, and how to account for skip patterns in analysis.
 \index{Imputation|)}
@@ -210,18 +214,18 @@ Even with weights and imputation, missing data are most likely still present and
 ### Recoding missing data
 
 \index{American National Election Studies (ANES)|(}
-Even within a variable, there can be different reasons for missing data. In publicly released data,, negative values are often present to provide different meanings for values.  For example, in the ANES 2020 data, they have the following negative values to represent different types of missing data:
+Even within a variable, there can be different reasons for missing data. In publicly released data, negative values are often present to provide different meanings for values.  For example, in the ANES 2020 data, they have the following negative values to represent different types of missing data:
 
 
-  * -9: Refused
-  * -8: Don't Know
-  * -7: No post-election data, deleted due to incomplete interview
-  * -6: No post-election interview
-  * -5: Interview breakoff (sufficient partial IW)
-  * -4: Technical error
-  * -3: Restricted
-  * -2: Other missing reason (question specific)
-  * -1: Inapplicable
+  * --9: Refused
+  * --8: Don't Know
+  * --7: No post-election data, deleted due to incomplete interview
+  * --6: No post-election interview
+  * --5: Interview breakoff (sufficient partial IW)
+  * --4: Technical error
+  * --3: Restricted
+  * --2: Other missing reason (question specific)
+  * --1: Inapplicable
 
 When we created the derived variables for use in this book, we coded all negative values as `NA` and proceeded to analyze the data.  For most cases, this is an appropriate approach as long as we filter the data appropriately to account for skip patterns (see Section \@ref(missing-skip-patt)). However, the {naniar} package does have the option to code special missing values. For example, if we wanted to have two `NA` values, one that indicated the question was missing by design (e.g., due to skip patterns) and one for the other missing categories, we can use the `nabular` format to incorporate these with the `recode_shadow()` function. 
 
@@ -244,10 +248,10 @@ However, it is important to note that at the time of publication, there is no ea
 
 ### Accounting for skip patterns {#missing-skip-patt}
 
-When questions are skipped by design in a survey, it is meaningful that the data are later missing. For example,the RECS survey asks people how they control the heat in their home in the winter (`HeatingBehavior`.) This is only among those who have heat in their home (`SpaceHeatingUsed`.) If no there is no heating equipment used, the value of `HeatingBehavior` is missing. One has several choices when analyzing these data which include 1) only including those with a valid value of `HeatingBehavior` and specifying the universe as those with heat or 2) including those who do not have heat. It is important to specify what population an analysis generalizes to.
+When questions are skipped by design in a survey, it is meaningful that the data are later missing. For example, the RECS asks people how they control the heat in their home in the winter (`HeatingBehavior`). This is only among those who have heat in their home (`SpaceHeatingUsed`). If there is no heating equipment used, the value of `HeatingBehavior` is missing. One has several choices when analyzing these data which include: (1) only including those with a valid value of `HeatingBehavior` and specifying the universe as those with heat or (2) including those who do not have heat. It is important to specify what population an analysis generalizes to.
 
 \index{Residential Energy Consumption Survey (RECS)|(}
-Here is an example where we only include those with a valid value of `HeatingBehavior` (choice 1.) Note that we use the design object (`recs_des`) and then \index{Functions in srvyr!filter|(}filter to those that are not missing on `HeatingBehavior`.\index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!summarize|(}
+Here is an example where we only include those with a valid value of `HeatingBehavior` (choice 1). Note that we use the design object (`recs_des`) and then \index{Functions in srvyr!filter|(}filter to those that are not missing on `HeatingBehavior`.\index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: missing-recs-heatcc
@@ -263,7 +267,7 @@ heat_cntl_1
 ```
 \index{Functions in srvyr!filter|)}
 
-Here is an example where we include those that do not have heat (choice 2.) To help understand what we are looking at, we have included the output to show both variables, `SpaceHeatingUsed` and `HeatingBehavior`. \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!interact|(} 
+Here is an example where we include those who do not have heat (choice 2). To help understand what we are looking at, we have included the output to show both variables, `SpaceHeatingUsed` and `HeatingBehavior`. \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!interact|(} 
 
 ```{r}
 #| label: missing-recs-heatpop
@@ -294,7 +298,7 @@ pct_2 <- heat_cntl_2 %>%
 
 ```
 
-If we ran the first analysis, we would say that `r pct_1`% **of households with heat** use a programmable or smart thermostat for heating of their home. If we used the results from the second analysis, we would say that `r pct_2`% **of households** use a programmable or smart thermostat for heating of their home. The distinction between the two statements is made bold for emphasis. Skip patterns often change the universe we are talking about and need to be carefully examined. \index{Residential Energy Consumption Survey (RECS)|)}
+If we ran the first analysis, we would say that `r pct_1`% **of households with heat** use a programmable or smart thermostat for heating their home. If we used the results from the second analysis, we would say that `r pct_2`% **of households** use a programmable or smart thermostat for heating their home. The distinction between the two statements is made bold for emphasis. Skip patterns often change the universe we are talking about and need to be carefully examined. \index{Residential Energy Consumption Survey (RECS)|)}
 
 \index{American National Election Studies (ANES)|(}
 Filtering to the correct universe is important when handling these types of missing data.  The `nabular` we created above can also help with this.  If we have `NA_skip` values in the shadow, we can make sure that we filter out all of these values and only include relevant missing values.  To do this with survey data, we could first create the `nabular`, then create the \index{Functions in srvyr!as\_survey\_design|(} design object on that data, and then use the shadow variables to assist with filtering the data.  Let's use the `nabular` we created above for ANES 2020 (`anes_2020_shadow`) to create the design object. 
@@ -316,7 +320,7 @@ anes_des_shadow <- anes_adjwgt_shadow %>%
 ```
 \index{Functions in srvyr!as\_survey\_design|)}
 
-Then, we can use this design object to look at the percentage of the population that voted for each candidate in 2016 (`V201103`.) First, let's look at the percentages without removing any cases: \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!summarize|(}
+Then, we can use this design object to look at the percentage of the population who voted for each candidate in 2016 (`V201103`.) First, let's look at the percentages without removing any cases: \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!summarize|(}
 
 ```{r}
 #| label: missing-anes-shadow-ex1
@@ -330,7 +334,7 @@ pres16_select1<-anes_des_shadow %>%
 pres16_select1
 ```
 
-Next, we look at the percentages, removing only those missing due to skip patterns (i.e., they did not receive this question.) \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!filter|(} 
+Next, we look at the percentages, removing only those missing due to skip patterns (i.e., they did not receive this question). \index{Functions in srvyr!survey\_prop} \index{Functions in srvyr!filter|(} 
 
 ```{r}
 #| label: missing-anes-shadow-ex2
@@ -368,7 +372,7 @@ pres16_select3
 pres16_select_gt<-pres16_select1 %>% 
   full_join(pres16_select2,by="V201103") %>% 
   full_join(pres16_select3,by="V201103") %>% 
-  mutate(Candidate=case_when(V201103==-1~"Did not Vote for President in 2016",
+  mutate(Candidate=case_when(V201103==-1~"Did Not Vote for President in 2016",
                              V201103==1~"Hillary Clinton",
                              V201103==2~"Donald Trump",
                              V201103==5~"Other Candidate",
@@ -388,10 +392,10 @@ pres16_select_gt<-pres16_select1 %>%
               columns = c(No_Skip_Missing, No_Skip_Missing_se)) %>%
   tab_spanner(label = "Removing All Missing Data",
               columns = c(No_Missing, No_Missing_se)) %>%
-  fmt_percent(decimals = 1)
+  fmt_number(decimals = 1, scale_by=100)
 ```
 
-(ref:missing-anes-shadow-tab) Percentage of Votes by Candidate for Different Missing Data Inclusions
+(ref:missing-anes-shadow-tab) Percentage of votes by candidate for different missing data inclusions
 
 ```{r}
 #| label: missing-anes-shadow-tab
@@ -431,7 +435,7 @@ pres16_select2_out<-round(pres16_select2_1*100-pres16_select2_2*100,1)
 ```
 
 
-As Table \@ref(tab:missing-anes-shadow-tab) shows, the results can vary greatly depending on which type of missing data are removed. If we remove only the skip patterns the margin between Clinton and Trump is `r pres16_select2_out` percentage points, but if we include all data, even including those that did not vote in 2016, the margin is `r pres16_select1_out` percentage points. How we handle the different types of missing values is important for interpreting the data.
-\index{Item nonresponse|)} \index{American National Election Studies (ANES)|)}
+As Table \@ref(tab:missing-anes-shadow-tab) shows, the results can vary greatly depending on which type of missing data are removed. If we remove only the skip patterns, the margin between Clinton and Trump is `r pres16_select2_out` percentage points; but if we include all data, even those who did not vote in 2016, the margin is `r pres16_select1_out` percentage points. How we handle the different types of missing values is important for interpreting the data.
+\index{Item non-response|)} \index{American National Election Studies (ANES)|)}
 
 \index{Missing data|)}
