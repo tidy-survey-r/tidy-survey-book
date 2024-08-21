@@ -41,7 +41,7 @@ We create an example survey dataset to explain potential pitfalls and how to ove
 #| label: recommendations-example-dat
 example_srvy <- tribble(
   ~id, ~region, ~q_d1,                 ~q_d2_1, ~gender, ~weight,
-   1L,   1L,    1L,      "Somewhat intereswted", "female",  1740,
+   1L,   1L,    1L,      "Somewhat interested", "female",  1740,
    2L,   1L,    1L,    "Not at all interested", "female",  1428,
    3L,   2L,    NA,      "Somewhat interested", "female",   496,
    4L,   2L,    1L,    "Not at all interested", "female",   550,
@@ -61,7 +61,7 @@ example_des <-
 
 ## Introduction
 
-The previous chapters in this book aimed to provide the technical skills and knowledge required for running survey analyses. This chapter builds upon the previously mentioned best practices to present a curated set of recommendations for running a *successful* survey analysis. We hope this list provides practical insights that assist in producing meaningful and reliable results.
+The previous chapters in this book aimed to provide the technical skills and knowledge required for running survey analyses. This chapter builds upon the previously mentioned best practices to present a curated set of recommendations for running a successful survey analysis. We hope this list provides practical insights that assist in producing meaningful and reliable results.
 
 ## Follow the survey analysis process {#recs-survey-process}
 
@@ -75,7 +75,7 @@ The previous chapters in this book aimed to provide the technical skills and kno
 
 4. Within `summarize()`, specify variables to calculate, including means, totals, proportions, quantiles, and more
 
-The order of these steps matters in survey analysis. For example, if we need to subset the data, \index{Functions in srvyr!filter}we must use `filter()` on our data **after** creating the survey design. If we do this before the survey design is created, we may not be correctly accounting for the study design, resulting in inaccurate findings.\index{Survey analysis process|)}
+The order of these steps matters in survey analysis. For example, if we need to subset the data, \index{Functions in srvyr!filter}we must use `filter()` on our data after creating the survey design. If we do this before the survey design is created, we may not be correctly accounting for the study design, resulting in inaccurate findings.\index{Survey analysis process|)}
 
 Additionally, correctly identifying the survey design is one of the most important steps in survey analysis.  Knowing the type of sample design (e.g., clustered, stratified) helps ensure the underlying error structure is correctly calculated and weights are correctly used. Learning about complex design factors such as clustering, stratification, and weighting is foundational to complex survey analysis, and we recommend that all analysts review Chapter \@ref(c10-sample-designs-replicate-weights) before creating their first design object. Reviewing the documentation (see Chapter \@ref(c03-survey-data-documentation)) helps us understand what variables to use from the data.
 
@@ -100,13 +100,13 @@ example_srvy %>%
   summarize(n = n())
 ```
 
-The data show that males comprise 1 out of 10, or 10%, of the sample. Generally, we assume something close to a 50/50 split between male and female respondents in a population. The sizable female proportion could indicate either a unique sample or a potential error in the data. If we review the survey documentation and see this was a deliberate part of the design, we can continue our analysis using the appropriate methods. If this was not an intentional choice by the researchers, the results alert us that something may be incorrect in the data or our code, and we can verify if there’s an issue by comparing the results with the weighted means.
+The data show that females comprise 9 out of 10, or 90%, of the sample. Generally, we assume something close to a 50/50 split between male and female respondents in a population. The sizable female proportion could indicate either a unique sample or a potential error in the data. If we review the survey documentation and see this was a deliberate part of the design, we can continue our analysis using the appropriate methods. If this was not an intentional choice by the researchers, the results alert us that something may be incorrect in the data or our code, and we can verify if there’s an issue by comparing the results with the weighted means.
 
 ### Graphical review
 
 Tables provide a quick check of our assumptions, but there is no substitute for graphs and plots to visualize the distribution of data. We might miss outliers or nuances if we scan only summary statistics. 
 
-For example, Anscombe's Quartet demonstrates the importance of visualization in analysis. Let's say we have a dataset with x- and y- variables in an object called `anscombe_tidy`. Let's take a look at how the dataset is structured:
+For example, Anscombe's Quartet demonstrates the importance of visualization in analysis. Let's say we have a dataset with x- and y-variables in an object called `anscombe_tidy`. Let's take a look at how the dataset is structured:
 
 ```{r}
 #| label: recommendations-anscombe-head
@@ -143,7 +143,7 @@ anscombe_tidy %>%
   )
 ```
 
-The summary results for these four sets are nearly identical! Based on this, we might assume that each distribution is similar. Let's look at a graphical visualization to see if our assumption is correct (see Figure \@ref(fig:recommendations-anscombe-plot).)
+The summary results for these four sets are nearly identical! Based on this, we might assume that each distribution is similar. Let's look at a graphical visualization to see if our assumption is correct (see Figure \@ref(fig:recommendations-anscombe-plot)).
 
 ```{r}
 #| label: recommendations-anscombe-plot
@@ -173,7 +173,7 @@ example_srvy %>%
 ```
 
 \index{Factor|(}
-The output shows that `q_d2_1` is a character variable, but the values of that variable show three options (Very interested / Somewhat interested / Not at all interested.) In this case, we most likely want to change `q_d2_1` to be a factor variable and order the factor levels to indicate that this is an ordinal variable.  Here is some code on how we might approach this task using the {forcats} package [@R-forcats]:
+The output shows that `q_d2_1` is a character variable, but the values of that variable show three options (Very interested / Somewhat interested / Not at all interested). In this case, we most likely want to change `q_d2_1` to be a factor variable and order the factor levels to indicate that this is an ordinal variable.  Here is some code on how we might approach this task using the {forcats} package [@R-forcats]:
 
 ```{r}
 #| label: recommendations-example-dat-fct
@@ -193,7 +193,7 @@ example_srvy_fct %>%
 ```
 
 \index{Codebook|(} \index{Categorical data|(}
-This example dataset also includes a column called `region`, which is imported as a number (`<int>`.) This is a good reminder to use the questionnaire and codebook along with the data to find out if the values actually reflect a number or are perhaps a coded categorical variable (see Chapter \@ref(c03-survey-data-documentation) for more details.) R calculates the mean even if it is not appropriate, leading to the common mistake of applying an average to categorical values instead of a proportion function. For example, for ease of coding, we may use the `across()` function to calculate the mean across all numeric variables: \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(} \index{Codebook|()} \index{Categorical data|)}
+This example dataset also includes a column called `region`, which is imported as a number (`<int>`). This is a good reminder to use the questionnaire and codebook along with the data to find out if the values actually reflect a number or are perhaps a coded categorical variable (see Chapter \@ref(c03-survey-data-documentation) for more details). R calculates the mean even if it is not appropriate, leading to the common mistake of applying an average to categorical values instead of a proportion function. For example, for ease of coding, we may use the `across()` function to calculate the mean across all numeric variables: \index{Functions in srvyr!survey\_mean|(} \index{Functions in srvyr!summarize|(} \index{Codebook|()} \index{Categorical data|)}
 
 ```{r}
 #| label: recommendations-example-dat-num-calc
@@ -238,7 +238,7 @@ example_des %>%
 ```
 
 \index{Dot notation|(}
-In this case, we need to remember that with functions from the {survey} packages like `svyttest()`, the design object is not the first argument, and we have to use the dot (`.`) notation (see Chapter \@ref(c06-statistical-testing).)  Adding in the named argument of `design=.` fixes this error.
+In this case, we need to remember that with functions from the {survey} packages like `svyttest()`, the design object is not the first argument, and we have to use the dot (`.`) notation (see Chapter \@ref(c06-statistical-testing)).  Adding in the named argument of `design=.` fixes this error.
 
 ```{r}
 #| label: recommendations-desobj-locfix
@@ -257,15 +257,15 @@ Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]) :
 ```
 
 \index{Factor|(}
-We can see that the error has to do with a function requiring a factor with two or more levels and that it has been applied to something else. This ties back to our section on using appropriate variable types. We can check the variable of interest to examine whether it's the correct type. \index{Functions in survey!svyttest|)}
+We can see that the error has to do with a function requiring a factor with two or more levels and that it has been applied to something else. This ties back to our section on using appropriate variable types. We can check the variable of interest to examine whether it is the correct type. \index{Functions in survey!svyttest|)}
 \index{Factor|)}
 
 The internet also offers many resources for debugging. Searching for a specific error message can often lead to a solution. In addition, we can post on community forums like [Posit Community](https://forum.posit.co/) for direct help from others. \index{Debugging|)}
 
 ## Think critically about conclusions
 
-Once we have our findings, we need to learn to think critically about our findings. As mentioned in Chapter \@ref(c02-overview-surveys), many aspects of the study design can impact our interpretation of the results, for example, the number and types of response options provided to the respondent or who was asked the question (both thinking about the full sample and any skip patterns.) Knowing the overall study design can help us accurately think through what the findings may mean and identify any issues with our analyses. Additionally, we should make sure that our survey design object is correctly defined (see Chapter \@ref(c10-sample-designs-replicate-weights)), carefully consider how we are managing missing data (see Chapter \@ref(c11-missing-data)), and follow statistical analysis procedures such as avoiding model overfitting by using too many variables in our formulas.
+Once we have our findings, we need to learn to think critically about them. As mentioned in Chapter \@ref(c02-overview-surveys), many aspects of the study design can impact our interpretation of the results, for example, the number and types of response options provided to the respondent or who was asked the question (both thinking about the full sample and any skip patterns). Knowing the overall study design can help us accurately think through what the findings may mean and identify any issues with our analyses. Additionally, we should make sure that our survey design object is correctly defined (see Chapter \@ref(c10-sample-designs-replicate-weights)), carefully consider how we are managing missing data (see Chapter \@ref(c11-missing-data)), and follow statistical analysis procedures such as avoiding model overfitting by using too many variables in our formulas.
 
-These considerations allow us to conduct our analyses and review findings for statistically significant results. It's important to note that even significant results do not mean that they are meaningful or important. A large enough sample can produce statistically significant results. Therefore, we want to look at our results in context, such as comparing them with results from other studies or analyzing them in conjunction with confidence intervals and other measures.
+These considerations allow us to conduct our analyses and review findings for statistically significant results. It is important to note that even significant results do not mean that they are meaningful or important. A large enough sample can produce statistically significant results. Therefore, we want to look at our results in context, such as comparing them with results from other studies or analyzing them in conjunction with confidence intervals and other measures.
 
 Communicating the results (see Chapter \@ref(c08-communicating-results)) in an unbiased manner is also a critical step in any analysis project. If we present results without error measures or only present results that support our initial hypotheses, we are not thinking critically and may incorrectly represent the data. As survey data analysts, we often interpret the survey data for the public. We must ensure that we are the best stewards of the data and work to bring light to meaningful and interesting findings that the public wants and needs to know about.

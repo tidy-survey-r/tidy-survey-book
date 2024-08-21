@@ -132,19 +132,19 @@ hh_vsum_der <- hh_vsum %>%
                         levels = c("Urban", "Suburban", "Rural")),
     SC214A_num = as.numeric(as.character(SC214A)),
     Income = case_when(SC214A_num <= 8 ~ "Less than $25,000",
-                       SC214A_num <= 12 ~ "$25,000-49,999",
-                       SC214A_num <= 15 ~ "$50,000-99,999",
-                       SC214A_num <= 17 ~ "$100,000-199,999",
+                       SC214A_num <= 12 ~ "$25,000--49,999",
+                       SC214A_num <= 15 ~ "$50,000--99,999",
+                       SC214A_num <= 17 ~ "$100,000--199,999",
                        SC214A_num <= 18 ~ "$200,000 or more"),
     Income = fct_reorder(Income, SC214A_num, .na_rm = FALSE),
     PlaceSize = case_match(as.numeric(as.character(V2126B)),
                            0 ~ "Not in a place",
-                           13 ~ "Under 10,000",
-                           16 ~ "10,000-49,999",
-                           17 ~ "50,000-99,999",
-                           18 ~ "100,000-249,999",
-                           19 ~ "250,000-499,999",
-                           20 ~ "500,000-999,999",
+                           13 ~ "Population under 10,000",
+                           16 ~ "10,000--49,999",
+                           17 ~ "50,000--99,999",
+                           18 ~ "100,000--249,999",
+                           19 ~ "250,000--499,999",
+                           20 ~ "500,000--999,999",
                            c(21, 22, 23) ~ "1,000,000 or more"),
     PlaceSize = fct_reorder(PlaceSize, as.numeric(V2126B)),
     Region = case_match(as.numeric(V2127B),
@@ -169,11 +169,11 @@ pers_vsum_der <- pers_vsum %>%
                             levels = c("White", "Black", "Hispanic", 
                                        "Asian", NHOPI, "Other")),
     V3014_num = as.numeric(as.character(V3014)),
-    AgeGroup = case_when(V3014_num <= 17 ~ "12-17",
-                         V3014_num <= 24 ~ "18-24",
-                         V3014_num <= 34 ~ "25-34",
-                         V3014_num <= 49 ~ "35-49",
-                         V3014_num <= 64 ~ "50-64",
+    AgeGroup = case_when(V3014_num <= 17 ~ "12--17",
+                         V3014_num <= 24 ~ "18--24",
+                         V3014_num <= 34 ~ "25--34",
+                         V3014_num <= 49 ~ "35--49",
+                         V3014_num <= 64 ~ "50--64",
                          V3014_num <= 90 ~ "65 or older"),
     AgeGroup = fct_reorder(AgeGroup, V3014_num),
     MaritalStatus = factor(case_when(V3015 == 1 ~ "Married",
@@ -247,7 +247,7 @@ The chapter exercises use the survey design objects and packages provided in the
 
 ## 5 - Descriptive analysis {-}
 
-1. How many females have a graduate degree? Hint: the variables `Gender` and `Education` will be useful.
+1. How many females have a graduate degree? Hint: The variables `Gender` and `Education` will be useful.
 
 ```{r}
 #| label: desc-ex-solution1
@@ -328,7 +328,7 @@ pdeff
 
 Answer: `r round(pdeff$p_deff,2)`
 
-6. What is the median temperature people set their thermostats to at night during the winter? Hint: The variable `WinterTempNight` indicates the temperature that people set their temperature in the winter at night.
+6. What is the median temperature people set their thermostats to at night during the winter? Hint: The variable `WinterTempNight` indicates the temperature that people set their thermostat to in the winter at night.
 
 ```{r}
 #| label: desc-ex-solution6
@@ -474,7 +474,7 @@ On average, those who voted for Joseph Biden in 2020 were `r ttest_solution3$est
 
 4. If we wanted to determine if the political party affiliation differed for males and females, what test would we use?
 
-  a. Goodness of fit test (`svygofchisq()`)
+  a. Goodness-of-fit test (`svygofchisq()`)
   b. Test of independence (`svychisq()`)
   c. Test of homogeneity (`svychisq()`)
   
@@ -561,7 +561,7 @@ tidy(temps_sqft_exp) %>%
 
 Answer: There is a significant interaction between square footage and cooling degree days in the model and the square footage is a significant predictor of eletricity expenditure. 
 
-3.  Continuing with our results from question 2, create a plot between the actual and predicted expenditures and a residual plot for the predicted expenditures.
+3.  Continuing with our results from Exercise 2, create a plot between the actual and predicted expenditures and a residual plot for the predicted expenditures.
 
 Answer: 
 ```{r}
@@ -599,7 +599,7 @@ temps_sqft_exp_fit %>%
   theme_minimal()
 ```
 
-4.  Early voting expanded in 2020 [@npr-voting-trend]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`.) Include two-way interactions.
+4.  Early voting expanded in 2020 [@npr-voting-trend]. Build a logistic model predicting early voting in 2020 (`EarlyVote2020`) using age (`Age`), education (`Education`), and party identification (`PartyID`). Include two-way interactions.
 
 Answer: 
 ```{r}
@@ -615,7 +615,7 @@ earlyvote_mod <- anes_des %>%
 tidy(earlyvote_mod) %>% print(n=50)
 ```
 
-5.  Continuing from Exercise 4, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree, but one person is a strong Democrat, and the other is a strong Republican.
+5.  Continuing from Exercise 4, predict the probability of early voting for two people. Both are 28 years old and have a graduate degree; however, one person is a strong Democrat, and the other is a strong Republican.
 
 ```{r}
 #| label: model-ex-solution7
@@ -643,7 +643,7 @@ Answer: We predict that the 28 year old with a graduate degree who identifies as
 ## 10 - Specifying sample designs and replicate weights in {srvyr}  {-}
 
 
-1. The National Health Interview Survey (NHIS) is an annual household survey conducted by the National Center for Health Statistics (NCHS.) The NHIS includes a wide variety of health topics for adults including health status and conditions, functioning and disability, health care access and health service utilization, health-related behaviors, health promotion, mental health, barriers to care, and community engagement. Like many national in-person surveys, the sampling design is a stratified clustered design with details included in the Survey Description [@nhis-svy-des]. The Survey Description provides information on setting up syntax in SUDAAN, Stata, SPSS, SAS, and R ({survey} package implementation.) We have imported the data and the variable containing the data as: `nhis_adult_data`. How would we specify the design using either `as_survey_design()` or `as_survey_rep()`?
+1. The National Health Interview Survey (NHIS) is an annual household survey conducted by the National Center for Health Statistics (NCHS). The NHIS includes a wide variety of health topics for adults including health status and conditions, functioning and disability, health care access and health service utilization, health-related behaviors, health promotion, mental health, barriers to receiving care, and community engagement. Like many national in-person surveys, the sampling design is a stratified clustered design with details included in the Survey Description [@nhis-svy-des]. The Survey Description provides information on setting up syntax in SUDAAN, Stata, SPSS, SAS, and R ({survey} package implementation). We have imported the data and the variable containing the data as: `nhis_adult_data`. How would we specify the design using either `as_survey_design()` or `as_survey_rep()`?
 
 Answer: 
 
@@ -659,7 +659,7 @@ nhis_adult_des <- nhis_adult_data %>%
   )
 ```
 
-2. The General Social Survey is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook provides examples of setting up syntax in SAS and Stata but not R [@gss-codebook]. We have imported the data and the variable containing the data as: `gss_data`. How would we specify the design in R using either `as_survey_design()` or `as_survey_rep()`?
+2. The General Social Survey (GSS) is a survey that has been administered since 1972 on social, behavioral, and attitudinal topics. The 2016-2020 GSS Panel codebook provides examples of setting up syntax in SAS and Stata but not R [@gss-codebook]. We have imported the data and the variable containing the data as: `gss_data`. How would we specify the design in R using either `as_survey_design()` or `as_survey_rep()`?
 
 Answer: 
 
@@ -674,7 +674,7 @@ gss_des <- gss_data %>%
 
 ## 13 - National Crime Victimization Survey Vignette {-}
 
-1. What proportion of completed motor vehicle thefts are **not** reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529.)
+1. What proportion of completed motor vehicle thefts are **not** reported to the police? Hint: Use the codebook to look at the definition of Type of Crime (V4529).
 
 ```{r}
 #| label: ncvs-vign-ex-solution1
