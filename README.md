@@ -5,34 +5,34 @@ Surveys are a powerful tool for gathering information, drawing insights, and dri
 ## Chapters
 
 <ol type="I">
-<li> Intro
+<li> Introduction
 <ol type="1">
 <li> Introduction
-<li> Overview of Surveys
-<li> Understanding Survey Data Documentation
+<li> Overview of surveys
+<li> Survey data documentation
 </ol></li>
 <li> Analysis
 <ol type="1" start=4>
-<li> Set-up
+<li> Getting started
+<li> Descriptive analyses
 <li> Statistical testing
-<li> Understanding Survey Data Documentation
 <li> Modeling
 </ol></li>
 <li> Reporting
 <ol type="1" start=8>
-<li> Communicating Results
-<li> Reproducible data
+<li> Communication of results
+<li> Reproducible research
 </ol></li>
-<li> Real life data 
+<li> Real-life data
 <ol type="1" start=10>
-<li> Specifying sample designs and replicate weights in {srvyr}
+<li> Sample designs and replicate weights
 <li> Missing data
-<li> Successful survey data analysis recommendations
+<li> Successful survey analysis recommendations
 </ol></li>
 <li> Vignettes
 <ol type="1" start=13>
-<li> National Crime Victimization Survey Vignette
-<li> AmericasBarometer Vignette
+<li> National Crime Victimization Survey vignette
+<li> AmericasBarometer vignette
 </ol></li>
 </ol>
 
@@ -40,7 +40,7 @@ Surveys are a powerful tool for gathering information, drawing insights, and dri
 
 <ol type="A">
 <li> Importing survey data into R
-<li> ANES Derived Variable Codebook
-<li> RECS Derived Variable Codebook
+<li> ANES derived variable codebook
+<li> RECS derived variable codebook
 <li> Exercise solutions
 </ol>
